@@ -1,0 +1,188 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+% ---------------------------------------------------------------------------
+\section{Motivation and Problem}
+\label{sec:motivation}
+
+Standing up production-grade cloud infrastructure requires expertise that
+most engineering teams don't have all in one place. A backend developer
+who can design a distributed system from scratch may have never written an
+Nginx upstream block; a DevOps engineer fluent in Terraform may not know
+how to construct a valid Helm chart for a stateful Kubernetes workload.
+The result is that deploying even a moderately complex application to AWS
+requires simultaneous competence across Terraform, Kubernetes, Helm, Nginx,
+Jenkins, Ansible, and Prometheus, each with its own syntax, security model,
+and failure modes. Small teams and time-constrained projects routinely
+either skip parts of the stack entirely or write configurations at the edge
+of someone's knowledge, under deadline pressure.
+
+The more consequential problem is security. Infrastructure-as-Code files
+are written once and trusted indefinitely. A Terraform module that grants
+overly broad IAM permissions on the first day of a project will still be
+granting them a year later, long after the engineer who wrote it has moved
+on. Tools like Checkov and tfsec exist precisely because this pattern is
+widespread enough to warrant dedicated static analysis tooling with hundreds
+of distinct checks, each corresponding to a class of vulnerability that human
+authors regularly introduce. But these tools are reactive: they report what
+is wrong; they don't fix it, and they don't prevent the next engineer from
+making the same mistake.
+
+Existing automation closes part of the gap. Terraform modules, Helm charts,
+and cloud provider templates reduce repetition, but they require the engineer
+to already know which components to assemble, how to compose them correctly,
+and how to harden the result. They are reusable parts, not a reasoning
+system. An engineer who doesn't know what they need can't ask a module
+registry for it in plain English; a module that deploys correctly isn't
+necessarily one that deploys securely.
+
+The problem this thesis addresses is not that IaC tooling is insufficient.
+The problem is that the authorship and security validation steps sit outside
+the reach of engineers who lack breadth across the full stack, and no
+existing tool bridges that gap end to end.
+
+% ---------------------------------------------------------------------------
+\section{Goal, Scope, and Success Criteria}
+\label{sec:goal}
+
+The goal of this thesis is to design and implement InfraArchAgent: a
+multi-agent system that accepts a natural-language description of what an
+engineer wants to deploy on AWS and returns a security-scanned candidate
+infrastructure package, without requiring the engineer to write a single
+line of IaC.
+
+\subsection*{In scope}
+
+\begin{itemize}
+  \item A four-stage pipeline with six agent instances: ArchitectAgent
+    (plan generation), three parallel GeneratorAgents (IaC file generation
+    optimised for cost, performance, and security), SecurityAgent (iterative
+    scanning and autonomous remediation using Checkov and tfsec), and
+    ValidatorAgent (cross-file consistency checking).
+  \item A React frontend with real-time pipeline progress via Server-Sent
+    Events, side-by-side variant comparison, security diff view, and ZIP
+    download.
+  \item A FastAPI backend with a PostgreSQL persistence layer storing
+    pipeline runs, generated packages, and agent events.
+  \item A provider-agnostic LLM interface supporting both the Anthropic
+    Messages API and the OpenAI chat completions API, implemented via
+    the Adapter pattern.
+  \item AWS as the sole target cloud provider.
+\end{itemize}
+
+\subsection*{Non-goals}
+
+The system does not execute or apply generated infrastructure against any
+cloud provider. It holds no cloud credentials. It does not support Azure
+or GCP in the current implementation, though the architecture permits
+extension. It does not provide cost estimation, live infrastructure
+monitoring, or state management. It is a single-user prototype; multi-user
+authentication and run ownership are out of scope.
+
+\subsection*{Success criteria}
+
+\begin{itemize}
+  \item A full pipeline run completes within 5 minutes from input submission
+    to all available validated packages appearing in the UI, measured as
+    the median of 10 runs against a real LLM API (PR-01).
+  \item The SecurityAgent reduces the violation count on every generated
+    package; packages with unresolved violations after the configured
+    iteration limit are delivered with violations clearly flagged, giving
+    the engineer full visibility into what requires manual attention.
+  \item The UI reflects each agent state change within 1 second of the
+    backend emitting the corresponding SSE event (PR-02).
+  \item Adding a new LLM provider requires implementing exactly one adapter
+    class with two methods and no changes to any agent (NFR-03), verified
+    by the stub-provider integration test.
+\end{itemize}
+
+% ---------------------------------------------------------------------------
+\section{Three Principal Contributions}
+\label{sec:contributions}
+
+\begin{enumerate}
+
+  \item \textbf{C1 --- Cooperating and competing multi-agent pipeline.}
+    Coordinating agents that must run in a fixed sequence while embedding
+    a parallel competition stage inside that sequence is an orchestration
+    problem with no off-the-shelf solution. The three GeneratorAgents must
+    run concurrently and independently, yet the overall pipeline must still
+    respect the sequential dependency between plan generation and security
+    scanning. This thesis designs and implements a Python asyncio
+    orchestration layer that runs the three generators as concurrent tasks
+    behind a barrier, handles partial failures without halting the pipeline,
+    and keeps inter-agent communication decoupled through a shared
+    IaCPackage data object. The provider-agnostic LLM interface, implemented
+    via the Adapter pattern, supports this pipeline by making every agent
+    independent of any specific model provider.
+    Evidence: the sequence diagram in Chapter~\ref{ch:design}, the asyncio
+    implementation in Chapter~\ref{ch:implementation}, and the concurrency
+    tests in Chapter~\ref{ch:testing}.
+
+  \item \textbf{C2 --- Autonomous security remediation loop.}
+    Generating syntactically correct IaC is not the hard part; generating
+    IaC that passes Checkov and tfsec without manual intervention is. The
+    SecurityAgent must interpret structured scanner output, produce a
+    targeted fix for each violation via an LLM call, apply that fix to the
+    relevant file, and rescan, repeating until either all checks pass or the
+    configured iteration limit is reached. Fixes can introduce new
+    violations, so the loop must detect convergence, not just completion.
+    This thesis implements the scan-remediate-rescan cycle with configurable
+    iteration limits, per-iteration diff recording, and clean handling of
+    packages that exhaust the limit without fully resolving.
+    Evidence: FR-S-01 through FR-S-06 in Chapter~\ref{ch:requirements},
+    the SecurityAgent design in Chapter~\ref{ch:design}, and the
+    remediation integration tests in Chapter~\ref{ch:testing}.
+
+  \item \textbf{C3 --- Interactive UI with real-time pipeline visualization.}
+    Giving engineers visibility into a multi-agent pipeline as it runs
+    requires streaming state updates from multiple concurrent async tasks
+    to a browser without polling. Three agents run in parallel and each
+    can emit state changes at any time; the UI must reflect those changes
+    within one second without page refresh. This thesis implements a
+    Server-Sent Events stream that serialises concurrent agent events
+    through an asyncio queue and pushes them to a React frontend, with
+    four purpose-built screens covering input, live progress, variant
+    comparison, and security diff review. The comparison panel presents
+    three generated variants side by side with file trees, security scores,
+    and a unified diff of every change the SecurityAgent made, giving
+    the engineer a complete picture before committing to a download.
+    Evidence: FR-UI-01 through FR-UI-06 and FR-P-04 in
+    Chapter~\ref{ch:requirements}, the UI design in
+    Chapter~\ref{ch:design}, and the SSE integration tests in
+    Chapter~\ref{ch:testing}.
+
+\end{enumerate}
+
+\EvidenceTable
+
+% ---------------------------------------------------------------------------
+\section{Thesis Roadmap}
+\label{sec:roadmap}
+
+Chapter~\ref{ch:requirements} establishes what InfraArchAgent must do,
+formalising the pipeline behaviour, interface contracts, performance targets,
+and use cases as testable requirements. The functional requirements table
+and the traceability matrix connect every commitment in this chapter to
+design evidence, code, and tests in later chapters.
+
+Chapter~\ref{ch:design} explains the structural decisions that satisfy
+those requirements: the four-layer architecture, the class hierarchy that
+encodes the Strategy and Adapter patterns, the PostgreSQL schema with its
+JSONB package storage, the SSE-based real-time update mechanism, and the
+six architectural decisions with their rejected alternatives.
+
+Chapter~\ref{ch:implementation} documents the actual construction: the
+asyncio orchestration model covering concurrent programming, the
+object-oriented class hierarchy covering OOM and OOD, the PostgreSQL schema
+and query design covering the database examination topic, and the integration
+of Checkov and tfsec as subprocesses.
+
+Chapter~\ref{ch:testing} provides evidence that the system works: unit
+tests for each agent in isolation, integration tests for the full pipeline,
+performance benchmarks against the 5-minute completion target, and security
+remediation tests against known-vulnerable Terraform templates.
+
+Chapter~\ref{ch:conclusion} reflects on what was built, what the
+measurements showed, where the current implementation falls short, and
+what a follow-on project would address first.
