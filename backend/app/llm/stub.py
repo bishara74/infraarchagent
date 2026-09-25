@@ -10,7 +10,7 @@ from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_obje
 from app.llm.errors import LLMPermanentError
 
 StubReply = str | LLMResponse
-StubStep = StubReply | Exception | tuple[float, StubReply]
+StubStep = StubReply | BaseException | tuple[float, StubReply]
 
 
 class StubAdapter(LLMAdapter):
@@ -50,7 +50,7 @@ class StubAdapter(LLMAdapter):
         if not self._script:
             raise LLMPermanentError("stub_script_exhausted")
         step = self._script.pop(0)
-        if isinstance(step, Exception):
+        if isinstance(step, BaseException):
             raise step
         if isinstance(step, tuple):
             delay, step = step

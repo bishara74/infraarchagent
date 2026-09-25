@@ -1,0 +1,56 @@
+import pytest
+
+from app.core.config import Settings
+from app.llm.anthropic import AnthropicAdapter
+from app.llm.base import RetryPolicy
+from app.llm.errors import LLMConfigurationError
+from app.llm.factory import build_adapter
+from app.llm.openai import OpenAIAdapter
+from app.llm.stub import StubAdapter
+
+
+def settings(**overrides: object) -> Settings:
+    values: dict[str, object] = {
+        "database_url": "postgresql+asyncpg://app:secret@localhost/db",
+        "migration_database_url": "postgresql+asyncpg://owner:secret@localhost/db",
+        "test_database_url": "postgresql+asyncpg://app:secret@localhost/test",
+        "test_migration_database_url": "postgresql+asyncpg://owner:secret@localhost/test",
+        "_env_file": None,
+    }
+    values.update(overrides)
+    return Settings(**values)  # type: ignore[arg-type]
+
+
+@pytest.mark.req("FR-I-04", "NFR-03")
+def test_factory_selects_provider_and_overrides_model_and_policy() -> None:
+    configured = settings(
+        llm_provider="anthropic", llm_model="configured", llm_api_key="placeholder"
+    )
+    policy = RetryPolicy(240, 1, 240, 0, 12000)
+    anthropic = build_adapter(configured)
+    assert isinstance(anthropic, AnthropicAdapter)
+    assert anthropic.model == "configured"
+    assert anthropic.policy.max_attempts == 3
+    openai = build_adapter(
+        configured, provider="openai", model="override", policy=policy
+    )
+    assert isinstance(openai, OpenAIAdapter)
+    assert openai.model == "override"
+    assert openai.policy is policy
+
+
+@pytest.mark.req("FR-I-04", "NFR-03")
+async def test_stub_needs_neither_key_nor_model() -> None:
+    adapter = build_adapter(settings())
+    assert isinstance(adapter, StubAdapter)
+    assert (await adapter.complete_json("x")).data["files"] == {"stub.txt": "ok"}
+
+
+@pytest.mark.req("FR-I-04")
+def test_real_provider_requires_key_and_model() -> None:
+    with pytest.raises(LLMConfigurationError, match="LLM_MODEL"):
+        build_adapter(settings(), provider="anthropic")
+    with pytest.raises(LLMConfigurationError, match="LLM_API_KEY"):
+        build_adapter(settings(), provider="openai", model="test")
+    with pytest.raises(LLMConfigurationError, match="LLM_PROVIDER"):
+        build_adapter(settings(), provider="unknown")
