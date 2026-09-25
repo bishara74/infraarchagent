@@ -46,7 +46,10 @@ class RunRepository:
 
     async def set_status(self, run_id: UUID, target: RunStatus) -> PipelineRun:
         row = await self.session.scalar(
-            select(PipelineRun).where(PipelineRun.run_id == run_id).with_for_update()
+            select(PipelineRun)
+            .where(PipelineRun.run_id == run_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
         )
         if row is None:
             raise LookupError("run not found")

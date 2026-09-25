@@ -59,6 +59,7 @@ class PackageRepository:
                 GeneratedPackage.run_id == run_id, GeneratedPackage.variant == variant
             )
             .with_for_update()
+            .execution_options(populate_existing=True)
         )
         if row is None:
             raise LookupError("package not found")
@@ -77,6 +78,7 @@ class PackageRepository:
                 GeneratedPackage.run_id == run_id, GeneratedPackage.variant == variant
             )
             .with_for_update()
+            .execution_options(populate_existing=True)
         )
         if row is None:
             raise LookupError("package not found")

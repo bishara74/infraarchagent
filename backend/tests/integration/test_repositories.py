@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
+from app.db.session import make_session_factory
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.paths import UnsafePathError
 from app.domain.states import IllegalTransition
@@ -91,3 +92,30 @@ async def test_invalid_status_rejected_by_check(
                 ),
                 {"id": uuid4(), "now": datetime.now(UTC)},
             )
+
+
+async def test_locked_transitions_refresh_stale_session_state(
+    db_engines: tuple[AsyncEngine, AsyncEngine], db_session: AsyncSession
+) -> None:
+    app, _ = db_engines
+    runs = RunRepository(db_session)
+    packages = PackageRepository(db_session)
+    run = await runs.create("AWS web app", LLMProvider.STUB, 3)
+    await packages.create(run.run_id, Variant.COST)
+    run_id = run.run_id
+    await db_session.commit()
+
+    assert (await runs.get(run_id)).status == RunStatus.CREATED  # type: ignore[union-attr]
+    assert (await packages.get(run_id, Variant.COST)).status == PackageStatus.GENERATING  # type: ignore[union-attr]
+    async with make_session_factory(app)() as other_session:
+        await RunRepository(other_session).set_status(run_id, RunStatus.RUNNING)
+        await PackageRepository(other_session).set_status(
+            run_id, Variant.COST, PackageStatus.GENERATED
+        )
+        await other_session.commit()
+
+    completed = await runs.set_status(run_id, RunStatus.SUCCESS)
+    assert completed.status == RunStatus.SUCCESS
+    assert (
+        await packages.set_status(run_id, Variant.COST, PackageStatus.SCANNING)
+    ).status == PackageStatus.SCANNING
