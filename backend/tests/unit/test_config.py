@@ -21,6 +21,11 @@ def test_defaults_and_secret_representations() -> None:
     assert settings.llm_provider == "stub"
     assert settings.max_remediation_iterations == 3
     assert settings.package_retention_days == 30
+    assert settings.llm_attempt_timeout_seconds == 30
+    assert settings.llm_max_attempts == 3
+    assert settings.llm_deadline_seconds == 150
+    assert settings.llm_backoff_base_seconds == 1.0
+    assert settings.llm_max_output_tokens == 16000
     assert "CANARY" not in repr(settings)
     assert "secret" not in repr(settings)
 
@@ -39,3 +44,23 @@ def test_llm_key_is_optional_until_required() -> None:
 def test_positive_limits(field: str) -> None:
     with pytest.raises(ValidationError):
         _settings(**{field: 0})
+
+
+@pytest.mark.parametrize(
+    "field",
+    [
+        "llm_attempt_timeout_seconds",
+        "llm_max_attempts",
+        "llm_deadline_seconds",
+        "llm_max_output_tokens",
+    ],
+)
+def test_llm_positive_limits(field: str) -> None:
+    with pytest.raises(ValidationError):
+        _settings(**{field: 0})
+
+
+def test_llm_backoff_base_can_be_zero_but_not_negative() -> None:
+    assert _settings(llm_backoff_base_seconds=0).llm_backoff_base_seconds == 0
+    with pytest.raises(ValidationError):
+        _settings(llm_backoff_base_seconds=-1)

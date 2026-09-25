@@ -63,8 +63,13 @@ the count without deleting. The CLI also accepts `--days N`.
 | `TEST_DATABASE_URL` | App-role URL for `infraarch_test` | Required |
 | `TEST_MIGRATION_DATABASE_URL` | Owner-role URL for `infraarch_test` | Required |
 | `LLM_PROVIDER` | `anthropic`, `openai`, or `stub` | `stub` |
-| `LLM_MODEL` | Future LLM model name | Unset |
-| `LLM_API_KEY` | Future real-adapter credential | Unset |
+| `LLM_MODEL` | Model name, required for a real adapter | Unset |
+| `LLM_API_KEY` | Real-adapter credential | Unset |
+| `LLM_ATTEMPT_TIMEOUT_SECONDS` | Per-call attempt limit | `30` |
+| `LLM_MAX_ATTEMPTS` | Total attempts per call | `3` |
+| `LLM_DEADLINE_SECONDS` | Overall limit per `complete_json` call | `150` |
+| `LLM_BACKOFF_BASE_SECONDS` | Exponential retry backoff base | `1.0` |
+| `LLM_MAX_OUTPUT_TOKENS` | Output token limit per request | `16000` |
 | `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `3` |
 | `PACKAGE_RETENTION_DAYS` | Package sweep cutoff | `30` |
 | `LOG_LEVEL` | Python log level | `INFO` |

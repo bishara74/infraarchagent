@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     llm_provider: LLMProvider = LLMProvider.STUB
     llm_model: str | None = None
     llm_api_key: SecretStr | None = None
+    llm_attempt_timeout_seconds: float = Field(default=30.0, gt=0)
+    llm_max_attempts: int = Field(default=3, ge=1)
+    llm_deadline_seconds: float = Field(default=150.0, gt=0)
+    llm_backoff_base_seconds: float = Field(default=1.0, ge=0)
+    llm_max_output_tokens: int = Field(default=16000, ge=1)
     max_remediation_iterations: int = Field(default=3, ge=1)
     package_retention_days: int = Field(default=30, ge=1)
     log_level: str = "INFO"
