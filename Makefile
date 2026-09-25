@@ -2,7 +2,7 @@ PYTHON := python3
 VENV := backend/.venv
 BACKEND := cd backend &&
 
-.PHONY: up down install migrate migrate-test run test lint sweep
+.PHONY: up down install migrate migrate-test run test lint sweep spike
 
 up:
 	docker compose up -d --wait
@@ -33,3 +33,6 @@ lint:
 
 sweep:
 	$(BACKEND) .venv/bin/python -m app.cli sweep-packages
+
+spike:
+	$(BACKEND) .venv/bin/python scripts/spike_llm_timing.py $(SPIKE_ARGS)
