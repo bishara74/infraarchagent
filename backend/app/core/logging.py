@@ -50,7 +50,9 @@ def configure_logging(settings: Settings) -> None:
     root.setLevel(settings.log_level.upper())
     if not root.handlers:
         new_handler = logging.StreamHandler()
-        new_handler.setFormatter(logging.Formatter("%(levelname)s %(name)s %(message)s"))
+        new_handler.setFormatter(
+            logging.Formatter("%(levelname)s %(name)s %(message)s")
+        )
         root.addHandler(new_handler)
     key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
     for handler in root.handlers:
