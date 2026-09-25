@@ -10,6 +10,9 @@ from app.api.health import router as health_router
 from app.core.config import Settings, get_settings
 from app.core.errors import internal_error_handler
 from app.core.logging import configure_logging
+from app.db.session import make_session_factory
+from app.events.log import EventLog
+from app.events.publisher import NullPublisher
 
 
 def create_app(
@@ -33,6 +36,7 @@ def create_app(
 
     app = FastAPI(lifespan=lifespan)
     app.state.engine = app_engine
+    app.state.event_log = EventLog(make_session_factory(app_engine), NullPublisher())
     app.add_exception_handler(Exception, internal_error_handler)
     app.include_router(health_router)
     return app

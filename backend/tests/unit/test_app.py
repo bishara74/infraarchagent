@@ -4,7 +4,7 @@ import httpx
 import pytest
 from fastapi import Request
 
-from app.api.deps import get_engine
+from app.api.deps import get_engine, get_event_log
 from app.core.config import Settings, get_settings
 from app.main import create_app
 
@@ -86,3 +86,10 @@ async def test_unexpected_error_is_client_safe() -> None:
     assert response.json()["error"] == "internal_error"
     UUID(response.json()["request_id"])
     assert "private exception detail" not in response.text
+
+
+def test_create_app_exposes_one_shared_event_log() -> None:
+    app = create_app(_settings())
+    request = Request({"type": "http", "app": app, "path": "/", "method": "GET"})
+    assert get_event_log(request) is app.state.event_log
+    assert get_event_log(request) is get_event_log(request)
