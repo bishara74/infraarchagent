@@ -31,11 +31,21 @@ Status values:
   in-memory broker only after commit. Per run, therefore, commit order equals
   `seq` order. Across runs, `seq` values interleave, so one run's `seq`
   values have gaps; nothing may assume they are consecutive.
+- **Publish order:** `seq` order is guaranteed per `EventLog` instance, not
+  merely by running in one process. The application constructs exactly one
+  instance in `create_app()` and exposes it through one accessor; tests may
+  construct additional instances to verify database ordering. In Phase 4,
+  SSE subscribers will skip live events with `seq` at or below the last sent.
+  Out-of-order publication from multiple app instances in one process could
+  therefore silently drop an event for a subscriber.
 - **In thesis:** ERD (`seq` column note) and sequence diagram (EventLog
   note).
 - **Assumption:** single application process (the in-memory broker already
   requires it). The advisory lock keeps database ordering correct even with
-  several writers; live publish ordering relies on the single process.
+  several writers; live publish ordering relies on using one `EventLog`
+  instance in that process.
+- **Implemented in Phase 0:** identity sequence with `CACHE 1`, advisory-lock
+  append, ordered replay, and app-owned singleton access.
 
 ### D-02 — `TIMESTAMPTZ` instead of `TIMESTAMP` (In thesis)
 - **Spec:** ERD uses `TIMESTAMP`.
@@ -43,6 +53,8 @@ Status values:
   writes timezone-aware UTC values.
 - **Reason:** unambiguous durations for PR-01 and the retention cutoff.
 - **In thesis:** ERD.
+- **Implemented in Phase 0:** application UTC timestamps and `TIMESTAMPTZ`
+  columns.
 
 ### D-03 — Retention enforcement and foreign keys (In thesis)
 - **Spec:** "Generated package data older than 30 days is eligible for
@@ -62,6 +74,8 @@ Status values:
 - **In thesis:** ERD (RESTRICT on both relationships, `created_at` index
   note, retention note). Section 4.2 text still describes retention only as
   "eligible for deletion"; see the list at the end.
+- **Implemented in Phase 0:** package-only sweep, retention index, RESTRICT
+  foreign keys, and app-role prohibitions.
 
 ### D-04 — Two database roles (Accepted; privileges in thesis)
 - **Spec:** not specified.
@@ -74,6 +88,9 @@ Status values:
 - **In thesis:** the privilege consequences are noted on the ERD. The
   two-role setup itself (owner for migrations, app role at runtime) is an
   implementation detail for Chapter 5.
+- **Implemented in Phase 0:** both roles, databases, and versioned table
+  grants. App-role insertion into the identity column succeeded without
+  sequence `USAGE`, so no sequence grant was added.
 
 ### D-05 — `files` JSONB shape and path validation (In thesis)
 - **Spec:** `files JSONB`, `IaCPackage.files: dict`.
@@ -85,6 +102,8 @@ Status values:
 - **Reason:** prevents path traversal (e.g. `../`) when writing ZIPs or
   scanning files on disk.
 - **In thesis:** class diagram (`IaCPackage.files: dict[str, str]` note).
+- **Implemented in Phase 0:** path validation in `IaCPackage` and the package
+  repository. The ZIP writer repeats validation in Phase 7.
 
 ### D-06 — Package outcomes after validation: Option C (In thesis)
 - **Spec conflict (original):** the package state diagram showed
@@ -109,6 +128,8 @@ Status values:
 - **In thesis:** text (FR-S-07, FR-S-09, FR-V-05, FR-UI-06, UC-08,
   run-state table, Chapter 4) and diagrams (package states, run states,
   sequence diagram 5/5a, class diagram `SecurityAgent.remediate`).
+- **Implemented in Phase 0:** transition and readiness rules, review reasons,
+  and downloadability predicate; agent and review flows follow later.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -124,6 +145,17 @@ Status values:
   applies a fix pass, increments `iteration_count` and returns to
   `scanning`. `iteration_count` therefore counts completed fix passes, and
   it never exceeds `max_iterations`.
+- **Implemented in Phase 0:** pure remediation-budget decision and transition
+  tests; actual fix application follows in the SecurityAgent phase.
+
+### CL-02 — Validation follows exhausted remediation
+- **Spec:** FR-S-07 says unresolved violations lead to `pending_review`,
+  while FR-S-05 says an exhausted package proceeds to ValidatorAgent. The
+  package state diagram routes `scan_exhausted` through `validating` first.
+- **Implementation:** exhausting the budget stops automated remediation,
+  then validation runs. Its result is recorded as `valid`, `invalid`, or
+  `validation_error` before the package enters `pending_review`.
+- **Implemented in Phase 0:** package transition table and readiness tests.
 
 ---
 
@@ -152,6 +184,8 @@ section).
 ---
 
 ## Thesis text to update (collected)
+- Tighten FR-S-07 wording to say that exhausted remediation stops fix passes,
+  then validation runs before the package enters `pending_review` (CL-02).
 - Section 4.2 retention paragraph: say that the sweep deletes only packages
   and that the app role cannot delete runs or modify events (D-03, D-04).
   The ERD already shows this; the paragraph does not yet.
