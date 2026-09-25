@@ -27,6 +27,53 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-25 — Phase 1 — LLM adapters and timing spike
+
+**Summary:** Added the provider-independent async JSON completion wrapper,
+Anthropic/OpenAI/Stub adapters, configuration factory, offline provider and
+retry tests, and a timing spike with full/split and truncation reporting.
+No agent or pipeline behavior was added.
+
+**Requirements addressed:** NFR-01, NFR-03, FR-I-04; partial timing evidence
+for FR-A-04 and PR-05 at the single-call boundary.
+
+**Files:** added `backend/app/llm/*`, `backend/scripts/*`, four Phase 1 unit
+test modules, and a stub JSON/Markdown pair under `docs/spikes/`; changed
+`AGENTS.md`, `backend/pyproject.toml`, `backend/requirements.lock`,
+`backend/app/core/config.py`, `backend/tests/unit/test_config.py`,
+`backend/tests/integration/test_canary.py`, `.env.example`, `Makefile`,
+`README.md`, and `docs/design-deviations.md`.
+
+**Decisions:** D-07 adds concrete `complete_json` while keeping exactly two
+abstract provider methods. The installed SDKs are Anthropic 1.8.0 and OpenAI
+3.19.2; both use `httpx2` custom transports, so `httpx2` is an explicit
+runtime dependency for adapter type signatures and offline mocks. Phase 0's
+`httpx` remains installed and unaliased. OpenAI 3.19.2 has Chat Completions,
+so no Responses API deviation was needed. Anthropic Messages sends no
+`temperature`, `top_p`, or `top_k`. CL-03 resolves contradictory retry
+arithmetic. The spike includes Dockerfile, missing from the prompt's workload
+list but present in the spec. OQ-03 awaits a real-provider measurement; OQ-05
+defers the end-to-end agent deadline to Phase 2. The spike's
+`--max-output-tokens` defaults to the configured 16000 and its verdict fails
+when calls truncate.
+
+**Tests:** `make install` succeeded with the regenerated lock. `make spike`
+with `LLM_PROVIDER=stub` produced the committed format example (3 full calls
+and 27 split calls). `make test` → 112 passed, 0 failed, 0 skipped. `make lint`
+→ Ruff check passed, Ruff format check passed (52 app/test files), mypy passed
+(34 source files). New tests in `test_llm_base.py`, `test_llm_providers.py`,
+`test_llm_factory.py`, and `test_spike_llm_timing.py` cover retries, deadlines,
+strict parsing, both SDK mappings with `httpx2.MockTransport`, factory
+selection, spike output, and truncation. The existing canary module now tests
+both SDKs with a canary in mocked 401 headers and bodies.
+
+**Known gaps / follow-ups:** The stub example is only a format check; the
+author must run the spike with a real key to assess OQ-03. The 150-second
+wrapper deadline applies to one `complete_json` call; Phase 2 must design
+the stage-wide agent budget (OQ-05). No real API call was made.
+
+---
+
 ## 2026-09-25 — Phase 0 — Harden concurrency and privilege tests, pin dependencies
 
 **Summary:** Made the event prefix test sensitive to loss of the PostgreSQL

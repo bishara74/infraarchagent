@@ -22,9 +22,9 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 0 foundations are implemented. The API currently exposes only
-`GET /api/health`; the generation pipeline and frontend arrive in later
-phases. See
+Phase 1 adds the LLM adapter layer and an offline timing spike. The API
+currently exposes only `GET /api/health`; the generation pipeline and
+frontend arrive in later phases. See
 [`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
 [`docs/design-deviations.md`](docs/design-deviations.md) for where the
 implementation differs from the thesis design.
@@ -33,14 +33,14 @@ implementation differs from the thesis design.
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
 port 5432. No LLM key, cloud credentials, Checkov, or tfsec are needed for
-Phase 0.
+the offline Phase 1 tests and stub spike.
 
 1. Copy `.env.example` to `.env`. Replace the three placeholder passwords and
    make the passwords in the four database URLs match their roles. `.env` is
    ignored by Git.
 2. Run `make up`, `make install`, and `make migrate` from the repository root.
    `make install` uses `backend/requirements.lock` as pip constraints to pin
-   the runtime and dev dependencies recorded for Phase 0.
+   the runtime and dev dependencies recorded for Phase 1.
 3. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
    using the owner role; code under test connects as the app role.
 4. Run `make run`, then open `http://127.0.0.1:8000/api/health`. A healthy
@@ -50,6 +50,16 @@ Phase 0.
 deletes generated package rows older than the configured retention period;
 `cd backend && .venv/bin/python -m app.cli sweep-packages --dry-run` reports
 the count without deleting. The CLI also accepts `--days N`.
+
+Run `make spike` with the default `stub` provider to create a JSON result
+and Markdown summary under `docs/spikes/`. To pass arguments, use for example
+`make spike SPIKE_ARGS='--provider stub --runs 1 --mode both --max-output-tokens 8000'`.
+The script also accepts `--model`. It uses a 240-second, one-attempt policy
+for measurement; `--max-output-tokens` defaults to `LLM_MAX_OUTPUT_TOKENS`.
+The report stores counts and sizes, never prompts, generated files, or keys.
+Its truncation column and verdict show whether responses hit the token limit.
+The author can later run the same command with a real provider and key to
+measure OQ-03. Stub timings only verify the report format.
 
 ## Environment variables
 

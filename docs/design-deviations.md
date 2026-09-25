@@ -131,6 +131,23 @@ Status values:
 - **Implemented in Phase 0:** transition and readiness rules, review reasons,
   and downloadability predicate; agent and review flows follow later.
 
+### D-07 — Async LLM template method and SDK transport (Accepted)
+- **Spec:** the class diagram shows `LLMAdapter` with two provider methods;
+  ADR-02 names `send_prompt` and `parse_response`.
+- **Implementation:** `send_prompt` is async, `parse_response` is synchronous,
+  and the concrete `complete_json` template method owns retry, timeout,
+  backoff, and strict JSON handling. A new provider still implements only
+  the two abstract methods (NFR-03).
+- **Prompt correction:** Anthropic 1.8.0 and OpenAI 3.19.2 use `httpx2` for
+  custom SDK clients. Provider tests therefore inject `httpx2.AsyncClient`
+  with `httpx2.MockTransport`, rather than the prompt's `httpx` equivalents.
+  Phase 0 FastAPI tests continue using `httpx` without global aliasing.
+- **Reason:** the pipeline is asyncio-based and the installed SDK transport
+  types reject or do not natively type-check with legacy `httpx` clients.
+  The shared template keeps the retry policy out of provider classes.
+- **Implemented in Phase 1:** adapter contract, shared wrapper, both real
+  providers, stub, factory, and offline tests.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -157,6 +174,16 @@ Status values:
   `validation_error` before the package enters `pending_review`.
 - **Implemented in Phase 0:** package transition table and readiness tests.
 
+### CL-03 — LLM retry arithmetic
+- **Spec conflict:** Section 3.2 states both "30 seconds per attempt, up to
+  3 attempts" and "30s + 60s + 60s = maximum 150 seconds including backoff".
+- **Implementation:** each attempt is limited to 30 seconds, with at most 3
+  attempts. Backoff has a 1-second then 2-second exponential ceiling before
+  full jitter. The wrapper has a separate hard 150-second deadline that clips
+  attempts and backoff when needed. Ordinary three-attempt timeouts finish
+  well before 150 seconds.
+- **Implemented in Phase 1:** `RetryPolicy` and `LLMAdapter.complete_json`.
+
 ---
 
 ## Open questions
@@ -174,12 +201,18 @@ Resolved by D-06 (Option C).
 
 ### OQ-03 — 30-second per-attempt LLM timeout
 A full multi-file package may take longer than 30 s to generate. Measure it
-in the Phase 1 spike before building on it.
+in the Phase 1 spike before building on it. Measurement: spike script ready
+(`make spike`), awaiting a run with a real key. The committed stub result
+checks report format only and does not resolve this question.
 
 ### OQ-04 — Single-process assumption
 The in-memory SSE broker requires a single backend process. This should be
 stated explicitly in the thesis design (Section 4.4 or the deployment
 section).
+
+### OQ-05 — End-to-end agent deadline
+End-to-end agent deadline (FR-A-04, PR-05) across multiple LLM calls; design
+in Phase 2. The Phase 1 wrapper limits one `complete_json` call only.
 
 ---
 
@@ -190,6 +223,9 @@ section).
   and that the app role cannot delete runs or modify events (D-03, D-04).
   The ERD already shows this; the paragraph does not yet.
 - Section 4.4: state the single-process assumption for SSE (OQ-04).
+- Fix the "30s + 60s + 60s" sentence in Section 3.2 (CL-03).
+- Add the concrete `complete_json` method and async `send_prompt` to the
+  LLMAdapter class diagram (D-07).
 - Optional class-diagram polish: `run_id: UUID`, `llm_provider:
   LLMProvider`, `variant: Variant`, and field types for `DeploymentPlan`
   and `Violation`.
