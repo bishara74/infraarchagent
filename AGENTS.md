@@ -76,6 +76,8 @@ backend/app/
 ## 6. Security rules (NFR-01)
 
 - Never commit `.env`, keys, or tokens. `.env.example` holds placeholders only.
+- Never open, print, or copy `.env` or any real API key. Real keys are only used
+  by the author, outside Codex runs.
 - Secrets are `SecretStr` in settings and must never appear in logs, HTTP
   responses, exception messages, or database rows. The canary tests enforce
   this; keep them passing and extend them when you add new surfaces.
