@@ -2,10 +2,11 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from app.domain.enums import LLMProvider
 
 ROOT = Path(__file__).resolve().parents[3]
 
@@ -21,7 +22,7 @@ class Settings(BaseSettings):
     migration_database_url: SecretStr
     test_database_url: SecretStr
     test_migration_database_url: SecretStr
-    llm_provider: Literal["anthropic", "openai", "stub"] = "stub"
+    llm_provider: LLMProvider = LLMProvider.STUB
     llm_model: str | None = None
     llm_api_key: SecretStr | None = None
     max_remediation_iterations: int = Field(default=3, ge=1)
