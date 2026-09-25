@@ -147,6 +147,9 @@ class LLMAdapter(ABC):
                 return LLMResult(data, response, attempt, self._clock() - started)
             except TimeoutError:
                 category = "timeout"
+            except asyncio.CancelledError:
+                category = "cancelled"
+                raise
             except LLMTransientError as error:
                 category = error.category
             except LLMResponseFormatError as error:

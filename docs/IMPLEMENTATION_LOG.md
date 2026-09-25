@@ -59,11 +59,12 @@ when calls truncate.
 
 **Tests:** `make install` succeeded with the regenerated lock. `make spike`
 with `LLM_PROVIDER=stub` produced the committed format example (3 full calls
-and 27 split calls). `make test` → 112 passed, 0 failed, 0 skipped. `make lint`
+and 27 split calls). `make test` → 118 passed, 0 failed, 0 skipped. `make lint`
 → Ruff check passed, Ruff format check passed (52 app/test files), mypy passed
 (34 source files). New tests in `test_llm_base.py`, `test_llm_providers.py`,
 `test_llm_factory.py`, and `test_spike_llm_timing.py` cover retries, deadlines,
-strict parsing, both SDK mappings with `httpx2.MockTransport`, factory
+strict parsing, both SDK status and transport-error mappings with
+`httpx2.MockTransport`, factory
 selection, spike output, and truncation. The existing canary module now tests
 both SDKs with a canary in mocked 401 headers and bodies.
 

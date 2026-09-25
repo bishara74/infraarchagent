@@ -92,6 +92,15 @@ async def test_success_invalid_json_and_truncation() -> None:
     assert adapter.prompts == ["retry"] * 3
 
 
+@pytest.mark.req("NFR-03")
+async def test_invalid_json_then_valid_json_succeeds_on_second_attempt() -> None:
+    adapter = StubAdapter(
+        policy=RetryPolicy(30, 3, 150, 0, 100),
+        script=["not JSON", '{"ok":true}'],
+    )
+    assert (await adapter.complete_json("x")).attempts == 2
+
+
 @pytest.mark.req("FR-A-04", "PR-05")
 async def test_attempt_timeout_then_success() -> None:
     adapter = StubAdapter(
@@ -183,6 +192,14 @@ async def test_backoff_does_not_cross_deadline() -> None:
 async def test_cancellation_is_not_retried() -> None:
     adapter = StubAdapter(script=[asyncio.CancelledError()])
     with pytest.raises(asyncio.CancelledError):
+        await adapter.complete_json("x")
+    assert len(adapter.prompts) == 1
+
+
+@pytest.mark.req("NFR-03")
+async def test_exhausted_stub_script_is_safe_and_not_retried() -> None:
+    adapter = StubAdapter(script=[])
+    with pytest.raises(LLMPermanentError, match="stub_script_exhausted"):
         await adapter.complete_json("x")
     assert len(adapter.prompts) == 1
 

@@ -119,6 +119,21 @@ async def test_provider_status_mapping(
 
 @pytest.mark.req("NFR-03")
 @pytest.mark.parametrize("provider", ["anthropic", "openai"])
+@pytest.mark.parametrize("error_type", [httpx2.ConnectError, httpx2.ReadTimeout])
+async def test_provider_transport_failures_are_transient(
+    provider: str, error_type: type[httpx2.TransportError]
+) -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        raise error_type("offline", request=request)
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = adapter_for(provider, client)
+        with pytest.raises(LLMTransientError):
+            await adapter.send_prompt("x", max_output_tokens=10, timeout=1)
+
+
+@pytest.mark.req("NFR-03")
+@pytest.mark.parametrize("provider", ["anthropic", "openai"])
 async def test_provider_token_limit_is_retried(provider: str) -> None:
     calls = 0
 
