@@ -19,13 +19,14 @@ async def test_app_role_least_privilege(
         "DELETE FROM pipeline_runs",
         "UPDATE agent_events SET message = 'changed'",
         "DELETE FROM agent_events",
-        "TRUNCATE pipeline_runs",
+        "TRUNCATE agent_events, generated_packages, pipeline_runs",
         "TRUNCATE generated_packages",
         "TRUNCATE agent_events",
     ):
-        with pytest.raises(DBAPIError):
+        with pytest.raises(DBAPIError) as denied:
             async with app.begin() as connection:
                 await connection.execute(text(statement))
+        assert denied.value.orig.sqlstate == "42501"
     async with app.begin() as connection:
         await connection.execute(text("DELETE FROM generated_packages"))
 

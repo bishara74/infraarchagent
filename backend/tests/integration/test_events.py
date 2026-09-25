@@ -93,6 +93,15 @@ class _ProbeLog(EventLog):
         await super()._acquire_advisory_lock(session, run_id)
 
 
+class _SlowCommitLog(EventLog):
+    def __init__(self, app: AsyncEngine, rng: random.Random) -> None:
+        super().__init__(make_session_factory(app), NullPublisher())
+        self.rng = rng
+
+    async def _after_insert(self, record: EventRecord) -> None:
+        await asyncio.sleep(self.rng.uniform(0, 0.005))
+
+
 @pytest.mark.req("FR-P-04")
 async def test_advisory_lock_serializes_insert_before_commit(
     db_engines: tuple[AsyncEngine, AsyncEngine], db_session: AsyncSession
@@ -126,9 +135,10 @@ async def test_two_instances_commit_prefix_property(
     app, _ = db_engines
     run_r = await _new_run(db_session)
     run_s = await _new_run(db_session)
-    log_a = EventLog(make_session_factory(app), NullPublisher())
-    log_b = EventLog(make_session_factory(app), NullPublisher())
-    log_s = EventLog(make_session_factory(app), NullPublisher())
+    rng = random.Random(23)
+    log_a = _SlowCommitLog(app, rng)
+    log_b = _SlowCommitLog(app, rng)
+    log_s = _SlowCommitLog(app, rng)
     await log_a.append(run_r, AgentName.ORCHESTRATOR, AgentState.RUNNING)
     await log_s.append(run_s, AgentName.ORCHESTRATOR, AgentState.RUNNING)
     snapshots: list[list[UUID]] = []

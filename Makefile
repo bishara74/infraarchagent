@@ -12,7 +12,7 @@ down:
 
 install:
 	$(PYTHON) -m venv $(VENV)
-	$(VENV)/bin/python -m pip install -e "./backend[dev]"
+	$(BACKEND) .venv/bin/python -m pip install -c requirements.lock -e ".[dev]"
 
 migrate:
 	$(BACKEND) .venv/bin/alembic upgrade head

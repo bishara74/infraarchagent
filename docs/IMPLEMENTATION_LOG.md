@@ -27,6 +27,37 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-25 — Phase 0 — Harden concurrency and privilege tests, pin dependencies
+
+**Summary:** Made the event prefix test sensitive to loss of the PostgreSQL
+advisory lock, required the exact insufficient-privilege SQLSTATE in denied
+operation tests, pinned installed dependencies, and made the PostgreSQL init
+script executable.
+
+**Requirements addressed:** FR-P-04, NFR-01.
+
+**Files:** changed `backend/tests/integration/test_events.py`,
+`backend/tests/integration/test_privileges.py`, `Makefile`, `README.md`, and
+`docker/postgres/init/01-roles-and-databases.sh` (mode 100755); added
+`backend/requirements.lock`.
+
+**Decisions:** The three prefix-test writers share a seeded random generator
+(`23`) and hold each inserted event for up to 5 ms before commit. The
+`TRUNCATE` check covering `pipeline_runs` names all three tables so a foreign
+key cannot explain its failure; each denied statement must yield SQLSTATE
+`42501`. `make install` uses the frozen versions as pip constraints.
+
+**Tests:** With the advisory-lock query temporarily changed to `SELECT 1`,
+the prefix test failed on 3 of 3 runs; after restoration, it passed on 3 of
+3 runs. `make install` succeeded with the constraints file. `make test` →
+63 passed, 0 failed, 0 skipped. `make lint` → Ruff check passed, Ruff format
+check passed (41 files), mypy passed (27 source files).
+
+**Known gaps / follow-ups:** None for this review fix. No new specification
+deviation or open question was introduced.
+
+---
+
 ## 2026-09-25 — Phase 0 — Foundations implemented
 
 **Summary:** Built the Python backend foundation, PostgreSQL schema and

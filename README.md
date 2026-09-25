@@ -39,6 +39,8 @@ Phase 0.
    make the passwords in the four database URLs match their roles. `.env` is
    ignored by Git.
 2. Run `make up`, `make install`, and `make migrate` from the repository root.
+   `make install` uses `backend/requirements.lock` as pip constraints to pin
+   the runtime and dev dependencies recorded for Phase 0.
 3. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
    using the owner role; code under test connects as the app role.
 4. Run `make run`, then open `http://127.0.0.1:8000/api/health`. A healthy
