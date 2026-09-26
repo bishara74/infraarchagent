@@ -1,0 +1,70 @@
+{
+  "cloud_provider": "aws",
+  "services": [
+    {
+      "name": "ingest",
+      "aws_service": "API Gateway",
+      "purpose": "Receive events"
+    },
+    {
+      "name": "queue",
+      "aws_service": "SQS",
+      "purpose": "Buffer events"
+    },
+    {
+      "name": "worker",
+      "aws_service": "ECS Fargate",
+      "purpose": "Process events"
+    },
+    {
+      "name": "warehouse",
+      "aws_service": "Redshift",
+      "purpose": "Analyze data"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "ingest",
+      "target": "queue",
+      "description": "Application traffic"
+    },
+    {
+      "source": "worker",
+      "target": "queue",
+      "description": "Application traffic"
+    },
+    {
+      "source": "worker",
+      "target": "warehouse",
+      "description": "Application traffic"
+    }
+  ],
+  "network": {
+    "public_services": [
+      "ingest"
+    ],
+    "private_services": [
+      "queue",
+      "worker",
+      "warehouse"
+    ],
+    "ingress": [
+      "HTTPS 443 from internet"
+    ],
+    "notes": "AWS VPC with private subnets for internal components"
+  },
+  "storage": [
+    {
+      "name": "analytics",
+      "kind": "relational_db",
+      "aws_service": "Redshift",
+      "attached_to": [
+        "warehouse"
+      ]
+    }
+  ],
+  "file_types": [
+    "terraform"
+  ],
+  "ambiguities": []
+}

@@ -1,0 +1,48 @@
+{
+  "cloud_provider": "aws",
+  "services": [
+    {
+      "name": "cdn",
+      "aws_service": "CloudFront",
+      "purpose": "Serve cached pages"
+    },
+    {
+      "name": "origin",
+      "aws_service": "S3",
+      "purpose": "Store site assets"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "cdn",
+      "target": "origin",
+      "description": "Application traffic"
+    }
+  ],
+  "network": {
+    "public_services": [
+      "cdn"
+    ],
+    "private_services": [
+      "origin"
+    ],
+    "ingress": [
+      "HTTPS 443 from internet"
+    ],
+    "notes": "AWS VPC with private subnets for internal components"
+  },
+  "storage": [
+    {
+      "name": "site-assets",
+      "kind": "object_storage",
+      "aws_service": "S3",
+      "attached_to": [
+        "origin"
+      ]
+    }
+  ],
+  "file_types": [
+    "terraform"
+  ],
+  "ambiguities": []
+}

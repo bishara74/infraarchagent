@@ -1,0 +1,32 @@
+{
+  "cloud_provider": "aws",
+  "services": [
+    {
+      "name": "web",
+      "aws_service": "ECS Fargate",
+      "purpose": "Serve the web application"
+    }
+  ],
+  "dependencies": [],
+  "network": {
+    "public_services": [
+      "web"
+    ],
+    "private_services": [],
+    "ingress": [
+      "HTTPS 443 from internet"
+    ],
+    "notes": "AWS VPC with private subnets for internal components"
+  },
+  "storage": [],
+  "file_types": [
+    "terraform"
+  ],
+  "ambiguities": [
+    {
+      "topic": "runtime",
+      "detail": "Runtime was not specified",
+      "assumption": "Use a containerized web service"
+    }
+  ]
+}
