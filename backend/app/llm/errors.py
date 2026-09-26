@@ -1,6 +1,7 @@
 """Safe errors and response metrics for the LLM boundary."""
 
 from dataclasses import dataclass
+from math import isfinite
 
 
 @dataclass(frozen=True)
@@ -16,8 +17,11 @@ class LLMError(Exception):
 
 
 class LLMTransientError(LLMError):
-    def __init__(self, category: str = "transient") -> None:
+    def __init__(
+        self, category: str = "transient", *, retry_after: float | None = None
+    ) -> None:
         self.category = category
+        self.retry_after = retry_after
         super().__init__(f"LLM {category} failure")
 
 
@@ -62,7 +66,20 @@ class LLMRetryExhausted(LLMError):
         super().__init__("LLM retry attempts exhausted")
 
 
-def status_error(status_code: int) -> LLMError:
+def parse_retry_after(value: str | None) -> float | None:
+    """Accept finite nonnegative seconds; ignore missing or invalid headers."""
+    if value is None:
+        return None
+    try:
+        seconds = float(value)
+    except ValueError:
+        return None
+    return seconds if isfinite(seconds) and seconds >= 0 else None
+
+
+def status_error(status_code: int, *, retry_after: float | None = None) -> LLMError:
     if status_code == 429 or status_code >= 500:
-        return LLMTransientError("rate_limit" if status_code == 429 else "server")
+        if status_code == 429:
+            return LLMTransientError("rate_limit", retry_after=retry_after)
+        return LLMTransientError("server")
     return LLMPermanentError("request")

@@ -1,4 +1,5 @@
 import json
+import random
 from typing import Any
 
 import httpx2
@@ -6,10 +7,23 @@ import pytest
 
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import RetryPolicy
-from app.llm.errors import LLMPermanentError, LLMTransientError
+from app.llm.errors import LLMDeadlineExceeded, LLMPermanentError, LLMTransientError
 from app.llm.openai import OpenAIAdapter
 
 POLICY = RetryPolicy(30, 3, 150, 0, 16000)
+
+
+class FakeClock:
+    def __init__(self) -> None:
+        self.time = 0.0
+        self.sleeps: list[float] = []
+
+    def now(self) -> float:
+        return self.time
+
+    async def sleep(self, duration: float) -> None:
+        self.sleeps.append(duration)
+        self.time += duration
 
 
 def success_body(provider: str, *, truncated: bool = False) -> dict[str, Any]:
@@ -165,3 +179,85 @@ async def test_truncation_error_preserves_only_safe_metrics(provider: str) -> No
     assert captured.value.last_category == "truncated"
     assert captured.value.stats is not None
     assert captured.value.stats.output_tokens == 7
+
+
+@pytest.mark.req("FR-A-04", "PR-05")
+@pytest.mark.parametrize("provider", ["anthropic", "openai"])
+async def test_rate_limit_retry_after_waits_before_success(provider: str) -> None:
+    calls = 0
+    clock = FakeClock()
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx2.Response(
+                429,
+                headers={"retry-after": "20"},
+                json=error_body(provider, 429),
+            )
+        return httpx2.Response(200, json=success_body(provider))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = adapter_for(provider, client)
+        adapter.policy = RetryPolicy(30, 2, 60, 1, 16000)
+        adapter._clock = clock.now
+        adapter._sleep = clock.sleep
+        adapter._rng = random.Random(0)
+        result = await adapter.complete_json("x")
+    assert result.attempts == calls == 2
+    assert clock.sleeps == [20]
+
+
+@pytest.mark.req("FR-A-04", "PR-05")
+@pytest.mark.parametrize("provider", ["anthropic", "openai"])
+async def test_rate_limit_retry_after_beyond_deadline_stops_without_sleep(
+    provider: str,
+) -> None:
+    calls = 0
+    clock = FakeClock()
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        nonlocal calls
+        calls += 1
+        return httpx2.Response(
+            429, headers={"retry-after": "20"}, json=error_body(provider, 429)
+        )
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = adapter_for(provider, client)
+        adapter.policy = RetryPolicy(30, 2, 10, 1, 16000)
+        adapter._clock = clock.now
+        adapter._sleep = clock.sleep
+        with pytest.raises(LLMDeadlineExceeded) as captured:
+            await adapter.complete_json("x")
+    assert captured.value.attempts == calls == 1
+    assert clock.sleeps == []
+
+
+@pytest.mark.req("FR-A-04", "PR-05")
+@pytest.mark.parametrize("provider", ["anthropic", "openai"])
+@pytest.mark.parametrize("retry_after", [None, "not-seconds"])
+async def test_missing_or_invalid_retry_after_uses_jittered_backoff(
+    provider: str, retry_after: str | None
+) -> None:
+    calls = 0
+    clock = FakeClock()
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            headers = {"retry-after": retry_after} if retry_after is not None else {}
+            return httpx2.Response(429, headers=headers, json=error_body(provider, 429))
+        return httpx2.Response(200, json=success_body(provider))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = adapter_for(provider, client)
+        adapter.policy = RetryPolicy(30, 2, 60, 1, 16000)
+        adapter._clock = clock.now
+        adapter._sleep = clock.sleep
+        adapter._rng = random.Random(0)
+        assert (await adapter.complete_json("x")).attempts == 2
+    assert calls == 2
+    assert clock.sleeps == [random.Random(0).uniform(0, 1)]

@@ -6,7 +6,12 @@ import anthropic
 import httpx2
 
 from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_object
-from app.llm.errors import LLMPermanentError, LLMTransientError, status_error
+from app.llm.errors import (
+    LLMPermanentError,
+    LLMTransientError,
+    parse_retry_after,
+    status_error,
+)
 
 
 class AnthropicAdapter(LLMAdapter):
@@ -48,7 +53,12 @@ class AnthropicAdapter(LLMAdapter):
         except anthropic.APIConnectionError:
             raise LLMTransientError("connection") from None
         except anthropic.APIStatusError as error:
-            raise status_error(error.status_code) from None
+            retry_after = (
+                parse_retry_after(error.response.headers.get("retry-after"))
+                if error.status_code == 429
+                else None
+            )
+            raise status_error(error.status_code, retry_after=retry_after) from None
         except (anthropic.APIError, httpx2.TransportError):
             raise LLMPermanentError("provider") from None
         return LLMResponse(

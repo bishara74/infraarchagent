@@ -16,6 +16,7 @@ from app.llm.errors import (
     LLMResponseFormatError,
     LLMRetryExhausted,
     LLMTransientError,
+    parse_retry_after,
 )
 from app.llm.stub import StubAdapter
 
@@ -234,3 +235,23 @@ def test_extract_json_accepts_one_object(source: str, expected: dict[str, Any]) 
 def test_extract_json_rejects_non_object_or_extra_text(source: str) -> None:
     with pytest.raises(LLMResponseFormatError):
         extract_json_object(source)
+
+
+@pytest.mark.req("FR-A-04", "PR-05")
+@pytest.mark.parametrize(
+    "header,expected",
+    [
+        (None, None),
+        ("", None),
+        ("soon", None),
+        ("nan", None),
+        ("inf", None),
+        ("-1", None),
+        ("20", 20.0),
+        ("0.5", 0.5),
+    ],
+)
+def test_retry_after_parses_only_nonnegative_finite_seconds(
+    header: str | None, expected: float | None
+) -> None:
+    assert parse_retry_after(header) == expected

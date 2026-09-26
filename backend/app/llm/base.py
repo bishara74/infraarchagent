@@ -127,6 +127,7 @@ class LLMAdapter(ABC):
             attempt_started = self._clock()
             response: LLMResponse | None = None
             last_stats = None
+            retry_after: float | None = None
             category = "success"
             try:
                 response = await asyncio.wait_for(
@@ -152,6 +153,7 @@ class LLMAdapter(ABC):
                 raise
             except LLMTransientError as error:
                 category = error.category
+                retry_after = error.retry_after
             except LLMResponseFormatError as error:
                 category = error.reason
                 last_stats = error.stats or last_stats
@@ -185,7 +187,10 @@ class LLMAdapter(ABC):
             if attempt >= self.policy.max_attempts:
                 raise LLMRetryExhausted(attempt, elapsed, category, last_stats)
             backoff = self.policy.backoff_base * 2 ** (attempt - 1)
-            delay = min(self._rng.uniform(0, backoff), ends_at - self._clock())
+            remaining = ends_at - self._clock()
+            if retry_after is not None and retry_after >= remaining:
+                raise LLMDeadlineExceeded(attempt, self._clock() - started)
+            delay = min(max(self._rng.uniform(0, backoff), retry_after or 0), remaining)
             if delay > 0:
                 await self._sleep(delay)
         raise LLMRetryExhausted(

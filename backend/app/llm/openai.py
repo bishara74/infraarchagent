@@ -6,7 +6,12 @@ import httpx2
 import openai
 
 from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_object
-from app.llm.errors import LLMPermanentError, LLMTransientError, status_error
+from app.llm.errors import (
+    LLMPermanentError,
+    LLMTransientError,
+    parse_retry_after,
+    status_error,
+)
 
 
 class OpenAIAdapter(LLMAdapter):
@@ -56,7 +61,12 @@ class OpenAIAdapter(LLMAdapter):
         except openai.APIConnectionError:
             raise LLMTransientError("connection") from None
         except openai.APIStatusError as error:
-            raise status_error(error.status_code) from None
+            retry_after = (
+                parse_retry_after(error.response.headers.get("retry-after"))
+                if error.status_code == 429
+                else None
+            )
+            raise status_error(error.status_code, retry_after=retry_after) from None
         except (openai.APIError, httpx2.TransportError):
             raise LLMPermanentError("provider") from None
         if not completion.choices:

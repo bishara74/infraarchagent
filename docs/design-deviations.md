@@ -161,6 +161,21 @@ Status values:
 - **Implemented in Phase 1 follow-up:** setting, factory and SDK wiring,
   mocked request-URL tests, and a README Groq example.
 
+### D-09 — Respect provider rate-limit retry delay (Accepted)
+- **Spec:** LLM calls retry transient failures with exponential backoff;
+  provider-directed rate-limit delays are not specified.
+- **Implementation:** on HTTP 429, both adapters parse a finite,
+  nonnegative `retry-after` value in seconds from the SDK response. The
+  shared wrapper waits for the greater of this value and jittered backoff,
+  within the remaining call deadline. A delay that leaves no time for another
+  attempt raises `LLMDeadlineExceeded` without sleeping. Missing or invalid
+  headers use ordinary backoff.
+- **Reason:** retrying before the provider's stated limit expires wastes an
+  attempt and can repeat the rate limit. Only the parsed number reaches the
+  shared error; raw response headers are never logged.
+- **Implemented in Phase 1 follow-up:** both SDK mappings, shared retry
+  policy, and deterministic `httpx2.MockTransport` tests.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
