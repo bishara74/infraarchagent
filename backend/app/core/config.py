@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     llm_attempt_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_attempts: int = Field(default=3, ge=1)
     llm_deadline_seconds: float = Field(default=150.0, gt=0)
+    agent_deadline_seconds: float = Field(default=150.0, gt=0)
+    architect_max_plan_attempts: int = Field(default=3, ge=1)
     llm_backoff_base_seconds: float = Field(default=1.0, ge=0)
     llm_max_output_tokens: int = Field(default=16000, ge=1)
     max_remediation_iterations: int = Field(default=3, ge=1)

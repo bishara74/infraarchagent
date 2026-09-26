@@ -24,6 +24,8 @@ def test_defaults_and_secret_representations() -> None:
     assert settings.llm_attempt_timeout_seconds == 30
     assert settings.llm_max_attempts == 3
     assert settings.llm_deadline_seconds == 150
+    assert settings.agent_deadline_seconds == 150
+    assert settings.architect_max_plan_attempts == 3
     assert settings.llm_backoff_base_seconds == 1.0
     assert settings.llm_max_output_tokens == 16000
     assert settings.llm_base_url is None
@@ -53,6 +55,8 @@ def test_positive_limits(field: str) -> None:
         "llm_attempt_timeout_seconds",
         "llm_max_attempts",
         "llm_deadline_seconds",
+        "agent_deadline_seconds",
+        "architect_max_plan_attempts",
         "llm_max_output_tokens",
     ],
 )

@@ -114,10 +114,18 @@ class LLMAdapter(ABC):
     def parse_response(self, response: LLMResponse) -> dict[str, Any]: ...
 
     async def complete_json(
-        self, prompt: str, *, system: str | None = None
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        deadline: float | None = None,
     ) -> LLMResult:
         started = self._clock()
-        ends_at = started + self.policy.deadline
+        ends_at = (
+            started + min(self.policy.deadline, deadline)
+            if deadline is not None
+            else started + self.policy.deadline
+        )
         last_stats: ResponseStats | None = None
         for attempt in range(1, self.policy.max_attempts + 1):
             remaining = ends_at - self._clock()
