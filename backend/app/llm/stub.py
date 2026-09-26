@@ -36,6 +36,10 @@ class StubAdapter(LLMAdapter):
         self._script = list(script) if script is not None else None
         self.prompts: list[str] = []
 
+    def load_script(self, script: Sequence[StubStep]) -> None:
+        """Replace future scripted replies for offline tests and evaluations."""
+        self._script = list(script)
+
     async def send_prompt(
         self,
         prompt: str,
