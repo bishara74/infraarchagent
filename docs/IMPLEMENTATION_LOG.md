@@ -27,6 +27,54 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-27 — Phase 2 — Input rules and ArchitectAgent
+
+**Summary:** Added deterministic input validation, per-run configuration,
+a strict AWS deployment plan, schema-derived prompts, an agent-wide budget,
+the ArchitectAgent and factory, and a sequential evaluation runner. The
+offline stub report covers five cases and an invalid-then-valid correction.
+
+**Requirements addressed:** FR-I-01, FR-I-02, FR-I-04, FR-A-01,
+FR-A-02, FR-A-03, FR-A-04, partial preparation for FR-A-05, PR-05,
+NFR-01, NFR-03, UC-01.
+
+**Files:** added `backend/app/domain/input_rules.py`, `run_config.py`,
+`plan.py`, `backend/app/agents/*`, `backend/scripts/eval_architect.py`,
+eight new unit test modules, and the stub report under `docs/evals/`;
+changed `backend/app/domain/models.py`, `app/core/config.py`,
+`app/llm/base.py`, `app/llm/stub.py`, existing unit and canary tests,
+`.env.example`, `Makefile`, `README.md`, and `docs/design-deviations.md`.
+
+**Decisions:** D-10 makes the plan strict and limits compact UTF-8 JSON to
+32,768 bytes; D-11 records the versioned schema-derived correction prompt.
+CL-04 sets validation order to controls, length, then intent. CL-05 replaces
+the nine-character `a web app` example with `build a web app`. OQ-05 is
+resolved by passing the agent's remaining budget into each call, where the
+Phase 1 policy may impose a shorter deadline. A valid call result is returned
+after validation without a second budget check. The evaluation loads fixture
+scripts into the factory-created stub adapter through its public method;
+the fixtures remain outside `app/`.
+
+**Tests:** `make test` → 193 passed, 0 failed, 0 skipped. `make lint` →
+Ruff check passed, Ruff format check passed (69 app/test files), mypy passed
+(43 source files). `make eval-architect EVAL_ARGS='--provider stub'` produced
+five passing case reports and a passing correction diagnostic. New tests
+cover input boundaries and precedence, schema and graph failures, prompt
+tag neutralization, shared deadlines and near-deadline success, correction
+feedback, factory overrides, post-construction stub scripting, and report
+format. No network call was made.
+
+**Known gaps / follow-ups:** HTTP 400/422 mapping, run persistence and
+`plan_created` events, generators, and real-provider evaluation belong to
+later phases. On a permanent LLM failure after possible internal retries,
+the Phase 1 error does not expose the exact transport attempt count;
+`ArchitectRunInfo.total_llm_attempts` is `None` rather than an invented
+number. The schema requires an `ambiguities` field, but the completeness of
+an LLM's ambiguity notes remains a semantic evaluation question. OQ-03 and
+OQ-06 remain open pending the author's provider choice and measurements.
+
+---
+
 ## 2026-09-26 — Phase 1 follow-up — Rate-limit retry and real timing result
 
 **Summary:** Both LLM adapters now carry parsed `retry-after` seconds on

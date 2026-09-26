@@ -22,7 +22,8 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 1 adds the LLM adapter layer and an offline timing spike. The API
+Phase 2 adds input rules, a strict deployment plan, and the ArchitectAgent
+with an agent-wide deadline and offline evaluation. The API
 currently exposes only `GET /api/health`; the generation pipeline and
 frontend arrive in later phases. See
 [`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
@@ -33,7 +34,7 @@ implementation differs from the thesis design.
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
 port 5432. No LLM key, cloud credentials, Checkov, or tfsec are needed for
-the offline Phase 1 tests and stub spike.
+the offline tests, stub spike, or stub ArchitectAgent evaluation.
 
 1. Copy `.env.example` to `.env`. Replace the three placeholder passwords and
    make the passwords in the four database URLs match their roles. `.env` is
@@ -60,6 +61,16 @@ The report stores counts and sizes, never prompts, generated files, or keys.
 Its truncation column and verdict show whether responses hit the token limit.
 The author can later run the same command with a real provider and key to
 measure OQ-03. Stub timings only verify the report format.
+
+Run `make eval-architect EVAL_ARGS='--provider stub'` to exercise five
+ArchitectAgent cases and one correction-loop diagnostic without network
+calls. It writes validated plan JSON and a `summary.md` under
+`docs/evals/phase2-architect-stub-<timestamp>/`. The stub fixtures live in
+the evaluation script; the report contains no prompts or keys. The author
+can later use `--provider openai` or `--provider anthropic`, optionally
+`--model NAME` and `--pause-seconds N`. Real-provider cases run sequentially
+with a 15-second pause by default; the stub skips the pause. The script
+reports soft checks as PASS/FAIL without failing solely because a check fails.
 
 OpenAI-compatible services can use the existing `openai` adapter by setting
 `LLM_BASE_URL`. For example, Groq uses these values (supply your own key):
@@ -93,6 +104,8 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_ATTEMPT_TIMEOUT_SECONDS` | Per-call attempt limit | `30` |
 | `LLM_MAX_ATTEMPTS` | Total attempts per call | `3` |
 | `LLM_DEADLINE_SECONDS` | Overall limit per `complete_json` call | `150` |
+| `AGENT_DEADLINE_SECONDS` | Shared ArchitectAgent time budget across plan attempts | `150` |
+| `ARCHITECT_MAX_PLAN_ATTEMPTS` | Maximum separate plan and correction attempts | `3` |
 | `LLM_BACKOFF_BASE_SECONDS` | Exponential retry backoff base | `1.0` |
 | `LLM_MAX_OUTPUT_TOKENS` | Output token limit per request | `16000` |
 | `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `3` |

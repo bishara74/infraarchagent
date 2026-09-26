@@ -176,6 +176,29 @@ Status values:
 - **Implemented in Phase 1 follow-up:** both SDK mappings, shared retry
   policy, and deterministic `httpx2.MockTransport` tests.
 
+### D-10 — Strict deployment plan (Accepted)
+- **Spec:** FR-A-01--03 require a structured plan, named IaC file types, and
+  recorded ambiguities; the class diagram leaves field types open.
+- **Implementation:** replace Phase 0's permissive placeholder with frozen
+  Pydantic models that forbid extra fields. The AWS plan names services,
+  dependencies, network, storage, file types, and ambiguities. It checks
+  references, uniqueness, cycles, Terraform inclusion, and a 32,768-byte
+  compact UTF-8 JSON limit. The previous `app.domain.models` import remains.
+- **Reason:** generator input must be internally consistent and small enough
+  for a later event payload; validation errors must be actionable for retry.
+- **Implemented in Phase 2:** plan model, error collector, and offline tests.
+
+### D-11 — Schema-derived ArchitectAgent correction prompt (Accepted)
+- **Spec:** FR-A-01--04 require a JSON plan, ambiguity notes, and failure
+  handling, but do not define prompt construction or correction feedback.
+- **Implementation:** the versioned system prompt embeds the model's JSON
+  schema and treats tagged user text as data. A failed plan attempt supplies
+  numbered validation errors and at most 8,000 characters of prior output
+  to the next attempt. Neither prompts nor responses are logged.
+- **Reason:** the schema and prompt stay aligned, and a correction targets
+  concrete plan defects without persisting untrusted text.
+- **Implemented in Phase 2:** prompt builder and ArchitectAgent tests.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -211,6 +234,24 @@ Status values:
   attempts and backoff when needed. Ordinary three-attempt timeouts finish
   well before 150 seconds.
 - **Implemented in Phase 1:** `RetryPolicy` and `LLMAdapter.complete_json`.
+
+### CL-04 — Input length and validation order
+- **Spec:** FR-I-01 sets a 10--2,000-character limit, and FR-I-02 calls for
+  a 422 when infrastructure intent is absent; simultaneous failures have no
+  stated priority.
+- **Implementation:** reject control characters first, then measure Unicode
+  code points after stripping surrounding whitespace and reject out-of-range
+  input with the future HTTP 400 error, then apply the intent gate and use
+  the future HTTP 422 error. Thus `hello` is a length error.
+- **Implemented in Phase 2:** pure input rules and boundary tests. HTTP
+  mapping remains Phase 4 work.
+
+### CL-05 — Valid vague-description example
+- **Spec conflict:** FR-A-03's verification input `a web app` has nine
+  characters, below FR-I-01's ten-character minimum.
+- **Implementation:** use `build a web app` in Phase 2 acceptance and
+  evaluation tests; explicitly test that `a web app` fails the length rule.
+- **Implemented in Phase 2:** input, agent, and evaluation tests.
 
 ---
 
@@ -248,9 +289,14 @@ The in-memory SSE broker requires a single backend process. This should be
 stated explicitly in the thesis design (Section 4.4 or the deployment
 section).
 
-### OQ-05 — End-to-end agent deadline
-End-to-end agent deadline (FR-A-04, PR-05) across multiple LLM calls; design
-in Phase 2. The Phase 1 wrapper limits one `complete_json` call only.
+### OQ-05 — End-to-end agent deadline (Resolved)
+One monotonic `AgentBudget` tracks elapsed time across plan attempts, prompt
+construction, validation, and LLM calls. Before each call, the agent passes the remaining
+budget to `complete_json`; the call uses the shorter of that value and its
+own policy deadline for attempts and backoff. If fewer than one second
+remains before a call, the agent stops. A valid response returned within
+its call deadline is accepted after validation without another budget check.
+Implemented in Phase 2 and tested with an injectable clock.
 
 ### OQ-06 — Evaluation provider throughput
 Evaluation provider must allow ~3 concurrent full generations (~36K
@@ -272,3 +318,12 @@ measurements.
 - Optional class-diagram polish: `run_id: UUID`, `llm_provider:
   LLMProvider`, `variant: Variant`, and field types for `DeploymentPlan`
   and `Violation`.
+- Add an ADR row: agents are plain Python classes over the custom adapter;
+  reject agent frameworks such as LangChain, LangGraph, and CrewAI because
+  the pipeline is fixed and direct control of retries and deadlines keeps
+  dependencies and contributions explicit.
+- Add the strict `DeploymentPlan` field types to the class diagram.
+- State that the orchestrator stores the plan in the `plan_created` event
+  payload (Phase 4), since the ERD has no plan column.
+- In FR-A-03, change the nine-character verification input `a web app` to
+  `build a web app` so it meets FR-I-01's ten-character minimum (CL-05).
