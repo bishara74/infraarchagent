@@ -27,6 +27,43 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-26 — Phase 1 follow-up — Rate-limit retry and real timing result
+
+**Summary:** Both LLM adapters now carry parsed `retry-after` seconds on
+HTTP 429 into the shared retry wrapper. Recorded the author's real Groq
+timing spike and the free-tier throughput limit it exposed.
+
+**Requirements addressed:** FR-A-04, PR-05, NFR-01.
+
+**Files:** changed `backend/app/llm/errors.py`, `base.py`, `anthropic.py`,
+and `openai.py`; changed `backend/tests/unit/test_llm_base.py` and
+`test_llm_providers.py`; changed `docs/design-deviations.md`; added the
+metrics-only real-provider JSON and Markdown files under `docs/spikes/`.
+
+**Decisions:** D-09 respects a finite nonnegative `retry-after` value in
+seconds on 429, taking the greater of that delay and jittered backoff.
+If the delay consumes the remaining call budget, the wrapper raises
+`LLMDeadlineExceeded` without sleeping. Invalid or missing headers fall back
+to ordinary backoff; raw header text is neither retained nor logged. OQ-03
+records the 2026-09-26 Groq free-tier spike: one full call finished in
+24.6 s with 11,660 output tokens, while all nine split calls were rate
+limited. OQ-06 defers evaluation-provider throughput choice.
+
+**Tests:** Before the first commit, `make test` → 137 passed, 0 failed,
+0 skipped; `make lint` → Ruff check passed, Ruff format check passed
+(52 app/test files), mypy passed (34 source files). Deterministic
+`httpx2.MockTransport` tests cover both providers' 429 headers, a 20-second
+delay before success, deadline rejection without sleep, and fallback for
+missing or invalid headers. Both commands were rerun before the second
+commit with the same results.
+
+**Known gaps / follow-ups:** The real spike is one measurement on Groq's
+free tier. OQ-03 remains open until the evaluation provider is selected;
+OQ-06 requires enough token throughput for parallel generation. No real API
+call was made by Codex.
+
+---
+
 ## 2026-09-26 — Phase 1 follow-up — OpenAI-compatible base URL
 
 **Summary:** Added optional `LLM_BASE_URL` so the existing OpenAI adapter can

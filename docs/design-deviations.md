@@ -229,9 +229,19 @@ Resolved by D-06 (Option C).
 
 ### OQ-03 — 30-second per-attempt LLM timeout
 A full multi-file package may take longer than 30 s to generate. Measure it
-in the Phase 1 spike before building on it. Measurement: spike script ready
-(`make spike`), awaiting a run with a real key. The committed stub result
-checks report format only and does not resolve this question.
+in the Phase 1 spike before building on it.
+
+**Measurement (2026-09-26):** Groq free tier via the OpenAI-compatible adapter,
+model `openai/gpt-oss-120b`. The [full-package spike](spikes/phase1-llm-timing-openai-20260926T004541Z.md)
+completed in one call in 24.6 s, at about 474 output tokens/s. It returned
+11,660 output tokens; JSON parsed and was not truncated. In split mode, all
+9 parallel file-group calls returned HTTP 429 and none generated output.
+Groq's published free-plan limits for this model are 8K tokens/minute,
+30 requests/minute, and 200K tokens/day ([rate limits](https://console.groq.com/docs/rate-limits)).
+This measurement shows that full-package latency fits 30 s on a fast provider,
+but free-tier per-minute token limits prevent parallel generation in this
+setup. The stub result remains a report-format check only. **OQ-03 stays open**
+until the evaluation provider is chosen.
 
 ### OQ-04 — Single-process assumption
 The in-memory SSE broker requires a single backend process. This should be
@@ -241,6 +251,11 @@ section).
 ### OQ-05 — End-to-end agent deadline
 End-to-end agent deadline (FR-A-04, PR-05) across multiple LLM calls; design
 in Phase 2. The Phase 1 wrapper limits one `complete_json` call only.
+
+### OQ-06 — Evaluation provider throughput
+Evaluation provider must allow ~3 concurrent full generations (~36K
+tokens/min); Groq free (8K TPM) does not. Decide before PR-01/PR-05
+measurements.
 
 ---
 
