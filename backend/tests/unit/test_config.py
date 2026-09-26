@@ -26,6 +26,7 @@ def test_defaults_and_secret_representations() -> None:
     assert settings.llm_deadline_seconds == 150
     assert settings.llm_backoff_base_seconds == 1.0
     assert settings.llm_max_output_tokens == 16000
+    assert settings.llm_base_url is None
     assert "CANARY" not in repr(settings)
     assert "secret" not in repr(settings)
 
@@ -64,3 +65,11 @@ def test_llm_backoff_base_can_be_zero_but_not_negative() -> None:
     assert _settings(llm_backoff_base_seconds=0).llm_backoff_base_seconds == 0
     with pytest.raises(ValidationError):
         _settings(llm_backoff_base_seconds=-1)
+
+
+def test_llm_base_url_is_optional_and_empty_means_unset() -> None:
+    assert _settings(llm_base_url="").llm_base_url is None
+    assert (
+        _settings(llm_base_url="https://groq.test/openai/v1").llm_base_url
+        == "https://groq.test/openai/v1"
+    )

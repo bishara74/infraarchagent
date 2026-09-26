@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-26 — Phase 1 follow-up — OpenAI-compatible base URL
+
+**Summary:** Added optional `LLM_BASE_URL` so the existing OpenAI adapter can
+send Chat Completions requests to a compatible endpoint without a new
+provider class. The unset value keeps the SDK's default endpoint.
+
+**Requirements addressed:** FR-I-04, NFR-03.
+
+**Files:** changed `backend/app/core/config.py`,
+`backend/app/llm/factory.py`, `backend/app/llm/openai.py`,
+`backend/tests/unit/test_config.py`, `backend/tests/unit/test_llm_factory.py`,
+`.env.example`, `README.md`, and `docs/design-deviations.md`.
+
+**Decisions:** D-08 documents this endpoint override. Empty
+`LLM_BASE_URL` is treated as unset, matching the optional model and key
+settings. Only `OpenAIAdapter` receives the override. The README Groq
+example uses the endpoint and model documented by Groq; no real key was
+used.
+
+**Tests:** `make test` → 121 passed, 0 failed, 0 skipped. `make lint` → Ruff
+check passed, Ruff format check passed (52 app/test files), mypy passed
+(34 source files). New tests verify the optional setting and the final SDK
+request URL through `httpx2.MockTransport`, both with and without an
+override.
+
+**Known gaps / follow-ups:** No real OpenAI-compatible provider was called;
+OQ-03 still awaits the author's timing measurement with a real key.
+
+---
+
 ## 2026-09-25 — Phase 1 — LLM adapters and timing spike
 
 **Summary:** Added the provider-independent async JSON completion wrapper,

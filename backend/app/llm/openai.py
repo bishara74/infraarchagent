@@ -19,11 +19,17 @@ class OpenAIAdapter(LLMAdapter):
         api_key: str,
         *,
         http_client: httpx2.AsyncClient | None = None,
+        base_url: str | None = None,
     ) -> None:
         super().__init__(model, policy)
-        self.client = openai.AsyncOpenAI(
-            api_key=api_key, max_retries=0, http_client=http_client
-        )
+        options: dict[str, Any] = {
+            "api_key": api_key,
+            "max_retries": 0,
+            "http_client": http_client,
+        }
+        if base_url is not None:
+            options["base_url"] = base_url
+        self.client = openai.AsyncOpenAI(**options)
 
     async def send_prompt(
         self,

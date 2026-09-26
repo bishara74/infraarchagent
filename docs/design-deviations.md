@@ -148,6 +148,19 @@ Status values:
 - **Implemented in Phase 1:** adapter contract, shared wrapper, both real
   providers, stub, factory, and offline tests.
 
+### D-08 — OpenAI-compatible base URL (Accepted)
+- **Spec:** ADR-02 names Anthropic and OpenAI as the supported LLM APIs;
+  endpoint configuration is not specified.
+- **Implementation:** optional `LLM_BASE_URL` is passed by the factory only
+  to `OpenAIAdapter`, which supplies it to `AsyncOpenAI` when set. The default
+  remains the SDK's OpenAI endpoint. Compatible services use
+  `LLM_PROVIDER=openai` and their own model and key; no provider class or
+  enum value is added.
+- **Reason:** an OpenAI-compatible Chat Completions endpoint can use the
+  existing adapter contract and retry policy.
+- **Implemented in Phase 1 follow-up:** setting, factory and SDK wiring,
+  mocked request-URL tests, and a README Groq example.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

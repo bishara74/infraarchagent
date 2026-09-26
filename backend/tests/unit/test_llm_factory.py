@@ -1,6 +1,8 @@
+import httpx2
 import pytest
 
 from app.core.config import Settings
+from app.llm import factory as factory_module
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import RetryPolicy
 from app.llm.errors import LLMConfigurationError
@@ -54,3 +56,70 @@ def test_real_provider_requires_key_and_model() -> None:
         build_adapter(settings(), provider="openai", model="test")
     with pytest.raises(LLMConfigurationError, match="LLM_PROVIDER"):
         build_adapter(settings(), provider="unknown")
+
+
+@pytest.mark.req("FR-I-04", "NFR-03")
+@pytest.mark.parametrize(
+    "base_url,expected_url",
+    [
+        (None, "https://api.openai.com/v1/chat/completions"),
+        (
+            "https://groq.test/openai/v1",
+            "https://groq.test/openai/v1/chat/completions",
+        ),
+    ],
+)
+async def test_factory_base_url_reaches_openai_request(
+    base_url: str | None,
+    expected_url: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
+    requests: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        requests.append(request)
+        return httpx2.Response(
+            200,
+            json={
+                "id": "chatcmpl_test",
+                "object": "chat.completion",
+                "created": 0,
+                "model": "test-model",
+                "choices": [
+                    {
+                        "index": 0,
+                        "finish_reason": "stop",
+                        "message": {"role": "assistant", "content": '{"ok":true}'},
+                    }
+                ],
+                "usage": {
+                    "prompt_tokens": 1,
+                    "completion_tokens": 1,
+                    "total_tokens": 2,
+                },
+            },
+        )
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        real_adapter = OpenAIAdapter
+
+        def adapter_with_mock(
+            model: str, policy: RetryPolicy, key: str, *, base_url: str | None
+        ) -> OpenAIAdapter:
+            return real_adapter(
+                model, policy, key, http_client=client, base_url=base_url
+            )
+
+        monkeypatch.setattr(factory_module, "OpenAIAdapter", adapter_with_mock)
+        adapter = build_adapter(
+            settings(
+                llm_provider="openai",
+                llm_model="test-model",
+                llm_api_key="placeholder",
+                llm_base_url=base_url,
+            )
+        )
+        assert (await adapter.complete_json("prompt")).data == {"ok": True}
+    assert len(requests) == 1
+    assert str(requests[0].url) == expected_url

@@ -34,4 +34,6 @@ def build_adapter(
         ) from None
     if selected is LLMProvider.ANTHROPIC:
         return AnthropicAdapter(chosen_model, chosen_policy, key)
-    return OpenAIAdapter(chosen_model, chosen_policy, key)
+    return OpenAIAdapter(
+        chosen_model, chosen_policy, key, base_url=settings.llm_base_url
+    )

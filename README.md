@@ -61,6 +61,20 @@ Its truncation column and verdict show whether responses hit the token limit.
 The author can later run the same command with a real provider and key to
 measure OQ-03. Stub timings only verify the report format.
 
+OpenAI-compatible services can use the existing `openai` adapter by setting
+`LLM_BASE_URL`. For example, Groq uses these values (supply your own key):
+
+```text
+LLM_PROVIDER=openai
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=openai/gpt-oss-120b
+LLM_API_KEY=replace-with-your-groq-key
+```
+
+The URL and model follow [Groq's OpenAI compatibility guide](https://console.groq.com/docs/openai)
+and [model documentation](https://console.groq.com/docs/model/openai/gpt-oss-120b).
+When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
+
 ## Environment variables
 
 | Variable | Purpose | Default |
@@ -75,6 +89,7 @@ measure OQ-03. Stub timings only verify the report format.
 | `LLM_PROVIDER` | `anthropic`, `openai`, or `stub` | `stub` |
 | `LLM_MODEL` | Model name, required for a real adapter | Unset |
 | `LLM_API_KEY` | Real-adapter credential | Unset |
+| `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_ATTEMPT_TIMEOUT_SECONDS` | Per-call attempt limit | `30` |
 | `LLM_MAX_ATTEMPTS` | Total attempts per call | `3` |
 | `LLM_DEADLINE_SECONDS` | Overall limit per `complete_json` call | `150` |

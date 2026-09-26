@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     llm_provider: LLMProvider = LLMProvider.STUB
     llm_model: str | None = None
     llm_api_key: SecretStr | None = None
+    llm_base_url: str | None = None
     llm_attempt_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_attempts: int = Field(default=3, ge=1)
     llm_deadline_seconds: float = Field(default=150.0, gt=0)
@@ -42,6 +43,11 @@ class Settings(BaseSettings):
     @field_validator("llm_api_key", mode="before")
     @classmethod
     def empty_key_is_none(cls, value: object) -> object:
+        return None if value == "" else value
+
+    @field_validator("llm_base_url", mode="before")
+    @classmethod
+    def empty_base_url_is_none(cls, value: object) -> object:
         return None if value == "" else value
 
     def require_llm_key(self) -> str:
