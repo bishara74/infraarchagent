@@ -32,7 +32,6 @@ def test_package_validates_paths_at_construction() -> None:
         IaCPackage(variant=Variant.COST, files={"Main.tf": "a", "main.tf": "b"})
 
 
-def test_deployment_plan_is_permissive_in_phase_zero() -> None:
-    plan = DeploymentPlan(services=["ec2"], dependencies={"web": ["db"]})
-    assert plan.services == ["ec2"]
-    assert plan.file_types == []
+def test_deployment_plan_reexport_is_strict() -> None:
+    with pytest.raises(ValidationError):
+        DeploymentPlan(services=["ec2"], dependencies={"web": ["db"]})

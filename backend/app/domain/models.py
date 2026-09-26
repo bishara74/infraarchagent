@@ -2,10 +2,13 @@
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 from app.domain.enums import Variant
 from app.domain.paths import validate_file_map
+from app.domain.plan import DeploymentPlan
+
+__all__ = ["DeploymentPlan", "IaCPackage", "Violation"]
 
 
 class Violation(BaseModel):
@@ -20,17 +23,6 @@ class Violation(BaseModel):
 
     def fingerprint(self) -> tuple[str, str, str]:
         return self.rule_id, self.file_path, self.resource
-
-
-class DeploymentPlan(BaseModel):
-    model_config = ConfigDict(frozen=True)
-
-    services: list[str] = Field(default_factory=list)
-    dependencies: Any = Field(default_factory=dict)
-    network: Any = Field(default_factory=dict)
-    storage: Any = Field(default_factory=dict)
-    file_types: list[str] = Field(default_factory=list)
-    ambiguities: list[str] = Field(default_factory=list)
 
 
 class IaCPackage(BaseModel):
