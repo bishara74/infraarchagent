@@ -1,89 +1,109 @@
 {
-  "cloud_provider": "aws",
-  "services": [
-    {
-      "name": "alb",
-      "aws_service": "Application Load Balancer",
-      "purpose": "Public ingress"
-    },
-    {
-      "name": "api",
-      "aws_service": "ECS Fargate",
-      "purpose": "Web API"
-    },
-    {
-      "name": "worker",
-      "aws_service": "ECS Fargate",
-      "purpose": "Background jobs"
-    },
-    {
-      "name": "postgres",
-      "aws_service": "RDS PostgreSQL",
-      "purpose": "Relational data"
-    },
-    {
-      "name": "assets",
-      "aws_service": "S3",
-      "purpose": "Object assets"
-    }
-  ],
-  "dependencies": [
-    {
-      "source": "alb",
-      "target": "api",
-      "description": "Application traffic"
-    },
-    {
-      "source": "api",
-      "target": "postgres",
-      "description": "Application traffic"
-    },
-    {
-      "source": "worker",
-      "target": "postgres",
-      "description": "Application traffic"
-    },
-    {
-      "source": "api",
-      "target": "assets",
-      "description": "Application traffic"
-    }
-  ],
-  "network": {
-    "public_services": [
-      "alb"
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "alb",
+        "aws_service": "Application Load Balancer",
+        "purpose": "Public ingress"
+      },
+      {
+        "name": "api",
+        "aws_service": "ECS Fargate",
+        "purpose": "Web API"
+      },
+      {
+        "name": "worker",
+        "aws_service": "ECS Fargate",
+        "purpose": "Background jobs"
+      },
+      {
+        "name": "postgres",
+        "aws_service": "RDS PostgreSQL",
+        "purpose": "Relational data"
+      },
+      {
+        "name": "assets",
+        "aws_service": "S3",
+        "purpose": "Object assets"
+      }
     ],
-    "private_services": [
-      "api",
-      "worker",
-      "postgres",
-      "assets"
+    "dependencies": [
+      {
+        "source": "alb",
+        "target": "api",
+        "description": "Application traffic"
+      },
+      {
+        "source": "api",
+        "target": "postgres",
+        "description": "Application traffic"
+      },
+      {
+        "source": "worker",
+        "target": "postgres",
+        "description": "Application traffic"
+      },
+      {
+        "source": "api",
+        "target": "assets",
+        "description": "Application traffic"
+      }
     ],
-    "ingress": [
-      "HTTPS 443 from internet"
-    ],
-    "notes": "AWS VPC with private subnets for internal components"
-  },
-  "storage": [
-    {
-      "name": "database",
-      "kind": "relational_db",
-      "aws_service": "RDS PostgreSQL",
-      "attached_to": [
-        "postgres"
-      ]
-    },
-    {
-      "name": "objects",
-      "kind": "object_storage",
-      "aws_service": "S3",
-      "attached_to": [
+    "network": {
+      "public_services": [
+        "alb"
+      ],
+      "private_services": [
+        "api",
+        "worker",
+        "postgres",
         "assets"
-      ]
-    }
-  ],
-  "file_types": [
-    "terraform"
-  ],
-  "ambiguities": []
+      ],
+      "ingress": [
+        "HTTPS 443 from internet"
+      ],
+      "notes": "AWS VPC with private subnets for internal components"
+    },
+    "storage": [
+      {
+        "name": "database",
+        "kind": "relational_db",
+        "aws_service": "RDS PostgreSQL",
+        "attached_to": [
+          "postgres"
+        ]
+      },
+      {
+        "name": "objects",
+        "kind": "object_storage",
+        "aws_service": "S3",
+        "attached_to": [
+          "assets"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": []
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "RDS service": true,
+    "object storage": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 0.0003600549971451983,
+    "input_tokens": null,
+    "output_tokens": null,
+    "prompt_version": "1"
+  }
 }

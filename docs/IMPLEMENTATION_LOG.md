@@ -27,6 +27,42 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-27 — Phase 2 follow-up — Evaluation failure details
+
+**Summary:** The ArchitectAgent now retains up to ten validation messages
+per plan attempt for evaluation. The ArchitectAgent evaluator writes those
+messages to its Markdown summary and per-case JSON, and records a safe LLM
+failure category when applicable. The CLI configures redacted INFO logging
+to show adapter attempt metrics on stderr.
+
+**Requirements addressed:** FR-A-01, FR-A-04, NFR-01.
+
+**Files:** changed `backend/app/agents/architect.py`,
+`backend/scripts/eval_architect.py`, their unit tests, the committed stub
+report under `docs/evals/`, `README.md`, and `docs/design-deviations.md`
+(D-11).
+
+**Decisions:** `ArchitectRunInfo.validation_errors_by_attempt` contains
+only validation messages, capped at ten per attempt; the existing count
+retains the full number. Every case now has a JSON report, including
+failures, with the validated plan nested under `plan`. The evaluator writes
+`ArchitectLLMFailure.llm_category` when present. CLI logging uses the
+existing `configure_logging` redacting setup at INFO level; it logs metrics
+without prompts or raw responses.
+
+**Tests:** `make test` → 222 passed, 0 failed, 0 skipped. `make lint` →
+Ruff check passed, Ruff format check passed (69 app/test files), mypy passed
+(43 source files). Stub tests verify diagnostic error text in Markdown and
+JSON, the ten-message cap, LLM failure category, CLI logger setup, stderr
+attempt metrics, and canary redaction. The stub format example was refreshed
+with explicit settings and `.env` loading disabled. No network call was made.
+
+**Known gaps / follow-ups:** Real-provider output was not evaluated in this
+task. The stored plan is validated JSON; raw provider responses and prompts
+remain excluded from reports.
+
+---
+
 ## 2026-09-27 — Phase 2 follow-up — Broader intent gate and no-call deadline test
 
 **Summary:** Widened the deterministic infrastructure-intent gate to accept

@@ -1,65 +1,84 @@
 {
-  "cloud_provider": "aws",
-  "services": [
-    {
-      "name": "cluster",
-      "aws_service": "EKS",
-      "purpose": "Run Kubernetes workloads"
-    },
-    {
-      "name": "api",
-      "aws_service": "EKS",
-      "purpose": "Serve the API"
-    },
-    {
-      "name": "metrics",
-      "aws_service": "EKS",
-      "purpose": "Collect Prometheus metrics"
-    },
-    {
-      "name": "dashboards",
-      "aws_service": "EKS",
-      "purpose": "Show Grafana dashboards"
-    }
-  ],
-  "dependencies": [
-    {
-      "source": "api",
-      "target": "cluster",
-      "description": "Application traffic"
-    },
-    {
-      "source": "metrics",
-      "target": "cluster",
-      "description": "Application traffic"
-    },
-    {
-      "source": "dashboards",
-      "target": "metrics",
-      "description": "Application traffic"
-    }
-  ],
-  "network": {
-    "public_services": [
-      "api"
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "cluster",
+        "aws_service": "EKS",
+        "purpose": "Run Kubernetes workloads"
+      },
+      {
+        "name": "api",
+        "aws_service": "EKS",
+        "purpose": "Serve the API"
+      },
+      {
+        "name": "metrics",
+        "aws_service": "EKS",
+        "purpose": "Collect Prometheus metrics"
+      },
+      {
+        "name": "dashboards",
+        "aws_service": "EKS",
+        "purpose": "Show Grafana dashboards"
+      }
     ],
-    "private_services": [
-      "cluster",
-      "metrics",
-      "dashboards"
+    "dependencies": [
+      {
+        "source": "api",
+        "target": "cluster",
+        "description": "Application traffic"
+      },
+      {
+        "source": "metrics",
+        "target": "cluster",
+        "description": "Application traffic"
+      },
+      {
+        "source": "dashboards",
+        "target": "metrics",
+        "description": "Application traffic"
+      }
     ],
-    "ingress": [
-      "HTTPS 443 from internet"
+    "network": {
+      "public_services": [
+        "api"
+      ],
+      "private_services": [
+        "cluster",
+        "metrics",
+        "dashboards"
+      ],
+      "ingress": [
+        "HTTPS 443 from internet"
+      ],
+      "notes": "AWS VPC with private subnets for internal components"
+    },
+    "storage": [],
+    "file_types": [
+      "terraform",
+      "kubernetes",
+      "helm",
+      "prometheus",
+      "grafana"
     ],
-    "notes": "AWS VPC with private subnets for internal components"
+    "ambiguities": []
   },
-  "storage": [],
-  "file_types": [
-    "terraform",
-    "kubernetes",
-    "helm",
-    "prometheus",
-    "grafana"
-  ],
-  "ambiguities": []
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "monitoring file types": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 0.0001859090043581091,
+    "input_tokens": null,
+    "output_tokens": null,
+    "prompt_version": "1"
+  }
 }

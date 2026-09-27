@@ -1,32 +1,51 @@
 {
-  "cloud_provider": "aws",
-  "services": [
-    {
-      "name": "web",
-      "aws_service": "ECS Fargate",
-      "purpose": "Serve the web application"
-    }
-  ],
-  "dependencies": [],
-  "network": {
-    "public_services": [
-      "web"
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "web",
+        "aws_service": "ECS Fargate",
+        "purpose": "Serve the web application"
+      }
     ],
-    "private_services": [],
-    "ingress": [
-      "HTTPS 443 from internet"
+    "dependencies": [],
+    "network": {
+      "public_services": [
+        "web"
+      ],
+      "private_services": [],
+      "ingress": [
+        "HTTPS 443 from internet"
+      ],
+      "notes": "AWS VPC with private subnets for internal components"
+    },
+    "storage": [],
+    "file_types": [
+      "terraform"
     ],
-    "notes": "AWS VPC with private subnets for internal components"
+    "ambiguities": [
+      {
+        "topic": "runtime",
+        "detail": "Runtime was not specified",
+        "assumption": "Use a containerized web service"
+      }
+    ]
   },
-  "storage": [],
-  "file_types": [
-    "terraform"
-  ],
-  "ambiguities": [
-    {
-      "topic": "runtime",
-      "detail": "Runtime was not specified",
-      "assumption": "Use a containerized web service"
-    }
-  ]
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "ambiguity recorded": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 0.00014666400238638744,
+    "input_tokens": null,
+    "output_tokens": null,
+    "prompt_version": "1"
+  }
 }

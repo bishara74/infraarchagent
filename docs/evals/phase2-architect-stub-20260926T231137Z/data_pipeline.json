@@ -1,70 +1,89 @@
 {
-  "cloud_provider": "aws",
-  "services": [
-    {
-      "name": "ingest",
-      "aws_service": "API Gateway",
-      "purpose": "Receive events"
-    },
-    {
-      "name": "queue",
-      "aws_service": "SQS",
-      "purpose": "Buffer events"
-    },
-    {
-      "name": "worker",
-      "aws_service": "ECS Fargate",
-      "purpose": "Process events"
-    },
-    {
-      "name": "warehouse",
-      "aws_service": "Redshift",
-      "purpose": "Analyze data"
-    }
-  ],
-  "dependencies": [
-    {
-      "source": "ingest",
-      "target": "queue",
-      "description": "Application traffic"
-    },
-    {
-      "source": "worker",
-      "target": "queue",
-      "description": "Application traffic"
-    },
-    {
-      "source": "worker",
-      "target": "warehouse",
-      "description": "Application traffic"
-    }
-  ],
-  "network": {
-    "public_services": [
-      "ingest"
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "ingest",
+        "aws_service": "API Gateway",
+        "purpose": "Receive events"
+      },
+      {
+        "name": "queue",
+        "aws_service": "SQS",
+        "purpose": "Buffer events"
+      },
+      {
+        "name": "worker",
+        "aws_service": "ECS Fargate",
+        "purpose": "Process events"
+      },
+      {
+        "name": "warehouse",
+        "aws_service": "Redshift",
+        "purpose": "Analyze data"
+      }
     ],
-    "private_services": [
-      "queue",
-      "worker",
-      "warehouse"
+    "dependencies": [
+      {
+        "source": "ingest",
+        "target": "queue",
+        "description": "Application traffic"
+      },
+      {
+        "source": "worker",
+        "target": "queue",
+        "description": "Application traffic"
+      },
+      {
+        "source": "worker",
+        "target": "warehouse",
+        "description": "Application traffic"
+      }
     ],
-    "ingress": [
-      "HTTPS 443 from internet"
-    ],
-    "notes": "AWS VPC with private subnets for internal components"
-  },
-  "storage": [
-    {
-      "name": "analytics",
-      "kind": "relational_db",
-      "aws_service": "Redshift",
-      "attached_to": [
+    "network": {
+      "public_services": [
+        "ingest"
+      ],
+      "private_services": [
+        "queue",
+        "worker",
         "warehouse"
-      ]
-    }
-  ],
-  "file_types": [
-    "terraform"
-  ],
-  "ambiguities": []
+      ],
+      "ingress": [
+        "HTTPS 443 from internet"
+      ],
+      "notes": "AWS VPC with private subnets for internal components"
+    },
+    "storage": [
+      {
+        "name": "analytics",
+        "kind": "relational_db",
+        "aws_service": "Redshift",
+        "attached_to": [
+          "warehouse"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": []
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "queue service": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 0.0001653949948376976,
+    "input_tokens": null,
+    "output_tokens": null,
+    "prompt_version": "1"
+  }
 }

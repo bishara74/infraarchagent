@@ -69,4 +69,6 @@ Model: `stub`
 - PASS: invalid dependency corrected on second plan attempt
 - Plan attempts: 2
 - LLM attempts: 2
+- Validation errors, attempt 1:
+  - dependencies.0.target: unknown service 'unknown-service'
 

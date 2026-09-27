@@ -78,6 +78,7 @@ async def test_valid_first_attempt_and_metrics() -> None:
     assert agent.last_run.plan_attempts == agent.last_run.total_llm_attempts == 1
     assert (agent.last_run.input_tokens, agent.last_run.output_tokens) == (11, 20)
     assert agent.last_run.validation_error_counts == (0,)
+    assert agent.last_run.validation_errors_by_attempt == ((),)
 
 
 @pytest.mark.req("FR-A-01", "FR-A-03")
@@ -96,6 +97,24 @@ async def test_invalid_plan_is_corrected_with_exact_error() -> None:
     assert "dependencies.0.target: unknown service 'missing'" in adapter.prompts[1]
     assert agent.last_run is not None
     assert agent.last_run.validation_error_counts == (1, 0)
+    assert agent.last_run.validation_errors_by_attempt == (
+        ("dependencies.0.target: unknown service 'missing'",),
+        (),
+    )
+
+
+@pytest.mark.req("FR-A-01", "FR-A-04")
+async def test_reported_validation_messages_are_capped_per_attempt() -> None:
+    invalid = plan()
+    invalid["network"]["public_services"] = [f"missing-{index}" for index in range(12)]
+    adapter = StubAdapter(script=[json.dumps(invalid), json.dumps(plan())])
+    agent = ArchitectAgent(adapter, deadline_seconds=150)
+    agent.parse_input("build a web app")
+    await agent.generate_plan()
+    assert agent.last_run is not None
+    assert agent.last_run.validation_error_counts == (12, 0)
+    assert len(agent.last_run.validation_errors_by_attempt[0]) == 10
+    assert agent.last_run.validation_errors_by_attempt[1] == ()
 
 
 @pytest.mark.req("FR-A-01")

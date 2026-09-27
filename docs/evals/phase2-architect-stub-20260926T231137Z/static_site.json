@@ -1,48 +1,67 @@
 {
-  "cloud_provider": "aws",
-  "services": [
-    {
-      "name": "cdn",
-      "aws_service": "CloudFront",
-      "purpose": "Serve cached pages"
-    },
-    {
-      "name": "origin",
-      "aws_service": "S3",
-      "purpose": "Store site assets"
-    }
-  ],
-  "dependencies": [
-    {
-      "source": "cdn",
-      "target": "origin",
-      "description": "Application traffic"
-    }
-  ],
-  "network": {
-    "public_services": [
-      "cdn"
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "cdn",
+        "aws_service": "CloudFront",
+        "purpose": "Serve cached pages"
+      },
+      {
+        "name": "origin",
+        "aws_service": "S3",
+        "purpose": "Store site assets"
+      }
     ],
-    "private_services": [
-      "origin"
+    "dependencies": [
+      {
+        "source": "cdn",
+        "target": "origin",
+        "description": "Application traffic"
+      }
     ],
-    "ingress": [
-      "HTTPS 443 from internet"
-    ],
-    "notes": "AWS VPC with private subnets for internal components"
-  },
-  "storage": [
-    {
-      "name": "site-assets",
-      "kind": "object_storage",
-      "aws_service": "S3",
-      "attached_to": [
+    "network": {
+      "public_services": [
+        "cdn"
+      ],
+      "private_services": [
         "origin"
-      ]
-    }
-  ],
-  "file_types": [
-    "terraform"
-  ],
-  "ambiguities": []
+      ],
+      "ingress": [
+        "HTTPS 443 from internet"
+      ],
+      "notes": "AWS VPC with private subnets for internal components"
+    },
+    "storage": [
+      {
+        "name": "site-assets",
+        "kind": "object_storage",
+        "aws_service": "S3",
+        "attached_to": [
+          "origin"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": []
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "CDN service": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 0.0001494450043537654,
+    "input_tokens": null,
+    "output_tokens": null,
+    "prompt_version": "1"
+  }
 }

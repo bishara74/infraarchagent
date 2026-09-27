@@ -198,6 +198,10 @@ Status values:
 - **Reason:** the schema and prompt stay aligned, and a correction targets
   concrete plan defects without persisting untrusted text.
 - **Implemented in Phase 2:** prompt builder and ArchitectAgent tests.
+- **Evaluation follow-up:** reports include at most ten validation messages
+  per failed plan attempt and the safe LLM failure category. They omit
+  prompts, raw responses, and credentials; console attempt metrics pass
+  through the existing redacting logger.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

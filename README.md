@@ -64,9 +64,11 @@ measure OQ-03. Stub timings only verify the report format.
 
 Run `make eval-architect EVAL_ARGS='--provider stub'` to exercise five
 ArchitectAgent cases and one correction-loop diagnostic without network
-calls. It writes validated plan JSON and a `summary.md` under
+calls. It writes per-case JSON with the validated plan, checks, and bounded
+validation-error history, plus a `summary.md` under
 `docs/evals/phase2-architect-stub-<timestamp>/`. The stub fixtures live in
-the evaluation script; the report contains no prompts or keys. The author
+the evaluation script; the report contains no prompts, raw responses, or keys.
+The command prints redacted INFO-level LLM attempt metrics to stderr. The author
 can later use `--provider openai` or `--provider anthropic`, optionally
 `--model NAME` and `--pause-seconds N`. Real-provider cases run sequentially
 with a 15-second pause by default; the stub skips the pause. The script

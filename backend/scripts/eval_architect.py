@@ -7,9 +7,15 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from app.agents.architect import ArchitectAgent, ArchitectError
+from app.agents.architect import (
+    ArchitectAgent,
+    ArchitectError,
+    ArchitectLLMFailure,
+    ArchitectRunInfo,
+)
 from app.agents.factory import AgentFactory
 from app.core.config import Settings, get_settings
+from app.core.logging import configure_logging
 from app.domain.enums import LLMProvider
 from app.domain.plan import DeploymentPlan, plan_validation_errors
 from app.domain.run_config import RunConfig
@@ -219,6 +225,57 @@ def _agent(
     return agent
 
 
+def _failed_attempt_errors(info: ArchitectRunInfo | None) -> list[dict[str, Any]]:
+    if info is None:
+        return []
+    return [
+        {"attempt": index, "errors": list(errors[:10])}
+        for index, errors in enumerate(info.validation_errors_by_attempt, start=1)
+        if errors
+    ]
+
+
+def _case_json(
+    plan: DeploymentPlan | None,
+    checks: dict[str, bool],
+    info: ArchitectRunInfo | None,
+    *,
+    error_category: str | None = None,
+    llm_category: str | None = None,
+) -> dict[str, Any]:
+    return {
+        "plan": plan.model_dump(mode="json") if plan is not None else None,
+        "checks": checks,
+        "error_category": error_category,
+        "llm_category": llm_category,
+        "validation_errors_by_attempt": _failed_attempt_errors(info),
+        "metrics": (
+            {
+                "plan_attempts": info.plan_attempts,
+                "llm_attempts": info.total_llm_attempts,
+                "elapsed_seconds": info.elapsed_seconds,
+                "input_tokens": info.input_tokens,
+                "output_tokens": info.output_tokens,
+                "prompt_version": info.prompt_version,
+            }
+            if info is not None
+            else None
+        ),
+    }
+
+
+def _append_failure_details(
+    rows: list[str],
+    errors_by_attempt: list[dict[str, Any]],
+    llm_category: str | None,
+) -> None:
+    for attempt in errors_by_attempt:
+        rows.append(f"- Validation errors, attempt {attempt['attempt']}:")
+        rows.extend(f"  - {message}" for message in attempt["errors"])
+    if llm_category is not None:
+        rows.append(f"- LLM category: `{llm_category}`")
+
+
 async def run_evaluation(
     settings: Settings,
     *,
@@ -249,21 +306,34 @@ async def run_evaluation(
         agent.parse_input(description)
         result: DeploymentPlan | None = None
         error_category: str | None = None
+        llm_category: str | None = None
         try:
             result = await agent.generate_plan()
         except ArchitectError as error:
             error_category = error.category
-        if result is not None:
-            (output / f"{name}.json").write_text(
-                result.model_dump_json(indent=2) + "\n", encoding="utf-8"
-            )
+            if isinstance(error, ArchitectLLMFailure):
+                llm_category = error.llm_category
         checks = _checks(name, result)
         info = agent.last_run
+        case_data = _case_json(
+            result,
+            checks,
+            info,
+            error_category=error_category,
+            llm_category=llm_category,
+        )
+        (output / f"{name}.json").write_text(
+            json.dumps(case_data, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
         rows.extend([f"## {name}", ""])
         for check, passed in checks.items():
             rows.append(f"- {'PASS' if passed else 'FAIL'}: {check}")
         if error_category:
             rows.append(f"- Error category: `{error_category}`")
+        _append_failure_details(
+            rows, case_data["validation_errors_by_attempt"], llm_category
+        )
         if info:
             rows.extend(
                 [
@@ -296,11 +366,20 @@ async def run_evaluation(
                 "on second plan attempt",
                 f"- Plan attempts: {diagnostic.last_run.plan_attempts}",
                 f"- LLM attempts: {diagnostic.last_run.total_llm_attempts}",
-                "",
             ]
         )
+        diagnostic_data = _case_json(
+            corrected,
+            {"invalid dependency corrected": passed},
+            diagnostic.last_run,
+        )
+        _append_failure_details(
+            rows, diagnostic_data["validation_errors_by_attempt"], None
+        )
+        rows.append("")
         (output / "correction_diagnostic.json").write_text(
-            corrected.model_dump_json(indent=2) + "\n", encoding="utf-8"
+            json.dumps(diagnostic_data, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
         )
     (output / "summary.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
     return output
@@ -315,6 +394,7 @@ def main() -> None:
     parser.add_argument("--pause-seconds", type=float, default=15)
     args = parser.parse_args()
     settings = get_settings()
+    configure_logging(settings.model_copy(update={"log_level": "INFO"}))
     selected = LLMProvider(args.provider or settings.llm_provider)
     output = asyncio.run(
         run_evaluation(

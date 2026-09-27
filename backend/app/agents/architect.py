@@ -60,6 +60,7 @@ class ArchitectRunInfo:
     output_tokens: int | None
     prompt_version: str
     validation_error_counts: tuple[int, ...]
+    validation_errors_by_attempt: tuple[tuple[str, ...], ...]
 
 
 class ArchitectAgent:
@@ -100,6 +101,7 @@ class ArchitectAgent:
         input_tokens: int | None = 0
         output_tokens: int | None = 0
         error_counts: list[int] = []
+        error_history: list[tuple[str, ...]] = []
         try:
             for _ in range(self.max_plan_attempts):
                 user_prompt = build_user_prompt(
@@ -146,6 +148,7 @@ class ArchitectAgent:
                 )
                 errors = plan_validation_errors(result.data)
                 error_counts.append(len(errors))
+                error_history.append(tuple(errors[:10]))
                 if not errors:
                     return DeploymentPlan.model_validate(result.data)
                 previous_errors = errors
@@ -160,4 +163,5 @@ class ArchitectAgent:
                 output_tokens=output_tokens,
                 prompt_version=ARCHITECT_PROMPT_VERSION,
                 validation_error_counts=tuple(error_counts),
+                validation_errors_by_attempt=tuple(error_history),
             )
