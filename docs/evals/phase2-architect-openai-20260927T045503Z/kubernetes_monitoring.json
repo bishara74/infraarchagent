@@ -1,0 +1,164 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "eks-cluster",
+        "aws_service": "eks",
+        "purpose": "host Kubernetes control plane for containerized microservices"
+      },
+      {
+        "name": "ecr-repo",
+        "aws_service": "ecr",
+        "purpose": "store Docker images for microservices"
+      },
+      {
+        "name": "amp",
+        "aws_service": "amp",
+        "purpose": "managed Prometheus service for metrics collection"
+      },
+      {
+        "name": "managed-grafana",
+        "aws_service": "grafana",
+        "purpose": "managed Grafana service for visualization"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "ecr-repo",
+        "target": "eks-cluster",
+        "description": "EKS pulls container images from ECR"
+      },
+      {
+        "source": "amp",
+        "target": "eks-cluster",
+        "description": "Prometheus scrapes metrics from services running on EKS"
+      },
+      {
+        "source": "managed-grafana",
+        "target": "amp",
+        "description": "Grafana visualizes metrics from Managed Prometheus"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "managed-grafana"
+      ],
+      "private_services": [
+        "eks-cluster",
+        "ecr-repo",
+        "amp"
+      ],
+      "ingress": [
+        "Ingress controller (ALB) for exposing services"
+      ],
+      "notes": "Network includes a VPC with public and private subnets, an ALB for ingress, and security groups restricting access."
+    },
+    "storage": [
+      {
+        "name": "logs-bucket",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "eks-cluster"
+        ]
+      },
+      {
+        "name": "efs-volume",
+        "kind": "block_volume",
+        "aws_service": "efs",
+        "attached_to": [
+          "eks-cluster"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform",
+      "kubernetes",
+      "helm",
+      "prometheus",
+      "grafana"
+    ],
+    "ambiguities": [
+      {
+        "topic": "region",
+        "detail": "Assumed default AWS region as not specified.",
+        "assumption": "us-east-1"
+      },
+      {
+        "topic": "eks_instance_type",
+        "detail": "Assumed moderate instance type for worker nodes.",
+        "assumption": "t3.medium"
+      },
+      {
+        "topic": "eks_node_count",
+        "detail": "Assumed three worker nodes for high availability.",
+        "assumption": "3"
+      },
+      {
+        "topic": "ecr_lifecycle_policy",
+        "detail": "Assumed a simple lifecycle policy retaining recent images.",
+        "assumption": "retain last 10 images"
+      },
+      {
+        "topic": "s3_versioning",
+        "detail": "Assumed versioning is enabled for the logs bucket.",
+        "assumption": "enabled"
+      },
+      {
+        "topic": "prometheus_retention",
+        "detail": "Assumed default retention period for metrics.",
+        "assumption": "15 days"
+      },
+      {
+        "topic": "grafana_admin_user",
+        "detail": "Assumed default admin username for Grafana.",
+        "assumption": "admin"
+      },
+      {
+        "topic": "helm_repo",
+        "detail": "Assumed using the public Helm stable repository for charts.",
+        "assumption": "public helm stable repo"
+      },
+      {
+        "topic": "vpc_cidr",
+        "detail": "Assumed a default VPC CIDR block.",
+        "assumption": "10.0.0.0/16"
+      },
+      {
+        "topic": "private_subnet_cidr",
+        "detail": "Assumed one private subnet CIDR within the VPC.",
+        "assumption": "10.0.1.0/24"
+      },
+      {
+        "topic": "public_subnet_cidr",
+        "detail": "Assumed one public subnet CIDR for ingress resources.",
+        "assumption": "10.0.0.0/24"
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "monitoring file types": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [
+    {
+      "attempt": 1,
+      "errors": [
+        "dependencies.0.source: unknown service 'helm'"
+      ]
+    }
+  ],
+  "metrics": {
+    "plan_attempts": 2,
+    "llm_attempts": 3,
+    "elapsed_seconds": 16.92592507700465,
+    "input_tokens": 3097,
+    "output_tokens": 3881,
+    "prompt_version": "1"
+  }
+}

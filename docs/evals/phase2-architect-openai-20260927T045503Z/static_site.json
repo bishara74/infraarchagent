@@ -1,0 +1,151 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "s3-website-bucket",
+        "aws_service": "s3",
+        "purpose": "Host static website assets"
+      },
+      {
+        "name": "cloudfront-cdn",
+        "aws_service": "cloudfront",
+        "purpose": "Deliver website content via CDN with HTTPS"
+      },
+      {
+        "name": "acm-certificate",
+        "aws_service": "acm",
+        "purpose": "Provide TLS certificate for the CDN"
+      },
+      {
+        "name": "route53-dns",
+        "aws_service": "route53",
+        "purpose": "Map custom domain to the CloudFront distribution"
+      },
+      {
+        "name": "s3-website-iam",
+        "aws_service": "iam",
+        "purpose": "Allow CloudFront to read objects from the S3 bucket"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "s3-website-bucket",
+        "target": "cloudfront-cdn",
+        "description": "CloudFront uses the S3 bucket as its origin"
+      },
+      {
+        "source": "acm-certificate",
+        "target": "cloudfront-cdn",
+        "description": "CloudFront uses the ACM certificate for HTTPS"
+      },
+      {
+        "source": "cloudfront-cdn",
+        "target": "route53-dns",
+        "description": "Route53 creates an alias record that points to the CloudFront distribution"
+      },
+      {
+        "source": "s3-website-iam",
+        "target": "s3-website-bucket",
+        "description": "IAM policy grants CloudFront read access to the S3 bucket"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "cloudfront-cdn",
+        "route53-dns"
+      ],
+      "private_services": [
+        "s3-website-bucket",
+        "acm-certificate",
+        "s3-website-iam"
+      ],
+      "ingress": [
+        "HTTPS (443) from any IP address to CloudFront distribution"
+      ],
+      "notes": "Static website is served publicly via CloudFront; the S3 bucket is configured for private access, allowing only CloudFront to read objects."
+    },
+    "storage": [
+      {
+        "name": "s3-website-bucket",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "s3-website-bucket"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "region",
+        "detail": "Deploying all resources in the US East (N. Virginia) region because no region was specified.",
+        "assumption": "us-east-1"
+      },
+      {
+        "topic": "domain_name",
+        "detail": "Using a placeholder domain name; replace with the actual marketing site domain.",
+        "assumption": "example.com"
+      },
+      {
+        "topic": "certificate_validation",
+        "detail": "ACM certificate will be validated via DNS records as no validation method was given.",
+        "assumption": "dns"
+      },
+      {
+        "topic": "bucket_name",
+        "detail": "S3 bucket name follows a lowercase slug pattern; replace with the desired unique bucket name.",
+        "assumption": "marketing-website-bucket"
+      },
+      {
+        "topic": "cloudfront_price_class",
+        "detail": "Limiting CloudFront edge locations to US, Canada, and Europe to control cost.",
+        "assumption": "PriceClass_100"
+      },
+      {
+        "topic": "tls_security_policy",
+        "detail": "Using AWS's recommended TLS 1.2 security policy for the CDN.",
+        "assumption": "TLSv1.2_2021"
+      },
+      {
+        "topic": "hosted_zone",
+        "detail": "The plan assumes the hosted zone is present; otherwise one must be created.",
+        "assumption": "A Route53 public hosted zone already exists for the domain"
+      },
+      {
+        "topic": "access_logging",
+        "detail": "CloudFront access logs will be written to a separate S3 bucket (not defined) to aid monitoring.",
+        "assumption": "Enabled"
+      },
+      {
+        "topic": "cache_behavior",
+        "detail": "Using CloudFront's default cache TTL settings because no custom caching rules were specified.",
+        "assumption": "Default TTL values"
+      },
+      {
+        "topic": "waf",
+        "detail": "No AWS WAF protection is added as the description did not mention security beyond HTTPS.",
+        "assumption": "Not used"
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "CDN service": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 5.722020225999586,
+    "input_tokens": 1209,
+    "output_tokens": 2453,
+    "prompt_version": "1"
+  }
+}

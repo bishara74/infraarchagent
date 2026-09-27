@@ -1,0 +1,122 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "alb",
+        "aws_service": "elasticloadbalancingv2",
+        "purpose": "Internet-facing Application Load Balancer distributing traffic to application services."
+      },
+      {
+        "name": "app-service-1",
+        "aws_service": "ecs",
+        "purpose": "Containerized web application instance."
+      },
+      {
+        "name": "app-service-2",
+        "aws_service": "ecs",
+        "purpose": "Second containerized web application instance for redundancy."
+      },
+      {
+        "name": "rds",
+        "aws_service": "rds",
+        "purpose": "Managed PostgreSQL relational database."
+      },
+      {
+        "name": "s3",
+        "aws_service": "s3",
+        "purpose": "Object storage bucket for static assets."
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "alb",
+        "target": "app-service-1",
+        "description": "ALB forwards HTTP requests to application service 1."
+      },
+      {
+        "source": "alb",
+        "target": "app-service-2",
+        "description": "ALB forwards HTTP requests to application service 2."
+      }
+    ],
+    "network": {
+      "public_services": [
+        "alb"
+      ],
+      "private_services": [
+        "app-service-1",
+        "app-service-2",
+        "rds",
+        "s3"
+      ],
+      "ingress": [
+        "0.0.0.0/0"
+      ],
+      "notes": "Three-tier architecture with a public ALB, private application tier, and data tier."
+    },
+    "storage": [
+      {
+        "name": "rds-storage",
+        "kind": "relational_db",
+        "aws_service": "rds",
+        "attached_to": [
+          "app-service-1",
+          "app-service-2"
+        ]
+      },
+      {
+        "name": "s3-storage",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "app-service-1",
+          "app-service-2"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "Compute platform",
+        "detail": "The description does not specify the compute platform for the application services.",
+        "assumption": "We assume ECS (Fargate) will host the containerized applications."
+      },
+      {
+        "topic": "Database version",
+        "detail": "The description does not specify the PostgreSQL version.",
+        "assumption": "We assume PostgreSQL 13 as a common default."
+      },
+      {
+        "topic": "Availability zones",
+        "detail": "The description does not specify multi-AZ deployment.",
+        "assumption": "We assume a single Availability Zone for simplicity."
+      },
+      {
+        "topic": "S3 bucket access",
+        "detail": "No detail on whether the S3 bucket should be publicly accessible.",
+        "assumption": "We assume the bucket is private and accessed only by the application services."
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "RDS service": true,
+    "object storage": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 5.317869961000042,
+    "input_tokens": 1334,
+    "output_tokens": 2227,
+    "prompt_version": "2"
+  }
+}

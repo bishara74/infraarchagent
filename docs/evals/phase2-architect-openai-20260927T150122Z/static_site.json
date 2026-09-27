@@ -1,0 +1,99 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "static-site",
+        "aws_service": "s3",
+        "purpose": "Host static marketing website content"
+      },
+      {
+        "name": "cdn",
+        "aws_service": "cloudfront",
+        "purpose": "Distribute website globally with HTTPS"
+      },
+      {
+        "name": "certificate",
+        "aws_service": "acm",
+        "purpose": "Provide TLS certificate for CDN"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "static-site",
+        "target": "cdn",
+        "description": "CloudFront distribution pulls website files from the S3 bucket"
+      },
+      {
+        "source": "certificate",
+        "target": "cdn",
+        "description": "CDN uses ACM certificate to terminate HTTPS"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "cdn"
+      ],
+      "private_services": [
+        "static-site",
+        "certificate"
+      ],
+      "ingress": [
+        "HTTPS"
+      ],
+      "notes": "Static site served via S3 (private) and delivered through CloudFront with TLS"
+    },
+    "storage": [
+      {
+        "name": "website-bucket",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "static-site"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "domain_name",
+        "detail": "The specific domain (e.g., example.com) for the website is not provided.",
+        "assumption": "Assume a placeholder domain \"example.com\" will be configured in Route53 separately."
+      },
+      {
+        "topic": "region",
+        "detail": "No AWS region was specified for resources.",
+        "assumption": "Assume us-east-1 as the default deployment region."
+      },
+      {
+        "topic": "certificate_validation",
+        "detail": "Method for validating ACM certificate (DNS vs email) is not defined.",
+        "assumption": "Assume DNS validation using a hosted zone for the domain."
+      },
+      {
+        "topic": "bucket_name",
+        "detail": "S3 bucket name not given.",
+        "assumption": "Assume bucket name \"example-static-site\" following naming conventions."
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "CDN service": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 4.606776675999981,
+    "input_tokens": 1320,
+    "output_tokens": 1776,
+    "prompt_version": "2"
+  }
+}

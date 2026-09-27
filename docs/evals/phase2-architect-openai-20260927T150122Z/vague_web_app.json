@@ -1,0 +1,113 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "web-frontend",
+        "aws_service": "elasticloadbalancing",
+        "purpose": "Handles incoming HTTP/HTTPS requests and routes traffic to the application servers."
+      },
+      {
+        "name": "app-server",
+        "aws_service": "ecs",
+        "purpose": "Runs the containerized web application."
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "web-frontend",
+        "target": "app-server",
+        "description": "Load balancer forwards requests to the application server."
+      }
+    ],
+    "network": {
+      "public_services": [
+        "web-frontend"
+      ],
+      "private_services": [
+        "app-server"
+      ],
+      "ingress": [
+        "0.0.0.0/0:80",
+        "0.0.0.0/0:443"
+      ],
+      "notes": "Public traffic reaches the ALB; the app server is only reachable from within the VPC."
+    },
+    "storage": [
+      {
+        "name": "app-db",
+        "kind": "relational_db",
+        "aws_service": "rds",
+        "attached_to": [
+          "app-server"
+        ]
+      },
+      {
+        "name": "static-assets",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "web-frontend",
+          "app-server"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "compute_platform",
+        "detail": "The description did not specify whether to use EC2, ECS, Lambda, or another compute service.",
+        "assumption": "The application runs on Amazon ECS using Fargate."
+      },
+      {
+        "topic": "load_balancer_type",
+        "detail": "The description only mentioned a web app; the specific load balancer type was not provided.",
+        "assumption": "An Application Load Balancer (ALB) is used."
+      },
+      {
+        "topic": "database_engine",
+        "detail": "The specific engine, version, and size were not described.",
+        "assumption": "A generic relational database (e.g., PostgreSQL) is provisioned in Amazon RDS."
+      },
+      {
+        "topic": "static_asset_storage",
+        "detail": "The description did not identify the storage mechanism for files and media.",
+        "assumption": "Static assets are stored in an Amazon S3 bucket."
+      },
+      {
+        "topic": "network_security",
+        "detail": "No details were given about firewall rules or VPC CIDR blocks.",
+        "assumption": "Security groups allow HTTP/HTTPS from the internet to the load balancer and restrict all other traffic to within the VPC."
+      },
+      {
+        "topic": "scaling_and_capacity",
+        "detail": "No instance type, CPU/RAM sizing, or scaling thresholds were specified.",
+        "assumption": "Auto‑scaling is enabled with default instance sizes and scaling policies."
+      },
+      {
+        "topic": "deployment_artifact",
+        "detail": "The description did not state the runtime or packaging format; Docker is assumed for ECS.",
+        "assumption": "The application is packaged as a Docker container image."
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "ambiguity recorded": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 4.488278765999894,
+    "input_tokens": 1312,
+    "output_tokens": 1927,
+    "prompt_version": "2"
+  }
+}

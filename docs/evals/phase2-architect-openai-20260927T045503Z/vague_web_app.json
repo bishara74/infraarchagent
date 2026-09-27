@@ -1,0 +1,154 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "frontend",
+        "aws_service": "s3",
+        "purpose": "host static assets for the web application"
+      },
+      {
+        "name": "cdn",
+        "aws_service": "cloudfront",
+        "purpose": "deliver frontend content globally with caching"
+      },
+      {
+        "name": "alb",
+        "aws_service": "elasticloadbalancing",
+        "purpose": "distribute incoming traffic to the backend service"
+      },
+      {
+        "name": "backend",
+        "aws_service": "ecs",
+        "purpose": "run containerized application server"
+      },
+      {
+        "name": "database",
+        "aws_service": "rds",
+        "purpose": "relational database for application data"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "frontend",
+        "target": "cdn",
+        "description": "Static assets are served through a CloudFront distribution"
+      },
+      {
+        "source": "cdn",
+        "target": "alb",
+        "description": "Requests from the CDN are forwarded to the ALB"
+      },
+      {
+        "source": "alb",
+        "target": "backend",
+        "description": "ALB routes HTTP requests to the backend containers"
+      },
+      {
+        "source": "backend",
+        "target": "database",
+        "description": "Backend connects to the RDS instance for data storage"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "cdn",
+        "alb"
+      ],
+      "private_services": [
+        "backend",
+        "database"
+      ],
+      "ingress": [
+        "80/tcp",
+        "443/tcp"
+      ],
+      "notes": "Public services are exposed via the internet; private services run in private subnets of a VPC."
+    },
+    "storage": [
+      {
+        "name": "frontend-bucket",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "frontend"
+        ]
+      },
+      {
+        "name": "app-db",
+        "kind": "relational_db",
+        "aws_service": "rds",
+        "attached_to": [
+          "database"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "frontend hosting method",
+        "detail": "User description only says 'web app'; we assume the frontend consists of static assets served via S3.",
+        "assumption": "Static website hosted on Amazon S3"
+      },
+      {
+        "topic": "frontend CDN",
+        "detail": "Assumed to improve global performance and provide HTTPS termination.",
+        "assumption": "Amazon CloudFront distribution in front of S3"
+      },
+      {
+        "topic": "backend compute platform",
+        "detail": "Chosen for serverless container management without managing EC2 instances.",
+        "assumption": "Containers run on Amazon ECS using the Fargate launch type"
+      },
+      {
+        "topic": "backend runtime",
+        "detail": "Common choice for modern web applications; not specified by the user.",
+        "assumption": "Application runs on Node.js 18 runtime"
+      },
+      {
+        "topic": "database engine",
+        "detail": "Typical relational engine for web apps; no engine was provided.",
+        "assumption": "PostgreSQL relational database on Amazon RDS"
+      },
+      {
+        "topic": "region",
+        "detail": "Default region used when none is specified.",
+        "assumption": "Deployment in us-east-1 (N. Virginia)"
+      },
+      {
+        "topic": "VPC design",
+        "detail": "Standard security segregation between internet‑facing and internal resources.",
+        "assumption": "Single VPC with public subnets for the ALB and private subnets for backend and RDS"
+      },
+      {
+        "topic": "instance sizes",
+        "detail": "Small instance types chosen for a minimal demo deployment; can be scaled later.",
+        "assumption": "t3.micro for RDS and default Fargate task size (0.5 vCPU, 1 GiB memory)"
+      },
+      {
+        "topic": "domain name",
+        "detail": "No domain was provided; a placeholder is used for DNS records.",
+        "assumption": "example.com placeholder domain"
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "ambiguity recorded": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 5.056839864999347,
+    "input_tokens": 1201,
+    "output_tokens": 2243,
+    "prompt_version": "1"
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "alb",
+        "aws_service": "elasticloadbalancingv2",
+        "purpose": "Application Load Balancer for routing external traffic to application services"
+      },
+      {
+        "name": "app-service-1",
+        "aws_service": "ecs",
+        "purpose": "Containerized web application tier instance 1"
+      },
+      {
+        "name": "app-service-2",
+        "aws_service": "ecs",
+        "purpose": "Containerized web application tier instance 2"
+      },
+      {
+        "name": "postgres-db",
+        "aws_service": "rds",
+        "purpose": "PostgreSQL relational database"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "alb",
+        "target": "app-service-1",
+        "description": "ALB routes traffic to application service 1"
+      },
+      {
+        "source": "alb",
+        "target": "app-service-2",
+        "description": "ALB routes traffic to application service 2"
+      },
+      {
+        "source": "app-service-1",
+        "target": "postgres-db",
+        "description": "Application service 1 connects to PostgreSQL RDS"
+      },
+      {
+        "source": "app-service-2",
+        "target": "postgres-db",
+        "description": "Application service 2 connects to PostgreSQL RDS"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "alb"
+      ],
+      "private_services": [
+        "app-service-1",
+        "app-service-2",
+        "postgres-db"
+      ],
+      "ingress": [
+        "HTTP 80",
+        "HTTPS 443"
+      ],
+      "notes": "Public ALB resides in public subnets; application services and RDS reside in private subnets."
+    },
+    "storage": [
+      {
+        "name": "app-bucket",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "app-service-1",
+          "app-service-2"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "region",
+        "detail": "No AWS region was specified; defaulting to us-east-1.",
+        "assumption": "us-east-1"
+      },
+      {
+        "topic": "vpc_cidr",
+        "detail": "VPC CIDR block not provided; using a common 10.0.0.0/16 range.",
+        "assumption": "10.0.0.0/16"
+      },
+      {
+        "topic": "subnet_configuration",
+        "detail": "Subnet layout was unspecified; creating two public subnets for the ALB and two private subnets for services and RDS.",
+        "assumption": "2 public + 2 private subnets"
+      },
+      {
+        "topic": "rds_instance_type",
+        "detail": "RDS instance class not mentioned; selecting db.t3.medium as a modest default.",
+        "assumption": "db.t3.medium"
+      },
+      {
+        "topic": "rds_storage_size",
+        "detail": "No storage size for PostgreSQL was given; defaulting to 20 GiB.",
+        "assumption": "20 GiB"
+      },
+      {
+        "topic": "ecs_compute",
+        "detail": "Compute resources for ECS services were omitted; using 0.5 vCPU and 1 GiB memory per task (Fargate).",
+        "assumption": "0.5 vCPU, 1 GiB memory"
+      },
+      {
+        "topic": "s3_versioning",
+        "detail": "Versioning setting for the S3 bucket was not defined; enabling versioning for data safety.",
+        "assumption": "Versioning enabled"
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "RDS service": true,
+    "object storage": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [
+    {
+      "attempt": 1,
+      "errors": [
+        "dependencies.4.target: unknown service 'app-bucket'",
+        "dependencies.5.target: unknown service 'app-bucket'"
+      ]
+    }
+  ],
+  "metrics": {
+    "plan_attempts": 2,
+    "llm_attempts": 2,
+    "elapsed_seconds": 7.671927469004004,
+    "input_tokens": 3135,
+    "output_tokens": 2995,
+    "prompt_version": "1"
+  }
+}

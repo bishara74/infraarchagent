@@ -1,0 +1,128 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "api-ingest",
+        "aws_service": "apigateway",
+        "purpose": "Receive external API requests and forward them to the message queue"
+      },
+      {
+        "name": "message-queue",
+        "aws_service": "sqs",
+        "purpose": "Buffer events between the API layer and worker services"
+      },
+      {
+        "name": "worker-service",
+        "aws_service": "ecs",
+        "purpose": "Consume messages from the queue, process them, and write results to the data warehouse"
+      },
+      {
+        "name": "data-warehouse",
+        "aws_service": "redshift",
+        "purpose": "Store processed data for analytics and reporting"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "api-ingest",
+        "target": "message-queue",
+        "description": "API layer publishes events to the message queue"
+      },
+      {
+        "source": "message-queue",
+        "target": "worker-service",
+        "description": "Workers poll messages from the queue for processing"
+      },
+      {
+        "source": "worker-service",
+        "target": "data-warehouse",
+        "description": "Workers write processed data into the warehouse"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "api-ingest"
+      ],
+      "private_services": [
+        "message-queue",
+        "worker-service",
+        "data-warehouse"
+      ],
+      "ingress": [
+        "HTTPS 0.0.0.0/0 -> api-ingest"
+      ],
+      "notes": "All private services reside in private subnets of a VPC; API gateway is publicly accessible."
+    },
+    "storage": [
+      {
+        "name": "warehouse-db",
+        "kind": "relational_db",
+        "aws_service": "redshift",
+        "attached_to": [
+          "data-warehouse"
+        ]
+      },
+      {
+        "name": "raw-bucket",
+        "kind": "object_storage",
+        "aws_service": "s3",
+        "attached_to": [
+          "api-ingest"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "Message Queue Implementation",
+        "detail": "The description did not specify a queue technology; SQS is the native AWS managed queue service.",
+        "assumption": "Amazon SQS is used as the message queue."
+      },
+      {
+        "topic": "Worker Runtime Environment",
+        "detail": "No runtime was mentioned; ECS Fargate provides a serverless container platform suitable for processing messages.",
+        "assumption": "Workers run on Amazon ECS using Fargate launch type."
+      },
+      {
+        "topic": "Data Warehouse Choice",
+        "detail": "The term \"data warehouse\" is ambiguous; Redshift is the primary AWS offering for columnar analytical storage.",
+        "assumption": "Amazon Redshift is used as the data warehouse."
+      },
+      {
+        "topic": "API Ingress Method",
+        "detail": "The description only says \"API ingest\"; HTTPS through API Gateway is the typical secure entry point on AWS.",
+        "assumption": "HTTPS via Amazon API Gateway is used for external access."
+      },
+      {
+        "topic": "Raw Data Storage",
+        "detail": "Storing raw payloads is not described; S3 is the default object storage for such use cases.",
+        "assumption": "Amazon S3 bucket stores raw incoming data before processing."
+      },
+      {
+        "topic": "Network Segmentation",
+        "detail": "No network layout was provided; this segmentation isolates internal components while exposing only the API.",
+        "assumption": "All services run inside a single VPC with public subnet for API Gateway and private subnets for the queue, workers, and warehouse."
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "queue service": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 4.744232941000064,
+    "input_tokens": 1327,
+    "output_tokens": 2091,
+    "prompt_version": "2"
+  }
+}
