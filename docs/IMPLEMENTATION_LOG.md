@@ -27,6 +27,48 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-27 — Phase 1/2 follow-up — Rate-limit hints and architect corrections
+
+**Summary:** LLM adapters now fall back from an unusable `retry-after` to
+the larger parseable token or request reset duration and log only the
+parsed wait and recognized header names. Architect prompt version 2
+clarifies the roles of services, storage and file types; plan validation
+now gives specific corrections when dependencies name storage or tools.
+
+**Requirements addressed:** FR-A-01, FR-A-02, FR-A-04, PR-05, NFR-01.
+
+**Files:** changed `backend/app/llm/errors.py`, `base.py`, `anthropic.py`,
+`openai.py`, `backend/app/agents/prompts/architect.py`,
+`backend/app/domain/plan.py`, their unit tests, the committed offline
+stub report under `docs/evals/`, and `docs/design-deviations.md` (D-09,
+D-11).
+
+**Decisions:** D-09 now accepts finite nonnegative numeric seconds and
+durations such as `7.66s`, `1m2.5s`, and `250ms`. A valid `retry-after`
+takes precedence; otherwise the larger valid reset hint wins. The
+existing deadline cap is unchanged. Per-attempt logs show the parsed
+wait and fixed header names, never header values. D-11 records prompt
+version 2 and actionable dependency-reference feedback. The stub report
+was refreshed with explicit settings and `.env` loading disabled.
+
+**Tests:** Before each of the three commits, `make lint` passed: Ruff
+check, Ruff format check (69 app/test files), and mypy (43 source files).
+`make test` was attempted before each commit but stopped at the Alembic
+migration because PostgreSQL refused the connection at 127.0.0.1:5432;
+pytest did not start. `make up` failed because Docker is unavailable in
+this WSL distro, and the Windows Docker executable could not connect.
+The offline unit suite passed after each code change: 214 tests after
+the rate-limit change and 218 after prompt v2. Tests cover all requested
+duration formats, precedence, invalid values, header-name-only logs,
+deadline clipping, the revised prompt, and both actionable messages.
+No real API call was made.
+
+**Known gaps / follow-ups:** The full database-backed test suite needs
+PostgreSQL or Docker Desktop WSL integration restored. The author's real
+Groq run informed these changes but was not repeated in this task.
+
+---
+
 ## 2026-09-27 — Phase 2 follow-up — Evaluation failure details
 
 **Summary:** The ArchitectAgent now retains up to ten validation messages
