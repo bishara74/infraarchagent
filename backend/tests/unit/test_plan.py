@@ -109,3 +109,25 @@ def test_cycle_and_multiple_errors() -> None:
     )
     assert any("unknown service" in error for error in errors)
     assert any("terraform is required" in error for error in errors)
+
+
+@pytest.mark.req("FR-A-01")
+@pytest.mark.parametrize("field", ["source", "target"])
+def test_dependency_on_storage_gets_actionable_message(field: str) -> None:
+    plan = valid_plan()
+    plan["dependencies"][0][field] = "data"
+    assert (
+        f"dependencies.0.{field}: 'data' is a storage entry, not a service; "
+        "link it with storage[].attached_to instead of dependencies"
+    ) in plan_validation_errors(plan)
+
+
+@pytest.mark.req("FR-A-01", "FR-A-02")
+@pytest.mark.parametrize("field", ["source", "target"])
+def test_dependency_on_file_type_gets_actionable_message(field: str) -> None:
+    plan = valid_plan()
+    plan["dependencies"][0][field] = "terraform"
+    assert (
+        f"dependencies.0.{field}: 'terraform' is a deployment tool / file type, "
+        "not a service; remove it from dependencies"
+    ) in plan_validation_errors(plan)

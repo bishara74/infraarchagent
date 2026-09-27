@@ -203,6 +203,10 @@ Status values:
 - **Reason:** the schema and prompt stay aligned, and a correction targets
   concrete plan defects without persisting untrusted text.
 - **Implemented in Phase 2:** prompt builder and ArchitectAgent tests.
+- **Prompt v2 follow-up:** explicitly separates services, storage attachments,
+  and deployment tools, and tells the model to verify every service reference
+  before responding. Validation feedback identifies storage names and file
+  types used as dependency endpoints and gives the corrective action.
 - **Evaluation follow-up:** reports include at most ten validation messages
   per failed plan attempt and the safe LLM failure category. They omit
   prompts, raw responses, and credentials; console attempt metrics pass

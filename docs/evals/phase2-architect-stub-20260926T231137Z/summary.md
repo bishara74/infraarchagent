@@ -14,7 +14,7 @@ Model: `stub`
 - LLM attempts: 1
 - Elapsed seconds: 0.000
 - Input/output tokens: None/None
-- Prompt version: 1
+- Prompt version: 2
 
 ## vague_web_app
 
@@ -26,7 +26,7 @@ Model: `stub`
 - LLM attempts: 1
 - Elapsed seconds: 0.000
 - Input/output tokens: None/None
-- Prompt version: 1
+- Prompt version: 2
 
 ## static_site
 
@@ -38,7 +38,7 @@ Model: `stub`
 - LLM attempts: 1
 - Elapsed seconds: 0.000
 - Input/output tokens: None/None
-- Prompt version: 1
+- Prompt version: 2
 
 ## data_pipeline
 
@@ -50,7 +50,7 @@ Model: `stub`
 - LLM attempts: 1
 - Elapsed seconds: 0.000
 - Input/output tokens: None/None
-- Prompt version: 1
+- Prompt version: 2
 
 ## kubernetes_monitoring
 
@@ -62,7 +62,7 @@ Model: `stub`
 - LLM attempts: 1
 - Elapsed seconds: 0.000
 - Input/output tokens: None/None
-- Prompt version: 1
+- Prompt version: 2
 
 ## correction diagnostic
 

@@ -87,6 +87,26 @@ def _label(value: str) -> str:
     return repr(value[:80] + ("…" if len(value) > 80 else ""))
 
 
+def _unknown_dependency_message(
+    index: int,
+    field: str,
+    name: str,
+    storage_names: set[str],
+) -> str:
+    prefix = f"dependencies.{index}.{field}: {_label(name)}"
+    if name in storage_names:
+        return (
+            f"{prefix} is a storage entry, not a service; link it with "
+            "storage[].attached_to instead of dependencies"
+        )
+    if name in FileType._value2member_map_:
+        return (
+            f"{prefix} is a deployment tool / file type, not a service; "
+            "remove it from dependencies"
+        )
+    return f"dependencies.{index}.{field}: unknown service {_label(name)}"
+
+
 def _cycle_errors(edges: dict[str, list[str]]) -> list[str]:
     errors: list[str] = []
     visited: set[str] = set()
@@ -126,17 +146,18 @@ def _consistency_errors(data: dict[str, Any]) -> list[str]:
         {name for name in storage_names if storage_names.count(name) > 1}
     ):
         errors.append(f"storage: duplicate name {_label(name)}")
+    storage_name_set = set(storage_names)
 
     edges: dict[str, list[str]] = {name: [] for name in service_names}
     for index, dependency in enumerate(_records(data.get("dependencies"))):
         source, target = dependency.get("source"), dependency.get("target")
         if isinstance(source, str) and source not in service_names:
             errors.append(
-                f"dependencies.{index}.source: unknown service {_label(source)}"
+                _unknown_dependency_message(index, "source", source, storage_name_set)
             )
         if isinstance(target, str) and target not in service_names:
             errors.append(
-                f"dependencies.{index}.target: unknown service {_label(target)}"
+                _unknown_dependency_message(index, "target", target, storage_name_set)
             )
         if isinstance(source, str) and source == target:
             errors.append(f"dependencies.{index}: service cannot depend on itself")
