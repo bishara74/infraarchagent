@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 from typing import Any
 
@@ -261,3 +262,71 @@ async def test_missing_or_invalid_retry_after_uses_jittered_backoff(
         assert (await adapter.complete_json("x")).attempts == 2
     assert calls == 2
     assert clock.sleeps == [random.Random(0).uniform(0, 1)]
+
+
+@pytest.mark.req("FR-A-04", "PR-05", "NFR-01")
+@pytest.mark.parametrize("provider", ["anthropic", "openai"])
+async def test_reset_hint_fallback_waits_and_logs_only_header_names(
+    provider: str, caplog: pytest.LogCaptureFixture
+) -> None:
+    calls = 0
+    clock = FakeClock()
+    caplog.set_level(logging.INFO, logger="app.llm.base")
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx2.Response(
+                429,
+                headers={
+                    "retry-after": "invalid-secret-value",
+                    "x-ratelimit-reset-tokens": "7.66s",
+                    "x-ratelimit-reset-requests": "1m2.5s",
+                },
+                json=error_body(provider, 429),
+            )
+        return httpx2.Response(200, json=success_body(provider))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = adapter_for(provider, client)
+        adapter.policy = RetryPolicy(30, 2, 100, 0, 16000)
+        adapter._clock = clock.now
+        adapter._sleep = clock.sleep
+        assert (await adapter.complete_json("x")).attempts == 2
+    assert clock.sleeps == [62.5]
+    first_line = next(
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "app.llm.base" and "attempt=1" in record.getMessage()
+    )
+    assert "retry_after=62.5" in first_line
+    assert (
+        "rate_limit_headers=retry-after,x-ratelimit-reset-tokens,"
+        "x-ratelimit-reset-requests"
+    ) in first_line
+    assert "invalid-secret-value" not in caplog.text
+    assert "7.66s" not in caplog.text
+    assert "1m2.5s" not in caplog.text
+
+
+@pytest.mark.req("FR-A-04", "PR-05")
+@pytest.mark.parametrize("provider", ["anthropic", "openai"])
+async def test_reset_hint_obeys_deadline(provider: str) -> None:
+    clock = FakeClock()
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(
+            429,
+            headers={"x-ratelimit-reset-tokens": "20s"},
+            json=error_body(provider, 429),
+        )
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = adapter_for(provider, client)
+        adapter.policy = RetryPolicy(30, 2, 10, 0, 16000)
+        adapter._clock = clock.now
+        adapter._sleep = clock.sleep
+        with pytest.raises(LLMDeadlineExceeded):
+            await adapter.complete_json("x")
+    assert clock.sleeps == []

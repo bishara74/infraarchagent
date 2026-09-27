@@ -164,17 +164,22 @@ Status values:
 ### D-09 — Respect provider rate-limit retry delay (Accepted)
 - **Spec:** LLM calls retry transient failures with exponential backoff;
   provider-directed rate-limit delays are not specified.
-- **Implementation:** on HTTP 429, both adapters parse a finite,
-  nonnegative `retry-after` value in seconds from the SDK response. The
-  shared wrapper waits for the greater of this value and jittered backoff,
-  within the remaining call deadline. A delay that leaves no time for another
-  attempt raises `LLMDeadlineExceeded` without sleeping. Missing or invalid
-  headers use ordinary backoff.
+- **Implementation:** on HTTP 429, both adapters prefer a finite,
+  nonnegative `retry-after` value, including numeric seconds and duration
+  strings. If it is absent or invalid, they take the largest parseable
+  `x-ratelimit-reset-tokens` or `x-ratelimit-reset-requests` duration
+  (`ms`, `s`, or `m` plus `s`). The shared wrapper waits for the greater of
+  this value and jittered backoff, within the remaining call deadline. A
+  delay that leaves no time for another attempt raises
+  `LLMDeadlineExceeded` without sleeping. With no valid hint, ordinary
+  backoff applies.
 - **Reason:** retrying before the provider's stated limit expires wastes an
-  attempt and can repeat the rate limit. Only the parsed number reaches the
-  shared error; raw response headers are never logged.
-- **Implemented in Phase 1 follow-up:** both SDK mappings, shared retry
-  policy, and deterministic `httpx2.MockTransport` tests.
+  attempt and can repeat the rate limit. Only the parsed wait and names of
+  recognized rate-limit headers reach the shared error and attempt log;
+  raw header values are never logged.
+- **Implemented in Phase 1 follow-ups:** both SDK mappings, shared retry
+  policy, duration fallback and safe header-name logging, with deterministic
+  `httpx2.MockTransport` tests.
 
 ### D-10 — Strict deployment plan (Accepted)
 - **Spec:** FR-A-01--03 require a structured plan, named IaC file types, and

@@ -17,6 +17,7 @@ from app.llm.errors import (
     LLMRetryExhausted,
     LLMTransientError,
     parse_retry_after,
+    rate_limit_wait,
 )
 from app.llm.stub import StubAdapter
 
@@ -249,9 +250,65 @@ def test_extract_json_rejects_non_object_or_extra_text(source: str) -> None:
         ("-1", None),
         ("20", 20.0),
         ("0.5", 0.5),
+        ("7.66s", 7.66),
+        ("1m2.5s", 62.5),
+        ("250ms", 0.25),
+        ("1m", 60.0),
+        ("20s", 20.0),
+        ("1m2.5s-extra", None),
+        ("1h", None),
+        ("-1s", None),
+        ("-1m2s", None),
     ],
 )
 def test_retry_after_parses_only_nonnegative_finite_seconds(
     header: str | None, expected: float | None
 ) -> None:
     assert parse_retry_after(header) == expected
+
+
+@pytest.mark.req("FR-A-04", "PR-05")
+def test_rate_limit_reset_fallback_and_priority() -> None:
+    assert rate_limit_wait(
+        {
+            "retry-after": "7.66s",
+            "x-ratelimit-reset-tokens": "1m2.5s",
+            "x-ratelimit-reset-requests": "250ms",
+        }
+    ) == (
+        7.66,
+        (
+            "retry-after",
+            "x-ratelimit-reset-tokens",
+            "x-ratelimit-reset-requests",
+        ),
+    )
+    assert (
+        rate_limit_wait(
+            {
+                "retry-after": "invalid",
+                "x-ratelimit-reset-tokens": "1m2.5s",
+                "x-ratelimit-reset-requests": "250ms",
+            }
+        )[0]
+        == 62.5
+    )
+    assert (
+        rate_limit_wait(
+            {
+                "x-ratelimit-reset-tokens": "bad",
+                "x-ratelimit-reset-requests": "250ms",
+            }
+        )[0]
+        == 0.25
+    )
+    assert (
+        rate_limit_wait(
+            {
+                "retry-after": "bad",
+                "x-ratelimit-reset-tokens": "nan",
+                "x-ratelimit-reset-requests": "-2s",
+            }
+        )[0]
+        is None
+    )

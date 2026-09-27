@@ -136,6 +136,7 @@ class LLMAdapter(ABC):
             response: LLMResponse | None = None
             last_stats = None
             retry_after: float | None = None
+            rate_limit_headers: tuple[str, ...] = ()
             category = "success"
             try:
                 response = await asyncio.wait_for(
@@ -162,6 +163,7 @@ class LLMAdapter(ABC):
             except LLMTransientError as error:
                 category = error.category
                 retry_after = error.retry_after
+                rate_limit_headers = error.rate_limit_headers
             except LLMResponseFormatError as error:
                 category = error.reason
                 last_stats = error.stats or last_stats
@@ -178,7 +180,8 @@ class LLMAdapter(ABC):
                 stats = response.stats() if response is not None else None
                 logger.info(
                     "provider=%s model=%s attempt=%d outcome=%s latency=%.3f "
-                    "input_tokens=%s output_tokens=%s prompt_chars=%d system_chars=%d",
+                    "input_tokens=%s output_tokens=%s prompt_chars=%d system_chars=%d "
+                    "retry_after=%s rate_limit_headers=%s",
                     self.provider,
                     self.model,
                     attempt,
@@ -188,6 +191,8 @@ class LLMAdapter(ABC):
                     stats.output_tokens if stats else None,
                     len(prompt),
                     len(system) if system else 0,
+                    retry_after if retry_after is not None else "none",
+                    ",".join(rate_limit_headers) if rate_limit_headers else "none",
                 )
             elapsed = self._clock() - started
             if self._clock() >= ends_at:

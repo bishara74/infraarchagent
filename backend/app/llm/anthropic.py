@@ -9,7 +9,7 @@ from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_obje
 from app.llm.errors import (
     LLMPermanentError,
     LLMTransientError,
-    parse_retry_after,
+    rate_limit_wait,
     status_error,
 )
 
@@ -53,12 +53,16 @@ class AnthropicAdapter(LLMAdapter):
         except anthropic.APIConnectionError:
             raise LLMTransientError("connection") from None
         except anthropic.APIStatusError as error:
-            retry_after = (
-                parse_retry_after(error.response.headers.get("retry-after"))
+            retry_after, header_names = (
+                rate_limit_wait(error.response.headers)
                 if error.status_code == 429
-                else None
+                else (None, ())
             )
-            raise status_error(error.status_code, retry_after=retry_after) from None
+            raise status_error(
+                error.status_code,
+                retry_after=retry_after,
+                rate_limit_headers=header_names,
+            ) from None
         except (anthropic.APIError, httpx2.TransportError):
             raise LLMPermanentError("provider") from None
         return LLMResponse(
