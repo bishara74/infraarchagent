@@ -27,6 +27,42 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-27 — Phase 2 follow-up — Broader intent gate and no-call deadline test
+
+**Summary:** Widened the deterministic infrastructure-intent gate to accept
+realistic descriptions that omit product-specific cloud terms. Added a
+deadline regression test that checks the stub receives no second prompt
+when fewer than one second remains after an invalid first plan.
+
+**Requirements addressed:** FR-I-02, FR-A-04, PR-05.
+
+**Files:** changed `backend/app/domain/input_rules.py`,
+`backend/tests/unit/test_input_rules.py`,
+`backend/tests/unit/test_architect.py`, and
+`docs/design-deviations.md` (CL-04).
+
+**Decisions:** Single-word terms accept optional whole-word suffixes `s`,
+`es`, `ing`, and `ed`. Added terms for stores, online platforms, serving,
+scheduled jobs, applications, and WebSockets while keeping the list at 100
+terms. CL-04 now states that this coarse gate favours false accepts over
+false rejects. The budget test uses a fake clock: the first invalid plan
+consumes 149.5 of 150 seconds, leaving too little time to start another call.
+
+**Tests:** `make test` → 218 passed, 0 failed, 0 skipped. `make lint` →
+Ruff check passed, Ruff format check passed (69 app/test files), mypy passed
+(43 source files). The new tables cover 14 accepted descriptions, six
+rejected descriptions, and all four suffixes; existing intent tests still
+pass. With the pre-call `remaining < 1` guard temporarily removed, the new
+budget test failed as intended because the stub recorded two prompts;
+after restoring the guard, it passed with exactly one prompt. No network
+call was made.
+
+**Known gaps / follow-ups:** The word list is intentionally lenient and
+can accept text that merely mentions an infrastructure term. No HTTP
+mapping or real-provider evaluation was added in this follow-up.
+
+---
+
 ## 2026-09-27 — Phase 2 — Input rules and ArchitectAgent
 
 **Summary:** Added deterministic input validation, per-run configuration,
