@@ -29,9 +29,7 @@ INFRASTRUCTURE_TERMS = (
     "deploy",
     "deployment",
     "host",
-    "hosting",
     "provision",
-    "provisioning",
     "scale",
     "scaling",
     "infrastructure",
@@ -41,7 +39,6 @@ INFRASTRUCTURE_TERMS = (
     "ec2",
     "lambda",
     "server",
-    "servers",
     "virtual machine",
     "vm",
     "instance",
@@ -57,12 +54,22 @@ INFRASTRUCTURE_TERMS = (
     "web server",
     "frontend",
     "backend",
+    "application",
+    "online",
+    "platform",
+    "e-commerce",
+    "ecommerce",
+    "endpoint",
+    "serving",
+    "websocket",
+    "bot",
+    "store",
+    "cron",
+    "scheduled",
+    "scalable",
     "api",
-    "apis",
     "microservice",
-    "microservices",
     "service",
-    "services",
     "static site",
     "cdn",
     "cloudfront",
@@ -94,7 +101,6 @@ INFRASTRUCTURE_TERMS = (
     "volume",
     "ebs",
     "container",
-    "containers",
     "docker",
     "dockerfile",
     "kubernetes",
@@ -124,6 +130,8 @@ INFRASTRUCTURE_TERMS = (
 
 
 def _term_pattern(term: str) -> str:
+    if term.isalpha():
+        return re.escape(term) + r"(?:s|es|ing|ed)?"
     return r"\s+".join(re.escape(part) for part in term.split())
 
 

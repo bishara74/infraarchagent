@@ -242,7 +242,10 @@ Status values:
 - **Implementation:** reject control characters first, then measure Unicode
   code points after stripping surrounding whitespace and reject out-of-range
   input with the future HTTP 400 error, then apply the intent gate and use
-  the future HTTP 422 error. Thus `hello` is a length error.
+  the future HTTP 422 error. Thus `hello` is a length error. The word-list
+  gate favours false accepts over false rejects: one whole-word
+  infrastructure term, including simple single-word inflections, is enough
+  to proceed.
 - **Implemented in Phase 2:** pure input rules and boundary tests. HTTP
   mapping remains Phase 4 work.
 

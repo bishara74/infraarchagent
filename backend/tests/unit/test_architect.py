@@ -168,6 +168,24 @@ async def test_exhausted_budget_starts_no_second_call(
 
 
 @pytest.mark.req("FR-A-04", "PR-05")
+async def test_nearly_exhausted_budget_starts_no_second_call() -> None:
+    clock = FakeClock()
+    invalid = plan()
+    invalid["file_types"] = []
+    adapter = StubAdapter(
+        policy=RetryPolicy(150, 1, 150, 0, 100),
+        script=[(149.5, json.dumps(invalid)), (1, json.dumps(plan()))],
+        sleep=clock.sleep,
+        clock=clock.now,
+    )
+    agent = ArchitectAgent(adapter, deadline_seconds=150, clock=clock.now)
+    agent.parse_input("build a web app")
+    with pytest.raises(ArchitectDeadlineExceeded):
+        await agent.generate_plan()
+    assert len(adapter.prompts) == 1
+
+
+@pytest.mark.req("FR-A-04", "PR-05")
 async def test_valid_plan_returned_just_before_deadline_is_accepted(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
