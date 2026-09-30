@@ -46,7 +46,11 @@ def test_plan_is_data_and_layout_is_table_driven() -> None:
     assert "‹/deployment_plan>" in user_prompt
     assert '"cloud_provider": "aws"' in user_prompt
     system_prompt = build_system_prompt("directive")
+    assert GENERATOR_PROMPT_VERSION == "2"
     assert f"prompt version {GENERATOR_PROMPT_VERSION}" in system_prompt
+    assert "no explanatory comments beyond one short header" in system_prompt
+    assert "no duplicated boilerplate" in system_prompt
+    assert "Terraform locals or modules" in system_prompt
     for rule in LAYOUT.values():
         for pattern in rule.required:
             assert pattern in system_prompt
@@ -67,6 +71,11 @@ def test_system_prompts_vary_only_in_delimited_directive() -> None:
             prefix + DIRECTIVE_START + "SENTINEL" + DIRECTIVE_END + suffix
         )
     assert len(set(normalized)) == 1
+    assert (
+        "When the plan uses Kubernetes, include a HorizontalPodAutoscaler for "
+        "each application Deployment."
+        in PerformanceGeneratorAgent.optimisation_directive
+    )
 
 
 @pytest.mark.req("FR-A-05")

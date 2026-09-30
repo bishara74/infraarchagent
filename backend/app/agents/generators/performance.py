@@ -10,5 +10,7 @@ class PerformanceGeneratorAgent(GeneratorAgent):
         "Optimise for performance. Prefer larger instance classes, multi_az = true "
         "for relational databases, autoscaling via an ASG with scaling policies "
         "and/or a Kubernetes HorizontalPodAutoscaler, multiple replicas, caching "
-        "when the plan has a cache, and load balancing across Availability Zones."
+        "when the plan has a cache, and load balancing across Availability Zones. "
+        "When the plan uses Kubernetes, include a HorizontalPodAutoscaler for "
+        "each application Deployment."
     )

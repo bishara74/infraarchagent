@@ -241,6 +241,10 @@ Status values:
 - **Reason:** names and references across files are more likely to stay
   consistent when generated together.
 - **Implemented in Phase 3:** the shared GeneratorAgent template.
+- **Prompt v2 follow-up:** instruct generators to keep files compact after a
+  real evaluation encountered an upstream 8,192-token output cap. The
+  performance directive also calls for an HPA per application Deployment
+  when Kubernetes is in the plan.
 
 ### D-15 — Template Method plus Strategy for generators (Accepted)
 - **Spec:** Chapter 4 and the class diagram show each concrete generator
