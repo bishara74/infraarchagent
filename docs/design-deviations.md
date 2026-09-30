@@ -221,6 +221,17 @@ Status values:
   generator prompt, validator, and tests share one convention.
 - **Implemented in Phase 3:** `app/domain/package_layout.py`.
 
+### D-13 — Directive compliance is a report (Accepted)
+- **Spec:** FR-G-03--05 set preferences and FR-G-05 proposes a Checkov-based
+  first-scan test, but the generator-stage rejection policy is unspecified.
+- **Implementation:** cost size and AZ, performance multi-AZ and autoscaling,
+  and security RDS/S3 encryption, S3 public access, ingress port, and IAM
+  action checks are regex-level reports. They never reject a structurally
+  valid package. The check receives the plan for conditional DB/S3 checks.
+- **Reason:** text heuristics cannot establish actual compliance; Phase 5
+  scanner findings provide the substantive security result.
+- **Implemented in Phase 3:** `app/domain/directive_checks.py`.
+
 ### D-14 — One LLM response per package attempt (Accepted)
 - **Spec:** FR-G-02 requires a complete package but does not specify call
   granularity.
