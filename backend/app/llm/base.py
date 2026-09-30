@@ -196,22 +196,21 @@ class LLMAdapter(ABC):
                 raise LLMPermanentError("unexpected") from None
             finally:
                 stats = response.stats() if response is not None else None
-                logger.info(
-                    "provider=%s model=%s attempt=%d outcome=%s latency=%.3f "
-                    "input_tokens=%s output_tokens=%s prompt_chars=%d system_chars=%d "
-                    "retry_after=%s rate_limit_headers=%s",
-                    self.provider,
-                    self.model,
-                    attempt,
-                    category,
-                    self._clock() - attempt_started,
-                    stats.input_tokens if stats else None,
-                    stats.output_tokens if stats else None,
-                    len(prompt),
-                    len(system) if system else 0,
-                    retry_after if retry_after is not None else "none",
-                    ",".join(rate_limit_headers) if rate_limit_headers else "none",
-                )
+                fields = [
+                    f"provider={self.provider}",
+                    f"model={self.model}",
+                    f"attempt={attempt}",
+                    f"outcome={category}",
+                    f"latency={self._clock() - attempt_started:.3f}",
+                    f"input_tokens={stats.input_tokens if stats else None}",
+                    f"output_tokens={stats.output_tokens if stats else None}",
+                    f"prompt_chars={len(prompt)}",
+                    f"system_chars={len(system) if system else 0}",
+                    f"retry_after={retry_after if retry_after is not None else 'none'}",
+                    "rate_limit_headers="
+                    + (",".join(rate_limit_headers) if rate_limit_headers else "none"),
+                ]
+                logger.info("%s", " ".join(fields))
             elapsed = self._clock() - started
             if self._clock() >= ends_at:
                 raise LLMDeadlineExceeded(attempt, elapsed)

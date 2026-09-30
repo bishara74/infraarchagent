@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import random
 from typing import Any
 
@@ -33,6 +34,67 @@ class FakeClock:
     async def sleep(self, duration: float) -> None:
         self.sleeps.append(duration)
         self.time += duration
+
+
+@pytest.mark.req("FR-A-04", "NFR-01")
+@pytest.mark.parametrize(
+    ("outcome", "step", "expected_error"),
+    [
+        ("success", '{"ok":true}', None),
+        ("timeout", TimeoutError(), LLMRetryExhausted),
+        ("cancelled", asyncio.CancelledError(), asyncio.CancelledError),
+        ("transient", LLMTransientError("transient"), LLMRetryExhausted),
+        ("rate_limit", LLMTransientError("rate_limit"), LLMRetryExhausted),
+        ("server", LLMTransientError("server"), LLMRetryExhausted),
+        ("connection", LLMTransientError("connection"), LLMRetryExhausted),
+        ("invalid_json", "not JSON", LLMRetryExhausted),
+        (
+            "truncated",
+            LLMResponse('{"ok":true}', stop_reason="max_tokens"),
+            LLMRetryExhausted,
+        ),
+        ("deadline", LLMDeadlineExceeded(1, 0), LLMDeadlineExceeded),
+        ("request", LLMPermanentError("request"), LLMPermanentError),
+        ("unexpected", RuntimeError("hidden error text"), LLMPermanentError),
+    ],
+)
+async def test_attempt_log_is_parseable_for_every_outcome(
+    outcome: str,
+    step: str | LLMResponse | BaseException,
+    expected_error: type[BaseException] | None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="app.llm.base")
+    adapter = StubAdapter(policy=RetryPolicy(30, 1, 150, 0, 100), script=[step])
+    if expected_error is None:
+        await adapter.complete_json("prompt", system="rules")
+    else:
+        with pytest.raises(expected_error):
+            await adapter.complete_json("prompt", system="rules")
+    lines = [
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "app.llm.base"
+    ]
+    assert len(lines) == 1
+    assert "  " not in lines[0]
+    parsed = dict(field.split("=", 1) for field in lines[0].split(" "))
+    assert set(parsed) == {
+        "provider",
+        "model",
+        "attempt",
+        "outcome",
+        "latency",
+        "input_tokens",
+        "output_tokens",
+        "prompt_chars",
+        "system_chars",
+        "retry_after",
+        "rate_limit_headers",
+    }
+    assert parsed["outcome"] == outcome
+    assert parsed["prompt_chars"] == "6"
+    assert parsed["system_chars"] == "5"
 
 
 @pytest.mark.req("PR-05")
