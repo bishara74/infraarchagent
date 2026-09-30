@@ -4,7 +4,7 @@ import pytest
 
 from app.agents.factory import AgentFactory
 from app.core.config import Settings
-from app.domain.enums import LLMProvider
+from app.domain.enums import LLMProvider, Variant
 from app.domain.run_config import RunConfig
 from app.llm.errors import LLMConfigurationError
 from app.llm.stub import StubAdapter
@@ -63,3 +63,27 @@ def test_missing_real_provider_configuration_surfaces() -> None:
         AgentFactory(settings()).create_architect(
             RunConfig(provider=LLMProvider.OPENAI, model="real-model")
         )
+
+
+@pytest.mark.req("FR-G-01", "FR-I-04")
+def test_generator_factory_order_settings_and_run_overrides() -> None:
+    configured = settings(
+        llm_model="default",
+        generator_deadline_seconds=90,
+        generator_attempt_timeout_seconds=75,
+        generator_max_output_tokens=12345,
+        generator_max_package_attempts=4,
+    )
+    agents = AgentFactory(configured).create_generators(
+        RunConfig(provider=LLMProvider.STUB, model="override")
+    )
+    assert [agent.variant for agent in agents] == list(Variant)
+    assert len({id(agent.llm_adapter) for agent in agents}) == 3
+    for agent in agents:
+        assert agent.llm_adapter.model == "override"
+        assert agent.deadline_seconds == 90
+        assert agent.attempt_timeout == 75
+        assert agent.max_output_tokens == 12345
+        assert agent.max_package_attempts == 4
+    security_agent = AgentFactory(configured).create_generator(Variant.SECURITY)
+    assert security_agent.variant is Variant.SECURITY
