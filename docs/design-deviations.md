@@ -231,6 +231,13 @@ Status values:
 - **Reason:** text heuristics cannot establish actual compliance; Phase 5
   scanner findings provide the substantive security result.
 - **Implemented in Phase 3:** `app/domain/directive_checks.py`.
+- **Aurora heuristic correction (2026-09-30):** the performance multi-AZ
+  report originally looked only for `multi_az = true`, which falsely failed
+  Aurora clusters. It now also passes when an `aws_rds_cluster` has more than
+  one declared `aws_rds_cluster_instance`, or lists more than one distinct
+  `availability_zones` value. This remains a text heuristic: it does not
+  resolve Terraform expressions, verify that instances reference the same
+  cluster, or prove actual placement across zones.
 
 ### D-14 — One LLM response per package attempt (Accepted)
 - **Spec:** FR-G-02 requires a complete package but does not specify call

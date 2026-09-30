@@ -59,18 +59,62 @@ def _cost(terraform: str) -> list[DirectiveCheck]:
     ]
 
 
+def _resource_bodies(terraform: str, resource_type: str) -> list[str]:
+    declaration = re.compile(
+        rf'\bresource\s+"{re.escape(resource_type)}"\s+"[^"]+"\s*\{{', re.I
+    )
+    bodies: list[str] = []
+    for match in declaration.finditer(terraform):
+        depth = 1
+        for index in range(match.end(), len(terraform)):
+            if terraform[index] == "{":
+                depth += 1
+            elif terraform[index] == "}":
+                depth -= 1
+                if depth == 0:
+                    bodies.append(terraform[match.end() : index])
+                    break
+    return bodies
+
+
+def _aurora_multi_az(terraform: str) -> tuple[bool, str]:
+    clusters = _resource_bodies(terraform, "aws_rds_cluster")
+    if not clusters:
+        return False, ""
+    instances = _resource_bodies(terraform, "aws_rds_cluster_instance")
+    if len(instances) > 1:
+        return True, f"Found an Aurora cluster with {len(instances)} instances."
+    for cluster in clusters:
+        for match in re.finditer(
+            r"\bavailability_zones\s*=\s*\[([^\]]*)\]", cluster, re.I | re.S
+        ):
+            zones = set(re.findall(r'"([^"]+)"', match.group(1)))
+            if len(zones) > 1:
+                return (
+                    True,
+                    f"Found an Aurora cluster with {len(zones)} availability zones.",
+                )
+    return False, ""
+
+
 def _performance(
     terraform: str, kubernetes: str, plan: DeploymentPlan
 ) -> list[DirectiveCheck]:
     checks: list[DirectiveCheck] = []
     if _has_relational_db(plan):
-        multi_az = bool(re.search(r"\bmulti_az\s*=\s*true\b", terraform, re.I))
+        explicit_multi_az = bool(re.search(r"\bmulti_az\s*=\s*true\b", terraform, re.I))
+        aurora_multi_az, aurora_detail = _aurora_multi_az(terraform)
         checks.append(
             _check(
                 "relational DB multi-AZ",
-                multi_az,
-                "Found multi_az = true for a plan with a relational DB.",
-                "Plan has a relational DB but no multi_az = true setting was found.",
+                explicit_multi_az or aurora_multi_az,
+                (
+                    "Found multi_az = true for a plan with a relational DB."
+                    if explicit_multi_az
+                    else aurora_detail
+                ),
+                "Plan has a relational DB but no multi-AZ setting or qualifying "
+                "Aurora cluster was found.",
             )
         )
     scaling = bool(

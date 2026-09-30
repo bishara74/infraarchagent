@@ -85,6 +85,61 @@ def test_performance_conditional_multi_az_and_autoscaling() -> None:
     assert hpa[0].passed
 
 
+@pytest.mark.req("FR-G-04")
+def test_performance_aurora_cluster_with_two_instances_passes_multi_az() -> None:
+    terraform = "\n".join(
+        (
+            'resource "aws_rds_cluster" "db" { engine = "aurora-postgresql" }',
+            'resource "aws_rds_cluster_instance" "first" { '
+            "cluster_identifier = aws_rds_cluster.db.id }",
+            'resource "aws_rds_cluster_instance" "second" { '
+            "cluster_identifier = aws_rds_cluster.db.id }",
+        )
+    )
+    checks = check_directive(
+        Variant.PERFORMANCE, {"terraform/main.tf": terraform}, plan(rds=True)
+    )
+    db_check = next(check for check in checks if check.name == "relational DB multi-AZ")
+    assert db_check.passed
+    assert "2 instances" in db_check.detail
+
+
+@pytest.mark.req("FR-G-04")
+def test_performance_aurora_cluster_with_two_availability_zones_passes() -> None:
+    terraform = "\n".join(
+        (
+            'resource "aws_rds_cluster" "db" {',
+            '  engine = "aurora-postgresql"',
+            '  availability_zones = ["us-east-1a", "us-east-1b"]',
+            "  serverlessv2_scaling_configuration { min_capacity = 0.5 }",
+            "}",
+        )
+    )
+    checks = check_directive(
+        Variant.PERFORMANCE, {"terraform/main.tf": terraform}, plan(rds=True)
+    )
+    db_check = next(check for check in checks if check.name == "relational DB multi-AZ")
+    assert db_check.passed
+    assert "2 availability zones" in db_check.detail
+
+
+@pytest.mark.req("FR-G-04")
+@pytest.mark.parametrize(
+    "terraform",
+    [
+        'resource "aws_rds_cluster" "db" {}\n'
+        'resource "aws_rds_cluster_instance" "only" {}',
+        'resource "aws_rds_cluster" "db" { '
+        'availability_zones = ["us-east-1a", "us-east-1a"] }',
+        'resource "aws_rds_cluster_instance" "first" {}\n'
+        'resource "aws_rds_cluster_instance" "second" {}',
+    ],
+)
+def test_performance_aurora_without_qualifying_cluster_fails(terraform: str) -> None:
+    checks = report(Variant.PERFORMANCE, terraform, plan(rds=True))
+    assert not checks["relational DB multi-AZ"]
+
+
 @pytest.mark.req("FR-G-05")
 def test_security_conditional_encryption_and_public_access_checks() -> None:
     good = report(

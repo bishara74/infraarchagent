@@ -27,6 +27,45 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-30 — Phase 3 follow-up — Evaluation logging, prompt, and Aurora check
+
+**Summary:** Fixed the LLM attempt log separator, recorded optional
+OpenRouter serving and reasoning diagnostics, shortened the generator's
+prompt-v2 output guidance, required Kubernetes HPAs in the performance
+directive, and corrected the Aurora multi-AZ report after the first real
+model comparison.
+
+**Requirements addressed:** PR-05, NFR-01, FR-G-04.
+
+**Files:** changed `backend/app/llm/base.py`,
+`backend/app/llm/openai.py`, `backend/app/agents/prompts/generator.py`,
+`backend/app/domain/directive_checks.py`, their unit tests,
+`docs/design-deviations.md`, and this log.
+
+**Decisions:** D-13 now recognizes an Aurora cluster with multiple instance
+declarations or multiple distinct explicit availability zones. The check
+remains a text heuristic and does not resolve Terraform references or prove
+placement. D-14 records the compact prompt-v2 guidance and the performance
+HPA instruction. Serving diagnostics are optional and never required for a
+successful response. Attempt log fields are complete `key=value` tokens
+joined with single spaces.
+
+**Tests:** Before the first three commits, `make lint` passed each time and
+`make test` reported 304, 307, and 307 passed respectively. Before the
+Aurora commit, `make lint` passed Ruff check, Ruff format check (84 files),
+and mypy (52 source files); `make test` reported 312 passed, 0 failed,
+0 skipped. New tests parse every attempt outcome, exercise OpenRouter mock
+transport with and without optional fields, compare directive-neutralized
+prompts, and cover Aurora pass and fail cases. No real provider calls were
+made.
+
+**Known gaps / follow-ups:** The Aurora result remains an advisory heuristic;
+subsequent validation and scanning must establish package validity and
+deployed behaviour. The untracked report from the first real evaluation was
+left outside these commits.
+
+---
+
 ## 2026-09-30 — Phase 3 — Generator agents and offline evaluation
 
 **Summary:** Added a shared full-package generation template, three
