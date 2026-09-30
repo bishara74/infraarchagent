@@ -6,6 +6,7 @@ from typing import Any
 import httpx2
 import pytest
 
+from app.core.config import ReasoningEffort
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import RetryPolicy
 from app.llm.errors import LLMDeadlineExceeded, LLMPermanentError, LLMTransientError
@@ -136,6 +137,83 @@ async def test_openrouter_serving_diagnostics_are_optional(
         assert result.response.reasoning_tokens is None
         assert "served_by=" not in line
         assert "reasoning_tokens=" not in line
+
+
+@pytest.mark.req("PR-05")
+@pytest.mark.parametrize(
+    ("effort", "reasoning"),
+    [
+        (None, None),
+        ("off", {"enabled": False}),
+        ("low", {"effort": "low"}),
+        ("medium", {"effort": "medium"}),
+        ("high", {"effort": "high"}),
+    ],
+)
+async def test_openai_compatible_reasoning_request_body_and_log(
+    effort: ReasoningEffort | None,
+    reasoning: dict[str, str | bool] | None,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="app.llm.base")
+    requests: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        requests.append(request)
+        return httpx2.Response(200, json=success_body("openai"))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = OpenAIAdapter(
+            "test-model",
+            POLICY,
+            "canary-placeholder",
+            http_client=client,
+            reasoning_effort=effort,
+        )
+        assert (await adapter.complete_json("x")).data == {"ok": True}
+    payload = json.loads(requests[0].content)
+    assert "reasoning_effort" not in payload
+    if reasoning is None:
+        assert "reasoning" not in payload
+    else:
+        assert payload["reasoning"] == reasoning
+    line = next(
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "app.llm.base"
+    )
+    assert f"reasoning_effort={effort or 'unset'}" in line.split(" ")
+
+
+@pytest.mark.req("PR-05")
+async def test_anthropic_ignores_reasoning_effort_in_request(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="app.llm.base")
+    requests: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        requests.append(request)
+        return httpx2.Response(200, json=success_body("anthropic"))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = AnthropicAdapter(
+            "test-model",
+            POLICY,
+            "canary-placeholder",
+            http_client=client,
+            reasoning_effort="high",
+        )
+        assert (await adapter.complete_json("x")).data == {"ok": True}
+    payload = json.loads(requests[0].content)
+    assert "reasoning" not in payload
+    assert "thinking" not in payload
+    assert "output_config" not in payload
+    assert any(
+        "reasoning_effort=high" in record.getMessage().split(" ")
+        for record in caplog.records
+        if record.name == "app.llm.base"
+    )
 
 
 @pytest.mark.req("PR-05")

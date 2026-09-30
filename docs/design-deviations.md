@@ -266,6 +266,21 @@ Status values:
   behavior; only their optimisation guidance varies.
 - **Implemented in Phase 3:** the three named GeneratorAgent subclasses.
 
+### D-16 — Optional reasoning effort for OpenAI-compatible requests (Accepted)
+- **Spec:** the thesis does not define a request-level reasoning control for
+  the generator evaluation.
+- **Implementation:** `LLM_REASONING_EFFORT` is unset by default. The
+  OpenAI-compatible adapter then omits `reasoning`; `off` sends
+  `reasoning: {enabled: false}` and `low`, `medium`, or `high` send
+  `reasoning: {effort: <value>}` through the SDK's `extra_body`. Every attempt
+  logs the configured value or `unset`. The Anthropic adapter records the
+  setting but does not change its request.
+- **Reason:** [OpenRouter's unified reasoning parameter](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens)
+  permits controlled comparisons while leaving existing calls unchanged by
+  default. Providers and models may differ in support.
+- **Evaluation:** OQ-07's configuration mechanism is resolved; its effect on
+  generation quality is measured in the evaluation, not assumed here.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -381,6 +396,11 @@ Implemented in Phase 2 and tested with an injectable clock.
 Evaluation provider must allow ~3 concurrent full generations (~36K
 tokens/min); Groq free (8K TPM) does not. Decide before PR-01/PR-05
 measurements.
+
+### OQ-07 — Reasoning effort and generator quality (Mechanism resolved)
+The optional request control is implemented in D-16. Compare output quality,
+completion, and token use across settings in the evaluation before claiming
+that any effort level improves generator results.
 
 ---
 

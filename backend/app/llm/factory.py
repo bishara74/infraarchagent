@@ -22,7 +22,11 @@ def build_adapter(
         raise LLMConfigurationError("Unknown LLM_PROVIDER") from None
     chosen_policy = policy or RetryPolicy.from_settings(settings)
     if selected is LLMProvider.STUB:
-        return StubAdapter(model or settings.llm_model or "stub", chosen_policy)
+        return StubAdapter(
+            model or settings.llm_model or "stub",
+            chosen_policy,
+            reasoning_effort=settings.llm_reasoning_effort,
+        )
     chosen_model = model or settings.llm_model
     if not chosen_model:
         raise LLMConfigurationError("LLM_MODEL is required for a real LLM adapter")
@@ -33,7 +37,16 @@ def build_adapter(
             "LLM_API_KEY is required for a real LLM adapter"
         ) from None
     if selected is LLMProvider.ANTHROPIC:
-        return AnthropicAdapter(chosen_model, chosen_policy, key)
+        return AnthropicAdapter(
+            chosen_model,
+            chosen_policy,
+            key,
+            reasoning_effort=settings.llm_reasoning_effort,
+        )
     return OpenAIAdapter(
-        chosen_model, chosen_policy, key, base_url=settings.llm_base_url
+        chosen_model,
+        chosen_policy,
+        key,
+        base_url=settings.llm_base_url,
+        reasoning_effort=settings.llm_reasoning_effort,
     )

@@ -1,7 +1,7 @@
 import httpx2
 import pytest
 
-from app.core.config import Settings
+from app.core.config import ReasoningEffort, Settings
 from app.llm import factory as factory_module
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import RetryPolicy
@@ -33,12 +33,27 @@ def test_factory_selects_provider_and_overrides_model_and_policy() -> None:
     assert isinstance(anthropic, AnthropicAdapter)
     assert anthropic.model == "configured"
     assert anthropic.policy.max_attempts == 3
+    assert anthropic.reasoning_effort is None
     openai = build_adapter(
         configured, provider="openai", model="override", policy=policy
     )
     assert isinstance(openai, OpenAIAdapter)
     assert openai.model == "override"
     assert openai.policy is policy
+
+
+@pytest.mark.req("PR-05")
+@pytest.mark.parametrize("provider", ["stub", "anthropic", "openai"])
+def test_factory_passes_reasoning_effort_to_adapter(provider: str) -> None:
+    adapter = build_adapter(
+        settings(
+            llm_provider=provider,
+            llm_model="test-model",
+            llm_api_key="placeholder",
+            llm_reasoning_effort="low",
+        )
+    )
+    assert adapter.reasoning_effort == "low"
 
 
 @pytest.mark.req("FR-I-04", "NFR-03")
@@ -105,10 +120,20 @@ async def test_factory_base_url_reaches_openai_request(
         real_adapter = OpenAIAdapter
 
         def adapter_with_mock(
-            model: str, policy: RetryPolicy, key: str, *, base_url: str | None
+            model: str,
+            policy: RetryPolicy,
+            key: str,
+            *,
+            base_url: str | None,
+            reasoning_effort: ReasoningEffort | None,
         ) -> OpenAIAdapter:
             return real_adapter(
-                model, policy, key, http_client=client, base_url=base_url
+                model,
+                policy,
+                key,
+                http_client=client,
+                base_url=base_url,
+                reasoning_effort=reasoning_effort,
             )
 
         monkeypatch.setattr(factory_module, "OpenAIAdapter", adapter_with_mock)

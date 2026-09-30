@@ -33,6 +33,7 @@ def test_defaults_and_secret_representations() -> None:
     assert settings.llm_backoff_base_seconds == 1.0
     assert settings.llm_max_output_tokens == 16000
     assert settings.llm_base_url is None
+    assert settings.llm_reasoning_effort is None
     assert "CANARY" not in repr(settings)
     assert "secret" not in repr(settings)
 
@@ -85,3 +86,16 @@ def test_llm_base_url_is_optional_and_empty_means_unset() -> None:
         _settings(llm_base_url="https://groq.test/openai/v1").llm_base_url
         == "https://groq.test/openai/v1"
     )
+
+
+@pytest.mark.req("PR-05")
+@pytest.mark.parametrize("effort", ["off", "low", "medium", "high"])
+def test_reasoning_effort_accepts_supported_values(effort: str) -> None:
+    assert _settings(llm_reasoning_effort=effort).llm_reasoning_effort == effort
+
+
+@pytest.mark.req("PR-05")
+def test_reasoning_effort_empty_is_unset_and_unknown_is_rejected() -> None:
+    assert _settings(llm_reasoning_effort="").llm_reasoning_effort is None
+    with pytest.raises(ValidationError):
+        _settings(llm_reasoning_effort="max")

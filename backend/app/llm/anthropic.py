@@ -5,6 +5,7 @@ from typing import Any
 import anthropic
 import httpx2
 
+from app.core.config import ReasoningEffort
 from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_object
 from app.llm.errors import (
     LLMPermanentError,
@@ -24,8 +25,9 @@ class AnthropicAdapter(LLMAdapter):
         api_key: str,
         *,
         http_client: httpx2.AsyncClient | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> None:
-        super().__init__(model, policy)
+        super().__init__(model, policy, reasoning_effort=reasoning_effort)
         self.client = anthropic.AsyncAnthropic(
             api_key=api_key, max_retries=0, http_client=http_client
         )

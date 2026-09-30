@@ -122,6 +122,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_MODEL` | Model name, required for a real adapter | Unset |
 | `LLM_API_KEY` | Real-adapter credential | Unset |
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
+| `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
 | `LLM_ATTEMPT_TIMEOUT_SECONDS` | Per-call attempt limit | `30` |
 | `LLM_MAX_ATTEMPTS` | Total attempts per call | `3` |
 | `LLM_DEADLINE_SECONDS` | Overall limit per `complete_json` call | `150` |
@@ -136,6 +137,15 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `3` |
 | `PACKAGE_RETENTION_DAYS` | Package sweep cutoff | `30` |
 | `LOG_LEVEL` | Python log level | `INFO` |
+
+When `LLM_REASONING_EFFORT` is unset, requests omit reasoning controls.
+With the OpenAI-compatible adapter, `off` sends OpenRouter's
+`reasoning.enabled=false`; `low`, `medium`, and `high` send
+`reasoning.effort`. Model and upstream support vary; see
+[OpenRouter's reasoning documentation](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
+The Anthropic adapter currently records the configured value in attempt logs
+but does not alter its request. The effect on generation quality is assessed
+in evaluation results.
 
 `infraarch_owner` owns the databases and applies Alembic migrations.
 `infraarch_app` serves the API and runs the retention sweep. It cannot delete

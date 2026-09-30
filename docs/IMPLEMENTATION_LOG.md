@@ -27,6 +27,39 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-30 — Phase 3 follow-up — Configurable reasoning effort
+
+**Summary:** Added optional `LLM_REASONING_EFFORT` control for
+OpenAI-compatible requests and recorded its configured value in each LLM
+attempt log. Unset leaves request bodies unchanged.
+
+**Requirements addressed:** PR-05, NFR-01.
+
+**Files:** changed `backend/app/core/config.py`, `backend/app/llm/base.py`,
+`backend/app/llm/openai.py`, `backend/app/llm/anthropic.py`,
+`backend/app/llm/stub.py`, `backend/app/llm/factory.py`, their configuration,
+factory, adapter, and log tests, `.env.example`, `README.md`,
+`docs/design-deviations.md`, and this log.
+
+**Decisions:** D-16 maps `off` to OpenRouter's
+`reasoning: {enabled: false}` and `low`/`medium`/`high` to
+`reasoning: {effort: <value>}` in SDK `extra_body`. Anthropic does not send
+the setting; it only records it in the common attempt log. The default logs
+`reasoning_effort=unset`. OQ-07's request mechanism is resolved, while the
+quality effect remains an evaluation question.
+
+**Tests:** `make test` passed with 326 passed, 0 failed, 0 skipped.
+`make lint` passed Ruff check, Ruff format check (84 files), and mypy
+(52 source files). Mock transport tests assert absence when unset and exact
+request shapes for all configured values, plus Anthropic's unchanged body.
+No real provider calls were made.
+
+**Known gaps / follow-ups:** Provider/model support and any quality benefit
+must be assessed in evaluation; the adapters do not discover supported
+reasoning levels per model.
+
+---
+
 ## 2026-09-30 — Phase 3 follow-up — Generator prompt v3 autoscaling
 
 **Summary:** Advanced the generator prompt to version 3 and replaced the

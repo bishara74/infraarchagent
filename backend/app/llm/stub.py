@@ -6,6 +6,7 @@ import time
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Any
 
+from app.core.config import ReasoningEffort
 from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_object
 from app.llm.errors import LLMPermanentError
 
@@ -25,6 +26,7 @@ class StubAdapter(LLMAdapter):
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
         clock: Callable[[], float] = time.monotonic,
         rng: random.Random | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> None:
         super().__init__(
             model,
@@ -32,6 +34,7 @@ class StubAdapter(LLMAdapter):
             sleep=sleep,
             clock=clock,
             rng=rng,
+            reasoning_effort=reasoning_effort,
         )
         self._script = list(script) if script is not None else None
         self.prompts: list[str] = []

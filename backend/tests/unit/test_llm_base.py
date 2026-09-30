@@ -84,6 +84,7 @@ async def test_attempt_log_is_parseable_for_every_outcome(
         "model",
         "attempt",
         "outcome",
+        "reasoning_effort",
         "latency",
         "input_tokens",
         "output_tokens",
@@ -93,6 +94,7 @@ async def test_attempt_log_is_parseable_for_every_outcome(
         "rate_limit_headers",
     }
     assert parsed["outcome"] == outcome
+    assert parsed["reasoning_effort"] == "unset"
     assert parsed["prompt_chars"] == "6"
     assert parsed["system_chars"] == "5"
 

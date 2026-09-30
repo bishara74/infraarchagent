@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import quote
 
-from app.core.config import Settings
+from app.core.config import ReasoningEffort, Settings
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -96,9 +96,11 @@ class LLMAdapter(ABC):
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
         clock: Callable[[], float] = time.monotonic,
         rng: random.Random | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
     ) -> None:
         self.model = model
         self.policy = policy
+        self.reasoning_effort = reasoning_effort
         self._sleep = sleep
         self._clock = clock
         self._rng = rng or random.Random()
@@ -204,6 +206,7 @@ class LLMAdapter(ABC):
                     f"model={self.model}",
                     f"attempt={attempt}",
                     f"outcome={category}",
+                    f"reasoning_effort={self.reasoning_effort or 'unset'}",
                     f"latency={self._clock() - attempt_started:.3f}",
                     f"input_tokens={stats.input_tokens if stats else None}",
                     f"output_tokens={stats.output_tokens if stats else None}",
