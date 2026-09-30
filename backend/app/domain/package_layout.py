@@ -8,8 +8,8 @@ from app.domain.paths import UnsafePathError, validate_file_map, validate_relati
 from app.domain.plan import FileType
 
 MAX_FILES = 80
-MAX_FILE_BYTES = 200 * 1024
-MAX_PACKAGE_BYTES = 2 * 1024 * 1024
+MAX_FILE_BYTES = 200_000
+MAX_PACKAGE_BYTES = 2_000_000
 
 
 @dataclass(frozen=True)

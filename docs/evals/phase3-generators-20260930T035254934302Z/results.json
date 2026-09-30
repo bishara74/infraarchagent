@@ -1,0 +1,248 @@
+{
+  "cases": [
+    {
+      "model": "stub",
+      "plan": "three_tier",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "Cost uses small on-demand resources.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 0.0003162640005029971,
+      "input_tokens": 1000,
+      "output_tokens": 2000,
+      "file_count": 1,
+      "total_characters": 112,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "stub",
+      "plan": "three_tier",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "Performance uses multi-AZ and autoscaling.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 0.00025463299971306697,
+      "input_tokens": 1000,
+      "output_tokens": 2000,
+      "file_count": 1,
+      "total_characters": 153,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "stub",
+      "plan": "three_tier",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "S3 encryption",
+          "passed": true,
+          "detail": "Found an S3 server-side encryption configuration."
+        },
+        {
+          "name": "S3 public access block",
+          "passed": true,
+          "detail": "Found an S3 public access block."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "Security enables encryption and limits ingress.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 0.00064107599973795,
+      "input_tokens": 1000,
+      "output_tokens": 2000,
+      "file_count": 1,
+      "total_characters": 315,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "stub",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": false,
+          "detail": "Found 1 larger or unknown instance classes."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "Cost uses small on-demand resources.",
+      "package_attempts": 2,
+      "llm_attempts": 2,
+      "elapsed_seconds": 0.0012548359991342295,
+      "input_tokens": 2000,
+      "output_tokens": 4000,
+      "file_count": 5,
+      "total_characters": 308,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        4,
+        0
+      ]
+    },
+    {
+      "model": "stub",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "Performance uses multi-AZ and autoscaling.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 0.00043934300083492417,
+      "input_tokens": 1000,
+      "output_tokens": 2000,
+      "file_count": 5,
+      "total_characters": 349,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "stub",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": false,
+          "detail": "Found an IAM action wildcard."
+        }
+      ],
+      "notes": "Security enables encryption and limits ingress.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 0.0002911510000558337,
+      "input_tokens": 1000,
+      "output_tokens": 2000,
+      "file_count": 5,
+      "total_characters": 527,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    }
+  ],
+  "triples": [
+    {
+      "model": "stub",
+      "plan": "three_tier",
+      "wall_seconds": 0.00372606700148026,
+      "mode": "parallel"
+    },
+    {
+      "model": "stub",
+      "plan": "kubernetes_monitoring",
+      "wall_seconds": 0.0031033790000947192,
+      "mode": "parallel"
+    }
+  ],
+  "totals": {
+    "stub": {
+      "success_rate": 1.0,
+      "compliance_rate": 0.875,
+      "median_seconds": 0.0003778035006689606,
+      "input_tokens": 7000,
+      "output_tokens": 14000,
+      "total_tokens": 21000,
+      "estimated_cost": 0.035
+    }
+  }
+}

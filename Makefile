@@ -2,7 +2,7 @@ PYTHON := python3
 VENV := backend/.venv
 BACKEND := cd backend &&
 
-.PHONY: up down install migrate migrate-test run test lint sweep spike eval-architect
+.PHONY: up down install migrate migrate-test run test lint sweep spike eval-architect eval-generators
 
 up:
 	docker compose up -d --wait
@@ -39,3 +39,6 @@ spike:
 
 eval-architect:
 	$(BACKEND) .venv/bin/python scripts/eval_architect.py $(EVAL_ARGS)
+
+eval-generators:
+	$(BACKEND) .venv/bin/python scripts/eval_generators.py $(EVAL_ARGS)

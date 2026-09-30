@@ -1,0 +1,54 @@
+{
+  "three_tier": {
+    "cost": {
+      "files": {
+        "terraform/main.tf": "resource \"aws_db_instance\" \"db\" {\n  identifier = \"rds-db\"\n  instance_class = \"db.t3.micro\"\n  multi_az = false\n}\n"
+      },
+      "notes": "Cost uses small on-demand resources."
+    },
+    "performance": {
+      "files": {
+        "terraform/main.tf": "resource \"aws_db_instance\" \"db\" {\n  identifier = \"rds-db\"\n  instance_class = \"db.m5.large\"\n  multi_az = true\n}\nresource \"aws_autoscaling_group\" \"web\" {}\n"
+      },
+      "notes": "Performance uses multi-AZ and autoscaling."
+    },
+    "security": {
+      "files": {
+        "terraform/main.tf": "resource \"aws_db_instance\" \"db\" {\n  identifier = \"rds-db\"\n  storage_encrypted = true\n}\nresource \"aws_s3_bucket_server_side_encryption_configuration\" \"assets\" {}\nresource \"aws_s3_bucket_public_access_block\" \"assets\" {}\ningress { from_port = 443 to_port = 443 cidr_blocks = [\"0.0.0.0/0\"] }\nactions = [\"s3:GetObject\"]\n"
+      },
+      "notes": "Security enables encryption and limits ingress."
+    }
+  },
+  "kubernetes_monitoring": {
+    "cost": {
+      "files": {
+        "terraform/main.tf": "resource \"aws_db_instance\" \"db\" {\n  identifier = \"rds-db\"\n  instance_class = \"db.m5.large\"\n  multi_az = false\n}\n",
+        "k8s/web.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: microservice-a\nspec:\n  replicas: 2\n",
+        "helm/web/Chart.yaml": "apiVersion: v2\nname: web\nversion: 0.1.0\n",
+        "monitoring/prometheus/scrape.yml": "global:\n  scrape_interval: 15s\n",
+        "monitoring/grafana/dashboard.json": "{\"title\":\"Web Metrics\",\"panels\":[]}"
+      },
+      "notes": "Cost uses small on-demand resources."
+    },
+    "performance": {
+      "files": {
+        "terraform/main.tf": "resource \"aws_db_instance\" \"db\" {\n  identifier = \"rds-db\"\n  instance_class = \"db.m5.large\"\n  multi_az = true\n}\nresource \"aws_autoscaling_group\" \"web\" {}\n",
+        "k8s/web.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: microservice-a\nspec:\n  replicas: 2\n",
+        "helm/web/Chart.yaml": "apiVersion: v2\nname: web\nversion: 0.1.0\n",
+        "monitoring/prometheus/scrape.yml": "global:\n  scrape_interval: 15s\n",
+        "monitoring/grafana/dashboard.json": "{\"title\":\"Web Metrics\",\"panels\":[]}"
+      },
+      "notes": "Performance uses multi-AZ and autoscaling."
+    },
+    "security": {
+      "files": {
+        "terraform/main.tf": "resource \"aws_db_instance\" \"db\" {\n  identifier = \"rds-db\"\n  storage_encrypted = true\n}\nresource \"aws_s3_bucket_server_side_encryption_configuration\" \"assets\" {}\nresource \"aws_s3_bucket_public_access_block\" \"assets\" {}\ningress { from_port = 443 to_port = 443 cidr_blocks = [\"0.0.0.0/0\"] }\nactions = [\"s3:GetObject\"]\nactions = [\"*\"]\n",
+        "k8s/web.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: microservice-a\nspec:\n  replicas: 2\n",
+        "helm/web/Chart.yaml": "apiVersion: v2\nname: web\nversion: 0.1.0\n",
+        "monitoring/prometheus/scrape.yml": "global:\n  scrape_interval: 15s\n",
+        "monitoring/grafana/dashboard.json": "{\"title\":\"Web Metrics\",\"panels\":[]}"
+      },
+      "notes": "Security enables encryption and limits ingress."
+    }
+  }
+}

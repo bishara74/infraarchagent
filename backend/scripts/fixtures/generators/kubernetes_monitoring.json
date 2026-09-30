@@ -1,0 +1,132 @@
+{
+  "cloud_provider": "aws",
+  "services": [
+    {
+      "name": "eks-cluster",
+      "aws_service": "eks",
+      "purpose": "Managed Kubernetes control plane for running containerized microservices."
+    },
+    {
+      "name": "microservice-a",
+      "aws_service": "eks",
+      "purpose": "Application microservice A deployed as a container in the EKS cluster."
+    },
+    {
+      "name": "microservice-b",
+      "aws_service": "eks",
+      "purpose": "Application microservice B deployed as a container in the EKS cluster."
+    },
+    {
+      "name": "prometheus",
+      "aws_service": "eks",
+      "purpose": "Prometheus instance collecting metrics from the microservices."
+    },
+    {
+      "name": "grafana",
+      "aws_service": "eks",
+      "purpose": "Grafana dashboard visualizing metrics from Prometheus."
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "microservice-a",
+      "target": "eks-cluster",
+      "description": "Runs on the EKS cluster."
+    },
+    {
+      "source": "microservice-b",
+      "target": "eks-cluster",
+      "description": "Runs on the EKS cluster."
+    },
+    {
+      "source": "prometheus",
+      "target": "eks-cluster",
+      "description": "Runs on the EKS cluster."
+    },
+    {
+      "source": "grafana",
+      "target": "prometheus",
+      "description": "Visualizes metrics collected by Prometheus."
+    }
+  ],
+  "network": {
+    "public_services": [
+      "microservice-a",
+      "microservice-b",
+      "grafana"
+    ],
+    "private_services": [
+      "eks-cluster",
+      "prometheus"
+    ],
+    "ingress": [
+      "HTTPS from 0.0.0.0/0 to microservice-a (path /api/a)",
+      "HTTPS from 0.0.0.0/0 to microservice-b (path /api/b)",
+      "HTTPS from 0.0.0.0/0 to grafana (path /grafana)"
+    ],
+    "notes": "Ingress is assumed to be handled by an AWS Application Load Balancer integrated with the EKS cluster."
+  },
+  "storage": [
+    {
+      "name": "efs-storage",
+      "kind": "other",
+      "aws_service": "efs",
+      "attached_to": [
+        "microservice-a",
+        "microservice-b"
+      ]
+    },
+    {
+      "name": "rds-db",
+      "kind": "relational_db",
+      "aws_service": "rds",
+      "attached_to": [
+        "microservice-a"
+      ]
+    }
+  ],
+  "file_types": [
+    "terraform",
+    "kubernetes",
+    "helm",
+    "prometheus",
+    "grafana"
+  ],
+  "ambiguities": [
+    {
+      "topic": "microservice count",
+      "detail": "Assumed two microservices named microservice-a and microservice-b.",
+      "assumption": "Two microservices are required."
+    },
+    {
+      "topic": "Kubernetes platform",
+      "detail": "Assumed use of Amazon EKS as the managed Kubernetes service.",
+      "assumption": "EKS will host the workloads."
+    },
+    {
+      "topic": "Storage selection",
+      "detail": "Assumed EFS for shared file storage and RDS for relational database.",
+      "assumption": "Both storage types are needed."
+    },
+    {
+      "topic": "Public exposure",
+      "detail": "Assumed microservices and Grafana need public internet access.",
+      "assumption": "Public endpoints required."
+    },
+    {
+      "topic": "Ingress configuration",
+      "detail": "Assumed simple HTTPS ingress rules for public services.",
+      "assumption": "Ingress will be configured via an ALB."
+    },
+    {
+      "topic": "Monitoring deployment",
+      "detail": "Assumed Prometheus and Grafana run as pods within the same EKS cluster.",
+      "assumption": "Monitoring stack is containerized."
+    },
+    {
+      "topic": "Region and sizing",
+      "detail": "No specific region or instance sizes were provided.",
+      "assumption": "Defaults will be used."
+    }
+  ]
+}
