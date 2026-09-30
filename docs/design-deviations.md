@@ -212,6 +212,15 @@ Status values:
   prompts, raw responses, and credentials; console attempt metrics pass
   through the existing redacting logger.
 
+### D-12 — Fixed package layout (Accepted)
+- **Spec:** FR-G-02 requires each planned file type but does not specify paths.
+- **Implementation:** one FileType-to-path table defines where every generated
+  file may live and which path proves completeness. The optional root README
+  is exempt from the plan's type list; unplanned types are rejected.
+- **Reason:** explicit paths make completeness deterministic and let the
+  generator prompt, validator, and tests share one convention.
+- **Implemented in Phase 3:** `app/domain/package_layout.py`.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
