@@ -11,6 +11,9 @@ class PerformanceGeneratorAgent(GeneratorAgent):
         "for relational databases, autoscaling via an ASG with scaling policies "
         "and/or a Kubernetes HorizontalPodAutoscaler, multiple replicas, caching "
         "when the plan has a cache, and load balancing across Availability Zones. "
-        "When the plan uses Kubernetes, include a HorizontalPodAutoscaler for "
-        "each application Deployment."
+        "Configure autoscaling for every application service: a "
+        "HorizontalPodAutoscaler for each Kubernetes Deployment, Application "
+        "Auto Scaling (aws_appautoscaling_target and aws_appautoscaling_policy) "
+        "for each ECS service, and scaling policies for any EC2 Auto Scaling "
+        "group."
     )

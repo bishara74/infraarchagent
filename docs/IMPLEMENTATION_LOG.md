@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-30 — Phase 3 follow-up — Generator prompt v3 autoscaling
+
+**Summary:** Advanced the generator prompt to version 3 and replaced the
+performance directive's Kubernetes-only HPA sentence with per-service
+autoscaling guidance for Kubernetes Deployments, ECS services, and EC2 Auto
+Scaling groups.
+
+**Requirements addressed:** FR-G-04.
+
+**Files:** changed `backend/app/agents/prompts/generator.py`,
+`backend/app/agents/generators/performance.py`,
+`backend/tests/unit/test_generator_prompt.py`,
+`docs/design-deviations.md`, and this log.
+
+**Decisions:** D-14 records the directive expansion. The shared prompt rules
+and generation algorithm remain the same; only the performance strategy text
+and prompt version changed.
+
+**Tests:** `make test` passed with 312 passed, 0 failed, 0 skipped. `make lint`
+passed Ruff check, Ruff format check (84 files), and mypy (52 source files).
+The prompt test asserts the complete new instruction and confirms all three
+system prompts are byte-identical after replacing the marked directives.
+No real provider calls were made.
+
+**Known gaps / follow-ups:** The prompt directs generation but does not
+establish that generated autoscaling resources deploy correctly; later
+validation and evaluation must assess the packages.
+
+---
+
 ## 2026-09-30 — Phase 3 follow-up — Evaluation logging, prompt, and Aurora check
 
 **Summary:** Fixed the LLM attempt log separator, recorded optional

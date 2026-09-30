@@ -5,7 +5,7 @@ import json
 from app.domain.package_layout import layout_guidance
 from app.domain.plan import DeploymentPlan
 
-GENERATOR_PROMPT_VERSION = "2"
+GENERATOR_PROMPT_VERSION = "3"
 DIRECTIVE_START = "<optimisation_directive>"
 DIRECTIVE_END = "</optimisation_directive>"
 
