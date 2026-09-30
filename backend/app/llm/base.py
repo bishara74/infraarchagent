@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import quote
 
 from app.core.config import Settings
 from app.llm.errors import (
@@ -50,6 +51,8 @@ class LLMResponse:
     input_tokens: int | None = None
     output_tokens: int | None = None
     stop_reason: str | None = None
+    served_by: str | None = None
+    reasoning_tokens: int | None = None
 
     def stats(self) -> ResponseStats:
         return ResponseStats(
@@ -210,6 +213,11 @@ class LLMAdapter(ABC):
                     "rate_limit_headers="
                     + (",".join(rate_limit_headers) if rate_limit_headers else "none"),
                 ]
+                if response is not None and response.served_by is not None:
+                    host = quote(response.served_by, safe="@._/-")
+                    fields.append(f"served_by={host}")
+                if response is not None and response.reasoning_tokens is not None:
+                    fields.append(f"reasoning_tokens={response.reasoning_tokens}")
                 logger.info("%s", " ".join(fields))
             elapsed = self._clock() - started
             if self._clock() >= ends_at:

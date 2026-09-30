@@ -102,6 +102,61 @@ async def test_provider_request_response_and_no_sdk_retries(provider: str) -> No
         assert requests[0].url.path.endswith("/chat/completions")
 
 
+@pytest.mark.req("PR-05", "NFR-01")
+@pytest.mark.parametrize("diagnostics", [True, False])
+async def test_openrouter_serving_diagnostics_are_optional(
+    diagnostics: bool, caplog: pytest.LogCaptureFixture
+) -> None:
+    caplog.set_level(logging.INFO, logger="app.llm.base")
+    body = success_body("openai")
+    if diagnostics:
+        body["provider"] = "Fireworks AI"
+        body["usage"]["completion_tokens_details"] = {"reasoning_tokens": 4}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json=body)
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = OpenAIAdapter(
+            "test-model", POLICY, "canary-placeholder", http_client=client
+        )
+        result = await adapter.complete_json("x")
+    line = next(
+        record.getMessage()
+        for record in caplog.records
+        if record.name == "app.llm.base"
+    )
+    if diagnostics:
+        assert result.response.served_by == "Fireworks AI"
+        assert result.response.reasoning_tokens == 4
+        assert "served_by=Fireworks%20AI" in line
+        assert "reasoning_tokens=4" in line
+    else:
+        assert result.response.served_by is None
+        assert result.response.reasoning_tokens is None
+        assert "served_by=" not in line
+        assert "reasoning_tokens=" not in line
+
+
+@pytest.mark.req("PR-05")
+async def test_openrouter_missing_usage_does_not_break_response() -> None:
+    body = success_body("openai")
+    del body["usage"]
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        return httpx2.Response(200, json=body)
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = OpenAIAdapter(
+            "test-model", POLICY, "canary-placeholder", http_client=client
+        )
+        result = await adapter.complete_json("x")
+    assert result.response.input_tokens is None
+    assert result.response.output_tokens is None
+    assert result.response.served_by is None
+    assert result.response.reasoning_tokens is None
+
+
 @pytest.mark.req("NFR-03")
 @pytest.mark.parametrize("provider", ["anthropic", "openai"])
 @pytest.mark.parametrize(

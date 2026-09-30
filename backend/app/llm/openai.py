@@ -73,8 +73,23 @@ class OpenAIAdapter(LLMAdapter):
             ) from None
         except (openai.APIError, httpx2.TransportError):
             raise LLMPermanentError("provider") from None
+        provider = getattr(completion, "provider", None)
+        served_by = provider if isinstance(provider, str) and provider else None
+        details = (
+            completion.usage.completion_tokens_details
+            if completion.usage is not None
+            else None
+        )
+        reported_reasoning = details.reasoning_tokens if details is not None else None
+        reasoning_tokens = (
+            reported_reasoning
+            if isinstance(reported_reasoning, int) and reported_reasoning >= 0
+            else None
+        )
         if not completion.choices:
-            return LLMResponse("")
+            return LLMResponse(
+                "", served_by=served_by, reasoning_tokens=reasoning_tokens
+            )
         choice = completion.choices[0]
         return LLMResponse(
             text=choice.message.content or "",
@@ -87,6 +102,8 @@ class OpenAIAdapter(LLMAdapter):
                 if choice.finish_reason == "length"
                 else choice.finish_reason
             ),
+            served_by=served_by,
+            reasoning_tokens=reasoning_tokens,
         )
 
     def parse_response(self, response: LLMResponse) -> dict[str, Any]:
