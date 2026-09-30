@@ -269,6 +269,15 @@ Status values:
   evaluation tests; explicitly test that `a web app` fails the length rule.
 - **Implemented in Phase 2:** input, agent, and evaluation tests.
 
+### CL-06 — Full-package generator timing
+- **Spec:** PR-05 describes 30 seconds per LLM attempt for every agent.
+- **Implementation:** short calls keep the 30-second adapter default. A
+  GeneratorAgent has a configurable 150-second overall budget and passes a
+  configurable 120-second per-attempt timeout and 32,000 output-token limit
+  for full-package calls. Remaining agent time still caps each call.
+- **Reason:** a multi-file package is substantially longer than a plan.
+- **Implemented in Phase 3:** per-call adapter overrides and generator settings.
+
 ---
 
 ## Open questions
@@ -322,6 +331,7 @@ measurements.
 ---
 
 ## Thesis text to update (collected)
+- PR-05 / per-attempt timing: state the per-agent timeouts (CL-06).
 - Tighten FR-S-07 wording to say that exhausted remediation stops fix passes,
   then validation runs before the package enters `pending_review` (CL-02).
 - Section 4.2 retention paragraph: say that the sweep deletes only packages

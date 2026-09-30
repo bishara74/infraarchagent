@@ -119,7 +119,16 @@ class LLMAdapter(ABC):
         *,
         system: str | None = None,
         deadline: float | None = None,
+        attempt_timeout: float | None = None,
+        max_output_tokens: int | None = None,
     ) -> LLMResult:
+        if attempt_timeout is not None and (
+            not isinstance(attempt_timeout, (int, float))
+            or not 0 < attempt_timeout < float("inf")
+        ):
+            raise ValueError("attempt_timeout must be finite and positive")
+        if max_output_tokens is not None and max_output_tokens < 1:
+            raise ValueError("max_output_tokens must be positive")
         started = self._clock()
         ends_at = (
             started + min(self.policy.deadline, deadline)
@@ -131,7 +140,12 @@ class LLMAdapter(ABC):
             remaining = ends_at - self._clock()
             if remaining <= 0:
                 raise LLMDeadlineExceeded(attempt - 1, self._clock() - started)
-            timeout = min(self.policy.attempt_timeout, remaining)
+            selected_timeout = (
+                attempt_timeout
+                if attempt_timeout is not None
+                else self.policy.attempt_timeout
+            )
+            timeout = min(selected_timeout, remaining)
             attempt_started = self._clock()
             response: LLMResponse | None = None
             last_stats = None
@@ -143,7 +157,11 @@ class LLMAdapter(ABC):
                     self.send_prompt(
                         prompt,
                         system=system,
-                        max_output_tokens=self.policy.max_output_tokens,
+                        max_output_tokens=(
+                            max_output_tokens
+                            if max_output_tokens is not None
+                            else self.policy.max_output_tokens
+                        ),
                         timeout=timeout,
                     ),
                     timeout=timeout,

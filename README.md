@@ -108,6 +108,10 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_DEADLINE_SECONDS` | Overall limit per `complete_json` call | `150` |
 | `AGENT_DEADLINE_SECONDS` | Shared ArchitectAgent time budget across plan attempts | `150` |
 | `ARCHITECT_MAX_PLAN_ATTEMPTS` | Maximum separate plan and correction attempts | `3` |
+| `GENERATOR_DEADLINE_SECONDS` | Budget per generator | `150` |
+| `GENERATOR_ATTEMPT_TIMEOUT_SECONDS` | Per-call attempt limit for full packages | `120` |
+| `GENERATOR_MAX_OUTPUT_TOKENS` | Output token limit for full packages | `32000` |
+| `GENERATOR_MAX_PACKAGE_ATTEMPTS` | Full-package attempts, including correction | `2` |
 | `LLM_BACKOFF_BASE_SECONDS` | Exponential retry backoff base | `1.0` |
 | `LLM_MAX_OUTPUT_TOKENS` | Output token limit per request | `16000` |
 | `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `3` |

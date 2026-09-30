@@ -35,6 +35,39 @@ class FakeClock:
         self.time += duration
 
 
+@pytest.mark.req("PR-05")
+async def test_per_call_overrides_and_none_keep_policy_defaults() -> None:
+    class RecordingAdapter(StubAdapter):
+        async def send_prompt(
+            self,
+            prompt: str,
+            *,
+            system: str | None = None,
+            max_output_tokens: int,
+            timeout: float,
+        ) -> LLMResponse:
+            self.calls.append((max_output_tokens, timeout))
+            return await super().send_prompt(
+                prompt,
+                system=system,
+                max_output_tokens=max_output_tokens,
+                timeout=timeout,
+            )
+
+    adapter = RecordingAdapter(policy=RetryPolicy(30, 3, 150, 0, 100))
+    adapter.calls = []
+    await adapter.complete_json("x", attempt_timeout=120, max_output_tokens=32000)
+    await adapter.complete_json("x", deadline=5, attempt_timeout=120)
+    await adapter.complete_json("x", attempt_timeout=None, max_output_tokens=None)
+    assert adapter.calls == [(32000, 120), (100, pytest.approx(5)), (100, 30)]
+
+
+@pytest.mark.parametrize("override", [0, -1, float("inf"), float("nan")])
+async def test_invalid_attempt_timeout_override(override: float) -> None:
+    with pytest.raises(ValueError):
+        await StubAdapter().complete_json("x", attempt_timeout=override)
+
+
 @pytest.mark.req("NFR-03", "FR-I-04")
 async def test_minimal_adapter_uses_concrete_retry_wrapper() -> None:
     class MinimalAdapter(LLMAdapter):
