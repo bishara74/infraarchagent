@@ -27,6 +27,55 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-30 — Phase 3 — Generator agents and offline evaluation
+
+**Summary:** Added a shared full-package generation template, three
+optimisation strategies, deterministic path completeness, report-only
+directive checks, factory methods, and a stub-first model comparison
+evaluator. One package response keeps cross-file names together; structural
+defects can request one complete correction.
+
+**Requirements addressed:** FR-A-05, FR-G-02--05, partial FR-G-01 and
+FR-G-06, PR-05, NFR-01. Pipeline concurrency, status, and FR-G-07
+persistence remain Phase 4 work.
+
+**Files:** added `app/domain/package_layout.py` and `directive_checks.py`,
+`app/agents/generators/*`, `app/agents/prompts/generator.py`,
+`scripts/eval_generators.py` and its committed plan/package fixtures, new
+unit tests, and a stub report under `docs/evals/phase3-generators-*`;
+changed `app/core/config.py`, `app/llm/base.py`, `app/agents/factory.py`,
+existing tests, `.env.example`, `Makefile`, `README.md`, and
+`docs/design-deviations.md`.
+
+**Decisions:** D-12 fixes package paths and treats the plan's file-type list
+as the contract. D-13 reports directive heuristics without rejecting a
+package. D-14 requests one whole package per attempt. D-15 combines the
+Template Method generation algorithm with directive-based Strategy
+subclasses. CL-06 gives full-package LLM attempts a configurable 120-second
+limit inside a 150-second agent budget. Generator notes remain in
+`GeneratorRunInfo` and the evaluation report; Phase 4 will persist them in
+the package-generated event payload. File limits use decimal UTF-8 bytes
+(200,000 per file and 2,000,000 per package).
+
+**Tests:** `make lint` passed: Ruff check, Ruff format check (84 app/test
+files), and mypy (52 source files). The offline unit suite passed with
+270 passed, 0 failed, 0 skipped. The provider canary subset passed with
+2 passed, 0 failed, 1 deselected. The stub `make eval-generators` command
+with `--models stub --no-env-file --price-in stub=1 --price-out stub=2`
+completed with six successful package cases and one visible correction;
+the report contains PASS and FAIL directive findings. `make test` stopped
+before pytest at Alembic migration because PostgreSQL refused the connection
+at 127.0.0.1:5432. `make up` failed because Docker is unavailable in this
+WSL distro.
+
+**Known gaps / follow-ups:** The full PostgreSQL-backed test suite needs
+Docker Desktop WSL integration or another PostgreSQL 16 instance. The stub
+report verifies workflow and format, not real-provider quality, deployability,
+or FR-G-05's Checkov first-scan criterion. Phase 4 owns the pipeline
+integration and persistence tests for FR-G-01, FR-G-06, and FR-G-07.
+
+---
+
 ## 2026-09-27 — Phase 1/2 follow-up — Rate-limit hints and architect corrections
 
 **Summary:** LLM adapters now fall back from an unusable `retry-after` to

@@ -371,6 +371,14 @@ measurements.
 ---
 
 ## Thesis text to update (collected)
+- Describe the fixed package layout in Chapter 4 or 5 (D-12).
+- State that `FR-G-01`, `FR-G-06`, and `FR-G-07` pipeline integration tests
+  arrive with the Phase 4 orchestrator.
+- Show `optimisation_directive: str` and the typed `variant` on the
+  GeneratorAgent class diagram; the implementation keeps run metrics and
+  notes outside `IaCPackage` (D-15).
+- State that Phase 4 persists generator design notes in the
+  package-generated event payload for the UI.
 - In the class diagram, show each generator subclass's `variant` and
   `optimisation_directive` instead of overriding `generate()` (D-15).
 - In Chapter 4's generator pattern description, name both Template Method

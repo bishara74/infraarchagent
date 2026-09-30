@@ -93,7 +93,20 @@ def _performance(
 
 
 def _open_ingress_blocks(terraform: str) -> list[str]:
-    return re.findall(r"\bingress\s*\{([^{}]*)\}", terraform, re.I | re.S)
+    blocks = re.findall(r"\bingress\s*\{([^{}]*)\}", terraform, re.I | re.S)
+    rules = re.findall(
+        r'resource\s+"(aws_(?:vpc_security_group_ingress_rule|security_group_rule))"'
+        r'\s+"[^"]+"\s*\{([^{}]*)\}',
+        terraform,
+        re.I | re.S,
+    )
+    blocks.extend(
+        body
+        for kind, body in rules
+        if kind.casefold() == "aws_vpc_security_group_ingress_rule"
+        or re.search(r'\btype\s*=\s*"ingress"', body, re.I)
+    )
+    return blocks
 
 
 def _security(terraform: str, plan: DeploymentPlan) -> list[DirectiveCheck]:
@@ -159,6 +172,7 @@ def _security(terraform: str, plan: DeploymentPlan) -> list[DirectiveCheck]:
     wildcard_actions = bool(
         re.search(r"\bactions\s*=\s*\[[^\]]*[\"']\*[\"']", terraform, re.I | re.S)
         or re.search(r'"Action"\s*:\s*(?:"\*"|\[[^\]]*"\*")', terraform, re.I | re.S)
+        or re.search(r'\bAction\s*=\s*"\*"', terraform, re.I)
     )
     checks.append(
         _check(

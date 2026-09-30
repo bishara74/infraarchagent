@@ -118,3 +118,17 @@ def test_security_conditional_encryption_and_public_access_checks() -> None:
 def test_iam_json_wildcard_is_reported() -> None:
     checks = report(Variant.SECURITY, '{"Action":"*"}', plan())
     assert not checks["IAM wildcard actions"]
+    checks = report(Variant.SECURITY, 'Action = "*"', plan())
+    assert not checks["IAM wildcard actions"]
+
+
+@pytest.mark.req("FR-G-05")
+def test_standalone_ingress_rule_is_reported() -> None:
+    checks = report(
+        Variant.SECURITY,
+        'resource "aws_security_group_rule" "http" { '
+        'type = "ingress" from_port = 80 to_port = 80 '
+        'cidr_blocks = ["0.0.0.0/0"] }',
+        plan(),
+    )
+    assert not checks["public ingress port"]

@@ -22,10 +22,10 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 2 adds input rules, a strict deployment plan, and the ArchitectAgent
-with an agent-wide deadline and offline evaluation. The API
-currently exposes only `GET /api/health`; the generation pipeline and
-frontend arrive in later phases. See
+Phase 3 adds the three pure GeneratorAgents, package completeness rules,
+directive reports, and an offline model-comparison evaluator. The API
+currently exposes only `GET /api/health`; pipeline orchestration, persistence
+of generated packages, and the frontend arrive in later phases. See
 [`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
 [`docs/design-deviations.md`](docs/design-deviations.md) for where the
 implementation differs from the thesis design.
@@ -34,7 +34,7 @@ implementation differs from the thesis design.
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
 port 5432. No LLM key, cloud credentials, Checkov, or tfsec are needed for
-the offline tests, stub spike, or stub ArchitectAgent evaluation.
+the offline tests, stub spike, or stub agent evaluations.
 
 1. Copy `.env.example` to `.env`. Replace the three placeholder passwords and
    make the passwords in the four database URLs match their roles. `.env` is
@@ -73,6 +73,25 @@ can later use `--provider openai` or `--provider anthropic`, optionally
 `--model NAME` and `--pause-seconds N`. Real-provider cases run sequentially
 with a 15-second pause by default; the stub skips the pause. The script
 reports soft checks as PASS/FAIL without failing solely because a check fails.
+
+Run `LLM_PROVIDER=stub make eval-generators EVAL_ARGS='--models stub --no-env-file'`
+to evaluate both committed plans and all three variants without an API call or
+reading `.env`. It writes `results.json` and `summary.md` under
+`docs/evals/phase3-generators-<timestamp>/`; the committed example shows a
+structural correction and both passing and failing directive reports. Add
+`--save-packages` to inspect the generated files. For model comparisons, use
+`--models model-a,model-b`; all non-stub names use the configured provider.
+Use `--mode sequential --pause-seconds 15` on a rate-limited provider. Optional
+cost estimates take per-million-token rates as `--price-in model-a=1,model-b=2`
+and `--price-out model-a=3,model-b=4`. The evaluator never saves prompts or
+keys. The `--no-env-file` mode uses placeholder database settings because
+the offline evaluator does not connect to PostgreSQL.
+
+For OpenRouter through the OpenAI-compatible adapter, its
+[:nitro model suffix](https://openrouter.ai/docs/guides/routing/model-variants/nitro)
+prioritizes providers with higher token throughput. Append it to a model ID
+when evaluating generation speed; actual latency still depends on the model
+and provider availability.
 
 OpenAI-compatible services can use the existing `openai` adapter by setting
 `LLM_BASE_URL`. For example, Groq uses these values (supply your own key):
