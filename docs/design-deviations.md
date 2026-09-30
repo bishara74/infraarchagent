@@ -221,6 +221,26 @@ Status values:
   generator prompt, validator, and tests share one convention.
 - **Implemented in Phase 3:** `app/domain/package_layout.py`.
 
+### D-14 — One LLM response per package attempt (Accepted)
+- **Spec:** FR-G-02 requires a complete package but does not specify call
+  granularity.
+- **Implementation:** each package attempt requests every planned file type
+  in one LLM response. A failed structure check may trigger one complete
+  replacement response.
+- **Reason:** names and references across files are more likely to stay
+  consistent when generated together.
+- **Implemented in Phase 3:** the shared GeneratorAgent template.
+
+### D-15 — Template Method plus Strategy for generators (Accepted)
+- **Spec:** Chapter 4 and the class diagram show each concrete generator
+  overriding `generate()`; ADR-06 also describes a runtime directive.
+- **Implementation:** the abstract base fixes the budget, LLM call,
+  validation, and correction algorithm (Template Method). Each concrete
+  subclass supplies only `variant` and `optimisation_directive` (Strategy).
+- **Reason:** all variants must enforce identical safety and completeness
+  behavior; only their optimisation guidance varies.
+- **Implemented in Phase 3:** the three named GeneratorAgent subclasses.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -340,6 +360,10 @@ measurements.
 ---
 
 ## Thesis text to update (collected)
+- In the class diagram, show each generator subclass's `variant` and
+  `optimisation_directive` instead of overriding `generate()` (D-15).
+- In Chapter 4's generator pattern description, name both Template Method
+  and Strategy, and describe the shared algorithm and varying directive.
 - PR-05 / per-attempt timing: state the per-agent timeouts (CL-06).
 - Tighten FR-S-07 wording to say that exhausted remediation stops fix passes,
   then validation runs before the package enters `pending_review` (CL-02).
