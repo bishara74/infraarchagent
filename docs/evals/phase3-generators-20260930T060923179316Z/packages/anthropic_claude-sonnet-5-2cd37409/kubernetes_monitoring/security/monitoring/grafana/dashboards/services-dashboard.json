@@ -1,0 +1,44 @@
+{
+  "title": "Microservices Overview",
+  "uid": "microservices-overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Microservice A Request Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{job=\"microservice-a\"}[5m])",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Microservice B Request Rate",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{job=\"microservice-b\"}[5m])",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Service Up Status",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 6 },
+      "targets": [
+        {
+          "expr": "up",
+          "refId": "C"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "eks-cluster",
+        "aws_service": "Amazon EKS",
+        "purpose": "Managed Kubernetes control plane hosting containerized microservices"
+      },
+      {
+        "name": "microservice-a",
+        "aws_service": "EKS Pod (Deployment)",
+        "purpose": "Sample containerized microservice running as a Kubernetes workload"
+      },
+      {
+        "name": "microservice-b",
+        "aws_service": "EKS Pod (Deployment)",
+        "purpose": "Sample containerized microservice running as a Kubernetes workload"
+      },
+      {
+        "name": "ingress-controller",
+        "aws_service": "AWS Load Balancer Controller / ALB",
+        "purpose": "Routes external traffic into Kubernetes services via Kubernetes Ingress resources"
+      },
+      {
+        "name": "prometheus-server",
+        "aws_service": "EKS Pod (Prometheus)",
+        "purpose": "Collects and stores metrics from microservices and cluster components"
+      },
+      {
+        "name": "grafana-dashboard",
+        "aws_service": "EKS Pod (Grafana)",
+        "purpose": "Visualizes metrics collected by Prometheus through dashboards"
+      },
+      {
+        "name": "ecr-registry",
+        "aws_service": "Amazon ECR",
+        "purpose": "Stores container images for microservices deployed to EKS"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "ingress-controller",
+        "target": "microservice-a",
+        "description": "Routes HTTP traffic to microservice-a"
+      },
+      {
+        "source": "ingress-controller",
+        "target": "microservice-b",
+        "description": "Routes HTTP traffic to microservice-b"
+      },
+      {
+        "source": "prometheus-server",
+        "target": "microservice-a",
+        "description": "Scrapes metrics endpoint of microservice-a"
+      },
+      {
+        "source": "prometheus-server",
+        "target": "microservice-b",
+        "description": "Scrapes metrics endpoint of microservice-b"
+      },
+      {
+        "source": "grafana-dashboard",
+        "target": "prometheus-server",
+        "description": "Queries Prometheus as data source for dashboards"
+      },
+      {
+        "source": "microservice-a",
+        "target": "eks-cluster",
+        "description": "Runs as workload managed by the EKS cluster"
+      },
+      {
+        "source": "microservice-b",
+        "target": "eks-cluster",
+        "description": "Runs as workload managed by the EKS cluster"
+      },
+      {
+        "source": "prometheus-server",
+        "target": "eks-cluster",
+        "description": "Runs as workload managed by the EKS cluster"
+      },
+      {
+        "source": "grafana-dashboard",
+        "target": "eks-cluster",
+        "description": "Runs as workload managed by the EKS cluster"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "ingress-controller",
+        "grafana-dashboard"
+      ],
+      "private_services": [
+        "eks-cluster",
+        "microservice-a",
+        "microservice-b",
+        "prometheus-server",
+        "ecr-registry"
+      ],
+      "ingress": [
+        "HTTPS 443 from internet to ingress-controller",
+        "HTTPS 443 from internet to grafana-dashboard for dashboard access"
+      ],
+      "notes": "Microservices and Prometheus remain private within the cluster's VPC; only the ingress controller and Grafana are exposed externally, assumed via an ALB created by the AWS Load Balancer Controller."
+    },
+    "storage": [
+      {
+        "name": "prometheus-data",
+        "kind": "block_volume",
+        "aws_service": "Amazon EBS",
+        "attached_to": [
+          "prometheus-server"
+        ]
+      },
+      {
+        "name": "grafana-data",
+        "kind": "block_volume",
+        "aws_service": "Amazon EBS",
+        "attached_to": [
+          "grafana-dashboard"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform",
+      "kubernetes",
+      "helm",
+      "prometheus",
+      "grafana",
+      "dockerfile"
+    ],
+    "ambiguities": [
+      {
+        "topic": "Kubernetes hosting model",
+        "detail": "Description does not specify whether Kubernetes runs on EKS, self-managed EC2, or another platform.",
+        "assumption": "Assumed Amazon EKS as the managed Kubernetes service for hosting the cluster."
+      },
+      {
+        "topic": "Number and nature of microservices",
+        "detail": "Description mentions 'microservices' generically without specifying count, names, or purposes.",
+        "assumption": "Assumed two representative microservices (microservice-a, microservice-b) as placeholders."
+      },
+      {
+        "topic": "Ingress mechanism",
+        "detail": "No specification of how external traffic reaches the cluster.",
+        "assumption": "Assumed use of AWS Load Balancer Controller provisioning an ALB via Kubernetes Ingress resources."
+      },
+      {
+        "topic": "Container image registry",
+        "detail": "Description does not mention where container images are stored.",
+        "assumption": "Assumed Amazon ECR is used to store container images for the microservices."
+      },
+      {
+        "topic": "Grafana exposure",
+        "detail": "Description does not specify whether Grafana dashboards are publicly accessible or internal-only.",
+        "assumption": "Assumed Grafana is exposed publicly via HTTPS for dashboard access, secured separately (e.g., auth) though not detailed here."
+      },
+      {
+        "topic": "Persistent storage for monitoring",
+        "detail": "No mention of storage requirements for Prometheus or Grafana data persistence.",
+        "assumption": "Assumed EBS-backed persistent volumes are attached to Prometheus and Grafana pods for data retention."
+      },
+      {
+        "topic": "Region and sizing",
+        "detail": "No AWS region, instance sizes, or node counts were specified for the EKS cluster or workloads.",
+        "assumption": "No specific region or sizing assumed; left as configurable parameters in Terraform/Helm without a default value."
+      },
+      {
+        "topic": "CI/CD pipeline",
+        "detail": "Description mentions Helm but not how deployments are triggered or automated.",
+        "assumption": "No CI/CD tooling (e.g., Jenkins) assumed since it was not mentioned; Helm charts are assumed to be applied manually or via an external process not covered here."
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "monitoring file types": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 18.8617953949979,
+    "input_tokens": 1860,
+    "output_tokens": 2300,
+    "prompt_version": "2"
+  }
+}

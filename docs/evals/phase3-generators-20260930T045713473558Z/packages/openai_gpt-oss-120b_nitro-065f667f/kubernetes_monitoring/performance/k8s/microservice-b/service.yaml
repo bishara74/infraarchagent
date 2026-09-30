@@ -1,0 +1,14 @@
+# Service for microservice-b
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-b
+  labels:
+    app: microservice-b
+spec:
+  selector:
+    app: microservice-b
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

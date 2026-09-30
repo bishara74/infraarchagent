@@ -1,0 +1,8 @@
+# ConfigMap for shared values
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: shared-config
+  namespace: default
+data:
+  efs_id: "${aws_efs_file_system.efs.id}"

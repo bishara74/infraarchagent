@@ -1,0 +1,43 @@
+# Grafana Deployment and Service (public via ingress /grafana)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: apps
+spec:
+  replicas: {{ .Values.grafana.replicas }}
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+        - name: grafana
+          image: {{ .Values.grafana.image }}
+          ports:
+            - containerPort: 3000
+          env:
+            - name: GF_SERVER_ROOT_URL
+              value: "%(protocol)s://%(domain)s{{ .Values.grafana.rootUrlPath }}"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+            - name: GF_SECURITY_ADMIN_USER
+              value: {{ .Values.grafana.adminUser }}
+          resources:
+            {{- toYaml .Values.grafana.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: apps
+spec:
+  selector:
+    app: grafana
+  ports:
+    - port: {{ .Values.grafana.service.port }}
+      targetPort: 3000
+  type: ClusterIP

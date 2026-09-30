@@ -1,0 +1,13 @@
+prometheus:
+  name: prometheus
+  image: prom/prometheus:v2.51.0
+  port: 9090
+  namespace: monitoring
+  retention: 15d
+
+grafana:
+  name: grafana
+  image: grafana/grafana:10.4.0
+  port: 3000
+  namespace: monitoring
+  adminUserExistingSecret: grafana-admin-credentials

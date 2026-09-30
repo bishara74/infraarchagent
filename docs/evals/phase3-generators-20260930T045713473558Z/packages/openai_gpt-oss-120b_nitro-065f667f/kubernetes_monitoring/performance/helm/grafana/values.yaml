@@ -1,0 +1,16 @@
+# Values for Grafana Helm chart
+adminUser: admin
+adminPassword: "${var.rds_password}"
+service:
+  type: ClusterIP
+  port: 3000
+replicaCount: 2
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server.monitoring.svc.cluster.local:9090
+        access: proxy
+        isDefault: true

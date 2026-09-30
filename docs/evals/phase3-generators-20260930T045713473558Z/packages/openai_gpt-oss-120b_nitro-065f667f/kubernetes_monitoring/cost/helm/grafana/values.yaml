@@ -1,0 +1,15 @@
+# Values for Grafana helm chart
+replicaCount: 1
+serviceAccount:
+  create: true
+  name: grafana
+adminUser: admin
+adminPassword: "${random_password.grafana_admin.result}"
+resources:
+  limits:
+    cpu: 200m
+    memory: 200Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+",

@@ -1,0 +1,29 @@
+# Deployment for microservice-b
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-b
+  labels:
+    app: microservice-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-b
+  template:
+    metadata:
+      labels:
+        app: microservice-b
+    spec:
+      containers:
+        - name: app
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: shared-efs
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: shared-efs
+          persistentVolumeClaim:
+            claimName: efs-pvc

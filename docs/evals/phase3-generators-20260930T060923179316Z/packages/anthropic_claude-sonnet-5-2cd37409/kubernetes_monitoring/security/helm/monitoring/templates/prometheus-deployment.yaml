@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.prometheus.name }}
+  namespace: {{ .Values.prometheus.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.prometheus.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.prometheus.name }}
+    spec:
+      containers:
+        - name: {{ .Values.prometheus.name }}
+          image: {{ .Values.prometheus.image }}
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.retention.time={{ .Values.prometheus.retention }}"
+          ports:
+            - containerPort: {{ .Values.prometheus.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.prometheus.name }}
+  namespace: {{ .Values.prometheus.namespace }}
+spec:
+  selector:
+    app: {{ .Values.prometheus.name }}
+  ports:
+    - port: {{ .Values.prometheus.port }}
+      targetPort: {{ .Values.prometheus.port }}
+  type: ClusterIP

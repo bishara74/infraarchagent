@@ -1,0 +1,125 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "static-site-storage",
+        "aws_service": "S3",
+        "purpose": "Hosts the static marketing website files (HTML, CSS, JS, images)"
+      },
+      {
+        "name": "cdn",
+        "aws_service": "CloudFront",
+        "purpose": "Content delivery network to cache and serve website content globally over HTTPS"
+      },
+      {
+        "name": "dns",
+        "aws_service": "Route 53",
+        "purpose": "DNS resolution for the custom domain pointing to the CloudFront distribution"
+      },
+      {
+        "name": "tls-cert",
+        "aws_service": "AWS Certificate Manager",
+        "purpose": "Provisions and manages the SSL/TLS certificate used for HTTPS on the CDN"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "cdn",
+        "target": "static-site-storage",
+        "description": "CloudFront pulls and caches content from the S3 origin"
+      },
+      {
+        "source": "dns",
+        "target": "cdn",
+        "description": "Route 53 routes the custom domain to the CloudFront distribution"
+      },
+      {
+        "source": "cdn",
+        "target": "tls-cert",
+        "description": "CloudFront uses the ACM certificate to terminate HTTPS connections"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "cdn",
+        "dns"
+      ],
+      "private_services": [
+        "static-site-storage"
+      ],
+      "ingress": [
+        "HTTPS (443) from the internet to CloudFront distribution",
+        "HTTP (80) redirected to HTTPS at CloudFront"
+      ],
+      "notes": "S3 bucket is not publicly accessible directly; access is restricted to CloudFront via Origin Access Control (OAC). All public traffic terminates at CloudFront over HTTPS."
+    },
+    "storage": [
+      {
+        "name": "static-site-storage",
+        "kind": "object_storage",
+        "aws_service": "S3",
+        "attached_to": [
+          "cdn"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "Domain name and DNS management",
+        "detail": "The description does not specify a custom domain name or whether Route 53 should manage an existing domain.",
+        "assumption": "Assumed a custom domain is desired and Route 53 will be used to manage DNS records pointing to CloudFront."
+      },
+      {
+        "topic": "AWS region",
+        "detail": "No AWS region was specified for resource deployment.",
+        "assumption": "Assumed us-east-1, since ACM certificates for CloudFront must be requested in us-east-1."
+      },
+      {
+        "topic": "S3 bucket access control",
+        "detail": "The description does not specify how CloudFront should access the S3 origin securely.",
+        "assumption": "Assumed use of CloudFront Origin Access Control (OAC) with a bucket policy restricting direct public S3 access."
+      },
+      {
+        "topic": "Website content deployment",
+        "detail": "The description does not specify how static files are built, versioned, or uploaded to S3.",
+        "assumption": "Assumed static files are pre-built and uploaded manually or via a separate out-of-scope process; no CI/CD pipeline is included."
+      },
+      {
+        "topic": "Certificate validation method",
+        "detail": "The description does not specify how the TLS certificate should be validated.",
+        "assumption": "Assumed DNS validation via Route 53 for the ACM certificate."
+      },
+      {
+        "topic": "Caching behavior",
+        "detail": "No caching policy, TTLs, or invalidation strategy were specified for the CDN.",
+        "assumption": "Assumed default CloudFront caching behavior with standard TTLs suitable for static content."
+      },
+      {
+        "topic": "Infrastructure as code tooling",
+        "detail": "The description does not specify which IaC tool to use for provisioning.",
+        "assumption": "Assumed Terraform as the sole provisioning tool; no Kubernetes, Helm, Jenkins, or Ansible components are needed for this static site architecture."
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "CDN service": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 3,
+    "elapsed_seconds": 38.64407734499764,
+    "input_tokens": 1844,
+    "output_tokens": 1440,
+    "prompt_version": "2"
+  }
+}

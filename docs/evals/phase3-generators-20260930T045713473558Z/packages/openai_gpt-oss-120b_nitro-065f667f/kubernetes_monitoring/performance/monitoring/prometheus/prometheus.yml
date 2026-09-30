@@ -1,0 +1,10 @@
+# Prometheus configuration
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: 'microservice-a'
+    static_configs:
+      - targets: ['microservice-a:80']
+  - job_name: 'microservice-b'
+    static_configs:
+      - targets: ['microservice-b:80']

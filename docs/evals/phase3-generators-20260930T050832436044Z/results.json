@@ -1,0 +1,175 @@
+{
+  "cases": [
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 0 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "Cost-optimized single-AZ three-tier design: no NAT gateway (Fargate app tasks run in public subnets with public IPs but are only reachable via ALB security group, avoiding NAT costs while keeping true internet ingress restricted to the ALB); ECS Fargate desired_count=1 per service; db.t3.micro single-AZ RDS PostgreSQL 13; private S3 bucket with default SSE and full public access block. db_password variable is required (sensitive, no default) and must be supplied via tfvars/CI secret store, not committed. ALB uses path-based routing (/service1/*, /service2/*) to satisfy both ALB->app-service dependencies from the plan.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 73.60586822799814,
+      "input_tokens": 1594,
+      "output_tokens": 9325,
+      "file_count": 9,
+      "total_characters": 10776,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "Deployed a three-tier AWS architecture using ECS Fargate for app-service-1 and app-service-2, defined via a single var.app_services map to avoid duplication. ALB is internet-facing across two public subnets/AZs, routing by path pattern (/app1*, /app2*) to per-service target groups. ECS tasks run in private subnets (via NAT) with security groups restricting access to ALB only. RDS PostgreSQL 13 uses multi_az=true, db.r6g.large, gp3 encrypted storage, and Performance Insights, in dedicated DB subnets across two AZs. S3 bucket is private (all public access blocked), versioned, and encrypted, accessed only via the ECS task IAM role. Autoscaling is configured per ECS service via aws_appautoscaling_target/policy on both CPU and memory targets (min 2, max 10). db_password has no default and must be supplied via tfvars/environment/CI secret injection at apply time to avoid hardcoding secrets.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 74.1178748429993,
+      "input_tokens": 1685,
+      "output_tokens": 10202,
+      "file_count": 11,
+      "total_characters": 15187,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "security",
+      "success": false,
+      "error_category": "llm_failure",
+      "llm_category": "deadline",
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 150.00567292800042,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "3",
+      "structure_error_counts": []
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "success": false,
+      "error_category": "llm_failure",
+      "llm_category": "deadline",
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 150.00515792200167,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "3",
+      "structure_error_counts": []
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "success": false,
+      "error_category": "llm_failure",
+      "llm_category": "deadline",
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 150.00472992399955,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "3",
+      "structure_error_counts": []
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "success": false,
+      "error_category": "llm_failure",
+      "llm_category": "deadline",
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 150.00471645600192,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "3",
+      "structure_error_counts": []
+    }
+  ],
+  "triples": [
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "wall_seconds": 150.03465302500263,
+      "mode": "parallel"
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "wall_seconds": 150.00697774500077,
+      "mode": "parallel"
+    }
+  ],
+  "totals": {
+    "anthropic/claude-sonnet-5": {
+      "success_rate": 0.3333333333333333,
+      "compliance_rate": 1.0,
+      "median_seconds": 150.00472319000073,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "estimated_cost": null
+    }
+  }
+}

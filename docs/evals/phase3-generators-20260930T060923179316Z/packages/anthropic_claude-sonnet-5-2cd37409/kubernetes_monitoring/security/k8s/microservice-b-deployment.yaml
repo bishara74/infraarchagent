@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-b
+  namespace: default
+  labels:
+    app: microservice-b
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: microservice-b
+  template:
+    metadata:
+      labels:
+        app: microservice-b
+    spec:
+      containers:
+        - name: microservice-b
+          image: microservice-b:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: efs-storage
+              mountPath: /data
+      volumes:
+        - name: efs-storage
+          persistentVolumeClaim:
+            claimName: efs-storage-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-b
+  namespace: default
+spec:
+  selector:
+    app: microservice-b
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

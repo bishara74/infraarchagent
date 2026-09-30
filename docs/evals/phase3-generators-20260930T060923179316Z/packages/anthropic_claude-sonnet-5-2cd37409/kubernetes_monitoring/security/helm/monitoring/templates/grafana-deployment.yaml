@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.grafana.name }}
+  namespace: {{ .Values.grafana.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.grafana.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.grafana.name }}
+    spec:
+      containers:
+        - name: {{ .Values.grafana.name }}
+          image: {{ .Values.grafana.image }}
+          ports:
+            - containerPort: {{ .Values.grafana.port }}
+          env:
+            - name: GF_SECURITY_ADMIN_PASSWORD__FILE
+              value: /etc/grafana-secret/password
+            - name: GF_SERVER_ROOT_URL
+              value: "%(protocol)s://%(domain)s/grafana"
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: "true"
+          volumeMounts:
+            - name: admin-credentials
+              mountPath: /etc/grafana-secret
+              readOnly: true
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+      volumes:
+        - name: admin-credentials
+          secret:
+            secretName: {{ .Values.grafana.adminUserExistingSecret }}
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.grafana.name }}
+  namespace: {{ .Values.grafana.namespace }}
+spec:
+  selector:
+    app: {{ .Values.grafana.name }}
+  ports:
+    - port: {{ .Values.grafana.port }}
+      targetPort: {{ .Values.grafana.port }}
+  type: ClusterIP

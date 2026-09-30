@@ -1,0 +1,23 @@
+# Default values for monitoring chart
+prometheus:
+  replicas: 2
+  image: prom/prometheus:v2.51.0
+  retention: 15d
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+grafana:
+  replicas: 2
+  image: grafana/grafana:10.4.0
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

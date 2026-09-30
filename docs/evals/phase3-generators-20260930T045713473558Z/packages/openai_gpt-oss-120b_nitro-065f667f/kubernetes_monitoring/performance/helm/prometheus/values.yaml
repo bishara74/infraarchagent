@@ -1,0 +1,13 @@
+# Values for Prometheus Helm chart
+server:
+  replicaCount: 2
+  service:
+    type: ClusterIP
+  persistence:
+    enabled: true
+    size: 8Gi
+alertmanager:
+  enabled: true
+  replicaCount: 1
+pushgateway:
+  enabled: false

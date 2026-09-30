@@ -1,0 +1,53 @@
+# Deployment and Service for microservice-a
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-a
+  namespace: apps
+  labels:
+    app: microservice-a
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-a
+  template:
+    metadata:
+      labels:
+        app: microservice-a
+    spec:
+      containers:
+        - name: microservice-a
+          image: public.ecr.aws/docker/library/nginx:stable
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "rds-db"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: efs-storage
+              mountPath: /mnt/efs-storage
+      volumes:
+        - name: efs-storage
+          persistentVolumeClaim:
+            claimName: efs-storage-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-a
+  namespace: apps
+spec:
+  selector:
+    app: microservice-a
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

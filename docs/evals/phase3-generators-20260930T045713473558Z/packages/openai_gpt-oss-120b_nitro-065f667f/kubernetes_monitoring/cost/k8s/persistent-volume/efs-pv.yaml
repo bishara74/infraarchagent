@@ -1,0 +1,15 @@
+# PersistentVolume for EFS
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: efs-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  nfs:
+    path: ${aws_efs_file_system.efs_storage.dns_name}
+    server: ${aws_efs_file_system.efs_storage.dns_name}

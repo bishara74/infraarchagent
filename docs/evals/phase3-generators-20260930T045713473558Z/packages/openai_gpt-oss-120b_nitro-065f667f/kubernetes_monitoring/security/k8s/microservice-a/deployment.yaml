@@ -1,0 +1,35 @@
+# Deployment for microservice-a
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-a
+  labels:
+    app: microservice-a
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: microservice-a
+  template:
+    metadata:
+      labels:
+        app: microservice-a
+    spec:
+      containers:
+        - name: app
+          image: public.ecr.aws/amazonlinux/amazonlinux:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EFS_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: shared-config
+                  key: efs_id
+          volumeMounts:
+            - name: efs
+              mountPath: /mnt/data
+      volumes:
+        - name: efs
+          persistentVolumeClaim:
+            claimName: efs-pvc

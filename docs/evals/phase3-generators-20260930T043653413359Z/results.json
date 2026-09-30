@@ -1,0 +1,247 @@
+{
+  "cases": [
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "All resources are sized for the AWS Free Tier where possible (t3.micro Fargate tasks, db.t3.micro, minimal storage). The design uses a single AZ, public subnets for ALB and ECS (assign_public_ip true) to avoid NAT gateway costs, and a private subnet for the RDS instance. S3 bucket is private with a policy enforcing TLS. No hard‑coded secrets; the RDS password is generated via a random_password resource.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 2.4772878289986693,
+      "input_tokens": 1025,
+      "output_tokens": 4458,
+      "file_count": 8,
+      "total_characters": 11109,
+      "prompt_version": "2",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": false,
+          "detail": "No Terraform autoscaling construct or Kubernetes HPA found."
+        }
+      ],
+      "notes": "All Terraform files are placed under the \"terraform\" directory following the required path pattern. Resources use consistent naming based on the \"prefix\" variable. The design follows the three‑tier architecture: a public Internet‑facing ALB, private ECS Fargate services, and a multi‑AZ PostgreSQL RDS instance. The S3 bucket is private with a policy enforcing TLS. No hard‑coded secrets are present; defaults are non‑secret placeholders and can be overridden via variables.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 2.7152708930007066,
+      "input_tokens": 1039,
+      "output_tokens": 4285,
+      "file_count": 10,
+      "total_characters": 11446,
+      "prompt_version": "2",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "S3 encryption",
+          "passed": true,
+          "detail": "Found an S3 server-side encryption configuration."
+        },
+        {
+          "name": "S3 public access block",
+          "passed": true,
+          "detail": "Found an S3 public access block."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "All resources are placed in private subnets except the internet‑facing ALB. Security groups follow least‑privilege principles, RDS storage is encrypted, the S3 bucket blocks public access and uses SSE‑AES256, and the ALB only allows inbound HTTPS (port 443) from any source. No hard‑coded secrets are present; a generated password is used for the database. The Terraform files are concise, using locals and variables for naming and configuration.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 2.4442911360019934,
+      "input_tokens": 1062,
+      "output_tokens": 4108,
+      "file_count": 9,
+      "total_characters": 10042,
+      "prompt_version": "2",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "All file paths follow the required patterns. Terraform uses variables for region, project name, and RDS credentials (with a non‑secret default). Kubernetes manifests reference the EFS PVC and assume the ALB Ingress Controller is installed via the provided module. Helm charts are minimal wrappers; actual deployment should add the official Prometheus and Grafana charts as dependencies or replace the wrappers with those charts directly.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 4.087326639997627,
+      "input_tokens": 1234,
+      "output_tokens": 4891,
+      "file_count": 14,
+      "total_characters": 13658,
+      "prompt_version": "2",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "All filenames and resource names follow the assumptions from the deployment plan. Terraform variables provide sensible defaults and generate secrets (RDS password) dynamically. Kubernetes manifests include Deployments, Services, an Ingress using ALB, and HorizontalPodAutoscalers for autoscaling. Prometheus runs with a ConfigMap configuration, and Grafana includes a sample dashboard.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 2.855431381998642,
+      "input_tokens": 1248,
+      "output_tokens": 6057,
+      "file_count": 21,
+      "total_characters": 16078,
+      "prompt_version": "2",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "All resources follow the security optimisation directive: least‑privilege IAM, encrypted storage, TLS only on the ALB, private subnets for non‑public services, public access blocked for S3, and no hard‑coded secrets. The ALB listener uses a placeholder ACM certificate ARN; replace it with a valid ARN in the target account. The RDS password variable is marked sensitive and should be provided via a secure TF_VAR or secret manager.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 3.1982013980014017,
+      "input_tokens": 1271,
+      "output_tokens": 6805,
+      "file_count": 13,
+      "total_characters": 15038,
+      "prompt_version": "2",
+      "structure_error_counts": [
+        0
+      ]
+    }
+  ],
+  "triples": [
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "wall_seconds": 2.7433621780000976,
+      "mode": "parallel"
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "wall_seconds": 4.090753463002329,
+      "mode": "parallel"
+    }
+  ],
+  "totals": {
+    "openai/gpt-oss-120b:nitro": {
+      "success_rate": 1.0,
+      "compliance_rate": 0.9375,
+      "median_seconds": 2.7853511374996742,
+      "input_tokens": 6879,
+      "output_tokens": 30604,
+      "total_tokens": 37483,
+      "estimated_cost": 0.019394249999999995
+    }
+  }
+}

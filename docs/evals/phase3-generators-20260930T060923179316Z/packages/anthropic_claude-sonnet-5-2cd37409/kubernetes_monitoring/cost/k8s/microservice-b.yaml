@@ -1,0 +1,50 @@
+# Deployment and Service for microservice-b
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-b
+  namespace: apps
+  labels:
+    app: microservice-b
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: microservice-b
+  template:
+    metadata:
+      labels:
+        app: microservice-b
+    spec:
+      containers:
+        - name: microservice-b
+          image: public.ecr.aws/docker/library/nginx:stable
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: efs-storage
+              mountPath: /mnt/efs-storage
+      volumes:
+        - name: efs-storage
+          persistentVolumeClaim:
+            claimName: efs-storage-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-b
+  namespace: apps
+spec:
+  selector:
+    app: microservice-b
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

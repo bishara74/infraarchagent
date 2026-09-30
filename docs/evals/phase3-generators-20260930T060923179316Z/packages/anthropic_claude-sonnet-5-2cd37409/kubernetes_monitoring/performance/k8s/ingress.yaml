@@ -1,0 +1,35 @@
+# ALB ingress routing public paths to services
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: public-ingress
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /api/a
+            pathType: Prefix
+            backend:
+              service:
+                name: microservice-a
+                port:
+                  number: 80
+          - path: /api/b
+            pathType: Prefix
+            backend:
+              service:
+                name: microservice-b
+                port:
+                  number: 80
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000

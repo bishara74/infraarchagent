@@ -1,0 +1,15 @@
+# Standalone Prometheus config reference for scraping app targets
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: microservice-a
+    static_configs:
+      - targets: ["microservice-a.apps.svc.cluster.local:80"]
+  - job_name: microservice-b
+    static_configs:
+      - targets: ["microservice-b.apps.svc.cluster.local:80"]
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

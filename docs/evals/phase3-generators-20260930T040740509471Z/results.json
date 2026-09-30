@@ -1,0 +1,446 @@
+{
+  "cases": [
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "The package contains a complete Terraform configuration that fulfills the described three‑tier architecture: a public Application Load Balancer (ALB) forwarding to two ECS Fargate services, a private PostgreSQL RDS instance, and a private S3 bucket. Resources are sized for the AWS Free Tier (t3.micro, db.t3.micro) and deployed in a single Availability Zone to minimise cost. All necessary IAM roles, security groups, subnet configurations, and outputs are included. No hard‑coded secrets are used; variables provide sensible defaults and can be overridden at apply time.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 2.6815653320009005,
+      "input_tokens": 994,
+      "output_tokens": 3665,
+      "file_count": 4,
+      "total_characters": 9874,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "All resources are defined using Terraform, following the naming conventions from the deployment plan (alb, app-service-1, app-service-2, rds, s3). A VPC with public and private subnets across two AZs is provisioned, with NAT for outbound traffic. The ALB routes traffic to two ECS Fargate services, each with its own target group. RDS is deployed as a multi-AZ PostgreSQL 13 instance with a larger instance class for performance. The S3 bucket is private with versioning enabled. Security groups enforce least‑privilege network access. Autoscaling policies are attached to each ECS service to scale based on CPU utilization. No hard‑coded secrets are present; sensitive values such as the database password must be provided via variable input.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 4.687000060999708,
+      "input_tokens": 991,
+      "output_tokens": 6173,
+      "file_count": 9,
+      "total_characters": 14348,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "S3 encryption",
+          "passed": true,
+          "detail": "Found an S3 server-side encryption configuration."
+        },
+        {
+          "name": "S3 public access block",
+          "passed": true,
+          "detail": "Found an S3 public access block."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "All Terraform files are placed under the `terraform/` directory as required. Resources are created with least‑privilege security groups, encryption at rest for RDS and S3, public‑access blocks for the bucket, and the ALB only permits inbound HTTPS (port 443) from any source. All infrastructure components (VPC, subnets, ALB, ECS Fargate services, RDS, S3) follow the naming conventions from the deployment plan. No hard‑coded secrets are present; the database password is generated with `random_password` unless supplied via a variable. The package is ready for `terraform init` and `terraform apply`.",
+      "package_attempts": 1,
+      "llm_attempts": 2,
+      "elapsed_seconds": 10.952907825001603,
+      "input_tokens": 1031,
+      "output_tokens": 5926,
+      "file_count": 9,
+      "total_characters": 14765,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "All resources are defined for a single availability zone (az_count = 1) to minimise cost. The ALB TLS certificate ARN must be replaced with a real ACM certificate ARN. RDS credentials use a default password but should be overridden via Terraform variable or secret management. The Kubernetes manifests reference a secret `rds-credentials` that should be created with the RDS endpoint, username, and password. The Helm chart provides basic values for the microservices; you can customise `image.repository` as needed. Apply Terraform first, then deploy the k8s YAML files using `kubectl apply -f k8s/`.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 3.0068680080003105,
+      "input_tokens": 1203,
+      "output_tokens": 6434,
+      "file_count": 13,
+      "total_characters": 17653,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": false,
+          "detail": "No Terraform autoscaling construct or Kubernetes HPA found."
+        }
+      ],
+      "notes": "All resources share a common `project_prefix` (default \"demo\") to keep naming consistent across Terraform, Kubernetes, and Helm. Secrets such as the RDS password are provided via a Terraform variable with a non‑secret default for demonstration; in a real deployment replace it with a Secrets Manager reference. The Ingress manifest uses the AWS Load Balancer Controller (ALB) via annotations; ensure the controller is installed in the cluster. Deploy order: 1) `terraform init && terraform apply` to provision VPC, EKS, EFS, RDS, and IAM. 2) Apply the Kubernetes manifests (`kubectl apply -f k8s/…`). 3) Install Prometheus and Grafana using the Helm charts (`helm install prometheus ./helm/prometheus` and `helm install grafana ./helm/grafana`). 4) Verify that the ALB routes HTTPS traffic to the services as defined.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 2.627862561999791,
+      "input_tokens": 1200,
+      "output_tokens": 5362,
+      "file_count": 13,
+      "total_characters": 14481,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "All resources use least‑privilege IAM policies, encrypted storage, TLS for public traffic, and private subnets for non‑public services. No hard‑coded secrets are present; generated passwords are managed by the `random_password` resource. The ALB certificate ARN is supplied via a Terraform variable with a non‑secret default value.",
+      "package_attempts": 1,
+      "llm_attempts": 2,
+      "elapsed_seconds": 9.506818030000431,
+      "input_tokens": 1240,
+      "output_tokens": 8053,
+      "file_count": 14,
+      "total_characters": 17390,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "three_tier",
+      "variant": "cost",
+      "success": false,
+      "error_category": "deadline",
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 2,
+      "elapsed_seconds": 150.0052577280003,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "1",
+      "structure_error_counts": []
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "three_tier",
+      "variant": "performance",
+      "success": false,
+      "error_category": "deadline",
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 2,
+      "elapsed_seconds": 150.00498716800212,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "1",
+      "structure_error_counts": []
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "three_tier",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "S3 encryption",
+          "passed": true,
+          "detail": "Found an S3 server-side encryption configuration."
+        },
+        {
+          "name": "S3 public access block",
+          "passed": true,
+          "detail": "Found an S3 public access block."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "This Terraform configuration creates a secure three-tier AWS infrastructure with an internet-facing ALB, Fargate-hosted containerized applications, PostgreSQL RDS database, and private S3 bucket. All resources are properly secured with least-privilege IAM roles, encryption at rest and in-transit, and appropriate security groups. The implementation assumes a single AZ for simplicity but can be extended. Services are named consistently across resources. No hardcoded secrets are used - database password is managed through AWS Secrets Manager.",
+      "package_attempts": 2,
+      "llm_attempts": 2,
+      "elapsed_seconds": 108.74029614300161,
+      "input_tokens": 2012,
+      "output_tokens": 12199,
+      "file_count": 3,
+      "total_characters": 16593,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        1,
+        0
+      ]
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "Generated a cost-optimized AWS infrastructure with EKS cluster running microservices, RDS database, and EFS storage. Included Prometheus and Grafana for monitoring. Used t3.micro instances for nodes and db.t3.micro for RDS. All services are configured with minimal resource requirements to stay within free tier where possible.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 44.577344901998,
+      "input_tokens": 1147,
+      "output_tokens": 4323,
+      "file_count": 15,
+      "total_characters": 12565,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": false,
+          "detail": "Plan has a relational DB but no multi_az = true setting was found."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": false,
+          "detail": "No Terraform autoscaling construct or Kubernetes HPA found."
+        }
+      ],
+      "notes": "Generated a complete AWS infrastructure deployment using Terraform with EKS, RDS Aurora, and EFS. Kubernetes manifests for deployments, services, and ingress are included. Helm charts for both microservices are provided. Prometheus and Grafana configurations are included for monitoring. All resources are configured for high availability with multi-AZ deployments where applicable. Security groups are configured to allow necessary communication while restricting unnecessary access.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 77.32584598000176,
+      "input_tokens": 1144,
+      "output_tokens": 8463,
+      "file_count": 21,
+      "total_characters": 26737,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "success": false,
+      "error_category": "incomplete_package",
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 2,
+      "llm_attempts": 2,
+      "elapsed_seconds": 124.72109903000091,
+      "input_tokens": 2578,
+      "output_tokens": 16373,
+      "file_count": 19,
+      "total_characters": 35958,
+      "prompt_version": "1",
+      "structure_error_counts": [
+        2,
+        1
+      ]
+    }
+  ],
+  "triples": [
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "wall_seconds": 10.984200463000889,
+      "mode": "parallel"
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "wall_seconds": 9.512865246000729,
+      "mode": "parallel"
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "three_tier",
+      "wall_seconds": 150.00636203600152,
+      "mode": "parallel"
+    },
+    {
+      "model": "qwen/qwen3-coder",
+      "plan": "kubernetes_monitoring",
+      "wall_seconds": 124.72411229900172,
+      "mode": "parallel"
+    }
+  ],
+  "totals": {
+    "openai/gpt-oss-120b:nitro": {
+      "success_rate": 1.0,
+      "compliance_rate": 0.9375,
+      "median_seconds": 3.846934034500009,
+      "input_tokens": 6659,
+      "output_tokens": 35613,
+      "total_tokens": 42272,
+      "estimated_cost": 0.02236665
+    },
+    "qwen/qwen3-coder": {
+      "success_rate": 0.5,
+      "compliance_rate": 0.7777777777777778,
+      "median_seconds": 116.73069758650126,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "estimated_cost": null
+    }
+  }
+}

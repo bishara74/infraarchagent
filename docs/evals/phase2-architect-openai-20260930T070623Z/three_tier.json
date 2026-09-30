@@ -1,0 +1,131 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "alb",
+        "aws_service": "Elastic Load Balancing (ALB)",
+        "purpose": "Distributes incoming HTTP(S) traffic across application service instances"
+      },
+      {
+        "name": "app-service-one",
+        "aws_service": "EC2",
+        "purpose": "First application tier service handling business logic"
+      },
+      {
+        "name": "app-service-two",
+        "aws_service": "EC2",
+        "purpose": "Second application tier service handling business logic"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "alb",
+        "target": "app-service-one",
+        "description": "Routes HTTP requests to app-service-one instances"
+      },
+      {
+        "source": "alb",
+        "target": "app-service-two",
+        "description": "Routes HTTP requests to app-service-two instances"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "alb"
+      ],
+      "private_services": [
+        "app-service-one",
+        "app-service-two"
+      ],
+      "ingress": [
+        "0.0.0.0/0 -> alb:443",
+        "0.0.0.0/0 -> alb:80"
+      ],
+      "notes": "ALB is deployed in public subnets and receives all external traffic. Application services run in private subnets and are only reachable via the ALB. RDS and S3 are not directly internet accessible."
+    },
+    "storage": [
+      {
+        "name": "app-db",
+        "kind": "relational_db",
+        "aws_service": "RDS PostgreSQL",
+        "attached_to": [
+          "app-service-one",
+          "app-service-two"
+        ]
+      },
+      {
+        "name": "app-object-store",
+        "kind": "object_storage",
+        "aws_service": "S3",
+        "attached_to": [
+          "app-service-one",
+          "app-service-two"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": [
+      {
+        "topic": "Compute platform for application services",
+        "detail": "The description does not specify whether application services run on EC2, ECS, Fargate, or another compute platform.",
+        "assumption": "Assumed application services run on EC2 instances behind the ALB."
+      },
+      {
+        "topic": "Region",
+        "detail": "No AWS region was specified for deployment.",
+        "assumption": "Assumed a single unspecified default region; region must be set explicitly in terraform variables."
+      },
+      {
+        "topic": "Network topology / VPC design",
+        "detail": "No details were given about VPC CIDR ranges, subnet counts, or availability zone distribution.",
+        "assumption": "Assumed a standard VPC with public subnets for the ALB and private subnets for application and database tiers across multiple availability zones."
+      },
+      {
+        "topic": "Instance sizing",
+        "detail": "No instance types or sizing were specified for the application services or RDS instance.",
+        "assumption": "Assumed default/small instance sizes suitable for a basic deployment, to be adjusted later."
+      },
+      {
+        "topic": "TLS/certificate configuration",
+        "detail": "The description did not specify whether HTTPS/TLS termination is required on the ALB.",
+        "assumption": "Assumed both HTTP and HTTPS listeners are configured on the ALB, with certificate management left unspecified."
+      },
+      {
+        "topic": "RDS high availability",
+        "detail": "No mention of Multi-AZ or backup/retention requirements for RDS PostgreSQL.",
+        "assumption": "Assumed a single-AZ RDS instance with default backup retention settings."
+      },
+      {
+        "topic": "S3 bucket usage",
+        "detail": "The description does not specify what data the S3 bucket stores or its access patterns.",
+        "assumption": "Assumed S3 is used as general-purpose object storage accessible by both application services with default private access settings."
+      },
+      {
+        "topic": "Container orchestration / deployment tooling",
+        "detail": "No indication of whether Kubernetes, Helm, Jenkins, or other tooling is required for deployment or CI/CD.",
+        "assumption": "Assumed only Terraform is needed for infrastructure provisioning; no container orchestration or CI/CD pipeline files are included."
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "relational database": true,
+    "object storage": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 14.053479902999243,
+    "input_tokens": 1861,
+    "output_tokens": 1474,
+    "prompt_version": "2"
+  }
+}

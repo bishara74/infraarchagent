@@ -1,0 +1,110 @@
+{
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "web-app",
+        "aws_service": "ecs-fargate",
+        "purpose": "Runs the containerized web application serving HTTP requests"
+      },
+      {
+        "name": "alb",
+        "aws_service": "elastic-load-balancing",
+        "purpose": "Distributes incoming traffic across web app tasks and terminates HTTPS"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "alb",
+        "target": "web-app",
+        "description": "Routes incoming HTTP/HTTPS requests to the web application containers"
+      }
+    ],
+    "network": {
+      "public_services": [
+        "alb"
+      ],
+      "private_services": [
+        "web-app"
+      ],
+      "ingress": [
+        "HTTPS 443 from internet to alb",
+        "HTTP 80 from internet to alb (redirect to 443)"
+      ],
+      "notes": "ALB is placed in public subnets and forwards traffic to web-app tasks running in private subnets. No VPN or additional network segmentation specified."
+    },
+    "storage": [
+      {
+        "name": "app-db",
+        "kind": "relational_db",
+        "aws_service": "rds-postgresql",
+        "attached_to": [
+          "web-app"
+        ]
+      }
+    ],
+    "file_types": [
+      "terraform",
+      "dockerfile"
+    ],
+    "ambiguities": [
+      {
+        "topic": "Compute platform",
+        "detail": "The description does not specify how the web app should be hosted (EC2, ECS, Lambda, etc.)",
+        "assumption": "Assumed ECS Fargate for a simple, serverless container-based deployment"
+      },
+      {
+        "topic": "Database requirement",
+        "detail": "No mention of data persistence or database needs",
+        "assumption": "Assumed a relational database (RDS PostgreSQL) is needed for typical web app data storage"
+      },
+      {
+        "topic": "Load balancing and public exposure",
+        "detail": "No mention of how traffic reaches the app or if HTTPS is required",
+        "assumption": "Assumed an Application Load Balancer with HTTPS termination in front of the web app"
+      },
+      {
+        "topic": "Networking topology",
+        "detail": "No VPC, subnet, or region details were specified",
+        "assumption": "Assumed a standard VPC with public subnets for the load balancer and private subnets for application and database tiers"
+      },
+      {
+        "topic": "Region",
+        "detail": "No AWS region was specified",
+        "assumption": "Assumed us-east-1 as the default region"
+      },
+      {
+        "topic": "Scaling and sizing",
+        "detail": "No information on expected traffic, instance size, or scaling policy",
+        "assumption": "Assumed default minimal Fargate task size (0.25 vCPU/0.5GB) with no auto-scaling configured beyond defaults"
+      },
+      {
+        "topic": "Application runtime",
+        "detail": "No programming language, framework, or runtime was specified for the web app",
+        "assumption": "Assumed a generic containerized application deployed via a Dockerfile, runtime unspecified"
+      },
+      {
+        "topic": "Monitoring and CI/CD",
+        "detail": "No mention of monitoring, logging, or deployment automation requirements",
+        "assumption": "Assumed no monitoring or CI/CD pipeline is required at this stage; only core infrastructure and container build files are included"
+      }
+    ]
+  },
+  "checks": {
+    "plan produced": true,
+    "terraform included": true,
+    "dependency graph valid": true,
+    "ambiguity recorded": true
+  },
+  "error_category": null,
+  "llm_category": null,
+  "validation_errors_by_attempt": [],
+  "metrics": {
+    "plan_attempts": 1,
+    "llm_attempts": 1,
+    "elapsed_seconds": 11.559448968000652,
+    "input_tokens": 1822,
+    "output_tokens": 1196,
+    "prompt_version": "2"
+  }
+}

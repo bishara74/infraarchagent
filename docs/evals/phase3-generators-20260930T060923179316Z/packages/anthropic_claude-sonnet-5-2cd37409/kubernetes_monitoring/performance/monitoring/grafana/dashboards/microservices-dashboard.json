@@ -1,0 +1,31 @@
+{
+  "title": "Microservices Overview",
+  "uid": "microservices-overview",
+  "schemaVersion": 36,
+  "panels": [
+    {
+      "type": "graph",
+      "title": "microservice-a CPU",
+      "targets": [
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"microservice-a.*\"}[5m])" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "microservice-b CPU",
+      "targets": [
+        { "expr": "rate(container_cpu_usage_seconds_total{pod=~\"microservice-b.*\"}[5m])" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 }
+    },
+    {
+      "type": "graph",
+      "title": "RDS Connections",
+      "targets": [
+        { "expr": "aws_rds_database_connections_average{dbinstance_identifier=\"rds-db\"}" }
+      ],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 }
+    }
+  ]
+}

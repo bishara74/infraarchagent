@@ -1,0 +1,28 @@
+# PersistentVolume and Claim for shared EFS storage
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: efs-storage-pv
+spec:
+  capacity:
+    storage: 100Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: efs-sc
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: efs-storage
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: efs-storage-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-sc
+  resources:
+    requests:
+      storage: 100Gi

@@ -1,0 +1,28 @@
+# Default values for monitoring chart (cost-optimized single replicas)
+prometheus:
+  image: prom/prometheus:v2.52.0
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 300m
+      memory: 256Mi
+  service:
+    port: 9090
+
+grafana:
+  image: grafana/grafana:10.4.2
+  replicas: 1
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+  service:
+    port: 80
+  adminUser: admin
+  rootUrlPath: /grafana

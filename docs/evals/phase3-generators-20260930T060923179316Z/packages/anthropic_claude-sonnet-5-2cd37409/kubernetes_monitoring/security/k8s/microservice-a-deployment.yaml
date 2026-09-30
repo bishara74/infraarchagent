@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-a
+  namespace: default
+  labels:
+    app: microservice-a
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: microservice-a
+  template:
+    metadata:
+      labels:
+        app: microservice-a
+    spec:
+      serviceAccountName: microservice-a
+      containers:
+        - name: microservice-a
+          image: microservice-a:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: efs-storage
+              mountPath: /data
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: rds-db-credentials
+                  key: host
+      volumes:
+        - name: efs-storage
+          persistentVolumeClaim:
+            claimName: efs-storage-pvc
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: microservice-a
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-a
+  namespace: default
+spec:
+  selector:
+    app: microservice-a
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

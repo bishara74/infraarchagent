@@ -1,0 +1,9 @@
+# Default values for the microservices chart
+replicaCount: 2
+image:
+  repository: public.ecr.aws/amazonlinux/amazonlinux
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80

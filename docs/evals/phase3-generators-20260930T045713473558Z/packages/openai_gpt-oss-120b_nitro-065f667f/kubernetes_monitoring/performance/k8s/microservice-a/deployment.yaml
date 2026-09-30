@@ -1,0 +1,34 @@
+# Deployment for microservice-a
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-a
+  labels:
+    app: microservice-a
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: microservice-a
+  template:
+    metadata:
+      labels:
+        app: microservice-a
+    spec:
+      containers:
+        - name: microservice-a
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: DB_HOST
+              value: "${aws_rds_instance.rds.endpoint}"
+            - name: DB_NAME
+              value: "${var.rds_db_name}"
+            - name: DB_USER
+              value: "${var.rds_username}"
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rds-credentials
+                  key: password

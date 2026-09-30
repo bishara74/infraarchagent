@@ -1,0 +1,51 @@
+# Deployment for microservice-a with EFS and RDS env config
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: microservice-a
+  labels:
+    app: microservice-a
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: microservice-a
+  template:
+    metadata:
+      labels:
+        app: microservice-a
+    spec:
+      containers:
+        - name: microservice-a
+          image: microservice-a:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: rds-db.internal
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          volumeMounts:
+            - name: efs-storage
+              mountPath: /data
+      volumes:
+        - name: efs-storage
+          persistentVolumeClaim:
+            claimName: efs-storage-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: microservice-a
+spec:
+  selector:
+    app: microservice-a
+  ports:
+    - port: 80
+      targetPort: 8080
+  type: ClusterIP

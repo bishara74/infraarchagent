@@ -1,0 +1,190 @@
+{
+  "cases": [
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 0 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "Provisions a cost-optimized three-tier AWS stack: VPC with public/private subnets across 2 AZs and a single NAT gateway, an internet-facing ALB routing to two ECS Fargate services (app-service-1 default, app-service-2 via /app-service-2* path rule), a single-AZ db.t3.micro PostgreSQL 13 RDS instance, and a private, encrypted S3 bucket. DB password is generated via random_password and stored in Secrets Manager, injected into ECS tasks as a secret (never hardcoded). Fargate tasks use 256 CPU/512 MB (smallest reasonable size) with desired_count=1 each for minimal cost. Adjust var.container_image to point to your application images; default is a placeholder public nginx image for smoke-testing connectivity.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 81.79923213799702,
+      "input_tokens": 1594,
+      "output_tokens": 10745,
+      "file_count": 9,
+      "total_characters": 14195,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "Implements a three-tier AWS architecture: internet-facing ALB across 2 AZs routing to two ECS Fargate services (app-service-1 default path, app-service-2 on /service2/*), each with its own CloudWatch log group, task/execution IAM roles, and Application Auto Scaling policies (CPU + memory target tracking, min 2 / max 10 tasks). Networking spans 2 public and 2 private subnets with per-AZ NAT gateways for outbound access from the private application tier. RDS PostgreSQL (multi_az=true, db.r6g.large, gp3, encrypted) sits in private subnets, reachable only from the ECS security group; credentials are generated via random_password and stored in Secrets Manager, injected into ECS tasks as a secret (no hardcoded secrets). The S3 bucket (s3-storage-<random>) is private, versioned, encrypted, and accessed only via the ECS task IAM role. Naming aligns with the deployment plan: alb, app-service-1, app-service-2, rds-storage, s3-storage. Only Terraform files were requested per plan.file_types.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 90.53178777400171,
+      "input_tokens": 1685,
+      "output_tokens": 11566,
+      "file_count": 9,
+      "total_characters": 15506,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "security",
+      "success": false,
+      "error_category": "deadline",
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 2,
+      "llm_attempts": 2,
+      "elapsed_seconds": 330.0028246699985,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        1
+      ]
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "success": false,
+      "error_category": "deadline",
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 2,
+      "elapsed_seconds": 330.0034032459989,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "3",
+      "structure_error_counts": []
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "Assumed 2 microservices on EKS with EFS shared storage and RDS (multi-AZ, db.r6g.large) for microservice-a. Autoscaling: EKS managed node group (2-6 nodes), HPA on every Deployment (microservice-a, microservice-b, prometheus, grafana) targeting CPU utilization. ALB Ingress Controller IRSA role provisioned in Terraform; controller install itself is a prerequisite step (documented in README) since it's cluster-wide tooling, not one of the requested workloads. The EFS StorageClass uses `${EFS_FILE_SYSTEM_ID}` as a deployment-time substitution token for the Terraform-created filesystem id (documented, not a secret). ACM certificate ARN uses a syntactically valid placeholder (all-zero) default that must be replaced with a real certificate for HTTPS ingress. DB credentials are wired via a Kubernetes Secret (`rds-db-credentials`) expected to be created out-of-band from the RDS password variable, avoiding hardcoded secrets.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 242.65050165200228,
+      "input_tokens": 2063,
+      "output_tokens": 31882,
+      "file_count": 22,
+      "total_characters": 22902,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "success": false,
+      "error_category": "deadline",
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [],
+      "notes": null,
+      "package_attempts": 1,
+      "llm_attempts": 2,
+      "elapsed_seconds": 330.0019997570016,
+      "input_tokens": null,
+      "output_tokens": null,
+      "file_count": 0,
+      "total_characters": 0,
+      "prompt_version": "3",
+      "structure_error_counts": []
+    }
+  ],
+  "triples": [
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "wall_seconds": 330.03016988500167,
+      "mode": "parallel"
+    },
+    {
+      "model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "wall_seconds": 330.0041642340002,
+      "mode": "parallel"
+    }
+  ],
+  "totals": {
+    "anthropic/claude-sonnet-5": {
+      "success_rate": 0.5,
+      "compliance_rate": 1.0,
+      "median_seconds": 286.32625070450194,
+      "input_tokens": null,
+      "output_tokens": null,
+      "total_tokens": null,
+      "estimated_cost": null
+    }
+  }
+}

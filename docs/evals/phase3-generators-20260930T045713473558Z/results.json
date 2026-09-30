@@ -1,0 +1,247 @@
+{
+  "cases": [
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "All resources use the free‑tier‑eligible sizes and single‑AZ design. IAM role and policy are minimal for ECS task execution. The ALB listener forwards to app‑service‑1; you can add rules for app‑service‑2 as needed. Adjust variable defaults (especially the DB password) before production use.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 2.9159684389996983,
+      "input_tokens": 1025,
+      "output_tokens": 3102,
+      "file_count": 3,
+      "total_characters": 8249,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": false,
+          "detail": "Plan has a relational DB but no multi-AZ setting or qualifying Aurora cluster was found."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": true,
+          "detail": "Found Terraform autoscaling or a Kubernetes HPA."
+        }
+      ],
+      "notes": "The package includes a full Terraform configuration covering VPC, security groups, an internet‑facing ALB, two ECS Fargate services with load‑balancing, a multi‑AZ Aurora PostgreSQL cluster (engine version 13), and a private S3 bucket. All resources use consistent naming based on the `project_name` variable, and autoscaling is applied via Application Auto Scaling policies targeting CPU utilization. No hard‑coded secrets are used; database credentials are exposed as variables.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 3.2282513979989744,
+      "input_tokens": 1072,
+      "output_tokens": 4153,
+      "file_count": 10,
+      "total_characters": 11069,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "S3 encryption",
+          "passed": true,
+          "detail": "Found an S3 server-side encryption configuration."
+        },
+        {
+          "name": "S3 public access block",
+          "passed": true,
+          "detail": "Found an S3 public access block."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "All resources are placed in a single AZ for simplicity. The configuration follows the security optimisation directives: no wildcard IAM actions, encryption at rest for RDS and S3, private subnets for non‑public services, HTTPS only ingress on the ALB, and public‑access blocks on the bucket.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 3.330377641999803,
+      "input_tokens": 1062,
+      "output_tokens": 4650,
+      "file_count": 4,
+      "total_characters": 12335,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "small instance classes",
+          "passed": true,
+          "detail": "All 1 explicit instance classes are micro or small."
+        },
+        {
+          "name": "single-AZ preference",
+          "passed": true,
+          "detail": "No multi_az = true setting found."
+        }
+      ],
+      "notes": "All resources are sized for the AWS Free Tier where possible (t3.micro nodes, db.t3.micro). No NAT gateway is used; public subnets provide internet access. The Helm charts are minimal placeholders; replace values (e.g., ALB certificate ARN) as needed before deployment.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 3.1156396199985466,
+      "input_tokens": 1234,
+      "output_tokens": 5572,
+      "file_count": 18,
+      "total_characters": 12468,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "relational DB multi-AZ",
+          "passed": true,
+          "detail": "Found multi_az = true for a plan with a relational DB."
+        },
+        {
+          "name": "autoscaling construct",
+          "passed": false,
+          "detail": "No Terraform autoscaling construct or Kubernetes HPA found."
+        }
+      ],
+      "notes": "All resources use consistent naming (eks-cluster, efs-storage, rds-db). Terraform variables provide defaults and avoid hard‑coded secrets. Helm releases install Prometheus and Grafana into the `monitoring` namespace. The ALB ingress is defined in Kubernetes with path‑based routing for the two microservices and Grafana. No placeholder values remain.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 3.5184080920007546,
+      "input_tokens": 1281,
+      "output_tokens": 5932,
+      "file_count": 15,
+      "total_characters": 12388,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "success": true,
+      "error_category": null,
+      "llm_category": null,
+      "missing_types": [],
+      "checks": [
+        {
+          "name": "RDS storage encryption",
+          "passed": true,
+          "detail": "Found storage_encrypted = true."
+        },
+        {
+          "name": "public ingress port",
+          "passed": true,
+          "detail": "No broad ingress found outside port 443."
+        },
+        {
+          "name": "IAM wildcard actions",
+          "passed": true,
+          "detail": "No wildcard IAM action was found."
+        }
+      ],
+      "notes": "All requested file types are included. Terraform uses least‑privilege IAM, encrypted storage, and private subnets for non‑public services. Ingress is limited to HTTPS (port 443) from 0.0.0.0/0 via an ALB. No placeholders or hard‑coded secrets are present.",
+      "package_attempts": 1,
+      "llm_attempts": 1,
+      "elapsed_seconds": 3.5274787489979644,
+      "input_tokens": 1271,
+      "output_tokens": 7812,
+      "file_count": 18,
+      "total_characters": 17718,
+      "prompt_version": "3",
+      "structure_error_counts": [
+        0
+      ]
+    }
+  ],
+  "triples": [
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "wall_seconds": 3.3671979829996417,
+      "mode": "parallel"
+    },
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "wall_seconds": 3.5364258189983957,
+      "mode": "parallel"
+    }
+  ],
+  "totals": {
+    "openai/gpt-oss-120b:nitro": {
+      "success_rate": 1.0,
+      "compliance_rate": 0.875,
+      "median_seconds": 3.2793145199993887,
+      "input_tokens": 6945,
+      "output_tokens": 31221,
+      "total_tokens": 38166,
+      "estimated_cost": 0.01977435
+    }
+  }
+}

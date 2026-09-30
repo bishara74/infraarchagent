@@ -1,0 +1,25 @@
+# Simple Grafana dashboard showing Prometheus up metric
+{
+  "dashboard": {
+    "id": null,
+    "title": "Prometheus Overview",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Prometheus Up",
+        "targets": [
+          {
+            "expr": "up",
+            "legendFormat": "{{instance}}",
+            "refId": "A"
+          }
+        ],
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 8}
+      }
+    ],
+    "schemaVersion": 30,
+    "version": 1,
+    "refresh": "5s"
+  },
+  "overwrite": false
+}
