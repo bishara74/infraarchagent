@@ -12,7 +12,14 @@ from app.domain.enums import LLMProvider
 from app.llm.errors import LLMPermanentError
 from app.llm.stub import StubAdapter
 from scripts import eval_architect
-from scripts.eval_architect import CASES, run_evaluation
+from scripts.eval_architect import (
+    CASES,
+    _checks,
+    _plan,
+    _service,
+    _storage,
+    run_evaluation,
+)
 
 
 def settings() -> Settings:
@@ -24,6 +31,92 @@ def settings() -> Settings:
         llm_provider=LLMProvider.STUB,
         _env_file=None,
     )
+
+
+@pytest.mark.req("FR-A-01", "FR-A-02")
+@pytest.mark.parametrize(
+    ("case", "check", "service_aws", "storage_aws", "storage_kind"),
+    [
+        (
+            "three_tier",
+            "relational database",
+            "RDS PostgreSQL",
+            "PostgreSQL",
+            "relational_db",
+        ),
+        ("three_tier", "object storage", "s3", "Object store", "object_storage"),
+        ("static_site", "CDN service", "cLoUdFrOnT", "cLoUdFrOnT", "other"),
+        ("data_pipeline", "queue service", "sQs", "sQs", "other"),
+    ],
+)
+def test_soft_checks_accept_service_and_storage_placements(
+    case: str,
+    check: str,
+    service_aws: str,
+    storage_aws: str,
+    storage_kind: str,
+) -> None:
+    service_plan = _plan(
+        [_service("web", "ECS", "Serve"), _service("resource", service_aws, "Use")],
+        [],
+        ["web"],
+        ["resource"],
+        [],
+        ["terraform"],
+    )
+    storage_plan = _plan(
+        [_service("web", "ECS", "Serve")],
+        [],
+        ["web"],
+        [],
+        [_storage("resource", storage_kind, storage_aws, ["web"])],
+        ["terraform"],
+    )
+    for raw_plan in (service_plan, storage_plan):
+        plan = eval_architect.DeploymentPlan.model_validate(raw_plan)
+        assert _checks(case, plan)[check]
+    missing_plan = eval_architect.DeploymentPlan.model_validate(
+        _plan([_service("web", "ECS", "Serve")], [], ["web"], [], [], ["terraform"])
+    )
+    assert not _checks(case, missing_plan)[check]
+
+
+@pytest.mark.req("FR-A-01", "FR-A-02")
+def test_relational_database_accepts_aurora_service_and_kind_without_rds() -> None:
+    aurora = eval_architect.DeploymentPlan.model_validate(
+        _plan(
+            [_service("web", "ECS", "Serve"), _service("db", "aUrOrA", "Store")],
+            [],
+            ["web"],
+            ["db"],
+            [],
+            ["terraform"],
+        )
+    )
+    storage = eval_architect.DeploymentPlan.model_validate(
+        _plan(
+            [_service("web", "ECS", "Serve")],
+            [],
+            ["web"],
+            [],
+            [_storage("db", "relational_db", "PostgreSQL", ["web"])],
+            ["terraform"],
+        )
+    )
+    misclassified_storage = eval_architect.DeploymentPlan.model_validate(
+        _plan(
+            [_service("web", "ECS", "Serve")],
+            [],
+            ["web"],
+            [],
+            [_storage("db", "other", "RDS PostgreSQL", ["web"])],
+            ["terraform"],
+        )
+    )
+    assert _checks("three_tier", aurora)["relational database"]
+    assert _checks("three_tier", storage)["relational database"]
+    assert not _checks("three_tier", misclassified_storage)["relational database"]
+    assert not _checks("three_tier", None)["relational database"]
 
 
 @pytest.mark.req("FR-A-01", "FR-A-02", "FR-A-03")
@@ -46,6 +139,9 @@ async def test_offline_evaluation_passes_all_checks_and_correction(
         {"attempt": 1, "errors": [expected_error]}
     ]
     assert diagnostic["plan"]["cloud_provider"] == "aws"
+    three_tier = json.loads((output / "three_tier.json").read_text(encoding="utf-8"))
+    assert three_tier["checks"]["relational database"]
+    assert "RDS service" not in three_tier["checks"]
     assert len(list(output.glob("*.json"))) == len(CASES) + 1
     assert "user_description" not in summary
 

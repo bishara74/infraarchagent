@@ -176,7 +176,7 @@ def _checks(case: str, plan: DeploymentPlan | None) -> dict[str, bool]:
         checks["terraform included"] = False
         checks["dependency graph valid"] = False
         case_check = {
-            "three_tier": ("RDS service", "object storage"),
+            "three_tier": ("relational database", "object storage"),
             "vague_web_app": ("ambiguity recorded",),
             "static_site": ("CDN service",),
             "data_pipeline": ("queue service",),
@@ -184,7 +184,10 @@ def _checks(case: str, plan: DeploymentPlan | None) -> dict[str, bool]:
         }
         checks.update({name: False for name in case_check[case]})
         return checks
-    services = " ".join(service.aws_service.lower() for service in plan.services)
+    service_labels = [service.aws_service.casefold() for service in plan.services]
+    aws_labels = service_labels + [
+        storage.aws_service.casefold() for storage in plan.storage
+    ]
     kinds = {storage.kind.value for storage in plan.storage}
     types = {kind.value for kind in plan.file_types}
     checks["terraform included"] = "terraform" in types
@@ -192,14 +195,22 @@ def _checks(case: str, plan: DeploymentPlan | None) -> dict[str, bool]:
         plan.model_dump(mode="json")
     )
     if case == "three_tier":
-        checks["RDS service"] = "rds" in services
-        checks["object storage"] = "object_storage" in kinds
+        checks["relational database"] = "relational_db" in kinds or any(
+            "rds" in label or "aurora" in label for label in service_labels
+        )
+        checks["object storage"] = "object_storage" in kinds or any(
+            "s3" in label for label in aws_labels
+        )
     elif case == "vague_web_app":
         checks["ambiguity recorded"] = len(plan.ambiguities) >= 1
     elif case == "static_site":
-        checks["CDN service"] = "cloudfront" in services or "cdn" in services
+        checks["CDN service"] = any(
+            "cloudfront" in label or "cdn" in label for label in aws_labels
+        )
     elif case == "data_pipeline":
-        checks["queue service"] = "sqs" in services or "queue" in services
+        checks["queue service"] = any(
+            "sqs" in label or "queue" in label for label in aws_labels
+        )
     elif case == "kubernetes_monitoring":
         checks["monitoring file types"] = {
             "kubernetes",

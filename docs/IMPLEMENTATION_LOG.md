@@ -27,6 +27,37 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-09-30 — Phase 2 follow-up — Architect evaluation placement checks
+
+**Summary:** Corrected the architect evaluator's three-tier relational
+database check so a database represented in `storage` no longer causes a
+false FAIL. The object storage, CDN, and queue checks now recognize their
+schema-compatible service and storage placements too.
+
+**Requirements addressed:** FR-A-01, FR-A-02.
+
+**Files:** changed `backend/scripts/eval_architect.py`,
+`backend/tests/unit/test_eval_architect.py`,
+`docs/design-deviations.md`, and this log.
+
+**Decisions:** The report calls the check `relational database`. It passes
+for an RDS/Aurora-labelled service or a storage entry whose kind is
+`relational_db`; an RDS label on storage of another kind does not suffice.
+D-10 records that the evaluation accepts equivalent placements allowed by
+the plan schema. These are advisory evaluation checks, not plan validation.
+
+**Tests:** `make test` passed with 331 passed, 0 failed, 0 skipped.
+`make lint` passed Ruff check, Ruff format check (84 files), and mypy
+(52 source files). Added positive and negative examples for both placements
+and asserted the renamed check in the saved stub report. No real provider
+calls were made.
+
+**Known gaps / follow-ups:** These soft checks detect named components; they
+do not establish deployability or service compatibility. Existing untracked
+evaluation reports were left untouched.
+
+---
+
 ## 2026-09-30 — Phase 3 follow-up — Configurable reasoning effort
 
 **Summary:** Added optional `LLM_REASONING_EFFORT` control for

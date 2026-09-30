@@ -192,6 +192,12 @@ Status values:
 - **Reason:** generator input must be internally consistent and small enough
   for a later event payload; validation errors must be actionable for retry.
 - **Implemented in Phase 2:** plan model, error collector, and offline tests.
+- **Evaluation clarification:** the soft infrastructure checks accept
+  schema-equivalent placements. A relational database is either a service
+  labelled RDS/Aurora or `storage.kind = relational_db`; object storage is
+  either `storage.kind = object_storage` or an S3-labelled entry. CDN and queue
+  checks inspect `aws_service` in both services and storage. The Phase 2
+  evaluation prompt's phrase "RDS-like service" is narrower than the schema.
 
 ### D-11 — Schema-derived ArchitectAgent correction prompt (Accepted)
 - **Spec:** FR-A-01--04 require a JSON plan, ambiguity notes, and failure
