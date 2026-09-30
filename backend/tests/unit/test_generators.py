@@ -11,6 +11,7 @@ from app.agents.generators.base import (
 from app.agents.generators.cost import CostGeneratorAgent
 from app.agents.generators.performance import PerformanceGeneratorAgent
 from app.agents.generators.security import SecurityGeneratorAgent
+from app.domain.directive_checks import check_directive
 from app.domain.enums import Variant
 from app.domain.models import IaCPackage
 from app.domain.plan import DeploymentPlan, FileType
@@ -175,6 +176,61 @@ async def test_typed_plan_and_safe_llm_failure() -> None:
         await generator.generate(plan())
     assert "CANARY" not in str(caught.value)
     assert caught.value.category == "llm_failure"
+
+
+@pytest.mark.req("FR-G-02")
+async def test_schema_invalid_reply_is_corrected() -> None:
+    generator = agent(
+        json.dumps({"files": {"terraform/main.tf": 4}, "extra": 1}),
+        reply({"terraform/main.tf": "x"}),
+    )
+    package = await generator.generate(plan())
+    assert package.files == {"terraform/main.tf": "x"}
+    assert "extra" in generator.llm_adapter.prompts[1]
+    assert "terraform/main.tf" in generator.llm_adapter.prompts[1]
+
+
+@pytest.mark.req("FR-G-03")
+async def test_directive_failure_does_not_trigger_correction() -> None:
+    generator = agent(reply({"terraform/main.tf": 'instance_type = "m5.large"'}))
+    deployment = plan()
+    package = await generator.generate(deployment)
+    checks = check_directive(generator.variant, package.files, deployment)
+    assert any(not check.passed for check in checks)
+    assert len(generator.llm_adapter.prompts) == 1
+
+
+@pytest.mark.req("PR-05")
+async def test_valid_return_near_budget_is_accepted() -> None:
+    clock = FakeClock()
+
+    class AdvancingStub(StubAdapter):
+        async def send_prompt(
+            self,
+            prompt: str,
+            *,
+            system: str | None = None,
+            max_output_tokens: int,
+            timeout: float,
+        ) -> LLMResponse:
+            response = await super().send_prompt(
+                prompt,
+                system=system,
+                max_output_tokens=max_output_tokens,
+                timeout=timeout,
+            )
+            clock.now_value += 149.5
+            return response
+
+    generator = CostGeneratorAgent(
+        AdvancingStub(script=[reply({"terraform/main.tf": "x"})]),
+        deadline_seconds=150,
+        attempt_timeout=120,
+        max_output_tokens=32000,
+        max_package_attempts=2,
+        clock=clock.now,
+    )
+    assert (await generator.generate(plan())).variant is Variant.COST
 
 
 @pytest.mark.req("FR-G-01", "FR-G-03", "FR-G-04", "FR-G-05")

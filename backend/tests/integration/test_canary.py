@@ -9,6 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.agents.architect import ArchitectLLMFailure
+from app.agents.generators.base import GeneratorLLMFailure
 from app.core.config import Settings, get_settings
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
@@ -97,4 +98,7 @@ async def test_provider_error_does_not_expose_canary(
     wrapped = ArchitectLLMFailure(captured.value.category)
     assert key not in wrapped.message
     assert key not in repr(wrapped)
+    generator_error = GeneratorLLMFailure(Variant.SECURITY, captured.value.category)
+    assert key not in str(generator_error)
+    assert key not in repr(generator_error)
     assert key not in caplog.text
