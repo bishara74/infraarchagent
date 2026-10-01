@@ -29,7 +29,8 @@ def _empty_scanner(repeats: int = 3) -> Scanner:
                     ToolResult('{"passed":0,"failed":0,"resource_count":0}', "", 0, 0)
                 ]
                 * repeats,
-                "tfsec": [ToolResult('{"results":[]}', "", 0, 0)] * repeats,
+                "trivy": [ToolResult('{"Results":[]}', "", 0, 0)] * repeats,
+                "terraform": [ToolResult('{"diagnostics":[]}', "", 0, 0)] * repeats,
             }
         )
     )

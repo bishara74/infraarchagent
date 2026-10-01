@@ -1,0 +1,3192 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.69.3"
+  },
+  "ReportID": "01a0f8af-17ff-7f36-9556-8998ff6cf015",
+  "CreatedAt": "2026-10-01T20:16:59.648000308+02:00",
+  "ArtifactName": "/__RECORDED_ROOT__",
+  "ArtifactType": "filesystem",
+  "Results": [
+    {
+      "Target": "k8s/deployment.yaml",
+      "Class": "config",
+      "Type": "kubernetes",
+      "MisconfSummary": {
+        "Successes": 79,
+        "Failures": 19
+      },
+      "Misconfigurations": [
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0001",
+          "Title": "Can elevate its own privileges",
+          "Description": "A program inside the container can elevate its own privileges and run as root, which might give the program control over the container and node.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'securityContext.allowPrivilegeEscalation' to false",
+          "Namespace": "builtin.kubernetes.KSV001",
+          "Query": "data.builtin.kubernetes.KSV001.deny",
+          "Resolution": "Set 'set containers[].securityContext.allowPrivilegeEscalation' to 'false'.",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0001",
+          "References": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted",
+            "https://avd.aquasec.com/misconfig/ksv-0001"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0003",
+          "Title": "Default capabilities: some containers do not drop all",
+          "Description": "The container should drop all default capabilities and add only those that are needed for its execution.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should add 'ALL' to 'securityContext.capabilities.drop'",
+          "Namespace": "builtin.kubernetes.KSV003",
+          "Query": "data.builtin.kubernetes.KSV003.deny",
+          "Resolution": "Add 'ALL' to containers[].securityContext.capabilities.drop.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0003",
+          "References": [
+            "https://kubesec.io/basics/containers-securitycontext-capabilities-drop-index-all/",
+            "https://avd.aquasec.com/misconfig/ksv-0003"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0004",
+          "Title": "Default capabilities: some containers do not drop any",
+          "Description": "Security best practices require containers to run with minimal required capabilities.",
+          "Message": "Container 'app' of 'deployment' 'vulnerable' in 'default' namespace should set securityContext.capabilities.drop",
+          "Namespace": "builtin.kubernetes.KSV004",
+          "Query": "data.builtin.kubernetes.KSV004.deny",
+          "Resolution": "Specify at least one unneeded capability in 'containers[].securityContext.capabilities.drop'",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0004",
+          "References": [
+            "https://kubesec.io/basics/containers-securitycontext-capabilities-drop-index-all/",
+            "https://avd.aquasec.com/misconfig/ksv-0004"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0011",
+          "Title": "CPU not limited",
+          "Description": "Enforcing CPU limits prevents DoS via resource exhaustion.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'resources.limits.cpu'",
+          "Namespace": "builtin.kubernetes.KSV011",
+          "Query": "data.builtin.kubernetes.KSV011.deny",
+          "Resolution": "Set a limit value under 'containers[].resources.limits.cpu'.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0011",
+          "References": [
+            "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits",
+            "https://avd.aquasec.com/misconfig/ksv-0011"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0012",
+          "Title": "Runs as root user",
+          "Description": "Force the running image to run as a non-root user to ensure least privileges.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'securityContext.runAsNonRoot' to true",
+          "Namespace": "builtin.kubernetes.KSV012",
+          "Query": "data.builtin.kubernetes.KSV012.deny",
+          "Resolution": "Set 'containers[].securityContext.runAsNonRoot' to true.",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0012",
+          "References": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted",
+            "https://avd.aquasec.com/misconfig/ksv-0012"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0013",
+          "Title": "Image tag \":latest\" used",
+          "Description": "It is best to avoid using the ':latest' image tag when deploying containers in production. Doing so makes it hard to track which version of the image is running, and hard to roll back the version.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should specify an image tag",
+          "Namespace": "builtin.kubernetes.KSV013",
+          "Query": "data.builtin.kubernetes.KSV013.deny",
+          "Resolution": "Use a specific container image tag that is not 'latest'.",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0013",
+          "References": [
+            "https://kubernetes.io/docs/concepts/configuration/overview/#container-images",
+            "https://avd.aquasec.com/misconfig/ksv-0013"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0014",
+          "Title": "Root file system is not read-only",
+          "Description": "An immutable root file system prevents applications from writing to their local disk. This can limit intrusions, as attackers will not be able to tamper with the file system or write foreign executables to disk.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'securityContext.readOnlyRootFilesystem' to true",
+          "Namespace": "builtin.kubernetes.KSV014",
+          "Query": "data.builtin.kubernetes.KSV014.deny",
+          "Resolution": "Change 'containers[].securityContext.readOnlyRootFilesystem' to 'true'.",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0014",
+          "References": [
+            "https://kubesec.io/basics/containers-securitycontext-readonlyrootfilesystem-true/",
+            "https://avd.aquasec.com/misconfig/ksv-0014"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0015",
+          "Title": "CPU requests not specified",
+          "Description": "When containers have resource requests specified, the scheduler can make better decisions about which nodes to place pods on, and how to deal with resource contention.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'resources.requests.cpu'",
+          "Namespace": "builtin.kubernetes.KSV015",
+          "Query": "data.builtin.kubernetes.KSV015.deny",
+          "Resolution": "Set 'containers[].resources.requests.cpu'.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0015",
+          "References": [
+            "https://cloud.google.com/blog/products/containers-kubernetes/kubernetes-best-practices-resource-requests-and-limits",
+            "https://avd.aquasec.com/misconfig/ksv-0015"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0016",
+          "Title": "Memory requests not specified",
+          "Description": "When containers have memory requests specified, the scheduler can make better decisions about which nodes to place pods on, and how to deal with resource contention.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'resources.requests.memory'",
+          "Namespace": "builtin.kubernetes.KSV016",
+          "Query": "data.builtin.kubernetes.KSV016.deny",
+          "Resolution": "Set 'containers[].resources.requests.memory'.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0016",
+          "References": [
+            "https://kubesec.io/basics/containers-resources-limits-memory/",
+            "https://avd.aquasec.com/misconfig/ksv-0016"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0017",
+          "Title": "Privileged",
+          "Description": "Privileged containers share namespaces with the host system and do not offer any security. They should be used exclusively for system containers that require high privileges.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'securityContext.privileged' to false",
+          "Namespace": "builtin.kubernetes.KSV017",
+          "Query": "data.builtin.kubernetes.KSV017.deny",
+          "Resolution": "Change 'containers[].securityContext.privileged' to 'false'.",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0017",
+          "References": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/#baseline",
+            "https://avd.aquasec.com/misconfig/ksv-0017"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0018",
+          "Title": "Memory not limited",
+          "Description": "Enforcing memory limits prevents DoS via resource exhaustion.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'resources.limits.memory'",
+          "Namespace": "builtin.kubernetes.KSV018",
+          "Query": "data.builtin.kubernetes.KSV018.deny",
+          "Resolution": "Set a limit value under 'containers[].resources.limits.memory'.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0018",
+          "References": [
+            "https://kubesec.io/basics/containers-resources-limits-memory/",
+            "https://avd.aquasec.com/misconfig/ksv-0018"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0020",
+          "Title": "Runs with UID <= 10000",
+          "Description": "Force the container to run with user ID > 10000 to avoid conflicts with the host\u2019s user table.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'securityContext.runAsUser' > 10000",
+          "Namespace": "builtin.kubernetes.KSV020",
+          "Query": "data.builtin.kubernetes.KSV020.deny",
+          "Resolution": "Set 'containers[].securityContext.runAsUser' to an integer > 10000.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0020",
+          "References": [
+            "https://kubesec.io/basics/containers-securitycontext-runasuser/",
+            "https://avd.aquasec.com/misconfig/ksv-0020"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0021",
+          "Title": "Runs with GID <= 10000",
+          "Description": "Force the container to run with group ID > 10000 to avoid conflicts with the host\u2019s user table.",
+          "Message": "Container 'app' of Deployment 'vulnerable' should set 'securityContext.runAsGroup' > 10000",
+          "Namespace": "builtin.kubernetes.KSV021",
+          "Query": "data.builtin.kubernetes.KSV021.deny",
+          "Resolution": "Set 'containers[].securityContext.runAsGroup' to an integer > 10000.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0021",
+          "References": [
+            "https://kubesec.io/basics/containers-securitycontext-runasuser/",
+            "https://avd.aquasec.com/misconfig/ksv-0021"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0030",
+          "Title": "Runtime/Default Seccomp profile not set",
+          "Description": "According to pod security standard 'Seccomp', the RuntimeDefault seccomp profile must be required, or allow specific additional profiles.",
+          "Message": "Either Pod or Container should set 'securityContext.seccompProfile.type' to 'RuntimeDefault'",
+          "Namespace": "builtin.kubernetes.KSV030",
+          "Query": "data.builtin.kubernetes.KSV030.deny",
+          "Resolution": "Set 'spec.securityContext.seccompProfile.type', 'spec.containers[*].securityContext.seccompProfile' and 'spec.initContainers[*].securityContext.seccompProfile' to 'RuntimeDefault' or undefined.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0030",
+          "References": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted",
+            "https://avd.aquasec.com/misconfig/ksv-0030"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0104",
+          "Title": "Seccomp policies disabled",
+          "Description": "A program inside the container can bypass Seccomp protection policies.",
+          "Message": "container \"app\" of deployment \"vulnerable\" in \"default\" namespace should specify a seccomp profile",
+          "Namespace": "builtin.kubernetes.KSV104",
+          "Query": "data.builtin.kubernetes.KSV104.deny",
+          "Resolution": "Specify seccomp either by annotation or by seccomp profile type having allowed values as per pod security standards",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0104",
+          "References": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/#baseline",
+            "https://avd.aquasec.com/misconfig/ksv-0104"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0105",
+          "Title": "Containers must not set runAsUser to 0",
+          "Description": "Containers should be forbidden from running with a root UID.",
+          "Message": "securityContext.runAsUser should be set to a value greater than 0",
+          "Namespace": "builtin.kubernetes.KSV105",
+          "Query": "data.builtin.kubernetes.KSV105.deny",
+          "Resolution": "Set 'securityContext.runAsUser' to a non-zero integer or leave undefined.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0105",
+          "References": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted",
+            "https://avd.aquasec.com/misconfig/ksv-0105"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 17,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0106",
+          "Title": "Container capabilities must only include NET_BIND_SERVICE",
+          "Description": "Containers must drop ALL capabilities, and are only permitted to add back the NET_BIND_SERVICE capability.",
+          "Message": "container should drop all",
+          "Namespace": "builtin.kubernetes.KSV106",
+          "Query": "data.builtin.kubernetes.KSV106.deny",
+          "Resolution": "Set 'spec.containers[*].securityContext.capabilities.drop' to 'ALL' and only add 'NET_BIND_SERVICE' to 'spec.containers[*].securityContext.capabilities.add'.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0106",
+          "References": [
+            "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted",
+            "https://avd.aquasec.com/misconfig/ksv-0106"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 15,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0110",
+          "Title": "Workloads in the default namespace",
+          "Description": "Checks whether a workload is running in the default namespace.",
+          "Message": "deployment vulnerable in default namespace should set metadata.namespace to a non-default namespace",
+          "Namespace": "builtin.kubernetes.KSV110",
+          "Query": "data.builtin.kubernetes.KSV110.deny",
+          "Resolution": "Set 'metadata.namespace' to a non-default namespace.",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0110",
+          "References": [
+            "https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+            "https://avd.aquasec.com/misconfig/ksv-0110"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 3,
+            "EndLine": 4,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 3,
+                  "Content": "metadata:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mmetadata\u001b[0m:",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 4,
+                  "Content": "  name: vulnerable",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;33mname\u001b[0m: vulnerable",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Kubernetes Security Check",
+          "ID": "KSV-0118",
+          "Title": "Default security context configured",
+          "Description": "Security context controls the allocation of security parameters for the pod/container/volume, ensuring the appropriate level of protection. Relying on default security context may expose vulnerabilities to potential attacks that rely on privileged access.",
+          "Message": "deployment vulnerable in default namespace is using the default security context, which allows root privileges",
+          "Namespace": "builtin.kubernetes.KSV118",
+          "Query": "data.builtin.kubernetes.KSV118.deny",
+          "Resolution": "To enhance security, it is strongly recommended not to rely on the default security context. Instead, it is advisable to explicitly define the required security parameters (such as runAsNonRoot, capabilities, readOnlyRootFilesystem, etc.) within the security context.",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0118",
+          "References": [
+            "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/",
+            "https://avd.aquasec.com/misconfig/ksv-0118"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Provider": "Kubernetes",
+            "Service": "general",
+            "StartLine": 13,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 13,
+                  "Content": "    spec:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "    \u001b[38;5;33mspec\u001b[0m:",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 14,
+                  "Content": "      containers:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "      \u001b[38;5;33mcontainers\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 15,
+                  "Content": "        - name: app",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "          image: nginx:latest",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: nginx:latest",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "          securityContext:",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "            privileged: true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "            runAsUser: 0",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m            \u001b[38;5;33mrunAsUser\u001b[0m: \u001b[38;5;37m0\u001b[0m",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Target": "terraform",
+      "Class": "config",
+      "Type": "terraform",
+      "MisconfSummary": {
+        "Successes": 72,
+        "Failures": 0
+      }
+    },
+    {
+      "Target": "terraform/main.tf",
+      "Class": "config",
+      "Type": "terraform",
+      "MisconfSummary": {
+        "Successes": 0,
+        "Failures": 18
+      },
+      "Misconfigurations": [
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0077",
+          "Title": "RDS Cluster and RDS instance should have backup retention longer than default 1 day",
+          "Description": "RDS backup retention for clusters defaults to 1 day, this may not be enough to identify and respond to an issue. Backup retention periods should be set to a period that is a balance on cost and limiting risk.\n",
+          "Message": "Instance has very low backup retention period.",
+          "Namespace": "builtin.aws.rds.aws0077",
+          "Query": "data.builtin.aws.rds.aws0077.deny",
+          "Resolution": "Explicitly set the retention period to greater than the default",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0077",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_WorkingWithAutomatedBackups.html#USER_WorkingWithAutomatedBackups.BackupRetention",
+            "https://avd.aquasec.com/misconfig/aws-0077"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_db_instance.db",
+            "Provider": "AWS",
+            "Service": "rds",
+            "StartLine": 10,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 10,
+                  "Content": "resource \"aws_db_instance\" \"db\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_db_instance\"\u001b[0m \u001b[38;5;37m\"db\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 11,
+                  "Content": "  identifier          = \"infraarch-db\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245midentifier\u001b[0m          = \u001b[38;5;37m\"infraarch-db\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 12,
+                  "Content": "  engine              = \"postgres\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mengine\u001b[0m              = \u001b[38;5;37m\"postgres\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 13,
+                  "Content": "  instance_class      = \"db.t3.micro\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245minstance_class\u001b[0m      = \u001b[38;5;37m\"db.t3.micro\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 14,
+                  "Content": "  allocated_storage   = 20",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mallocated_storage\u001b[0m   = \u001b[38;5;37m20",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 15,
+                  "Content": "  username            = \"admin\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245musername\u001b[0m            = \u001b[38;5;37m\"admin\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "  password            = var.db_password",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpassword\u001b[0m            = \u001b[38;5;33mvar\u001b[0m.db_password",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "  storage_encrypted   = false",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mstorage_encrypted\u001b[0m   = \u001b[38;5;166mfalse",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "  publicly_accessible = true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpublicly_accessible\u001b[0m = \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0080",
+          "Title": "RDS encryption has not been enabled at a DB Instance level.",
+          "Description": "Encryption should be enabled for an RDS Database instances.\nWhen enabling encryption by setting the kms_key_id.\n",
+          "Message": "Instance does not have storage encryption enabled.",
+          "Namespace": "builtin.aws.rds.aws0080",
+          "Query": "data.builtin.aws.rds.aws0080.deny",
+          "Resolution": "Enable encryption for RDS instances",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0080",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html",
+            "https://avd.aquasec.com/misconfig/aws-0080"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_db_instance.db",
+            "Provider": "AWS",
+            "Service": "rds",
+            "StartLine": 17,
+            "EndLine": 17,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 10,
+                  "Content": "resource \"aws_db_instance\" \"db\" {",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_db_instance\"\u001b[0m \u001b[38;5;37m\"db\"\u001b[0m {",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 11,
+                  "Content": "  identifier          = \"infraarch-db\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245midentifier\u001b[0m          = \u001b[38;5;37m\"infraarch-db\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 12,
+                  "Content": "  engine              = \"postgres\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mengine\u001b[0m              = \u001b[38;5;37m\"postgres\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 13,
+                  "Content": "  instance_class      = \"db.t3.micro\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245minstance_class\u001b[0m      = \u001b[38;5;37m\"db.t3.micro\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 14,
+                  "Content": "  allocated_storage   = 20",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mallocated_storage\u001b[0m   = \u001b[38;5;37m20",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 15,
+                  "Content": "  username            = \"admin\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245musername\u001b[0m            = \u001b[38;5;37m\"admin\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "  password            = var.db_password",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpassword\u001b[0m            = \u001b[38;5;33mvar\u001b[0m.db_password",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "  storage_encrypted   = false",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mstorage_encrypted\u001b[0m   = \u001b[38;5;166mfalse",
+                  "FirstCause": true,
+                  "LastCause": true
+                },
+                {
+                  "Number": 18,
+                  "Content": "  publicly_accessible = true",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpublicly_accessible\u001b[0m = \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "}",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": false
+                }
+              ]
+            },
+            "Occurrences": [
+              {
+                "Resource": "aws_db_instance.db",
+                "Filename": "terraform/main.tf",
+                "Location": {
+                  "StartLine": 10,
+                  "EndLine": 19
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0086",
+          "Title": "S3 Access block should block public ACL",
+          "Description": "S3 buckets should block public ACLs on buckets and any objects they contain. By blocking, PUTs with fail if the object has any public ACL a.\n",
+          "Message": "No public access block so not blocking public acls",
+          "Namespace": "builtin.aws.s3.aws0086",
+          "Query": "data.builtin.aws.s3.aws0086.deny",
+          "Resolution": "Enable blocking any PUT calls with a public ACL specified",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0086",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html",
+            "https://avd.aquasec.com/misconfig/aws-0086"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0087",
+          "Title": "S3 Access block should block public policy",
+          "Description": "S3 bucket policy should have block public policy to prevent users from putting a policy that enable public access.\n",
+          "Message": "No public access block so not blocking public policies",
+          "Namespace": "builtin.aws.s3.aws0087",
+          "Query": "data.builtin.aws.s3.aws0087.deny",
+          "Resolution": "Prevent policies that allow public access being PUT",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0087",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/dev-retired/access-control-block-public-access.html",
+            "https://avd.aquasec.com/misconfig/aws-0087"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0089",
+          "Title": "S3 Bucket Logging",
+          "Description": "Ensures S3 bucket logging is enabled for S3 buckets",
+          "Message": "Bucket has logging disabled",
+          "Namespace": "builtin.aws.s3.aws0089",
+          "Query": "data.builtin.aws.s3.aws0089.deny",
+          "Resolution": "Add a logging block to the resource to enable access logging",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0089",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html",
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html",
+            "https://avd.aquasec.com/misconfig/aws-0089"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0090",
+          "Title": "S3 Data should be versioned",
+          "Description": "Versioning in Amazon S3 is a means of keeping multiple variants of an object in the same bucket.\n\nYou can use the S3 Versioning feature to preserve, retrieve, and restore every version of every object stored in your buckets.\n\nWith versioning you can recover more easily from both unintended user actions and application failures.\n\nWhen you enable versioning, also keep in mind the potential costs of storing noncurrent versions of objects. To help manage those costs, consider setting up an S3 Lifecycle configuration.\n",
+          "Message": "Bucket does not have versioning enabled",
+          "Namespace": "builtin.aws.s3.aws0090",
+          "Query": "data.builtin.aws.s3.aws0090.deny",
+          "Resolution": "Enable versioning to protect against accidental/malicious removal or modification",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0090",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Versioning.html",
+            "https://aws.amazon.com/blogs/storage/reduce-storage-costs-with-fewer-noncurrent-versions-using-amazon-s3-lifecycle/",
+            "https://avd.aquasec.com/misconfig/aws-0090"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0091",
+          "Title": "S3 Access Block should Ignore Public ACL",
+          "Description": "S3 buckets should ignore public ACLs on buckets and any objects they contain. By ignoring rather than blocking, PUT calls with public ACLs will still be applied but the ACL will be ignored.\n",
+          "Message": "No public access block so not blocking public acls",
+          "Namespace": "builtin.aws.s3.aws0091",
+          "Query": "data.builtin.aws.s3.aws0091.deny",
+          "Resolution": "Enable ignoring the application of public ACLs in PUT calls",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0091",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html",
+            "https://avd.aquasec.com/misconfig/aws-0091"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0092",
+          "Title": "S3 Buckets not publicly accessible through ACL.",
+          "Description": "Buckets should not have ACLs that allow public access\n",
+          "Message": "Bucket has a public ACL: \"public-read\"",
+          "Namespace": "builtin.aws.s3.aws0092",
+          "Query": "data.builtin.aws.s3.aws0092.deny",
+          "Resolution": "Don't use canned ACLs or switch to private acl",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0092",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html",
+            "https://avd.aquasec.com/misconfig/aws-0092"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket_acl.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 7,
+            "EndLine": 7,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 5,
+                  "Content": "resource \"aws_s3_bucket_acl\" \"public\" {",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket_acl\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 6,
+                  "Content": "  bucket = aws_s3_bucket.public.id",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = aws_s3_bucket.public.id",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 7,
+                  "Content": "  acl    = \"public-read\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245macl\u001b[0m    = \u001b[38;5;37m\"public-read\"",
+                  "FirstCause": true,
+                  "LastCause": true
+                },
+                {
+                  "Number": 8,
+                  "Content": "}",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": false
+                }
+              ]
+            },
+            "Occurrences": [
+              {
+                "Resource": "aws_s3_bucket_acl.public",
+                "Filename": "terraform/main.tf",
+                "Location": {
+                  "StartLine": 5,
+                  "EndLine": 8
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0093",
+          "Title": "S3 Access block should restrict public bucket to limit access",
+          "Description": "S3 buckets should restrict public policies for the bucket. By enabling, the restrict_public_buckets, only the bucket owner and AWS Services can access if it has a public policy.\n",
+          "Message": "No public access block so not restricting public buckets",
+          "Namespace": "builtin.aws.s3.aws0093",
+          "Query": "data.builtin.aws.s3.aws0093.deny",
+          "Resolution": "Limit the access to public buckets to only the owner or AWS Services (eg; CloudFront)",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0093",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/dev-retired/access-control-block-public-access.html",
+            "https://avd.aquasec.com/misconfig/aws-0093"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0094",
+          "Title": "S3 buckets should each define an aws_s3_bucket_public_access_block",
+          "Description": "The \"block public access\" settings in S3 override individual policies that apply to a given bucket, meaning that all public access can be controlled in one central types for that bucket. It is therefore good practice to define these settings for each bucket in order to clearly define the public access that can be allowed for it.\n",
+          "Message": "Bucket does not have a corresponding public access block.",
+          "Namespace": "builtin.aws.s3.aws0094",
+          "Query": "data.builtin.aws.s3.aws0094.deny",
+          "Resolution": "Define a aws_s3_bucket_public_access_block for the given bucket to control public access policies",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0094",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html",
+            "https://avd.aquasec.com/misconfig/aws-0094"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0099",
+          "Title": "Missing description for security group.",
+          "Description": "Security groups should include a description for auditing purposes.\n\nSimplifies auditing, debugging, and managing security groups.\n",
+          "Message": "Security group explicitly uses the default description.",
+          "Namespace": "builtin.aws.ec2.aws0099",
+          "Query": "data.builtin.aws.ec2.aws0099.deny",
+          "Resolution": "Add descriptions for all security groups",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0099",
+          "References": [
+            "https://www.cloudconformity.com/knowledge-base/aws/EC2/security-group-rules-description.html",
+            "https://avd.aquasec.com/misconfig/aws-0099"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_security_group.ssh",
+            "Provider": "AWS",
+            "Service": "ec2",
+            "StartLine": 21,
+            "EndLine": 29,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 21,
+                  "Content": "resource \"aws_security_group\" \"ssh\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_security_group\"\u001b[0m \u001b[38;5;37m\"ssh\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 22,
+                  "Content": "  name = \"infraarch-ssh\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mname\u001b[0m = \u001b[38;5;37m\"infraarch-ssh\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 23,
+                  "Content": "  ingress {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  ingress {",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 24,
+                  "Content": "    from_port   = 22",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "    \u001b[38;5;245mfrom_port\u001b[0m   = \u001b[38;5;37m22",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 25,
+                  "Content": "    to_port     = 22",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mto_port\u001b[0m     = \u001b[38;5;37m22",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 26,
+                  "Content": "    protocol    = \"tcp\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mprotocol\u001b[0m    = \u001b[38;5;37m\"tcp\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 27,
+                  "Content": "    cidr_blocks = [\"0.0.0.0/0\"]",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mcidr_blocks\u001b[0m = [\u001b[38;5;37m\"0.0.0.0/0\"\u001b[0m]",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 28,
+                  "Content": "  }",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  }",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 29,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0107",
+          "Title": "Security groups should not allow unrestricted ingress to SSH or RDP from any IP address.",
+          "Description": "Security groups provide stateful filtering of ingress and egress network traffic to AWS\nresources. It is recommended that no security group allows unrestricted ingress access to\nremote server administration ports, such as SSH to port 22 and RDP to port 3389.\n",
+          "Message": "Security group rule allows unrestricted ingress from any IP address.",
+          "Namespace": "builtin.aws.ec2.aws0107",
+          "Query": "data.builtin.aws.ec2.aws0107.deny",
+          "Resolution": "Set a more restrictive CIDR range",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0107",
+          "References": [
+            "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/security-group-rules-reference.html",
+            "https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html#ec2-13",
+            "https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html#ec2-14",
+            "https://avd.aquasec.com/misconfig/aws-0107"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_security_group.ssh",
+            "Provider": "AWS",
+            "Service": "ec2",
+            "StartLine": 27,
+            "EndLine": 27,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 21,
+                  "Content": "resource \"aws_security_group\" \"ssh\" {",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_security_group\"\u001b[0m \u001b[38;5;37m\"ssh\"\u001b[0m {",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 22,
+                  "Content": "  name = \"infraarch-ssh\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mname\u001b[0m = \u001b[38;5;37m\"infraarch-ssh\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 23,
+                  "Content": "  ingress {",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  ingress {",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 24,
+                  "Content": "    from_port   = 22",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "    \u001b[38;5;245mfrom_port\u001b[0m   = \u001b[38;5;37m22",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 25,
+                  "Content": "    to_port     = 22",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mto_port\u001b[0m     = \u001b[38;5;37m22",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 26,
+                  "Content": "    protocol    = \"tcp\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mprotocol\u001b[0m    = \u001b[38;5;37m\"tcp\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 27,
+                  "Content": "    cidr_blocks = [\"0.0.0.0/0\"]",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mcidr_blocks\u001b[0m = [\u001b[38;5;37m\"0.0.0.0/0\"\u001b[0m]",
+                  "FirstCause": true,
+                  "LastCause": true
+                },
+                {
+                  "Number": 28,
+                  "Content": "  }",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  }",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 29,
+                  "Content": "}",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "}",
+                  "FirstCause": false,
+                  "LastCause": false
+                }
+              ]
+            },
+            "Occurrences": [
+              {
+                "Resource": "ingress",
+                "Filename": "terraform/main.tf",
+                "Location": {
+                  "StartLine": 23,
+                  "EndLine": 28
+                }
+              },
+              {
+                "Resource": "aws_security_group.ssh",
+                "Filename": "terraform/main.tf",
+                "Location": {
+                  "StartLine": 21,
+                  "EndLine": 29
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0124",
+          "Title": "Missing description for security group rule.",
+          "Description": "Security group rules should include a description for auditing purposes.\n\nSimplifies auditing, debugging, and managing security groups.\n",
+          "Message": "Security group rule does not have a description.",
+          "Namespace": "builtin.aws.ec2.aws0124",
+          "Query": "data.builtin.aws.ec2.aws0124.deny",
+          "Resolution": "Add descriptions for all security groups rules",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0124",
+          "References": [
+            "https://www.cloudconformity.com/knowledge-base/aws/EC2/security-group-rules-description.html",
+            "https://avd.aquasec.com/misconfig/aws-0124"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_security_group.ssh",
+            "Provider": "AWS",
+            "Service": "ec2",
+            "StartLine": 23,
+            "EndLine": 28,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 21,
+                  "Content": "resource \"aws_security_group\" \"ssh\" {",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_security_group\"\u001b[0m \u001b[38;5;37m\"ssh\"\u001b[0m {",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 22,
+                  "Content": "  name = \"infraarch-ssh\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mname\u001b[0m = \u001b[38;5;37m\"infraarch-ssh\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 23,
+                  "Content": "  ingress {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  ingress {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 24,
+                  "Content": "    from_port   = 22",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "    \u001b[38;5;245mfrom_port\u001b[0m   = \u001b[38;5;37m22",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 25,
+                  "Content": "    to_port     = 22",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mto_port\u001b[0m     = \u001b[38;5;37m22",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 26,
+                  "Content": "    protocol    = \"tcp\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mprotocol\u001b[0m    = \u001b[38;5;37m\"tcp\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 27,
+                  "Content": "    cidr_blocks = [\"0.0.0.0/0\"]",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m    \u001b[38;5;245mcidr_blocks\u001b[0m = [\u001b[38;5;37m\"0.0.0.0/0\"\u001b[0m]",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 28,
+                  "Content": "  }",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  }",
+                  "FirstCause": false,
+                  "LastCause": true
+                },
+                {
+                  "Number": 29,
+                  "Content": "}",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "}",
+                  "FirstCause": false,
+                  "LastCause": false
+                }
+              ]
+            },
+            "Occurrences": [
+              {
+                "Resource": "aws_security_group.ssh",
+                "Filename": "terraform/main.tf",
+                "Location": {
+                  "StartLine": 21,
+                  "EndLine": 29
+                }
+              }
+            ]
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0132",
+          "Title": "S3 encryption should use Customer Managed Keys",
+          "Description": "Encryption using AWS keys provides protection for your S3 buckets. To gain greater control over encryption, such as key rotation, access policies, and auditability, use customer managed keys (CMKs) with SSE-KMS.\nNote that SSE-KMS is not supported for S3 server access logging destination buckets; in such cases, use SSE-S3 instead.\n",
+          "Message": "Bucket does not encrypt data with a customer managed key.",
+          "Namespace": "builtin.aws.s3.aws0132",
+          "Query": "data.builtin.aws.s3.aws0132.deny",
+          "Resolution": "Use SSE-KMS with a customer managed key (CMK)",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0132",
+          "References": [
+            "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucket-encryption.html",
+            "https://avd.aquasec.com/misconfig/aws-0132"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_s3_bucket.public",
+            "Provider": "AWS",
+            "Service": "s3",
+            "StartLine": 1,
+            "EndLine": 3,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 1,
+                  "Content": "resource \"aws_s3_bucket\" \"public\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_s3_bucket\"\u001b[0m \u001b[38;5;37m\"public\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 2,
+                  "Content": "  bucket = \"infraarch-vulnerable-example\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mbucket\u001b[0m = \u001b[38;5;37m\"infraarch-vulnerable-example\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 3,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0133",
+          "Title": "Enable Performance Insights to detect potential problems",
+          "Description": "Enabling Performance insights allows for greater depth in monitoring data.\nFor example, information about active sessions could help diagose a compromise or assist in the investigation\n",
+          "Message": "Instance does not have performance insights enabled.",
+          "Namespace": "builtin.aws.rds.aws0133",
+          "Query": "data.builtin.aws.rds.aws0133.deny",
+          "Resolution": "Enable performance insights",
+          "Severity": "LOW",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0133",
+          "References": [
+            "https://aws.amazon.com/rds/performance-insights/",
+            "https://avd.aquasec.com/misconfig/aws-0133"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_db_instance.db",
+            "Provider": "AWS",
+            "Service": "rds",
+            "StartLine": 10,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 10,
+                  "Content": "resource \"aws_db_instance\" \"db\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_db_instance\"\u001b[0m \u001b[38;5;37m\"db\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 11,
+                  "Content": "  identifier          = \"infraarch-db\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245midentifier\u001b[0m          = \u001b[38;5;37m\"infraarch-db\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 12,
+                  "Content": "  engine              = \"postgres\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mengine\u001b[0m              = \u001b[38;5;37m\"postgres\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 13,
+                  "Content": "  instance_class      = \"db.t3.micro\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245minstance_class\u001b[0m      = \u001b[38;5;37m\"db.t3.micro\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 14,
+                  "Content": "  allocated_storage   = 20",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mallocated_storage\u001b[0m   = \u001b[38;5;37m20",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 15,
+                  "Content": "  username            = \"admin\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245musername\u001b[0m            = \u001b[38;5;37m\"admin\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "  password            = var.db_password",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpassword\u001b[0m            = \u001b[38;5;33mvar\u001b[0m.db_password",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "  storage_encrypted   = false",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mstorage_encrypted\u001b[0m   = \u001b[38;5;166mfalse",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "  publicly_accessible = true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpublicly_accessible\u001b[0m = \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0176",
+          "Title": "RDS IAM Database Authentication Disabled",
+          "Description": "Ensure IAM Database Authentication is enabled for RDS database instances to manage database access",
+          "Message": "Instance does not have IAM Authentication enabled",
+          "Namespace": "builtin.aws.rds.aws0176",
+          "Query": "data.builtin.aws.rds.aws0176.deny",
+          "Resolution": "Modify the PostgreSQL and MySQL type RDS instances to enable IAM database authentication.",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0176",
+          "References": [
+            "https://docs.aws.amazon.com/neptune/latest/userguide/iam-auth.html",
+            "https://avd.aquasec.com/misconfig/aws-0176"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_db_instance.db",
+            "Provider": "AWS",
+            "Service": "rds",
+            "StartLine": 10,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 10,
+                  "Content": "resource \"aws_db_instance\" \"db\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_db_instance\"\u001b[0m \u001b[38;5;37m\"db\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 11,
+                  "Content": "  identifier          = \"infraarch-db\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245midentifier\u001b[0m          = \u001b[38;5;37m\"infraarch-db\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 12,
+                  "Content": "  engine              = \"postgres\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mengine\u001b[0m              = \u001b[38;5;37m\"postgres\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 13,
+                  "Content": "  instance_class      = \"db.t3.micro\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245minstance_class\u001b[0m      = \u001b[38;5;37m\"db.t3.micro\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 14,
+                  "Content": "  allocated_storage   = 20",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mallocated_storage\u001b[0m   = \u001b[38;5;37m20",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 15,
+                  "Content": "  username            = \"admin\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245musername\u001b[0m            = \u001b[38;5;37m\"admin\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "  password            = var.db_password",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpassword\u001b[0m            = \u001b[38;5;33mvar\u001b[0m.db_password",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "  storage_encrypted   = false",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mstorage_encrypted\u001b[0m   = \u001b[38;5;166mfalse",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "  publicly_accessible = true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpublicly_accessible\u001b[0m = \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0177",
+          "Title": "RDS Deletion Protection Disabled",
+          "Description": "Ensure deletion protection is enabled for RDS database instances.",
+          "Message": "Instance does not have Deletion Protection enabled",
+          "Namespace": "builtin.aws.rds.aws0177",
+          "Query": "data.builtin.aws.rds.aws0177.deny",
+          "Resolution": "Modify the RDS instances to enable deletion protection.",
+          "Severity": "MEDIUM",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0177",
+          "References": [
+            "https://aws.amazon.com/about-aws/whats-new/2018/09/amazon-rds-now-provides-database-deletion-protection/",
+            "https://avd.aquasec.com/misconfig/aws-0177"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_db_instance.db",
+            "Provider": "AWS",
+            "Service": "rds",
+            "StartLine": 10,
+            "EndLine": 19,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 10,
+                  "Content": "resource \"aws_db_instance\" \"db\" {",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_db_instance\"\u001b[0m \u001b[38;5;37m\"db\"\u001b[0m {",
+                  "FirstCause": true,
+                  "LastCause": false
+                },
+                {
+                  "Number": 11,
+                  "Content": "  identifier          = \"infraarch-db\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245midentifier\u001b[0m          = \u001b[38;5;37m\"infraarch-db\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 12,
+                  "Content": "  engine              = \"postgres\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mengine\u001b[0m              = \u001b[38;5;37m\"postgres\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 13,
+                  "Content": "  instance_class      = \"db.t3.micro\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245minstance_class\u001b[0m      = \u001b[38;5;37m\"db.t3.micro\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 14,
+                  "Content": "  allocated_storage   = 20",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mallocated_storage\u001b[0m   = \u001b[38;5;37m20",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 15,
+                  "Content": "  username            = \"admin\"",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245musername\u001b[0m            = \u001b[38;5;37m\"admin\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "  password            = var.db_password",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpassword\u001b[0m            = \u001b[38;5;33mvar\u001b[0m.db_password",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "  storage_encrypted   = false",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mstorage_encrypted\u001b[0m   = \u001b[38;5;166mfalse",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "  publicly_accessible = true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpublicly_accessible\u001b[0m = \u001b[38;5;166mtrue",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 19,
+                  "Content": "}",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "Type": "Terraform Security Check",
+          "ID": "AWS-0180",
+          "Title": "RDS Publicly Accessible",
+          "Description": "Ensures RDS instances and RDS Cluster instances are not launched into the public cloud.",
+          "Message": "Instance has Public Access enabled",
+          "Namespace": "builtin.aws.rds.aws0180",
+          "Query": "data.builtin.aws.rds.aws0180.deny",
+          "Resolution": "Remove the public endpoint from the RDS instance.",
+          "Severity": "HIGH",
+          "PrimaryURL": "https://avd.aquasec.com/misconfig/aws-0180",
+          "References": [
+            "http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.html",
+            "https://avd.aquasec.com/misconfig/aws-0180"
+          ],
+          "Status": "FAIL",
+          "CauseMetadata": {
+            "Resource": "aws_db_instance.db",
+            "Provider": "AWS",
+            "Service": "rds",
+            "StartLine": 18,
+            "EndLine": 18,
+            "Code": {
+              "Lines": [
+                {
+                  "Number": 10,
+                  "Content": "resource \"aws_db_instance\" \"db\" {",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[38;5;33mresource\u001b[0m \u001b[38;5;37m\"aws_db_instance\"\u001b[0m \u001b[38;5;37m\"db\"\u001b[0m {",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 11,
+                  "Content": "  identifier          = \"infraarch-db\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245midentifier\u001b[0m          = \u001b[38;5;37m\"infraarch-db\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 12,
+                  "Content": "  engine              = \"postgres\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mengine\u001b[0m              = \u001b[38;5;37m\"postgres\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 13,
+                  "Content": "  instance_class      = \"db.t3.micro\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245minstance_class\u001b[0m      = \u001b[38;5;37m\"db.t3.micro\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 14,
+                  "Content": "  allocated_storage   = 20",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mallocated_storage\u001b[0m   = \u001b[38;5;37m20",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 15,
+                  "Content": "  username            = \"admin\"",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245musername\u001b[0m            = \u001b[38;5;37m\"admin\"",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 16,
+                  "Content": "  password            = var.db_password",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpassword\u001b[0m            = \u001b[38;5;33mvar\u001b[0m.db_password",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 17,
+                  "Content": "  storage_encrypted   = false",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "  \u001b[38;5;245mstorage_encrypted\u001b[0m   = \u001b[38;5;166mfalse",
+                  "FirstCause": false,
+                  "LastCause": false
+                },
+                {
+                  "Number": 18,
+                  "Content": "  publicly_accessible = true",
+                  "IsCause": true,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m  \u001b[38;5;245mpublicly_accessible\u001b[0m = \u001b[38;5;166mtrue",
+                  "FirstCause": true,
+                  "LastCause": true
+                },
+                {
+                  "Number": 19,
+                  "Content": "}",
+                  "IsCause": false,
+                  "Annotation": "",
+                  "Truncated": false,
+                  "Highlighted": "\u001b[0m}",
+                  "FirstCause": false,
+                  "LastCause": false
+                }
+              ]
+            },
+            "Occurrences": [
+              {
+                "Resource": "aws_db_instance.db",
+                "Filename": "terraform/main.tf",
+                "Location": {
+                  "StartLine": 10,
+                  "EndLine": 19
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

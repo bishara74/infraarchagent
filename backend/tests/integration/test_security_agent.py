@@ -51,7 +51,9 @@ class ScriptedScanner:
         self, files: dict[str, str], variant: Variant, *, iteration: int = 0
     ) -> ScanResult:
         self.calls += 1
-        return ScanResult(self.scans.pop(0), {"checkov": "ok", "tfsec": "ok"})
+        return ScanResult(
+            self.scans.pop(0), {"checkov": "ok", "trivy": "ok", "terraform": "ok"}
+        )
 
 
 class ScriptedFix:
@@ -108,7 +110,7 @@ def agent(
         fix,
         make_session_factory(engine),
         get_settings(),
-        versions={"checkov": "3.3.21", "tfsec": "v1.28.14"},
+        versions={"checkov": "3.3.21", "trivy": "0.69.3"},
         fixing_model=fixing_model,
     )
 
@@ -121,7 +123,7 @@ async def test_two_fix_passes_and_three_first_scan_counts(
     ctx, package = await setup(engine)
     scanner = ScriptedScanner(
         [
-            [finding("CKV_AWS_16"), finding("aws-rds-encrypt", "tfsec")],
+            [finding("CKV_AWS_16"), finding("AWS-0080", "trivy")],
             [finding("CKV_AWS_17")],
             [],
         ]
@@ -146,7 +148,7 @@ async def test_two_fix_passes_and_three_first_scan_counts(
         first = report["sessions"][0]["final"]
         assert report["final"] == first
         assert first["first_scan_checkov_high_or_critical"] == 1
-        assert first["first_scan_tfsec_high_or_critical"] == 1
+        assert first["first_scan_trivy_high_or_critical"] == 1
         assert first["first_scan_combined_high_or_critical"] == 2
         assert report["sessions"][0]["fix_passes"] == 2
         assert len(report["sessions"][0]["iterations"]) == 3
@@ -178,7 +180,7 @@ async def test_syntax_fix_pass_rescans_full_package(
         ) -> ScanResult:
             self.calls += 1
             if files["terraform/main.tf"] == invalid:
-                syntax = finding("TERRAFORM_SYNTAX", "tfsec").model_copy(
+                syntax = finding("TERRAFORM_SYNTAX", "terraform").model_copy(
                     update={
                         "severity": Severity.CRITICAL,
                         "line_start": 1,
@@ -186,10 +188,12 @@ async def test_syntax_fix_pass_rescans_full_package(
                     }
                 )
                 return ScanResult(
-                    [syntax], {"checkov": "ok", "tfsec": "syntax_limited"}, True
+                    [syntax],
+                    {"checkov": "ok", "trivy": "ok", "terraform": "syntax_limited"},
+                    True,
                 )
             assert files["terraform/main.tf"] == valid
-            return ScanResult([], {"checkov": "ok", "tfsec": "ok"})
+            return ScanResult([], {"checkov": "ok", "trivy": "ok", "terraform": "ok"})
 
     class SyntaxFix(ScriptedFix):
         async def propose(self, **kwargs: Any) -> FixProposal:
@@ -211,9 +215,12 @@ async def test_syntax_fix_pass_rescans_full_package(
         assert row.original_files == package.files
         iterations = row.security_report["sessions"][0]["iterations"]
         assert iterations[0]["scan"]["syntax_limited"] is True
-        assert iterations[0]["scan"]["tfsec_other_findings_unavailable"] is True
+        assert iterations[0]["scan"]["terraform_findings_may_be_incomplete"] is True
         assert iterations[1]["scan"]["syntax_limited"] is False
-        assert row.security_report["final"]["first_scan_tfsec_high_or_critical"] == 1
+        assert row.security_report["final"]["first_scan_trivy_high_or_critical"] == 0
+        assert (
+            row.security_report["final"]["first_scan_terraform_high_or_critical"] == 1
+        )
 
 
 @pytest.mark.req("FR-S-02", "FR-S-04", "NFR-01")
@@ -434,5 +441,5 @@ async def test_scan_error_has_no_first_scan_counts(
         assert row is not None and row.security_report is not None
         final = row.security_report["final"]
         assert final["first_scan_checkov_high_or_critical"] is None
-        assert final["first_scan_tfsec_high_or_critical"] is None
+        assert final["first_scan_trivy_high_or_critical"] is None
         assert final["first_scan_combined_high_or_critical"] is None

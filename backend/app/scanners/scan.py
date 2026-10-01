@@ -11,8 +11,10 @@ from app.domain.enums import Variant
 from app.domain.models import Violation
 from app.domain.paths import validate_file_map
 from app.scanners.checkov_parser import parse_checkov
-from app.scanners.runner import ToolFailure, ToolName, ToolResult, ToolRunner
-from app.scanners.tfsec_parser import parse_tfsec
+from app.scanners.external_modules import external_module_findings
+from app.scanners.runner import TOOLS, ToolFailure, ToolName, ToolResult, ToolRunner
+from app.scanners.terraform_parser import parse_terraform
+from app.scanners.trivy_parser import parse_trivy
 from app.security.policy import classify
 
 
@@ -87,7 +89,7 @@ class Scanner:
                 target = root / path
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(content, encoding="utf-8", newline="")
-            names: tuple[ToolName, ToolName] = ("checkov", "tfsec")
+            names = TOOLS
             outputs = await asyncio.gather(
                 *(
                     self.run_tool(name, root, iteration=iteration, attempt=attempt)
@@ -106,22 +108,26 @@ class Scanner:
                     parsed = (
                         parse_checkov(output.stdout, root, set(files))
                         if name == "checkov"
-                        else parse_tfsec(output.stdout, root, set(files))
+                        else parse_trivy(output.stdout, root, set(files))
+                        if name == "trivy"
+                        else parse_terraform(output.stdout, root, set(files))
                     )
                 except ValueError:
                     raise ToolFailure(name, "invalid_json") from None
                 if output.exit_code not in (0, 1):
                     raise ToolFailure(name, "crash")
-                if name == "tfsec" and any(
+                if name == "terraform" and any(
                     item.rule_id == "TERRAFORM_SYNTAX" for item in parsed
                 ):
                     syntax_limited = True
                 violations.extend(parsed)
+            violations.extend(external_module_findings(files))
             return ScanResult(
                 classify(violations, variant, files),
                 {
                     "checkov": "ok",
-                    "tfsec": "syntax_limited" if syntax_limited else "ok",
+                    "trivy": "ok",
+                    "terraform": "syntax_limited" if syntax_limited else "ok",
                 },
                 syntax_limited=syntax_limited,
             )

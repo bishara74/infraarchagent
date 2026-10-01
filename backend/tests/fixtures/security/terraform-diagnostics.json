@@ -1,0 +1,1062 @@
+{
+  "terraform_version": "1.16.4",
+  "cases": [
+    {
+      "name": "invalid_block",
+      "expected": "Invalid block definition",
+      "files": {
+        "terraform/main.tf": "locals nonsense\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Invalid block definition",
+            "detail": "A block definition must have block content delimited by \"{\" and \"}\", starting on the same line as the block header.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 16,
+                "byte": 15
+              },
+              "end": {
+                "line": 2,
+                "column": 1,
+                "byte": 16
+              }
+            },
+            "snippet": {
+              "context": null,
+              "code": "locals nonsense",
+              "start_line": 1,
+              "highlight_start_offset": 15,
+              "highlight_end_offset": 15,
+              "values": []
+            }
+          },
+          {
+            "severity": "error",
+            "summary": "Extraneous label for locals",
+            "detail": "No labels are expected for locals blocks.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 8,
+                "byte": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 16,
+                "byte": 15
+              }
+            },
+            "snippet": {
+              "context": null,
+              "code": "locals nonsense",
+              "start_line": 1,
+              "highlight_start_offset": 7,
+              "highlight_end_offset": 15,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "invalid_single",
+      "expected": "Invalid single-argument block definition",
+      "files": {
+        "terraform/main.tf": "locals { a = 1 b = 2 }\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Invalid single-argument block definition",
+            "detail": "A single-line block definition must end with a closing brace immediately after its single argument definition.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 16,
+                "byte": 15
+              },
+              "end": {
+                "line": 1,
+                "column": 17,
+                "byte": 16
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": "locals { a = 1 b = 2 }",
+              "start_line": 1,
+              "highlight_start_offset": 15,
+              "highlight_end_offset": 16,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unclosed",
+      "expected": "Unclosed configuration block",
+      "files": {
+        "terraform/main.tf": "locals {\n a = 1\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Unclosed configuration block",
+            "detail": "There is no closing brace for this block before the end of the file. This may be caused by incorrect brace nesting elsewhere in this file.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 8,
+                "byte": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 9,
+                "byte": 8
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": "locals {",
+              "start_line": 1,
+              "highlight_start_offset": 7,
+              "highlight_end_offset": 8,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "required",
+      "expected": "Argument or block definition required",
+      "files": {
+        "terraform/main.tf": "locals {\n = 1\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Argument or block definition required",
+            "detail": "An argument or block definition is required here.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 2,
+                "byte": 10
+              },
+              "end": {
+                "line": 2,
+                "column": 3,
+                "byte": 11
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " = 1",
+              "start_line": 2,
+              "highlight_start_offset": 1,
+              "highlight_end_offset": 2,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "newline",
+      "expected": "Missing newline after argument",
+      "files": {
+        "terraform/main.tf": "locals {\n a = 1 b = 2\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Missing newline after argument",
+            "detail": "An argument definition must end with a newline.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 8,
+                "byte": 16
+              },
+              "end": {
+                "line": 2,
+                "column": 9,
+                "byte": 17
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = 1 b = 2",
+              "start_line": 2,
+              "highlight_start_offset": 7,
+              "highlight_end_offset": 8,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "expression",
+      "expected": "Invalid expression",
+      "files": {
+        "terraform/main.tf": "locals {\n a = )\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Invalid expression",
+            "detail": "Expected the start of an expression, but found an invalid expression token.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 6,
+                "byte": 14
+              },
+              "end": {
+                "line": 2,
+                "column": 7,
+                "byte": 15
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = )",
+              "start_line": 2,
+              "highlight_start_offset": 5,
+              "highlight_end_offset": 6,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing_expression",
+      "expected": "Missing expression",
+      "files": {
+        "terraform/main.tf": "locals {\n a = "
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Missing expression",
+            "detail": "Expected the start of an expression, but found the end of the file.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 6,
+                "byte": 14
+              },
+              "end": {
+                "line": 2,
+                "column": 7,
+                "byte": 15
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = ",
+              "start_line": 2,
+              "highlight_start_offset": 5,
+              "highlight_end_offset": 5,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unsupported",
+      "expected": "Unsupported block type",
+      "files": {
+        "terraform/main.tf": "unsupported {}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Unsupported block type",
+            "detail": "Blocks of type \"unsupported\" are not expected here.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 1,
+                "byte": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 12,
+                "byte": 11
+              }
+            },
+            "snippet": {
+              "context": null,
+              "code": "unsupported {}",
+              "start_line": 1,
+              "highlight_start_offset": 0,
+              "highlight_end_offset": 11,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unsupported_variable",
+      "expected": "Unsupported block type",
+      "files": {
+        "terraform/main.tf": "variable \"v\" {\n invented {}\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Unsupported block type",
+            "detail": "Blocks of type \"invented\" are not expected here.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 2,
+                "byte": 16
+              },
+              "end": {
+                "line": 2,
+                "column": 10,
+                "byte": 24
+              }
+            },
+            "snippet": {
+              "context": "variable \"v\"",
+              "code": " invented {}",
+              "start_line": 2,
+              "highlight_start_offset": 1,
+              "highlight_end_offset": 9,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate_json",
+      "expected": "Duplicate argument",
+      "files": {
+        "terraform/main.tf.json": "{\"resource\":{\"terraform_data\":{\"x\":{\"input\":1,\"input\":2}}}}"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Duplicate argument",
+            "detail": "The argument \"input\" was already set at main.tf.json:1,37-46.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf.json",
+              "start": {
+                "line": 1,
+                "column": 47,
+                "byte": 46
+              },
+              "end": {
+                "line": 1,
+                "column": 54,
+                "byte": 53
+              }
+            },
+            "snippet": {
+              "context": "resource.terraform_data.x",
+              "code": "{\"resource\":{\"terraform_data\":{\"x\":{\"input\":1,\"input\":2}}}}",
+              "start_line": 1,
+              "highlight_start_offset": 46,
+              "highlight_end_offset": 53,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "attribute",
+      "expected": "Attribute redefined",
+      "files": {
+        "terraform/main.tf": "locals {\n a=1\n a=2\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Attribute redefined",
+            "detail": "The argument \"a\" was already set at main.tf:2,2-3. Each argument may be set only once.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 3,
+                "column": 2,
+                "byte": 15
+              },
+              "end": {
+                "line": 3,
+                "column": 3,
+                "byte": 16
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a=2",
+              "start_line": 3,
+              "highlight_start_offset": 1,
+              "highlight_end_offset": 2,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate_attribute",
+      "expected": "Duplicate attribute definition",
+      "files": {
+        "terraform/main.tf.json": "{\"locals\":{\"a\":1,\"a\":2}}"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Duplicate attribute definition",
+            "detail": "The argument \"a\" was already set at main.tf.json:1,12-17.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf.json",
+              "start": {
+                "line": 1,
+                "column": 18,
+                "byte": 17
+              },
+              "end": {
+                "line": 1,
+                "column": 21,
+                "byte": 20
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": "{\"locals\":{\"a\":1,\"a\":2}}",
+              "start_line": 1,
+              "highlight_start_offset": 17,
+              "highlight_end_offset": 20,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "character",
+      "expected": "Invalid character",
+      "files": {
+        "terraform/main.tf": "locals {\n a = @\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 2,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Invalid character",
+            "detail": "This character is not used within the language.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 6,
+                "byte": 14
+              },
+              "end": {
+                "line": 2,
+                "column": 7,
+                "byte": 15
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = @",
+              "start_line": 2,
+              "highlight_start_offset": 5,
+              "highlight_end_offset": 6,
+              "values": []
+            }
+          },
+          {
+            "severity": "error",
+            "summary": "Invalid expression",
+            "detail": "Expected the start of an expression, but found an invalid expression token.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 6,
+                "byte": 14
+              },
+              "end": {
+                "line": 2,
+                "column": 7,
+                "byte": 15
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = @",
+              "start_line": 2,
+              "highlight_start_offset": 5,
+              "highlight_end_offset": 6,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "template",
+      "expected": "Unterminated template string",
+      "files": {
+        "terraform/main.tf": "locals {\n a = \"unfinished\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 3,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Invalid multi-line string",
+            "detail": "Quoted strings may not be split over multiple lines. To produce a multi-line string, either use the \\n escape to represent a newline character or use the \"heredoc\" multi-line template syntax.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 17,
+                "byte": 25
+              },
+              "end": {
+                "line": 3,
+                "column": 1,
+                "byte": 26
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = \"unfinished\n}",
+              "start_line": 2,
+              "highlight_start_offset": 16,
+              "highlight_end_offset": 17,
+              "values": []
+            }
+          },
+          {
+            "severity": "error",
+            "summary": "Invalid multi-line string",
+            "detail": "Quoted strings may not be split over multiple lines. To produce a multi-line string, either use the \\n escape to represent a newline character or use the \"heredoc\" multi-line template syntax.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 3,
+                "column": 2,
+                "byte": 27
+              },
+              "end": {
+                "line": 4,
+                "column": 1,
+                "byte": 28
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": "}",
+              "start_line": 3,
+              "highlight_start_offset": 1,
+              "highlight_end_offset": 1,
+              "values": []
+            }
+          },
+          {
+            "severity": "error",
+            "summary": "Unterminated template string",
+            "detail": "No closing marker was found for the string.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 17,
+                "byte": 25
+              },
+              "end": {
+                "line": 3,
+                "column": 1,
+                "byte": 26
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = \"unfinished\n}",
+              "start_line": 2,
+              "highlight_start_offset": 16,
+              "highlight_end_offset": 17,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "multiline",
+      "expected": "Invalid multi-line string",
+      "files": {
+        "terraform/main.tf": "locals {\n a = \"unfinished\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 3,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Invalid multi-line string",
+            "detail": "Quoted strings may not be split over multiple lines. To produce a multi-line string, either use the \\n escape to represent a newline character or use the \"heredoc\" multi-line template syntax.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 17,
+                "byte": 25
+              },
+              "end": {
+                "line": 3,
+                "column": 1,
+                "byte": 26
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = \"unfinished\n}",
+              "start_line": 2,
+              "highlight_start_offset": 16,
+              "highlight_end_offset": 17,
+              "values": []
+            }
+          },
+          {
+            "severity": "error",
+            "summary": "Invalid multi-line string",
+            "detail": "Quoted strings may not be split over multiple lines. To produce a multi-line string, either use the \\n escape to represent a newline character or use the \"heredoc\" multi-line template syntax.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 3,
+                "column": 2,
+                "byte": 27
+              },
+              "end": {
+                "line": 4,
+                "column": 1,
+                "byte": 28
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": "}",
+              "start_line": 3,
+              "highlight_start_offset": 1,
+              "highlight_end_offset": 1,
+              "values": []
+            }
+          },
+          {
+            "severity": "error",
+            "summary": "Unterminated template string",
+            "detail": "No closing marker was found for the string.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 17,
+                "byte": 25
+              },
+              "end": {
+                "line": 3,
+                "column": 1,
+                "byte": 26
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": " a = \"unfinished\n}",
+              "start_line": 2,
+              "highlight_start_offset": 16,
+              "highlight_end_offset": 17,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "label",
+      "expected": "Extraneous label for locals",
+      "files": {
+        "terraform/main.tf": "locals \"x\" { a = 1 }\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Extraneous label for locals",
+            "detail": "No labels are expected for locals blocks.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 8,
+                "byte": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 11,
+                "byte": 10
+              }
+            },
+            "snippet": {
+              "context": "locals \"x\"",
+              "code": "locals \"x\" { a = 1 }",
+              "start_line": 1,
+              "highlight_start_offset": 7,
+              "highlight_end_offset": 10,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "name",
+      "expected": "Missing name for variable",
+      "files": {
+        "terraform/main.tf": "variable {}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Missing name for variable",
+            "detail": "All variable blocks must have 1 labels (name).",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 10,
+                "byte": 9
+              },
+              "end": {
+                "line": 1,
+                "column": 11,
+                "byte": 10
+              }
+            },
+            "snippet": {
+              "context": "variable",
+              "code": "variable {}",
+              "start_line": 1,
+              "highlight_start_offset": 9,
+              "highlight_end_offset": 10,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "provider",
+      "expected": null,
+      "files": {
+        "terraform/main.tf": "resource \"aws_s3_bucket\" \"x\" {}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Missing required provider",
+            "detail": "This configuration requires provider registry.terraform.io/hashicorp/aws, but that provider isn't available. You may be able to install it automatically by running:\n  terraform init"
+          }
+        ]
+      }
+    },
+    {
+      "name": "module",
+      "expected": null,
+      "files": {
+        "terraform/main.tf": "module \"x\" {\n source = \"terraform-aws-modules/vpc/aws\"\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Module not installed",
+            "detail": "This module is not yet installed. Run \"terraform init\" to install all modules required by this configuration.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 1,
+                "byte": 0
+              },
+              "end": {
+                "line": 1,
+                "column": 11,
+                "byte": 10
+              }
+            },
+            "snippet": {
+              "context": null,
+              "code": "module \"x\" {",
+              "start_line": 1,
+              "highlight_start_offset": 0,
+              "highlight_end_offset": 10,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "reference",
+      "expected": null,
+      "files": {
+        "terraform/main.tf": "locals { a = var.not_declared }\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Reference to undeclared input variable",
+            "detail": "An input variable with the name \"not_declared\" has not been declared. This variable can be declared with a variable \"not_declared\" {} block.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 1,
+                "column": 14,
+                "byte": 13
+              },
+              "end": {
+                "line": 1,
+                "column": 30,
+                "byte": 29
+              }
+            },
+            "snippet": {
+              "context": "locals",
+              "code": "locals { a = var.not_declared }",
+              "start_line": 1,
+              "highlight_start_offset": 13,
+              "highlight_end_offset": 29,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "type",
+      "expected": null,
+      "files": {
+        "terraform/main.tf": "variable \"v\" {\n type = string\n default = []\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Invalid default value for variable",
+            "detail": "This default value is not compatible with the variable's type constraint: string required, but have tuple.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 3,
+                "column": 12,
+                "byte": 41
+              },
+              "end": {
+                "line": 3,
+                "column": 14,
+                "byte": 43
+              }
+            },
+            "snippet": {
+              "context": "variable \"v\"",
+              "code": " default = []",
+              "start_line": 3,
+              "highlight_start_offset": 11,
+              "highlight_end_offset": 13,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "schema",
+      "expected": null,
+      "files": {
+        "terraform/main.tf": "resource \"terraform_data\" \"x\" {\n invented {}\n}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Unsupported block type",
+            "detail": "Blocks of type \"invented\" are not expected here.",
+            "range": {
+              "filename": "/__RECORDED_ROOT__/terraform/main.tf",
+              "start": {
+                "line": 2,
+                "column": 2,
+                "byte": 33
+              },
+              "end": {
+                "line": 2,
+                "column": 10,
+                "byte": 41
+              }
+            },
+            "snippet": {
+              "context": "resource \"terraform_data\" \"x\"",
+              "code": " invented {}",
+              "start_line": 2,
+              "highlight_start_offset": 1,
+              "highlight_end_offset": 9,
+              "values": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "valid",
+      "expected": null,
+      "files": {
+        "terraform/main.tf": "locals { a=1 }\nresource \"aws_s3_bucket\" \"x\" {}\n"
+      },
+      "output": {
+        "format_version": "1.0",
+        "valid": false,
+        "error_count": 1,
+        "warning_count": 0,
+        "diagnostics": [
+          {
+            "severity": "error",
+            "summary": "Missing required provider",
+            "detail": "This configuration requires provider registry.terraform.io/hashicorp/aws, but that provider isn't available. You may be able to install it automatically by running:\n  terraform init"
+          }
+        ]
+      }
+    }
+  ]
+}

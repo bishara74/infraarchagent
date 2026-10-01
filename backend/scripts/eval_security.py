@@ -31,10 +31,13 @@ from app.events.publisher import NullPublisher
 from app.pipeline.stages import StageContext, UnavailableValidationStage
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.checkov_parser import parse_checkov
+from app.scanners.external_modules import external_module_findings
 from app.scanners.runner import ProcessToolRunner, ToolFailure, scanner_versions
 from app.scanners.scan import Scanner, ScanObservation
-from app.scanners.tfsec_parser import parse_tfsec
+from app.scanners.terraform_parser import parse_terraform
+from app.scanners.trivy_parser import parse_trivy
 from app.security.policy import classify
+from app.security.reports import first_scan_counts
 
 ROOT = Path(__file__).resolve().parents[2]
 EVALS = ROOT / "docs/evals"
@@ -108,12 +111,13 @@ def _high_counts(violations: list[Any]) -> dict[str, int]:
             item.tool == tool and item.severity in {Severity.HIGH, Severity.CRITICAL}
             for item in violations
         )
-        for tool in ("checkov", "tfsec")
+        for tool in ("checkov", "trivy", "terraform")
     }
     return {
         "checkov": values["checkov"],
-        "tfsec": values["tfsec"],
-        "combined": values["checkov"] + values["tfsec"],
+        "trivy": values["trivy"],
+        "terraform": values["terraform"],
+        "combined": sum(values.values()),
     }
 
 
@@ -135,7 +139,7 @@ async def _partial_scan(
             target = root / path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding="utf-8", newline="")
-        names = ("checkov", "tfsec")
+        names = ("checkov", "trivy", "terraform")
         outputs = await asyncio.gather(
             *(scanner.run_tool(name, root, attempt=3) for name in names),
             return_exceptions=True,
@@ -156,12 +160,15 @@ async def _partial_scan(
                 parsed = (
                     parse_checkov(output.stdout, root, set(files))
                     if tool == "checkov"
-                    else parse_tfsec(output.stdout, root, set(files))
+                    else parse_trivy(output.stdout, root, set(files))
+                    if tool == "trivy"
+                    else parse_terraform(output.stdout, root, set(files))
                 )
             except ValueError:
                 errors[tool] = "invalid_json"
                 continue
             findings.extend(parsed)
+        findings.extend(external_module_findings(files))
         return classify(findings, variant, files), errors
 
 
@@ -310,13 +317,14 @@ async def run_evaluation(
         except ToolFailure:
             violations, errors = await _partial_scan(scanner, files, variant)
         syntax_limited = any(
-            item.tool == "tfsec" and item.rule_id == "TERRAFORM_SYNTAX"
+            item.tool == "terraform" and item.rule_id == "TERRAFORM_SYNTAX"
             for item in violations
         )
         blocking = [item for item in violations if item.blocking]
         high = _high_counts(violations)
         checkov_high = high["checkov"] if "checkov" not in errors else None
-        tfsec_high = high["tfsec"] if "tfsec" not in errors else None
+        trivy_high = high["trivy"] if "trivy" not in errors else None
+        terraform_high = high["terraform"] if "terraform" not in errors else None
         combined_high = high["combined"] if not errors else None
         case: dict[str, Any] = {
             "generator_model": model,
@@ -326,7 +334,8 @@ async def run_evaluation(
             "first_scan_blocking_count": len(blocking),
             "first_scan_advisory_count": sum(not item.blocking for item in violations),
             "first_scan_checkov_high_or_critical": checkov_high,
-            "first_scan_tfsec_high_or_critical": tfsec_high,
+            "first_scan_trivy_high_or_critical": trivy_high,
+            "first_scan_terraform_high_or_critical": terraform_high,
             "first_scan_combined_high_or_critical": combined_high,
             "fr_g_05_pass": checkov_high == 0
             if variant == Variant.SECURITY and checkov_high is not None
@@ -342,7 +351,7 @@ async def run_evaluation(
                     "title": item.title,
                 }
                 for item in violations
-                if item.tool == "tfsec" and item.rule_id == "TERRAFORM_SYNTAX"
+                if item.tool == "terraform" and item.rule_id == "TERRAFORM_SYNTAX"
             ],
             "top_rule_ids": [
                 rule
@@ -450,8 +459,11 @@ async def run_evaluation(
             "first_scan_checkov_high_or_critical": sum(
                 case["first_scan_checkov_high_or_critical"] or 0 for case in group
             ),
-            "first_scan_tfsec_high_or_critical": sum(
-                case["first_scan_tfsec_high_or_critical"] or 0 for case in group
+            "first_scan_trivy_high_or_critical": sum(
+                first_scan_counts(case).get("trivy") or 0 for case in group
+            ),
+            "first_scan_terraform_high_or_critical": sum(
+                first_scan_counts(case).get("terraform") or 0 for case in group
             ),
             "first_scan_combined_high_or_critical": sum(
                 case["first_scan_combined_high_or_critical"] or 0 for case in group
@@ -491,11 +503,12 @@ async def run_evaluation(
     (output / "results.json").write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    lines = ["# Phase 5 security evaluation", "", f"Mode: {result['mode']}", ""]
+    lines = ["# Phase 5b security evaluation", "", f"Mode: {result['mode']}", ""]
     lines += [
         "| Model | Plan | Variant | Scan | Blocking | Advisory | "
-        "Checkov HIGH/CRITICAL | tfsec HIGH/CRITICAL | Combined | FR-G-05 |",
-        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+        "Checkov HIGH/CRITICAL | Trivy HIGH/CRITICAL | "
+        "Terraform HIGH/CRITICAL | Combined | FR-G-05 |",
+        "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |",
     ]
     for case in cases:
         error = (
@@ -516,7 +529,8 @@ async def run_evaluation(
             case["first_scan_blocking_count"],
             case["first_scan_advisory_count"],
             case["first_scan_checkov_high_or_critical"],
-            case["first_scan_tfsec_high_or_critical"],
+            first_scan_counts(case).get("trivy"),
+            first_scan_counts(case).get("terraform"),
             case["first_scan_combined_high_or_critical"],
             case["fr_g_05_pass"],
         ]
@@ -527,7 +541,9 @@ async def run_evaluation(
             f"- {model}: mean blocking {values['mean_blocking_per_package']:.2f}; "
             f"clean first scan {values['clean_first_scan_share']:.1%}; "
             f"Checkov HIGH/CRITICAL {values['first_scan_checkov_high_or_critical']}; "
-            f"tfsec HIGH/CRITICAL {values['first_scan_tfsec_high_or_critical']}; "
+            f"Trivy HIGH/CRITICAL {values['first_scan_trivy_high_or_critical']}; "
+            "Terraform HIGH/CRITICAL "
+            f"{values['first_scan_terraform_high_or_critical']}; "
             f"combined {values['first_scan_combined_high_or_critical']}; "
             f"scanner errors {values['scanner_error_count']}; "
             f"syntax-limited scans {values['syntax_limited_count']}; "

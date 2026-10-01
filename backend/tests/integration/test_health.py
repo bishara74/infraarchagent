@@ -22,7 +22,7 @@ async def test_health_real_database_and_unreachable_override(
         assert response.json()["status"] == "ok"
         assert response.json()["database"] == "ok"
         assert response.json()["llm_configured"] is False
-        assert set(response.json()["scanners"]) == {"checkov", "tfsec"}
+        assert set(response.json()["scanners"]) == {"checkov", "trivy", "terraform"}
 
         configured = settings.model_copy(update={"llm_api_key": SecretStr("test-only")})
         app.dependency_overrides[get_settings] = lambda: configured
@@ -38,6 +38,6 @@ async def test_health_real_database_and_unreachable_override(
             assert response.json()["status"] == "degraded"
             assert response.json()["database"] == "unavailable"
             assert response.json()["llm_configured"] is True
-            assert set(response.json()["scanners"]) == {"checkov", "tfsec"}
+            assert set(response.json()["scanners"]) == {"checkov", "trivy", "terraform"}
         finally:
             await unreachable.dispose()

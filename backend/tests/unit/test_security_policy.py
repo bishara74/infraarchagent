@@ -29,8 +29,8 @@ def test_policy_threshold_unmapped_and_cross_tool_records() -> None:
         [
             finding("CKV_AWS_16"),
             finding("CKV_NEW_1"),
-            finding("aws-s3-enable-bucket-encryption", "tfsec", "HIGH"),
-            finding("aws-ec2-add-description", "tfsec", "LOW"),
+            finding("AWS-0088", "trivy", "HIGH"),
+            finding("AWS-0099", "trivy", "LOW"),
         ],
         Variant.SECURITY,
     )

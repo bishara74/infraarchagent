@@ -15,14 +15,14 @@ InfraArchAgent takes a plain-English description of the infrastructure you
 need and produces three alternative Infrastructure-as-Code packages:
 cost-optimised, performance-optimised and security-optimised. A pipeline of
 LLM-driven agents plans the architecture, generates the files, scans them with
-Checkov and tfsec, automatically fixes security violations, and validates the
+Checkov and Trivy, automatically fixes security violations, and validates the
 result. A React interface shows each agent's progress live and lets the
 engineer compare the packages, review every security fix as a diff, and
 approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 5 adds local Checkov and tfsec scanning, bounded per-file remediation,
+Phase 5 adds local Checkov and Trivy scanning, bounded per-file remediation,
 versioned security reports, and cumulative diffs. Validation arrives in
 Phase 6; until then scanned packages pass through `validation_error` to
 `pending_review`, so stub pipeline runs end `partial_success`. See
@@ -33,11 +33,11 @@ implementation differs from the thesis design.
 ## Local setup
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
-port 5432. To run live scanning or `make eval-security`, put Checkov 3.3.21
-and tfsec v1.28.14 on PATH. The author's WSL setup uses
-`pipx install checkov==3.3.21`, the tfsec v1.28.14 release binary installed
-on PATH, and Terraform v1.16.4 from HashiCorp's apt repository. Helm scanning
-also needs `helm`, which is absent in the Phase 5 environment. Recorded tests
+port 5432. To run live scanning or `make eval-security`, put Checkov 3.3.21,
+Trivy v0.69.3 and Terraform v1.16.4 on PATH. Install Checkov with the exact
+pin `pipx install "checkov==3.3.21"`. Active scans use all three tools; health
+reports `scanners.checkov`, `scanners.trivy`, and `scanners.terraform`.
+Trivy renders Helm charts without the `helm` binary. Recorded tests
 run without these scanners; real-tool checks skip when they are absent. Tests
 need no LLM key or cloud credentials.
 

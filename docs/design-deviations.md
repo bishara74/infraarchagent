@@ -508,6 +508,36 @@ Status values:
 
 ---
 
+### D-31 — tfsec replaced by Trivy v0.69.3
+Phase 5b uses installed Trivy 0.69.3 with its embedded checks bundle, filtered
+Terraform 1.16.4 syntax diagnostics, and Checkov 3.3.21. It supersedes active
+tfsec scanning in D-22/D-25/D-28. Historical report findings retain `tool=tfsec`.
+Trivy IDs are taken from actual output (AVDID if present, otherwise ID);
+`AWS-0133` is confirmed in the vulnerable recording. No enhanced-monitoring
+Trivy check was emitted; only the existing Checkov exemption remains.
+
+Fresh per-scan cache, `--skip-check-update`, `--skip-version-check`, and
+`--disable-telemetry` pin the embedded rules. All scanner/version environments
+exclude application secrets and set fixed loopback refusal proxies (including
+lowercase variables, with empty NO_PROXY); Git prompting is disabled. This
+prevents practical download attempts from completing, without claiming kernel
+network isolation. Local findings are retained when external module downloads
+fail; `EXTERNAL_MODULE_NOT_SCANNED` explicitly marks literal remote sources.
+
+Trivy silently skips tested malformed HCL; `fmt` misses extraneous labels.
+`validate -json` without init supplies only demonstrated configuration-loading
+and HCL parse summaries. Provider/module/reference/type errors are ignored;
+Unsupported block type is limited by source context to avoid resource schemas.
+The three tools run concurrently. Terraform syntax counts are separate and
+included once in combined counts; FR-G-05 still measures Checkov alone.
+
+The author confirms installation checksum output:
+`trivy_0.69.3_Linux-64bit.tar.gz: OK` from `sha256sum -c`. This is author-confirmed
+provenance, not an independently repeated installation verification. The task
+identifies malicious 0.69.4 and CVE-2026-33634; runtime uses only installed
+0.69.3. Trivy's built-in Helm renderer closes the Checkov-only Helm gap without
+installing Helm. Detailed verification/tests/evaluation follow below.
+
 ### D-32 — Scanner timeout terminates the whole process group
 The Phase 5 evaluation hung for 28 minutes after a timeout killed the Checkov
 parent but left a forked worker holding stdout. Each scanner now starts a

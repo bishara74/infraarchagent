@@ -32,16 +32,16 @@ async def test_scan_only_reports_separate_and_combined_high_counts(
             return ScanResult(
                 [
                     Violation(
-                        rule_id="aws-rds-encrypt",
+                        rule_id="AWS-0080",
                         severity=Severity.HIGH,
                         file_path="terraform/main.tf",
                         resource="db",
                         message="unsafe",
-                        tool="tfsec",
+                        tool="trivy",
                         blocking=True,
                     )
                 ],
-                {"checkov": "ok", "tfsec": "ok"},
+                {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
             )
 
     monkeypatch.setattr(eval_security, "Scanner", FakeScanner)
@@ -51,15 +51,15 @@ async def test_scan_only_reports_separate_and_combined_high_counts(
     result = json.loads((output / "results.json").read_text())
     case = result["cases"][0]
     assert case["first_scan_checkov_high_or_critical"] == 0
-    assert case["first_scan_tfsec_high_or_critical"] == 1
+    assert case["first_scan_trivy_high_or_critical"] == 1
     assert case["first_scan_combined_high_or_critical"] == 1
     assert case["fr_g_05_pass"] is True
     assert result["aggregate"]["model"]["fr_g_05_pass"] is True
-    assert "tfsec HIGH/CRITICAL 1" in (output / "summary.md").read_text()
+    assert "Trivy HIGH/CRITICAL 1" in (output / "summary.md").read_text()
 
 
 @pytest.mark.req("FR-G-05", "FR-S-01")
-async def test_evaluation_retains_checkov_measure_when_tfsec_cannot_parse(
+async def test_evaluation_retains_checkov_measure_when_trivy_cannot_parse(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     folder = tmp_path / "packages" / "model" / "three_tier" / "security"
@@ -86,23 +86,24 @@ async def test_evaluation_retains_checkov_measure_when_tfsec_cannot_parse(
             self.runner = RecordedToolRunner(
                 {
                     "checkov": [ToolResult(checkov_json, "", 1, 0)],
-                    "tfsec": [ToolResult("invalid Terraform", "", 1, 0)],
+                    "trivy": [ToolResult("invalid Terraform", "", 1, 0)],
+                    "terraform": [ToolResult('{"diagnostics":[]}', "", 0, 0)],
                 }
             )
 
         async def scan(
             self, files: dict[str, str], variant: object, *, iteration: int = 0
         ) -> ScanResult:
-            raise ToolFailure("tfsec", "invalid_json")
+            raise ToolFailure("trivy", "invalid_json")
 
     monkeypatch.setattr(eval_security, "Scanner", PartialScanner)
     output = await eval_security.run_evaluation(
         get_settings(), packages=[folder], output_root=tmp_path
     )
     case = json.loads((output / "results.json").read_text())["cases"][0]
-    assert case["scanner_errors"] == {"tfsec": "invalid_json"}
+    assert case["scanner_errors"] == {"trivy": "invalid_json"}
     assert case["first_scan_checkov_high_or_critical"] == 1
-    assert case["first_scan_tfsec_high_or_critical"] is None
+    assert case["first_scan_trivy_high_or_critical"] is None
     assert case["first_scan_combined_high_or_critical"] is None
     assert case["fr_g_05_pass"] is False
     remediation_output = await eval_security.run_evaluation(
@@ -138,11 +139,11 @@ async def test_evaluation_reports_syntax_limited_scan(
                         message="Extraneous label for locals",
                         title="Extraneous label for locals",
                         line_start=1,
-                        tool="tfsec",
+                        tool="terraform",
                         blocking=True,
                     )
                 ],
-                {"checkov": "ok", "tfsec": "syntax_limited"},
+                {"checkov": "ok", "trivy": "ok", "terraform": "syntax_limited"},
                 True,
             )
 
@@ -156,7 +157,8 @@ async def test_evaluation_reports_syntax_limited_scan(
     assert case["scanner_errors"] == {}
     assert case["syntax_findings"][0]["file_path"] == "terraform/main.tf"
     assert case["top_rule_ids"] == ["TERRAFORM_SYNTAX"]
-    assert case["first_scan_tfsec_high_or_critical"] == 1
+    assert case["first_scan_trivy_high_or_critical"] == 0
+    assert case["first_scan_terraform_high_or_critical"] == 1
     assert case["first_scan_combined_high_or_critical"] == 1
     assert "syntax-limited" in (output / "summary.md").read_text()
     assert result["aggregate"]["model"]["syntax_limited_count"] == 1
@@ -185,12 +187,12 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
                         file_path="terraform/main.tf",
                         resource="db",
                         message="unsafe",
-                        tool="tfsec",
+                        tool="trivy",
                         blocking=True,
                     )
-                    for rule in ("aws-rds-encrypt", "aws-rds-public")
+                    for rule in ("AWS-0080", "aws-rds-public")
                 ],
-                {"checkov": "ok", "tfsec": "ok"},
+                {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
             )
 
     async def fake_remediate(*args: object) -> tuple[dict[str, object], str]:
@@ -294,9 +296,10 @@ async def test_progress_retains_recovered_timeout_and_limits_packages(
                 ToolResult('{"passed":0,"failed":0,"resource_count":0}', "", 0, 0)
             ]
             * 2,
-            "tfsec": [
-                ToolFailure("tfsec", "timeout"),
-                ToolResult('{"results":[]}', "", 0, 0),
+            "terraform": [ToolResult('{"diagnostics":[]}', "", 0, 0)] * 2,
+            "trivy": [
+                ToolFailure("trivy", "timeout"),
+                ToolResult('{"Results":[]}', "", 0, 0),
             ],
         }
     )
@@ -310,13 +313,13 @@ async def test_progress_retains_recovered_timeout_and_limits_packages(
     )
     case = json.loads((output / "results.json").read_text())["cases"][0]
     assert case["scanner_errors"] == {}
-    assert case["scan_timeouts"][0]["tool"] == "tfsec"
+    assert case["scan_timeouts"][0]["tool"] == "trivy"
     assert case["scan_timeouts"][0]["iteration"] == 0
     assert case["scan_timeouts"][0]["attempt"] == 1
-    assert runner.calls.count("checkov") == runner.calls.count("tfsec") == 2
+    assert runner.calls.count("checkov") == runner.calls.count("trivy") == 2
     stderr = capsys.readouterr().err
     assert "package=model/plan/security status=started" in stderr
-    assert "iteration=0 attempt=1 tool=tfsec" in stderr
+    assert "iteration=0 attempt=1 tool=trivy" in stderr
     assert "status=timeout" in stderr
     assert "status=finished" in stderr
     with pytest.raises(ValueError, match="packages_limit"):

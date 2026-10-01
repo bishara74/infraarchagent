@@ -19,7 +19,9 @@ class Violation(BaseModel):
     file_path: str
     resource: str
     message: str
-    tool: Literal["checkov", "tfsec"]
+    tool: Literal[
+        "checkov", "trivy", "terraform", "tfsec"
+    ]  # tfsec: historical reports only
     line_start: int | None = None
     line_end: int | None = None
     title: str = ""

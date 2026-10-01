@@ -53,7 +53,7 @@ def _scan_report(scan: ScanResult) -> dict[str, Any]:
         ),
         "tool_status": scan.tool_status,
         "syntax_limited": scan.syntax_limited,
-        "tfsec_other_findings_unavailable": scan.syntax_limited,
+        "terraform_findings_may_be_incomplete": scan.syntax_limited,
     }
 
 
@@ -351,7 +351,7 @@ class SecurityAgent:
                         and item.severity in {Severity.HIGH, Severity.CRITICAL}
                         for item in scan.violations
                     )
-                    for tool in ("checkov", "tfsec")
+                    for tool in ("checkov", "trivy", "terraform")
                 }
             blocking = [item for item in scan.violations if item.blocking]
             last_blocking = blocking
@@ -446,7 +446,10 @@ class SecurityAgent:
             )
 
         checkov_count = first_counts["checkov"] if first_counts is not None else None
-        tfsec_count = first_counts["tfsec"] if first_counts is not None else None
+        trivy_count = first_counts["trivy"] if first_counts is not None else None
+        terraform_count = (
+            first_counts["terraform"] if first_counts is not None else None
+        )
         session_report = {
             "kind": kind,
             "started_at": started_at,
@@ -461,11 +464,10 @@ class SecurityAgent:
                 "reason": reason,
                 "remaining_blocking": [_finding(item) for item in last_blocking],
                 "first_scan_checkov_high_or_critical": checkov_count,
-                "first_scan_tfsec_high_or_critical": tfsec_count,
+                "first_scan_trivy_high_or_critical": trivy_count,
+                "first_scan_terraform_high_or_critical": terraform_count,
                 "first_scan_combined_high_or_critical": (
-                    checkov_count + tfsec_count
-                    if checkov_count is not None and tfsec_count is not None
-                    else None
+                    sum(first_counts.values()) if first_counts is not None else None
                 ),
             },
         }

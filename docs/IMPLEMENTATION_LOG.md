@@ -27,7 +27,42 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
-## 2026-10-01 — Phase 5b section 1 — Bounded scanner process groups
+#### 2026-10-01 — Phase 5b section 2 — Trivy and filtered Terraform syntax gate
+
+**Summary:** Replaced active tfsec scanning with concurrent Checkov, Trivy
+0.69.3 and Terraform validate without init. Added strict Trivy location/FAIL
+parsing, demonstrated syntax allowlist, remote-module coverage advisories,
+policy 2, per-tool report counts, version/health updates and portable recordings.
+
+**Requirements addressed:** FR-S-01, FR-S-02, FR-S-03, FR-G-05, NFR-01, NFR-04.
+
+**Files:** added `app/scanners/{trivy_parser,terraform_parser,external_modules}.py`,
+`app/security/reports.py`, Trivy/Terraform JSON recordings, diagnostic corpus and
+three syntax fixture packages; changed runner/scanner, domain Violation,
+SecurityAgent/policy, evaluation/normalization scripts, existing tests, fixture
+README, repository README/deviations; removed tfsec parser and three recordings.
+
+**Decisions:** D-31. Trivy silently misses malformed HCL; fmt also misses an
+extraneous locals label, so filtered validate diagnostics preserve remediation.
+All requested summaries were triggered with installed Terraform 1.16.4. Native
+HCL duplicates say Attribute redefined; JSON duplicates have distinct summaries.
+Unsupported block type uses language context to exclude resource/provider schema
+errors. Version probes and scanners use refusal proxies and fresh temp state.
+`tool=tfsec` remains accepted only for historical report/review retry decoding.
+Checkov map/thresholds and FR-G-05 pass measure are unchanged.
+
+**Tests:** `make lint` passed (127 formatted files, mypy 78 files).
+`make test` → **414 passed, 0 failed, 0 skipped**, including real installed-tool
+vulnerable/fixed and syntax checks. Real captures use only installed binaries;
+no tools were installed/upgraded and no LLM calls were made.
+
+**Known gaps / follow-ups:** Section 3 adds comprehensive corpus, network
+namespace, parser/policy, and compatibility tests. Runtime proxies do not provide
+kernel isolation. External module contents remain unavailable.
+
+---
+
+ 2026-10-01 — Phase 5b section 1 — Bounded scanner process groups
 
 **Summary:** Scanners start in separate sessions; timeout and cancellation kill
 all group members and bound pipe cleanup to five seconds. Evaluation prints

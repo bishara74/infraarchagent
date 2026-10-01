@@ -8,9 +8,42 @@ import time
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Literal, Protocol
 
-ToolName = Literal["checkov", "tfsec"]
+ToolName = Literal["checkov", "trivy", "terraform"]
+TOOLS: tuple[ToolName, ...] = ("checkov", "trivy", "terraform")
+
+
+def scanner_environment(workdir: Path, tool: str) -> dict[str, str]:
+    env = {
+        "PATH": os.environ.get("PATH", os.defpath),
+        "HOME": str(workdir),
+        "LANG": "C.UTF-8",
+        "TMPDIR": str(workdir),
+        "GIT_TERMINAL_PROMPT": "0",
+    }
+    for key in (
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "ALL_PROXY",
+        "http_proxy",
+        "https_proxy",
+        "all_proxy",
+    ):
+        env[key] = "http://127.0.0.1:9"
+    env.update({"NO_PROXY": "", "no_proxy": ""})
+    if tool == "checkov":
+        env["CHECKOV_PARALLELIZATION_TYPE"] = "none"
+    if tool == "terraform":
+        env.update(
+            {
+                "TF_DATA_DIR": str(workdir / ".terraform-data"),
+                "CHECKPOINT_DISABLE": "1",
+                "TF_IN_AUTOMATION": "1",
+            }
+        )
+    return env
 
 
 @dataclass(frozen=True)
@@ -52,8 +85,8 @@ class ProcessToolRunner:
                 transport.close()
 
     async def run(self, tool: ToolName, workdir: Path) -> ToolResult:
-        args = (
-            [
+        if tool == "checkov":
+            args = [
                 "checkov",
                 "-d",
                 ".",
@@ -66,32 +99,34 @@ class ProcessToolRunner:
                 "--framework",
                 "terraform,kubernetes,helm,dockerfile",
             ]
-            if tool == "checkov"
-            else [
-                "tfsec",
+        elif tool == "trivy":
+            args = [
+                "trivy",
+                "config",
                 ".",
                 "--format",
                 "json",
-                "--no-color",
-                "--soft-fail",
-                "--no-module-downloads",
+                "--exit-code",
+                "0",
+                "--quiet",
+                "--skip-check-update",
+                "--skip-version-check",
+                "--disable-telemetry",
+                "--cache-dir",
+                str(workdir / ".trivy-cache"),
             ]
-        )
-        # Scanner input is untrusted; never inherit DB, LLM, cloud, proxy, or
-        # Checkov/TFSEC configuration variables from the application process.
-        env = {
-            "PATH": os.defpath if not os.environ.get("PATH") else os.environ["PATH"],
-            "HOME": str(workdir),
-            "LANG": "C.UTF-8",
-            "TMPDIR": str(workdir),
-        }
-        if tool == "checkov":
-            env["CHECKOV_PARALLELIZATION_TYPE"] = "none"
+        else:
+            args = ["terraform", "validate", "-json", "-no-color"]
+        env = scanner_environment(workdir, tool)
+        cwd = workdir
+        if tool == "terraform":
+            cwd = workdir / "terraform"
+            cwd.mkdir(exist_ok=True)
         started = time.monotonic()
         try:
             process = await asyncio.create_subprocess_exec(
                 *args,
-                cwd=workdir,
+                cwd=cwd,
                 env=env,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
@@ -155,26 +190,26 @@ def scanner_versions() -> dict[str, dict[str, str | bool | None]]:
     import subprocess
 
     versions: dict[str, dict[str, str | bool | None]] = {}
-    for tool in ("checkov", "tfsec"):
+    for tool in TOOLS:
         executable = shutil.which(tool)
         version: str | None = None
         if executable:
             try:
-                completed = subprocess.run(
-                    [executable, "--version"],
-                    capture_output=True,
-                    text=True,
-                    timeout=10,
-                    check=False,
-                    env={
-                        "PATH": os.environ.get("PATH", os.defpath),
-                        "HOME": "/tmp",
-                        "LANG": "C.UTF-8",
-                    },
-                )
+                with TemporaryDirectory(prefix="infraarch-version-") as directory:
+                    completed = subprocess.run(
+                        [executable, "--version"],
+                        capture_output=True,
+                        text=True,
+                        timeout=10,
+                        check=False,
+                        env=scanner_environment(Path(directory), tool),
+                    )
                 lines = completed.stdout.strip().splitlines()
-                version = lines[-1].strip()[:100] if lines else None
-            except (OSError, subprocess.TimeoutExpired):
+                selected = (
+                    lines[0] if tool == "terraform" else lines[-1] if lines else ""
+                )
+                version = selected.strip()[:100] or None
+            except (OSError, subprocess.TimeoutExpired, IndexError):
                 pass
         versions[tool] = {"available": executable is not None, "version": version}
     return versions

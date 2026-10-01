@@ -5,7 +5,7 @@ from collections.abc import Mapping, Sequence
 from app.domain.enums import Severity, Variant
 from app.domain.models import Violation
 
-SECURITY_POLICY_VERSION = "1"
+SECURITY_POLICY_VERSION = "2"
 BLOCKING_SEVERITIES = frozenset({Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM})
 
 # Sources: Checkov 3.3.21 `--list` check names and the equivalent tfsec
@@ -88,12 +88,8 @@ VARIANT_EXEMPTIONS: dict[tuple[Variant, str], str] = {
     (Variant.COST, "CKV_AWS_354"): "Performance Insights adds cost",
     (
         Variant.COST,
-        "aws-rds-enable-performance-insights",
+        "AWS-0133",
     ): "Performance Insights adds cost",
-    (
-        Variant.COST,
-        "aws-rds-enable-enhanced-monitoring",
-    ): "enhanced monitoring adds cost",
     (Variant.COST, "CKV_AWS_145"): "SSE-AES256 is present; KMS adds cost",
 }
 
@@ -118,7 +114,9 @@ def classify(
         if violation.rule_id == "CKV_AWS_145" and not has_aes256:
             exemption = None
         reason = (
-            f"variant_exemption:{exemption}"
+            "external_module_not_scanned"
+            if violation.rule_id == "EXTERNAL_MODULE_NOT_SCANNED"
+            else f"variant_exemption:{exemption}"
             if exemption
             else "unmapped_checkov"
             if violation.tool == "checkov" and severity == Severity.UNKNOWN
