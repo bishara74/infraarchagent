@@ -39,14 +39,27 @@ class FixSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
     rule_id: str
     resource: str
-    summary: str = Field(max_length=200)
+    summary: str
 
 
 class FixOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     file: FixFile
     new_files: dict[str, str] = Field(default_factory=dict)
-    fixes: list[FixSummary] = Field(default_factory=list)
+    fixes: Any = None
+
+
+def _safe_summaries(raw: Any) -> tuple[str, ...]:
+    if not isinstance(raw, list):
+        return ()
+    summaries: list[str] = []
+    for item in raw:
+        try:
+            summary = FixSummary.model_validate(item)
+        except ValidationError:
+            continue
+        summaries.append(summary.summary[:200])
+    return tuple(summaries)
 
 
 def _schema_reason(error: ValidationError) -> str:
@@ -127,7 +140,7 @@ def validate_fix(
         None,
         output.file.content,
         dict(output.new_files),
-        tuple(fix.summary for fix in output.fixes),
+        _safe_summaries(output.fixes),
     )
 
 

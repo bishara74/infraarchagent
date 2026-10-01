@@ -72,8 +72,22 @@ def test_schema_rejections_name_safe_field_and_rule() -> None:
     result = validate_fix(
         long_summary, path="terraform/main.tf", files=FILES, plan=PLAN
     )
-    assert result.reason == "schema:fixes[0].summary.too_long"
-    assert "secret" not in result.reason
+    assert result.accepted
+    assert result.summaries == (("secret" * 40)[:200],)
+
+
+@pytest.mark.req("FR-S-02")
+def test_malformed_fix_metadata_is_dropped_without_rejecting_code() -> None:
+    raw = output("resource { encrypted = true }\n")
+    raw["fixes"] = [
+        {"rule_id": "CKV_AWS_16", "resource": "db", "summary": "Encrypt DB"},
+        {"rule_id": "CKV_AWS_16", "summary": "missing resource"},
+        "not an object",
+    ]
+    result = validate_fix(raw, path="terraform/main.tf", files=FILES, plan=PLAN)
+    assert result.accepted
+    assert result.content == "resource { encrypted = true }\n"
+    assert result.summaries == ("Encrypt DB",)
 
 
 @pytest.mark.req("FR-S-02", "NFR-01")
