@@ -56,6 +56,15 @@ def test_factory_passes_reasoning_effort_to_adapter(provider: str) -> None:
     assert adapter.reasoning_effort == "low"
 
 
+@pytest.mark.req("FR-S-02")
+def test_factory_per_agent_reasoning_effort_overrides_default() -> None:
+    adapter = build_adapter(
+        settings(llm_provider="stub", llm_reasoning_effort="low"),
+        reasoning_effort="off",
+    )
+    assert adapter.reasoning_effort == "off"
+
+
 @pytest.mark.req("FR-I-04", "NFR-03")
 async def test_stub_needs_neither_key_nor_model() -> None:
     adapter = build_adapter(settings())

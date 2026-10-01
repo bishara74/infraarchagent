@@ -407,6 +407,26 @@ Status values:
   retry and `scan_error` path. The evaluation includes the syntax finding
   and counts it once under tfsec, leaving FR-G-05's Checkov measure intact.
 
+### D-29 — Safe fix rejection reasons and descriptive metadata (Accepted)
+- **Implementation:** invalid fix responses record a bounded schema field
+  path and failure rule, a path mismatch, or a JSON-invalid category. The
+  reason is assembled from fixed field names and error types; it never
+  includes submitted values or provider response text. Package code, paths,
+  and new files remain strict. The descriptive `fixes` list cannot reject
+  otherwise valid code: summaries are capped at 200 characters and malformed
+  entries are discarded. Reports and evaluation output retain the safe
+  rejection reasons and counts.
+
+### D-30 — Per-agent fixing model selection (Accepted)
+- **Implementation:** optional `SECURITY_FIX_PROVIDER`,
+  `SECURITY_FIX_MODEL`, and `SECURITY_FIX_REASONING_EFFORT` select the adapter
+  for SecurityAgent fix calls only. Each unset value follows the run choice
+  (or global reasoning setting). The shared LLM credential and
+  OpenAI-compatible base URL still apply. The selected fixer is stored in
+  each report session and in the latest security report. Remediation
+  evaluation prices tokens using that fixer, independently of the generator
+  model associated with the saved package.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -560,6 +580,10 @@ file-targeting rule for feedback-only retries.
 ---
 
 ## Thesis text to update (collected)
+- Explain the safe rejection reason taxonomy, lenient descriptive fix
+  metadata with strict file validation, and the per-agent fixing model
+  override. Evaluation should compare generator and fixing models separately
+  and price remediation tokens using the latter.
 - Explain the `TERRAFORM_SYNTAX` critical finding, the syntax-limited scan
   status, and the full rescan after repair. Note that Checkov 3.3.21 reported
   zero parsing errors on the invalid `locals "x" { a = 1 }` fixture while

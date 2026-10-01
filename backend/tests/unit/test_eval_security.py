@@ -101,6 +101,12 @@ async def test_evaluation_retains_checkov_measure_when_tfsec_cannot_parse(
     assert case["first_scan_tfsec_high_or_critical"] is None
     assert case["first_scan_combined_high_or_critical"] is None
     assert case["fr_g_05_pass"] is False
+    remediation_output = await eval_security.run_evaluation(
+        get_settings(), packages=[folder], remediate=True, output_root=tmp_path
+    )
+    summary = (remediation_output / "summary.md").read_text()
+    assert "## Remediation results" in summary
+    assert "scan_error" in summary
 
 
 @pytest.mark.req("FR-S-01", "FR-G-05")
@@ -255,3 +261,13 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
     assert "schema:file.content.missing:1" in summary
     assert "no progress" in summary
     assert "## Fixing model aggregates" in summary
+    unknown_price = await eval_security.run_evaluation(
+        settings,
+        packages=[folder],
+        remediate=True,
+        price_in={"generator-model": 1000},
+        price_out={"generator-model": 1000},
+        output_root=tmp_path,
+    )
+    unpriced = json.loads((unknown_price / "results.json").read_text())
+    assert unpriced["cases"][0]["estimated_cost"] is None

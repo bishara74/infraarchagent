@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     llm_base_url: str | None = None
     llm_reasoning_effort: ReasoningEffort | None = None
     llm_response_format: ResponseFormat | None = None
+    security_fix_provider: LLMProvider | None = None
+    security_fix_model: str | None = None
+    security_fix_reasoning_effort: ReasoningEffort | None = None
     broker_queue_size: int = Field(default=1000, ge=1)
     max_concurrent_runs: int = Field(default=5, ge=1)
     sse_keepalive_seconds: float = Field(default=15.0, gt=0)
@@ -59,6 +62,11 @@ class Settings(BaseSettings):
     def empty_model_is_none(cls, value: object) -> object:
         return None if value == "" else value
 
+    @field_validator("security_fix_provider", "security_fix_model", mode="before")
+    @classmethod
+    def empty_fix_selection_is_none(cls, value: object) -> object:
+        return None if value == "" else value
+
     @field_validator("llm_api_key", mode="before")
     @classmethod
     def empty_key_is_none(cls, value: object) -> object:
@@ -69,7 +77,9 @@ class Settings(BaseSettings):
     def empty_base_url_is_none(cls, value: object) -> object:
         return None if value == "" else value
 
-    @field_validator("llm_reasoning_effort", mode="before")
+    @field_validator(
+        "llm_reasoning_effort", "security_fix_reasoning_effort", mode="before"
+    )
     @classmethod
     def empty_reasoning_effort_is_none(cls, value: object) -> object:
         return None if value == "" else value

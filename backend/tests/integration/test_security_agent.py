@@ -95,7 +95,11 @@ async def setup(
 
 
 def agent(
-    engine: AsyncEngine, scanner: ScriptedScanner, fix: ScriptedFix
+    engine: AsyncEngine,
+    scanner: ScriptedScanner,
+    fix: ScriptedFix,
+    *,
+    fixing_model: str | None = None,
 ) -> SecurityAgent:
     return SecurityAgent(  # type: ignore[arg-type]
         scanner,
@@ -103,6 +107,7 @@ def agent(
         make_session_factory(engine),
         get_settings(),
         versions={"checkov": "3.3.21", "tfsec": "v1.28.14"},
+        fixing_model=fixing_model,
     )
 
 
@@ -120,7 +125,9 @@ async def test_two_fix_passes_and_three_first_scan_counts(
         ]
     )
     fix = ScriptedFix()
-    status = await agent(engine, scanner, fix).run(ctx, Variant.SECURITY, package)
+    status = await agent(engine, scanner, fix, fixing_model="fixture-fixer").run(
+        ctx, Variant.SECURITY, package
+    )
     assert status == PackageStatus.SCAN_CLEAN
     assert scanner.calls == 3
     assert len(fix.calls) == 2
@@ -132,6 +139,8 @@ async def test_two_fix_passes_and_three_first_scan_counts(
         assert row.files["terraform/main.tf"].endswith("# pass 2\n")
         report = row.security_report
         assert report is not None
+        assert report["fixing_model"] == "fixture-fixer"
+        assert report["sessions"][0]["fixing_model"] == "fixture-fixer"
         first = report["sessions"][0]["final"]
         assert report["final"] == first
         assert first["first_scan_checkov_high_or_critical"] == 1
@@ -201,6 +210,35 @@ async def test_syntax_fix_pass_rescans_full_package(
         assert iterations[0]["scan"]["tfsec_other_findings_unavailable"] is True
         assert iterations[1]["scan"]["syntax_limited"] is False
         assert row.security_report["final"]["first_scan_tfsec_high_or_critical"] == 1
+
+
+@pytest.mark.req("FR-S-02", "FR-S-04", "NFR-01")
+async def test_safe_fix_rejection_reason_is_persisted(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+) -> None:
+    engine, _ = db_engines
+    ctx, package = await setup(engine)
+
+    class RejectFix(ScriptedFix):
+        async def propose(self, **kwargs: Any) -> FixProposal:
+            self.calls.append(kwargs)
+            return FixProposal(
+                kwargs["path"], False, "schema:file.content.missing", None, {}, ()
+            )
+
+    scanner = ScriptedScanner([[finding("CKV_AWS_16")], [finding("CKV_AWS_16")]])
+    fixer = RejectFix()
+    assert (
+        await agent(engine, scanner, fixer).run(ctx, Variant.SECURITY, package)
+        == PackageStatus.SCAN_EXHAUSTED
+    )
+    assert len(fixer.calls) == 1
+    async with make_session_factory(engine)() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+        assert row is not None and row.security_report is not None
+        fixes = row.security_report["sessions"][0]["iterations"][0]["fixes"]
+        assert fixes[0]["reason"] == "schema:file.content.missing"
+        assert fixes[0]["accepted"] is False
 
 
 @pytest.mark.req("FR-S-05", "FR-S-07", "FR-S-09")

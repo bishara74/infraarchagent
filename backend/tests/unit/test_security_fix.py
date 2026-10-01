@@ -74,6 +74,13 @@ def test_schema_rejections_name_safe_field_and_rule() -> None:
     )
     assert result.accepted
     assert result.summaries == (("secret" * 40)[:200],)
+    bad_new_file = output("resource {}\n")
+    bad_new_file["new_files"] = {"sensitive-path.tf": 7}
+    result = validate_fix(
+        bad_new_file, path="terraform/main.tf", files=FILES, plan=PLAN
+    )
+    assert result.reason == "schema:new_files.value.type"
+    assert "sensitive-path" not in result.reason
 
 
 @pytest.mark.req("FR-S-02")
@@ -88,6 +95,10 @@ def test_malformed_fix_metadata_is_dropped_without_rejecting_code() -> None:
     assert result.accepted
     assert result.content == "resource { encrypted = true }\n"
     assert result.summaries == ("Encrypt DB",)
+    raw["fixes"] = "malformed"
+    result = validate_fix(raw, path="terraform/main.tf", files=FILES, plan=PLAN)
+    assert result.accepted
+    assert result.summaries == ()
 
 
 @pytest.mark.req("FR-S-02", "NFR-01")

@@ -324,7 +324,14 @@ async def run_evaluation(
             input_tokens = sum(fix.get("input_tokens") or 0 for fix in fixes)
             output_tokens = sum(fix.get("output_tokens") or 0 for fix in fixes)
             remaining = report["final"]["remaining_blocking"]
-            fixing_model = report.get("fixing_model") or settings.llm_model or "stub"
+            fixing_model = (
+                report.get("fixing_model")
+                or settings.security_fix_model
+                or settings.llm_model
+                or "stub"
+            )
+            input_rate = (price_in or {}).get(fixing_model)
+            output_rate = (price_out or {}).get(fixing_model)
             rejected = [fix for fix in fixes if not fix["accepted"]]
             rejected_by_reason = dict(
                 Counter(str(fix.get("reason") or "unknown") for fix in rejected)
@@ -355,16 +362,36 @@ async def run_evaluation(
                     "input_tokens": input_tokens,
                     "output_tokens": output_tokens,
                     "estimated_cost": (
-                        input_tokens * (price_in or {}).get(fixing_model, 0)
-                        + output_tokens * (price_out or {}).get(fixing_model, 0)
-                    )
-                    / 1_000_000,
+                        (input_tokens * input_rate + output_tokens * output_rate)
+                        / 1_000_000
+                        if input_rate is not None and output_rate is not None
+                        else None
+                    ),
                 }
             )
             if save_diffs and diff:
                 path = output / "diffs" / folder.parent.parent.name / plan
                 path.mkdir(parents=True, exist_ok=True)
                 (path / f"{variant.value}.diff").write_text(diff, encoding="utf-8")
+        elif remediate:
+            case.update(
+                {
+                    "outcome": "error",
+                    "iterations": 0,
+                    "fix_passes": 0,
+                    "stop_reason": "scan_error",
+                    "fixing_model": None,
+                    "blocking_after_count": None,
+                    "blocking_after_by_severity": {},
+                    "fixes_accepted": 0,
+                    "fixes_rejected": [],
+                    "fixes_rejected_by_reason": {},
+                    "remaining_blocking": [],
+                    "input_tokens": 0,
+                    "output_tokens": 0,
+                    "estimated_cost": None,
+                }
+            )
         case["elapsed_seconds"] = round(time.monotonic() - started, 3)
         cases.append(case)
     aggregate: dict[str, Any] = {}
@@ -395,7 +422,7 @@ async def run_evaluation(
         }
     fixing_aggregate: dict[str, Any] = {}
     for model in sorted(
-        {case["fixing_model"] for case in cases if "fixing_model" in case}
+        {case["fixing_model"] for case in cases if case.get("fixing_model")}
     ):
         group = [case for case in cases if case.get("fixing_model") == model]
         before = sum(case["first_scan_blocking_count"] for case in group)
@@ -478,14 +505,13 @@ async def run_evaluation(
             ]
         )
         for case in cases:
-            if "fixing_model" not in case:
-                continue
             fields = [
                 case["generator_model"],
                 case["plan"],
                 case["variant"],
                 case["fixing_model"],
-                f"{case['first_scan_blocking_count']} → {case['blocking_after_count']}",
+                f"{case['first_scan_blocking_count']} → "
+                f"{_display(case['blocking_after_count'])}",
                 case["fix_passes"],
                 case["stop_reason"],
                 _count_text(case["blocking_after_by_severity"]),
@@ -493,7 +519,9 @@ async def run_evaluation(
                 _count_text(case["fixes_rejected_by_reason"]),
                 case["elapsed_seconds"],
                 f"{case['input_tokens']} / {case['output_tokens']}",
-                f"{case['estimated_cost']:.6f}",
+                f"{case['estimated_cost']:.6f}"
+                if case["estimated_cost"] is not None
+                else "—",
             ]
             lines.append("| " + " | ".join(map(str, fields)) + " |")
         lines.extend(["", "## Fixing model aggregates", ""])

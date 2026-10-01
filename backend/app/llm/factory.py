@@ -1,6 +1,6 @@
 """Configuration-based provider selection."""
 
-from app.core.config import ConfigurationError, Settings
+from app.core.config import ConfigurationError, ReasoningEffort, Settings
 from app.domain.enums import LLMProvider
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import LLMAdapter, RetryPolicy
@@ -15,17 +15,19 @@ def build_adapter(
     provider: LLMProvider | str | None = None,
     model: str | None = None,
     policy: RetryPolicy | None = None,
+    reasoning_effort: ReasoningEffort | None = None,
 ) -> LLMAdapter:
     try:
         selected = LLMProvider(provider or settings.llm_provider)
     except ValueError:
         raise LLMConfigurationError("Unknown LLM_PROVIDER") from None
     chosen_policy = policy or RetryPolicy.from_settings(settings)
+    chosen_effort = reasoning_effort or settings.llm_reasoning_effort
     if selected is LLMProvider.STUB:
         return StubAdapter(
             model or settings.llm_model or "stub",
             chosen_policy,
-            reasoning_effort=settings.llm_reasoning_effort,
+            reasoning_effort=chosen_effort,
             response_format=settings.llm_response_format,
         )
     chosen_model = model or settings.llm_model
@@ -42,7 +44,7 @@ def build_adapter(
             chosen_model,
             chosen_policy,
             key,
-            reasoning_effort=settings.llm_reasoning_effort,
+            reasoning_effort=chosen_effort,
         )
     if settings.llm_response_format is None:
         return OpenAIAdapter(
@@ -50,13 +52,13 @@ def build_adapter(
             chosen_policy,
             key,
             base_url=settings.llm_base_url,
-            reasoning_effort=settings.llm_reasoning_effort,
+            reasoning_effort=chosen_effort,
         )
     return OpenAIAdapter(
         chosen_model,
         chosen_policy,
         key,
         base_url=settings.llm_base_url,
-        reasoning_effort=settings.llm_reasoning_effort,
+        reasoning_effort=chosen_effort,
         response_format=settings.llm_response_format,
     )

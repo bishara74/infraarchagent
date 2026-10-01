@@ -129,7 +129,10 @@ files are repaired. Their Checkov counts remain available. Use
 `--packages DIR [DIR ...]` for other saved
 package directories. `--remediate` explicitly enables LLM calls and writes
 evaluation runs to PostgreSQL; `--max-iterations`, `--price-in`, `--price-out`,
-and `--save-diffs` control its report. Real LLM calls can cost money.
+and `--save-diffs` control its report. Remediation summaries show each
+package's before/after blocking count, stop reason, fixes, tokens, elapsed
+time, and cost when input and output price rates are provided for the fixing
+model. Real LLM calls can cost money.
 
 For OpenRouter through the OpenAI-compatible adapter, its
 [:nitro model suffix](https://openrouter.ai/docs/guides/routing/model-variants/nitro)
@@ -168,6 +171,9 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
 | `LLM_RESPONSE_FORMAT` | `json_object` sends OpenAI-compatible JSON mode; Anthropic ignores it | Unset |
+| `SECURITY_FIX_PROVIDER` | Optional provider for SecurityAgent fix calls; otherwise the run provider | Unset |
+| `SECURITY_FIX_MODEL` | Optional model for SecurityAgent fix calls; otherwise the run model | Unset |
+| `SECURITY_FIX_REASONING_EFFORT` | Optional fix-only reasoning control; otherwise `LLM_REASONING_EFFORT` | Unset |
 | `BROKER_QUEUE_SIZE` | Maximum queued events per SSE subscriber | `1000` |
 | `MAX_CONCURRENT_RUNS` | Maximum active or reserved pipeline runs | `5` |
 | `SSE_KEEPALIVE_SECONDS` | Idle interval before an SSE keep-alive comment | `15` |
@@ -199,6 +205,13 @@ With the OpenAI-compatible adapter, `off` sends OpenRouter's
 The Anthropic adapter currently records the configured value in attempt logs
 but does not alter its request. The effect on generation quality is assessed
 in evaluation results.
+
+Security fix calls can use a different provider or model from architecture
+and generation by setting the `SECURITY_FIX_*` variables. The same
+`LLM_API_KEY` and, for OpenAI-compatible calls, `LLM_BASE_URL` are used.
+The selected fixing provider, model, and reasoning effort are stored in each
+security report session and the latest report. Unset overrides preserve the
+run's model selection.
 
 `infraarch_owner` owns the databases and applies Alembic migrations.
 `infraarch_app` serves the API and runs the retention sweep. It cannot delete

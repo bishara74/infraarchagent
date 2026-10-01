@@ -27,6 +27,47 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-01 — Phase 5 follow-up — Fix diagnostics and model-aware evaluation
+
+**Summary:** Replaced generic fix rejection labels with safe schema paths and
+JSON/path categories, kept file content and new files strict while accepting
+imperfect descriptive metadata, expanded remediation summaries, and added
+optional SecurityAgent-only model selection.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-04, FR-G-05, NFR-01.
+
+**Files:** changed `backend/app/agents/security/{fix,agent}.py`,
+`backend/app/agents/factory.py`, `backend/app/llm/factory.py`,
+`backend/app/core/config.py`, `backend/app/db/repositories/packages.py`,
+`backend/scripts/eval_security.py`, unit and integration tests,
+`.env.example`, `README.md`, `docs/design-deviations.md`, and this log.
+
+**Decisions:** D-29 records safe rejection categories and lenient
+descriptive `fixes` metadata; D-30 records per-agent fixing model selection.
+Pydantic diagnostics use only known field names and error types; they never
+copy response values. The selected fixer is stored per report session and
+at the report root. Evaluation reports generator and fixer independently,
+prices tokens by fixer, and includes scan-error packages in the remediation
+table without claiming they received fix calls. Cost is null when that
+fixer's input or output rate is unavailable.
+
+**Tests:** `make lint` passed Ruff check, Ruff format check (123 files), and
+mypy (75 source files). Ruff check and format passed for the evaluation
+script. `make test` passed with **410 passed, 0 failed, 0 skipped**. New tests
+cover safe reasons for missing code and invalid JSON, truncated summaries,
+dropped malformed metadata, strict new-file values, persisted rejection
+reasons, fixer override and fallback, persisted fixer identity, remediation
+stop reasons, reason counts, per-fixer aggregates, and fixer-priced cost.
+
+**Known gaps / follow-ups:** The author reported gpt-oss reducing blocking
+findings from 402 to 53 across 12 packages and Sonnet receiving 10 rejected
+fixes across two packages; these real runs were not repeated because that
+would make real LLM calls. The two existing untracked evaluation directories
+were left untouched. New remediation summary behavior is verified with
+recorded test data, not a new paid evaluation.
+
+---
+
 ## 2026-10-01 — Phase 5 follow-up — Portable fixtures and Terraform syntax findings
 
 **Summary:** Normalized recorded scanner paths to a fixed placeholder so

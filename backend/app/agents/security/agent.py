@@ -71,12 +71,18 @@ class SecurityAgent:
         *,
         versions: Mapping[str, str | None] | None = None,
         semaphore: asyncio.Semaphore | None = None,
+        fixing_provider: str | None = None,
+        fixing_model: str | None = None,
+        fixing_reasoning_effort: str | None = None,
     ) -> None:
         self.scanner = scanner
         self.fix_agent = fix_agent
         self.session_factory = session_factory
         self.settings = settings
         self.versions = dict(versions or {})
+        self.fixing_provider = fixing_provider
+        self.fixing_model = fixing_model
+        self.fixing_reasoning_effort = fixing_reasoning_effort
         self.semaphore = semaphore or asyncio.Semaphore(
             settings.security_max_parallel_fixes
         )
@@ -443,6 +449,9 @@ class SecurityAgent:
             "kind": kind,
             "started_at": started_at,
             "feedback_present": bool(feedback),
+            "fixing_provider": self.fixing_provider,
+            "fixing_model": self.fixing_model,
+            "fixing_reasoning_effort": self.fixing_reasoning_effort,
             "fix_passes": iteration_count,
             "iterations": iterations,
             "final": {

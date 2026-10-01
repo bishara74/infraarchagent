@@ -34,6 +34,9 @@ def test_defaults_and_secret_representations() -> None:
     assert settings.llm_max_output_tokens == 16000
     assert settings.llm_base_url is None
     assert settings.llm_reasoning_effort is None
+    assert settings.security_fix_provider is None
+    assert settings.security_fix_model is None
+    assert settings.security_fix_reasoning_effort is None
     assert "CANARY" not in repr(settings)
     assert "secret" not in repr(settings)
 
@@ -99,3 +102,25 @@ def test_reasoning_effort_empty_is_unset_and_unknown_is_rejected() -> None:
     assert _settings(llm_reasoning_effort="").llm_reasoning_effort is None
     with pytest.raises(ValidationError):
         _settings(llm_reasoning_effort="max")
+
+
+@pytest.mark.req("FR-S-02")
+def test_optional_security_fix_selection_validates_independently() -> None:
+    configured = _settings(
+        security_fix_provider="openai",
+        security_fix_model="fixer-model",
+        security_fix_reasoning_effort="off",
+    )
+    assert configured.security_fix_provider == "openai"
+    assert configured.security_fix_model == "fixer-model"
+    assert configured.security_fix_reasoning_effort == "off"
+    blank = _settings(
+        security_fix_provider="",
+        security_fix_model="",
+        security_fix_reasoning_effort="",
+    )
+    assert blank.security_fix_provider is None
+    assert blank.security_fix_model is None
+    assert blank.security_fix_reasoning_effort is None
+    with pytest.raises(ValidationError):
+        _settings(security_fix_reasoning_effort="max")

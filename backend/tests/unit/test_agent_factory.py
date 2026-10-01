@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.agents.factory import AgentFactory
 from app.core.config import Settings
@@ -87,3 +88,31 @@ def test_generator_factory_order_settings_and_run_overrides() -> None:
         assert agent.max_package_attempts == 4
     security_agent = AgentFactory(configured).create_generator(Variant.SECURITY)
     assert security_agent.variant is Variant.SECURITY
+
+
+@pytest.mark.req("FR-S-02")
+def test_security_fix_model_override_and_run_fallback_reach_adapter() -> None:
+    overridden = AgentFactory(
+        settings(
+            security_fix_provider="stub",
+            security_fix_model="fixer-model",
+            security_fix_reasoning_effort="off",
+            llm_reasoning_effort="low",
+        ),
+        session_factory=async_sessionmaker(),
+    ).create_security_agent(RunConfig(provider=LLMProvider.OPENAI, model="run-model"))
+    override_adapter = overridden.fix_agent.adapter
+    assert isinstance(override_adapter, StubAdapter)
+    assert override_adapter.model == "fixer-model"
+    assert override_adapter.reasoning_effort == "off"
+    assert overridden.fixing_provider == "stub"
+    assert overridden.fixing_model == "fixer-model"
+
+    fallback = AgentFactory(
+        settings(llm_reasoning_effort="low"),
+        session_factory=async_sessionmaker(),
+    ).create_security_agent(RunConfig(provider=LLMProvider.STUB, model="run-model"))
+    fallback_adapter = fallback.fix_agent.adapter
+    assert fallback_adapter.model == "run-model"
+    assert fallback_adapter.reasoning_effort == "low"
+    assert fallback.fixing_model == "run-model"
