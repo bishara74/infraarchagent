@@ -17,6 +17,22 @@ from app.db.session import make_session_factory
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus
 from app.main import create_app
 from app.pipeline.demo_stub import PipelineDemoStub
+from app.scanners.runner import RecordedToolRunner, ToolResult
+from app.scanners.scan import Scanner
+
+
+def _empty_scanner(repeats: int = 3) -> Scanner:
+    return Scanner(
+        RecordedToolRunner(
+            {
+                "checkov": [
+                    ToolResult('{"passed":0,"failed":0,"resource_count":0}', "", 0, 0)
+                ]
+                * repeats,
+                "tfsec": [ToolResult('{"results":[]}', "", 0, 0)] * repeats,
+            }
+        )
+    )
 
 
 @pytest.mark.req("FR-I-01", "FR-I-02", "FR-I-04", "FR-P-04")
@@ -28,6 +44,7 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
         update={"llm_provider": LLMProvider.STUB, "llm_model": None}
     )
     app = create_app(settings, engine)
+    app.state.runner.factory.scanner = _empty_scanner()
     async with app.router.lifespan_context(app):
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
@@ -47,12 +64,12 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
             async with make_session_factory(engine)() as session:
                 run = await RunRepository(session).get(run_id)
                 packages = await PackageRepository(session).list_for_run(run_id)
-            assert run is not None and run.status == RunStatus.FAILED
+            assert run is not None and run.status == RunStatus.PARTIAL_SUCCESS
             assert run.llm_provider == LLMProvider.STUB
             assert run.model == "stub"
             assert run.max_iterations == 2
             assert len(packages) == 3
-            assert all(row.status == PackageStatus.SCAN_ERROR for row in packages)
+            assert all(row.status == PackageStatus.PENDING_REVIEW for row in packages)
             assert all(row.files for row in packages)
             replay = await client.get(response.json()["stream_url"])
             assert replay.status_code == 200
@@ -64,7 +81,7 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
             ]
             assert ids == sorted(set(ids))
             assert "event: package_generated" in replay.text
-            assert "security scanning is not available in this build" in replay.text
+            assert "validation is not available in this build" in replay.text
             assert "terraform/main.tf" in replay.text
             assert "required_version" not in replay.text
             last = await client.get(
@@ -187,6 +204,7 @@ async def test_architect_invocation_sees_committed_run(
     app = create_app(
         get_settings().model_copy(update={"llm_provider": LLMProvider.STUB}), engine
     )
+    app.state.runner.factory.scanner = _empty_scanner()
     observed: list[RunStatus] = []
     original = PipelineDemoStub.send_prompt
 
@@ -243,6 +261,7 @@ async def test_three_runs_overlap_and_keep_events_isolated(
     app = create_app(
         get_settings().model_copy(update={"llm_provider": LLMProvider.STUB}), engine
     )
+    app.state.runner.factory.scanner = _empty_scanner(12)
     original = PipelineDemoStub.send_prompt
 
     async def delayed(self: PipelineDemoStub, *args: object, **kwargs: object):

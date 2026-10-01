@@ -1,6 +1,8 @@
 """FR-S-03/05/06/09: real database state and report audit through the loop."""
 
+import json
 from copy import deepcopy
+from dataclasses import replace
 from typing import Any
 
 import pytest
@@ -14,7 +16,7 @@ from app.db.models import AgentEvent
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
-from app.domain.enums import LLMProvider, PackageStatus, Variant
+from app.domain.enums import LLMProvider, PackageStatus, Severity, Variant
 from app.domain.models import IaCPackage, Violation
 from app.domain.plan import DeploymentPlan
 from app.events.log import EventLog
@@ -240,3 +242,62 @@ async def test_validation_only_and_feedback_only_review_retry(
                 == "no file could be targeted; feedback was not applied"
                 for item in notices
             )
+
+
+@pytest.mark.req("FR-S-05")
+async def test_time_budget_stops_before_fix_call(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+) -> None:
+    engine, _ = db_engines
+    ctx, package = await setup(engine)
+    now = [0.0]
+    ctx = replace(ctx, clock=lambda: now[0])
+
+    class ExpiringScanner(ScriptedScanner):
+        async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+            now[0] = 239.5
+            return await super().scan(files, variant)
+
+    fixer = ScriptedFix()
+    result = await agent(engine, ExpiringScanner([[finding("CKV_AWS_16")]]), fixer).run(
+        ctx, Variant.SECURITY, package
+    )
+    assert result == PackageStatus.SCAN_EXHAUSTED
+    assert fixer.calls == []
+    async with make_session_factory(engine)() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+        assert row is not None and row.security_report is not None
+        assert row.security_report["sessions"][0]["final"]["reason"] == "time budget"
+
+
+@pytest.mark.req("NFR-01")
+async def test_scanner_finding_does_not_store_canary_key(
+    db_engines: tuple[AsyncEngine, AsyncEngine], canary_key: Any
+) -> None:
+    engine, _ = db_engines
+    ctx, package = await setup(engine)
+    key = canary_key.require_llm_key()
+    advisory = finding("CKV_UNKNOWN").model_copy(
+        update={
+            "blocking": False,
+            "title": key,
+            "message": key,
+            "severity": Severity.UNKNOWN,
+        }
+    )
+    scanner = ScriptedScanner([[advisory]])
+    security = SecurityAgent(  # type: ignore[arg-type]
+        scanner,
+        ScriptedFix(),
+        make_session_factory(engine),
+        canary_key,
+    )
+    assert (
+        await security.run(ctx, Variant.SECURITY, package) == PackageStatus.SCAN_CLEAN
+    )
+    async with make_session_factory(engine)() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+        events = list(await session.scalars(select(AgentEvent)))
+        assert row is not None
+        assert key not in json.dumps(row.security_report)
+        assert key not in json.dumps([item.payload for item in events])

@@ -70,6 +70,14 @@ def test_checkov_list_and_tfsec_banner_shapes() -> None:
         parse_tfsec("unexpected banner\n" + tfsec, root, paths)
     with pytest.raises(ValueError):
         parse_checkov("broken", root, paths)
+    assert (
+        parse_checkov(
+            '{"passed":0,"failed":0,"resource_count":0,"checkov_version":"3.3.21"}',
+            root,
+            paths,
+        )
+        == []
+    )
 
 
 @pytest.mark.req("FR-S-01")

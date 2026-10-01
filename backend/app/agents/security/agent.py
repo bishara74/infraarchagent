@@ -81,6 +81,15 @@ class SecurityAgent:
         key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
         self.redactor = RedactingFilter(key)
 
+    def _redact_report(self, value: Any) -> Any:
+        if isinstance(value, str):
+            return self.redactor.redact(value)
+        if isinstance(value, list):
+            return [self._redact_report(item) for item in value]
+        if isinstance(value, dict):
+            return {key: self._redact_report(item) for key, item in value.items()}
+        return value
+
     async def _notice(
         self, ctx: StageContext, variant: Variant, message: str, **metrics: Any
     ) -> None:
@@ -445,7 +454,7 @@ class SecurityAgent:
                     variant,
                     original_files=session_start_files,
                     files=files,
-                    session_report=session_report,
+                    session_report=self._redact_report(session_report),
                     iteration_count=iteration_count,
                     policy_version=SECURITY_POLICY_VERSION,
                     prompt_version=SECURITY_FIX_PROMPT_VERSION,

@@ -15,6 +15,11 @@ def parse_checkov(output: str, root: Path, files: set[str]) -> list[Violation]:
             raise ValueError
         violations: list[Violation] = []
         for report in reports:
+            if "results" not in report:
+                # Checkov emits only a summary when no supported resource exists.
+                if report.get("failed") == 0 and report.get("resource_count") == 0:
+                    continue
+                raise ValueError
             results = report["results"]
             failed = results["failed_checks"]
             if not isinstance(failed, list):
