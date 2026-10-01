@@ -1,0 +1,267 @@
+--- a/k8s/microservice-a/deployment.yaml
++++ b/k8s/microservice-a/deployment.yaml
+@@ -15,15 +15,36 @@
+       labels:
+         app: microservice-a
+     spec:
++      securityContext:
++        runAsUser: 10001               # non‑root high UID to avoid host conflict
++        runAsGroup: 10001
++        runAsNonRoot: true
++        seccompProfile:
++          type: RuntimeDefault
+       containers:
+         - name: app
+-          image: nginx:latest
++          image: nginx:1.25.1          # fixed, non‑latest tag
+           ports:
+-            - containerPort: 80
++            - containerPort: 8080      # non‑privileged port
++          securityContext:
++            allowPrivilegeEscalation: false
++            privileged: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop:
++                - ALL
++          resources:
++            requests:
++              cpu: "100m"
++              memory: "128Mi"
++            limits:
++              cpu: "250m"
++              memory: "256Mi"
+           volumeMounts:
+             - name: shared-efs
+               mountPath: /usr/share/nginx/html
++              readOnly: true
+       volumes:
+         - name: shared-efs
+           persistentVolumeClaim:
+-            claimName: efs-pvc
++            claimName: efs-pvc--- a/k8s/microservice-b/deployment.yaml
++++ b/k8s/microservice-b/deployment.yaml
+@@ -1,4 +1,3 @@
+-# Deployment for microservice-b
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+@@ -15,15 +14,38 @@
+       labels:
+         app: microservice-b
+     spec:
++      securityContext:
++        # Run the pod with a non‑root user and drop all unnecessary capabilities
++        runAsUser: 10000
++        runAsGroup: 10000
++        fsGroup: 10000
++        # Use the default seccomp profile for added protection
++        seccompProfile:
++          type: RuntimeDefault
+       containers:
+         - name: app
+-          image: nginx:latest
++          image: nginx:1.25-alpine
+           ports:
+-            - containerPort: 80
++            - containerPort: 8080
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            runAsNonRoot: true
++            capabilities:
++              drop:
++                - ALL
++          resources:
++            requests:
++              cpu: "100m"
++              memory: "128Mi"
++            limits:
++              cpu: "250m"
++              memory: "256Mi"
+           volumeMounts:
+             - name: shared-efs
+               mountPath: /usr/share/nginx/html
++              readOnly: true
+       volumes:
+         - name: shared-efs
+           persistentVolumeClaim:
+-            claimName: efs-pvc
++            claimName: efs-pvc--- a/terraform/main.tf
++++ b/terraform/main.tf
+@@ -27,7 +27,7 @@
+ 
+ resource "aws_internet_gateway" "igw" {
+   vpc_id = aws_vpc.main.id
+-  tags = { Name = "eks-igw" }
++  tags   = { Name = "eks-igw" }
+ }
+ 
+ resource "aws_route_table" "public" {
+@@ -43,7 +43,7 @@
+   vpc_id                  = aws_vpc.main.id
+   cidr_block              = "10.0.1.0/24"
+   availability_zone       = data.aws_availability_zones.available.names[0]
+-  map_public_ip_on_launch = true
++  map_public_ip_on_launch = false
+   tags = { Name = "eks-public-a" }
+ }
+ 
+@@ -51,7 +51,7 @@
+   vpc_id                  = aws_vpc.main.id
+   cidr_block              = "10.0.2.0/24"
+   availability_zone       = data.aws_availability_zones.available.names[1]
+-  map_public_ip_on_launch = true
++  map_public_ip_on_launch = false
+   tags = { Name = "eks-public-b" }
+ }
+ 
+@@ -63,6 +63,40 @@
+ resource "aws_route_table_association" "pub_b" {
+   subnet_id      = aws_subnet.public_b.id
+   route_table_id = aws_route_table.public.id
++}
++
++# Restrict default security group (no inbound/outbound)
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.main.id
++  revoke_rules_on_delete = true
++  ingress {}
++  egress  {}
++  tags = { Name = "default-restricted" }
++}
++
++# VPC Flow Logs (lightweight monitoring)
++resource "aws_flow_log" "vpc_flow" {
++  log_group_name = "/aws/vpc/flow"
++  vpc_id         = aws_vpc.main.id
++  traffic_type   = "ALL"
++  iam_role_arn   = aws_iam_role.flow_log_role.arn
++}
++
++resource "aws_iam_role" "flow_log_role" {
++  name = "vpc-flow-log-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Principal = { Service = "vpc-flow-logs.amazonaws.com" },
++      Action = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_role_policy_attachment" "flow_log_attach" {
++  role       = aws_iam_role.flow_log_role.name
++  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+ }
+ 
+ # IAM roles for EKS
+@@ -112,15 +146,28 @@
+ 
+ # EKS cluster
+ resource "aws_eks_cluster" "eks" {
+-  name    = var.cluster_name
++  name     = var.cluster_name
+   role_arn = aws_iam_role.eks_cluster_role.arn
+-  version = "1.27"
++  version  = "1.27"
+   vpc_config {
+-    subnet_ids = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+-    endpoint_public_access = true
+-    endpoint_private_access = false
+-  }
++    subnet_ids              = [aws_subnet.public_a.id, aws_subnet.public_b.id]
++    endpoint_public_access = false
++    endpoint_private_access = true
++  }
++  encryption_config {
++    provider {
++      key_arn = aws_kms_key.eks_secrets.arn
++    }
++    resources = ["secrets"]
++  }
++  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+   depends_on = [aws_iam_role_policy_attachment.eks_cluster_AmazonEKSClusterPolicy]
++}
++
++resource "aws_kms_key" "eks_secrets" {
++  description               = "KMS key for EKS secret encryption"
++  deletion_window_in_days   = 10
++  enable_key_rotation       = true
+ }
+ 
+ resource "aws_eks_node_group" "ng" {
+@@ -142,8 +189,9 @@
+ 
+ # EFS storage
+ resource "aws_efs_file_system" "efs_storage" {
+-  creation_token = "efs-storage"
++  creation_token   = "efs-storage"
+   performance_mode = "generalPurpose"
++  encrypted        = true
+   tags = { Name = "efs-storage" }
+ }
+ 
+@@ -169,7 +217,12 @@
+     protocol    = "tcp"
+     cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+-  egress { from_port = 0 to_port = 0 protocol = "-1" cidr_blocks = ["0.0.0.0/0"] }
++  egress {
++    from_port   = 0
++    to_port     = 0
++    protocol    = "-1"
++    cidr_blocks = [aws_vpc.main.cidr_block]
++  }
+ }
+ 
+ # RDS PostgreSQL instance
+@@ -193,23 +246,34 @@
+     protocol    = "tcp"
+     cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+-  egress { from_port = 0 to_port = 0 protocol = "-1" cidr_blocks = ["0.0.0.0/0"] }
++  egress {
++    from_port   = 0
++    to_port     = 0
++    protocol    = "-1"
++    cidr_blocks = [aws_vpc.main.cidr_block]
++  }
+ }
+ 
+ resource "aws_db_instance" "rds_db" {
+-  identifier         = "rds-db"
+-  engine             = "postgres"
+-  instance_class     = "db.t3.micro"
+-  allocated_storage  = 20
+-  name               = "appdb"
+-  username           = "admin"
+-  password           = random_password.db_password.result
+-  db_subnet_group_name = aws_db_subnet_group.rds_subnet_group.name
+-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
+-  publicly_accessible = true
+-  skip_final_snapshot = true
++  identifier               = "rds-db"
++  engine                   = "postgres"
++  instance_class           = "db.t3.micro"
++  allocated_storage        = 20
++  name                     = "appdb"
++  username                 = "admin"
++  password                 = random_password.db_password.result
++  db_subnet_group_name     = aws_db_subnet_group.rds_subnet_group.name
++  vpc_security_group_ids  = [aws_security_group.rds_sg.id]
++  publicly_accessible     = false
++  storage_encrypted        = true
++  deletion_protection      = true
++  iam_database_authentication_enabled = true
++  enabled_cloudwatch_logs_exports = ["postgresql"]
++  backup_retention_period = 7
++  skip_final_snapshot      = true
+   tags = { Name = "rds-db" }
+ }
+ 
+ # Data source for AZs
+- data "aws_availability_zones" "available" {}
++
++data "aws_availability_zones" "available" {}

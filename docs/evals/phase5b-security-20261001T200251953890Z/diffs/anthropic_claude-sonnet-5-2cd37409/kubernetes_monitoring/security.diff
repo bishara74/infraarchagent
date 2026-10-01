@@ -1,0 +1,595 @@
+--- a/helm/monitoring/templates/grafana-deployment.yaml
++++ b/helm/monitoring/templates/grafana-deployment.yaml
+@@ -13,18 +13,34 @@
+       labels:
+         app: {{ .Values.grafana.name }}
+     spec:
++      automountServiceAccountToken: false
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 1000
++        fsGroup: 1000
++        seccompProfile:
++          type: RuntimeDefault
++      imagePullSecrets:
++        - name: {{ .Values.grafana.imagePullSecret }}
+       containers:
+         - name: {{ .Values.grafana.name }}
+-          image: {{ .Values.grafana.image }}
++          # Enforce image from trusted registry
++          image: {{ .Values.grafana.trustedRegistry }}/{{ .Values.grafana.image }}
++          imagePullPolicy: IfNotPresent
+           ports:
+             - containerPort: {{ .Values.grafana.port }}
+           env:
+             - name: GF_SECURITY_ADMIN_PASSWORD__FILE
+               value: /etc/grafana-secret/password
+             - name: GF_SERVER_ROOT_URL
+-              value: "%(protocol)s://%(domain)s/grafana"
++              value: "%{{ .Values.grafana.protocol }}s://{{ .Values.grafana.domain }}/grafana"
+             - name: GF_SERVER_SERVE_FROM_SUB_PATH
+               value: "true"
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop: ["ALL"]
+           volumeMounts:
+             - name: admin-credentials
+               mountPath: /etc/grafana-secret
+@@ -50,4 +66,4 @@
+   ports:
+     - port: {{ .Values.grafana.port }}
+       targetPort: {{ .Values.grafana.port }}
+-  type: ClusterIP
++  type: ClusterIP--- a/helm/monitoring/templates/prometheus-deployment.yaml
++++ b/helm/monitoring/templates/prometheus-deployment.yaml
+@@ -13,17 +13,35 @@
+       labels:
+         app: {{ .Values.prometheus.name }}
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 65534
++        fsGroup: 65534
++        seccompProfile:
++          type: RuntimeDefault
++      imagePullSecrets:
++        - name: {{ .Values.prometheus.imagePullSecret }}
+       containers:
+         - name: {{ .Values.prometheus.name }}
+-          image: {{ .Values.prometheus.image }}
++          # Enforce image from trusted registry; registry must be supplied via values
++          image: {{ .Values.prometheus.trustedRegistry }}/{{ .Values.prometheus.image }}:{{ .Values.prometheus.tag }}
++          imagePullPolicy: IfNotPresent
+           args:
+             - "--config.file=/etc/prometheus/prometheus.yml"
+             - "--storage.tsdb.retention.time={{ .Values.prometheus.retention }}"
+           ports:
+             - containerPort: {{ .Values.prometheus.port }}
++          securityContext:
++            privileged: false
++            readOnlyRootFilesystem: true
++            allowPrivilegeEscalation: false
++            capabilities:
++              drop:
++                - ALL
+           volumeMounts:
+             - name: config
+               mountPath: /etc/prometheus
++              readOnly: true
+       volumes:
+         - name: config
+           configMap:
+@@ -40,4 +58,4 @@
+   ports:
+     - port: {{ .Values.prometheus.port }}
+       targetPort: {{ .Values.prometheus.port }}
+-  type: ClusterIP
++  type: ClusterIP--- a/k8s/microservice-a-deployment.yaml
++++ b/k8s/microservice-a-deployment.yaml
+@@ -16,9 +16,15 @@
+         app: microservice-a
+     spec:
+       serviceAccountName: microservice-a
++      securityContext:
++        runAsUser: 10001
++        runAsGroup: 10001
++        runAsNonRoot: true
++        seccompProfile:
++          type: RuntimeDefault
+       containers:
+         - name: microservice-a
+-          image: microservice-a:latest
++          image: microservice-a:1.0.0
+           ports:
+             - containerPort: 8080
+           resources:
+@@ -28,6 +34,12 @@
+             limits:
+               cpu: 500m
+               memory: 512Mi
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop:
++                - ALL
+           volumeMounts:
+             - name: efs-storage
+               mountPath: /data
+@@ -59,4 +71,4 @@
+   ports:
+     - port: 80
+       targetPort: 8080
+-  type: ClusterIP
++  type: ClusterIP--- a/k8s/microservice-b-deployment.yaml
++++ b/k8s/microservice-b-deployment.yaml
+@@ -15,9 +15,13 @@
+       labels:
+         app: microservice-b
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 10001  # Updated to a high UID to avoid host conflict
++        fsGroup: 2000
+       containers:
+         - name: microservice-b
+-          image: microservice-b:latest
++          image: microservice-b:1.0.0
+           ports:
+             - containerPort: 8080
+           resources:
+@@ -27,6 +31,15 @@
+             limits:
+               cpu: 500m
+               memory: 512Mi
++          securityContext:
++            allowPrivilegeEscalation: false
++            privileged: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop:
++                - ALL
++            seccompProfile:
++              type: RuntimeDefault
+           volumeMounts:
+             - name: efs-storage
+               mountPath: /data
+@@ -46,4 +59,4 @@
+   ports:
+     - port: 80
+       targetPort: 8080
+-  type: ClusterIP
++  type: ClusterIP--- a/terraform/eks.tf
++++ b/terraform/eks.tf
+@@ -33,11 +33,10 @@
+   version  = var.cluster_version
+ 
+   vpc_config {
+-    subnet_ids              = concat(aws_subnet.private[*].id, aws_subnet.public[*].id)
++    subnet_ids              = aws_subnet.private[*].id
+     security_group_ids      = [aws_security_group.eks_cluster.id]
+     endpoint_private_access = true
+-    endpoint_public_access  = true
+-    public_access_cidrs     = ["0.0.0.0/0"]
++    endpoint_public_access  = false
+   }
+ 
+   encryption_config {
+--- /dev/null
++++ b/terraform/kms.tf
+@@ -0,0 +1,141 @@
++resource "aws_kms_key" "s3_logs" {
++  description             = "CMK for S3 logs bucket encryption"
++  deletion_window_in_days = 30
++  enable_key_rotation      = true
++  policy = <<EOF
++{
++  "Version": "2012-10-17",
++  "Statement": [
++    {
++      "Sid": "AllowS3Use",
++      "Effect": "Allow",
++      "Principal": {"Service": "s3.amazonaws.com"},
++      "Action": ["kms:GenerateDataKey", "kms:Decrypt", "kms:ReEncrypt*", "kms:Encrypt"],
++      "Resource": "*",
++      "Condition": {"StringEquals": {"kms:ViaService": "s3.${data.aws_region.current.name}.amazonaws.com"}}
++    }
++  ]
++}
++EOF
++}
++
++resource "aws_kms_key" "s3_replica" {
++  description             = "CMK for S3 replica bucket encryption"
++  deletion_window_in_days = 30
++  enable_key_rotation      = true
++}
++
++resource "aws_iam_role" "s3_replication_role" {
++  name = "${local.name_prefix}-s3-replication-role"
++  assume_role_policy = <<EOF
++{
++  "Version": "2012-10-17",
++  "Statement": [
++    {
++      "Effect": "Allow",
++      "Principal": {"Service": "s3.amazonaws.com"},
++      "Action": "sts:AssumeRole"
++    }
++  ]
++}
++EOF
++}
++
++resource "aws_iam_policy" "s3_replication_policy" {
++  name = "${local.name_prefix}-s3-replication-policy"
++  policy = <<EOF
++{
++  "Version": "2012-10-17",
++  "Statement": [
++    {
++      "Effect": "Allow",
++      "Action": [
++        "s3:GetObjectVersion",
++        "s3:GetObjectVersionAcl",
++        "s3:GetObjectVersionTagging",
++        "s3:GetObjectVersionForReplication",
++        "s3:ListBucket",
++        "s3:ListBucketVersions"
++      ],
++      "Resource": [
++        "${aws_s3_bucket.logs.arn}",
++        "${aws_s3_bucket.logs.arn}/*"
++      ]
++    },
++    {
++      "Effect": "Allow",
++      "Action": [
++        "s3:ReplicateObject",
++        "s3:ReplicateDelete",
++        "s3:ReplicateTags",
++        "s3:ObjectOwnerOverrideToBucketOwner"
++      ],
++      "Resource": "${aws_s3_bucket.replica_logs.arn}/*"
++    },
++    {
++      "Effect": "Allow",
++      "Action": ["kms:Decrypt", "kms:GenerateDataKey"],
++      "Resource": "${aws_kms_key.s3_logs.arn}"
++    },
++    {
++      "Effect": "Allow",
++      "Action": ["kms:Encrypt", "kms:GenerateDataKey"],
++      "Resource": "${aws_kms_key.s3_replica.arn}"
++    }
++  ]
++}
++EOF
++}
++
++resource "aws_iam_role_policy_attachment" "s3_replication_attach" {
++  role       = aws_iam_role.s3_replication_role.name
++  policy_arn = aws_iam_policy.s3_replication_policy.arn
++}
++
++resource "aws_s3_bucket" "replica_logs" {
++  bucket = "${local.name_prefix}-app-logs-replica-${data.aws_caller_identity.current.account_id}"
++  acl    = "private"
++  tags   = local.common_tags
++
++  versioning {
++    enabled = true
++  }
++
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        kms_master_key_id = aws_kms_key.s3_replica.arn
++        sse_algorithm     = "aws:kms"
++      }
++    }
++  }
++
++  logging {
++    target_bucket = aws_s3_bucket.logs.id
++    target_prefix = "replica/"
++  }
++
++  replication_configuration {
++    role = aws_iam_role.s3_replication_role.arn
++    rules = [{
++      id       = "replicate-to-primary"
++      status   = "Enabled"
++      priority = 1
++      destination = {
++        bucket        = aws_s3_bucket.logs.arn
++        storage_class = "STANDARD"
++      }
++      source_selection_criteria = {}
++    }]
++  }
++
++  force_destroy = false
++}
++
++resource "aws_s3_bucket_public_access_block" "replica_logs_public_access_block" {
++  bucket = aws_s3_bucket.replica_logs.id
++  block_public_acls       = true
++  block_public_policy     = true
++  ignore_public_acls      = true
++  restrict_public_buckets = true
++}
+--- a/terraform/network.tf
++++ b/terraform/network.tf
+@@ -4,6 +4,21 @@
+   enable_dns_support   = true
+   enable_dns_hostnames = true
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-vpc" })
++}
++
++# Restrict the default security group: no inbound or outbound rules
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.main.id
++
++  # No ingress rules
++  ingress {}
++
++  # No egress rules (deny all outbound)
++  egress {}
++
++  revoke_rules_on_delete = true
++
++  tags = merge(local.common_tags, { Name = "${local.name_prefix}-default-sg" })
+ }
+ 
+ resource "aws_flow_log" "vpc_flow_log" {
+--- a/terraform/rds.tf
++++ b/terraform/rds.tf
+@@ -29,27 +29,52 @@
+   tags                = local.common_tags
+ }
+ 
++# IAM role for enhanced monitoring
++resource "aws_iam_role" "rds_monitoring" {
++  name = "${local.name_prefix}-rds-monitoring"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect    = "Allow",
++      Principal = { Service = "monitoring.rds.amazonaws.com" },
++      Action    = "sts:AssumeRole"
++    }]
++  })
++  tags = local.common_tags
++}
++
++resource "aws_iam_role_policy_attachment" "rds_monitoring" {
++  role       = aws_iam_role.rds_monitoring.name
++  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
++}
++
+ resource "aws_db_instance" "rds_db" {
+-  identifier                 = "${local.name_prefix}-rds-db"
+-  engine                     = "postgres"
+-  engine_version             = "15.5"
+-  instance_class             = var.db_instance_class
+-  allocated_storage          = 20
+-  storage_encrypted          = true
+-  kms_key_id                 = aws_kms_key.rds.arn
+-  db_name                    = var.db_name
+-  username                   = var.db_username
+-  password                   = random_password.rds.result
+-  db_subnet_group_name       = aws_db_subnet_group.rds.name
+-  vpc_security_group_ids     = [aws_security_group.rds.id]
+-  publicly_accessible        = false
+-  multi_az                   = false
+-  backup_retention_period    = 7
+-  deletion_protection        = true
+-  skip_final_snapshot        = false
+-  final_snapshot_identifier  = "${local.name_prefix}-rds-db-final-snapshot"
+-  auto_minor_version_upgrade = true
+-  copy_tags_to_snapshot      = true
++  identifier                     = "${local.name_prefix}-rds-db"
++  engine                         = "postgres"
++  engine_version                 = "15.5"
++  instance_class                 = var.db_instance_class
++  allocated_storage              = 20
++  storage_encrypted              = true
++  kms_key_id                     = aws_kms_key.rds.arn
++  db_name                        = var.db_name
++  username                       = var.db_username
++  password                       = random_password.rds.result
++  db_subnet_group_name           = aws_db_subnet_group.rds.name
++  vpc_security_group_ids        = [aws_security_group.rds.id]
++  publicly_accessible            = false
++  multi_az                       = true
++  backup_retention_period        = 7
++  deletion_protection            = true
++  skip_final_snapshot            = false
++  final_snapshot_identifier      = "${local.name_prefix}-rds-db-final-snapshot"
++  auto_minor_version_upgrade     = true
++  copy_tags_to_snapshot          = true
++  iam_database_authentication_enabled = true
++  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
++  monitoring_interval            = 60
++  monitoring_role_arn            = aws_iam_role.rds_monitoring.arn
++  performance_insights_enabled  = true
++  performance_insights_kms_key_id = aws_kms_key.rds.arn
+ 
+   tags = merge(local.common_tags, { Name = local.storage.rds })
+ }
+--- a/terraform/s3.tf
++++ b/terraform/s3.tf
+@@ -2,6 +2,40 @@
+ resource "aws_s3_bucket" "logs" {
+   bucket = "${local.name_prefix}-app-logs-${data.aws_caller_identity.current.account_id}"
+   tags   = local.common_tags
++
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        sse_algorithm = "aws:kms"
++        kms_master_key_id = aws_kms_key.s3_logs.id
++      }
++      bucket_key_enabled = true
++    }
++  }
++
++  versioning {
++    status = "Enabled"
++    mfa_delete = false
++  }
++
++  replication_configuration {
++    role = aws_iam_role.s3_replication_role.arn
++    rules {
++      id       = "log-replication"
++      status   = "Enabled"
++      priority = 1
++      filter {
++        prefix = ""
++      }
++      destination {
++        bucket        = aws_s3_bucket_replica.logs.arn
++        storage_class = "STANDARD"
++        encryption_configuration {
++          replica_kms_key_id = aws_kms_key.s3_replica.id
++        }
++      }
++    }
++  }
+ }
+ 
+ data "aws_caller_identity" "current" {}
+@@ -14,25 +48,45 @@
+   restrict_public_buckets = true
+ }
+ 
+-resource "aws_s3_bucket_server_side_encryption_configuration" "logs" {
+-  bucket = aws_s3_bucket.logs.id
+-  rule {
+-    apply_server_side_encryption_by_default {
+-      sse_algorithm = "aws:kms"
++# Separate bucket for access logs to avoid self‑logging
++resource "aws_s3_bucket" "logs_access" {
++  bucket = "${local.name_prefix}-app-logs-access-${data.aws_caller_identity.current.account_id}"
++  tags   = local.common_tags
++
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        sse_algorithm = "aws:kms"
++        kms_master_key_id = aws_kms_key.s3_logs.id
++      }
++      bucket_key_enabled = true
+     }
+-    bucket_key_enabled = true
++  }
++
++  versioning {
++    status = "Enabled"
++    mfa_delete = false
++  }
++
++  lifecycle_rule {
++    id      = "expire-old-logs"
++    enabled = true
++    expiration {
++      days = 365
++    }
+   }
+ }
+ 
+-resource "aws_s3_bucket_versioning" "logs" {
+-  bucket = aws_s3_bucket.logs.id
+-  versioning_configuration {
+-    status = "Enabled"
+-  }
++resource "aws_s3_bucket_public_access_block" "logs_access" {
++  bucket                  = aws_s3_bucket.logs_access.id
++  block_public_acls       = true
++  block_public_policy     = true
++  ignore_public_acls      = true
++  restrict_public_buckets = true
+ }
+ 
+ resource "aws_s3_bucket_logging" "logs" {
+   bucket        = aws_s3_bucket.logs.id
+-  target_bucket = aws_s3_bucket.logs.id
++  target_bucket = aws_s3_bucket.logs_access.id
+   target_prefix = "access-logs/"
+ }
+--- a/terraform/security_groups.tf
++++ b/terraform/security_groups.tf
+@@ -12,11 +12,12 @@
+     cidr_blocks = ["0.0.0.0/0"]
+   }
+ 
++  # Restrict egress to the VPC only (least‑privilege)
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-alb-sg" })
+@@ -27,11 +28,12 @@
+   description = "EKS control plane security group"
+   vpc_id      = aws_vpc.main.id
+ 
++  # Restrict egress to the VPC only (least‑privilege)
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-eks-cluster-sg" })
+@@ -42,11 +44,12 @@
+   description = "EKS worker node security group"
+   vpc_id      = aws_vpc.main.id
+ 
++  # Restrict egress to the VPC only (least‑privilege)
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-eks-nodes-sg" })
+@@ -105,11 +108,12 @@
+     security_groups = [aws_security_group.eks_nodes.id]
+   }
+ 
++  # Restrict egress to the VPC only (least‑privilege)
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-rds-sg" })
+@@ -128,11 +132,12 @@
+     security_groups = [aws_security_group.eks_nodes.id]
+   }
+ 
++  # Restrict egress to the VPC only (least‑privilege)
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-efs-sg" })

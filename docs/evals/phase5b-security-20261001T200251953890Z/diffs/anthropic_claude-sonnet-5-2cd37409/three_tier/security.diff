@@ -1,0 +1,358 @@
+--- a/terraform/alb.tf
++++ b/terraform/alb.tf
+@@ -1,4 +1,4 @@
+-# Internet-facing ALB terminating TLS and forwarding to app target groups
++# Internal ALB terminating TLS and forwarding to app target groups
+ resource "aws_acm_certificate" "alb" {
+   domain_name       = "${local.name_prefix}.example.com"
+   validation_method = "DNS"
+@@ -11,10 +11,10 @@
+ 
+ resource "aws_lb" "alb" {
+   name                       = "${local.name_prefix}-alb"
+-  internal                   = false
++  internal                   = true
+   load_balancer_type         = "application"
+   security_groups            = [aws_security_group.alb.id]
+-  subnets                    = [aws_subnet.public.id]
++  subnets                    = [aws_subnet.private.id]
+   drop_invalid_header_fields = true
+   enable_deletion_protection = true
+ 
+@@ -41,11 +41,20 @@
+   })
+ }
+ 
++resource "aws_s3_bucket_public_access_block" "alb_logs" {
++  bucket = aws_s3_bucket.access_logs.id
++
++  block_public_acls   = true
++  block_public_policy = true
++  ignore_public_acls  = true
++  restrict_public_buckets = true
++}
++
+ resource "aws_lb_target_group" "app" {
+   for_each    = local.app_services
+   name        = "${local.name_prefix}-${each.key}-tg"
+   port        = var.app_container_port
+-  protocol    = "HTTP"
++  protocol    = "HTTPS"
+   vpc_id      = aws_vpc.main.id
+   target_type = "ip"
+ 
+@@ -56,6 +65,7 @@
+     interval            = 30
+     timeout             = 5
+     matcher             = "200-399"
++    protocol            = "HTTPS"
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-${each.key}-tg" })
+--- a/terraform/network.tf
++++ b/terraform/network.tf
+@@ -4,6 +4,19 @@
+   enable_dns_support   = true
+   enable_dns_hostnames = true
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-vpc" })
++}
++
++# Ensure the default security group of every VPC restricts all traffic (no inbound or outbound)
++resource "aws_default_security_group" "vpc_default" {
++  vpc_id = aws_vpc.main.id
++
++  # Remove any default ingress rules (implicitly deny all)
++  ingress = []
++
++  # Remove any default egress rules (implicitly deny all outbound traffic)
++  egress = []
++
++  tags = merge(local.common_tags, { Name = "${local.name_prefix}-default-sg" })
+ }
+ 
+ resource "aws_flow_log" "vpc_flow_log" {
+--- a/terraform/rds.tf
++++ b/terraform/rds.tf
+@@ -40,15 +40,57 @@
+   db_subnet_group_name                = aws_db_subnet_group.rds.name
+   vpc_security_group_ids              = [aws_security_group.rds.id]
+   publicly_accessible                 = false
+-  multi_az                            = false
++  multi_az                            = true
+   backup_retention_period             = 7
+   deletion_protection                 = true
+   skip_final_snapshot                 = false
+   final_snapshot_identifier           = "${local.name_prefix}-rds-final-snapshot"
+-  copy_tags_to_snapshot                = true
++  copy_tags_to_snapshot               = true
+   iam_database_authentication_enabled = true
+   enabled_cloudwatch_logs_exports      = ["postgresql", "upgrade"]
+   auto_minor_version_upgrade           = true
+ 
++  # Enhanced monitoring
++  monitoring_interval                 = 60
++  monitoring_role_arn                 = aws_iam_role.rds_monitoring.arn
++
++  # Performance Insights
++  performance_insights_enabled       = true
++  performance_insights_kms_key_id    = aws_kms_key.main.arn
++
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-rds" })
+ }
++
++# IAM role for RDS enhanced monitoring (least‑privilege)
++resource "aws_iam_role" "rds_monitoring" {
++  name = "${local.name_prefix}-rds-monitoring"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Principal = { Service = "monitoring.rds.amazonaws.com" },
++      Action = "sts:AssumeRole"
++    }]
++  })
++  tags = local.common_tags
++}
++
++resource "aws_iam_role_policy" "rds_monitoring_policy" {
++  name = "${local.name_prefix}-rds-monitoring-policy"
++  role = aws_iam_role.rds_monitoring.id
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect   = "Allow",
++      Action   = [
++        "cloudwatch:PutMetricData",
++        "logs:CreateLogStream",
++        "logs:PutLogEvents"
++      ],
++      Resource = [
++        "arn:aws:cloudwatch:${var.region}:${data.aws_caller_identity.current.account_id}:metric/AWS/RDS/*",
++        "arn:aws:logs:${var.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/rds/*"
++      ]
++    }]
++  })
++}
+--- a/terraform/s3.tf
++++ b/terraform/s3.tf
+@@ -1,6 +1,30 @@
+ # Private S3 bucket for static assets with encryption, versioning, logging and public access block
+ resource "random_id" "bucket_suffix" {
+   byte_length = 4
++}
++
++# Customer Managed KMS key for bucket encryption (least‑privilege)
++resource "aws_kms_key" "s3_bucket_key" {
++  description             = "KMS key for S3 bucket encryption"
++  deletion_window_in_days = 30
++  enable_key_rotation     = true
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect    = "Allow",
++      Principal = {
++        "AWS": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
++      },
++      Action    = [
++        "kms:Encrypt",
++        "kms:Decrypt",
++        "kms:ReEncrypt*",
++        "kms:GenerateDataKey*",
++        "kms:DescribeKey"
++      ],
++      Resource  = "*"
++    }]
++  })
+ }
+ 
+ resource "aws_s3_bucket" "s3_storage" {
+@@ -25,15 +49,17 @@
+   bucket = aws_s3_bucket.access_logs.id
+   rule {
+     apply_server_side_encryption_by_default {
+-      sse_algorithm = "AES256"
+-    }
++      sse_algorithm   = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3_bucket_key.arn
++    }
++    bucket_key_enabled = true
+   }
+ }
+ 
+ resource "aws_s3_bucket_ownership_controls" "access_logs" {
+   bucket = aws_s3_bucket.access_logs.id
+   rule {
+-    object_ownership = "BucketOwnerPreferred"
++    object_ownership = "BucketOwnerEnforced"
+   }
+ }
+ 
+@@ -50,11 +76,19 @@
+   }
+ }
+ 
++resource "aws_s3_bucket_versioning" "access_logs" {
++  bucket = aws_s3_bucket.access_logs.id
++  versioning_configuration {
++    status = "Enabled"
++  }
++}
++
+ resource "aws_s3_bucket_server_side_encryption_configuration" "s3_storage" {
+   bucket = aws_s3_bucket.s3_storage.id
+   rule {
+     apply_server_side_encryption_by_default {
+-      sse_algorithm = "aws:kms"
++      sse_algorithm   = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3_bucket_key.arn
+     }
+     bucket_key_enabled = true
+   }
+@@ -71,19 +105,107 @@
+ resource "aws_s3_bucket_policy" "s3_storage_tls_only" {
+   bucket = aws_s3_bucket.s3_storage.id
+   policy = jsonencode({
+-    Version = "2012-10-17"
+-    Statement = [{
+-      Sid       = "DenyInsecureTransport"
+-      Effect    = "Deny"
+-      Principal = "*"
+-      Action    = "s3:*"
++    Version = "2012-10-17",
++    Statement = [{
++      Sid       = "DenyInsecureTransport",
++      Effect    = "Deny",
++      Principal = "*",
++      Action    = "s3:*",
+       Resource = [
+         aws_s3_bucket.s3_storage.arn,
+         "${aws_s3_bucket.s3_storage.arn}/*"
+-      ]
++      ],
+       Condition = {
+         Bool = { "aws:SecureTransport" = "false" }
+       }
+     }]
+   })
+ }
++
++# Replica bucket in a different region for cross‑region replication
++resource "aws_s3_bucket" "s3_storage_replica" {
++  provider = aws.replica
++  bucket   = "${local.name_prefix}-s3-storage-replica-${random_id.bucket_suffix.hex}"
++  tags     = merge(local.common_tags, { Name = "${local.name_prefix}-s3-storage-replica" })
++}
++
++resource "aws_s3_bucket_server_side_encryption_configuration" "s3_storage_replica" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.s3_storage_replica.id
++  rule {
++    apply_server_side_encryption_by_default {
++      sse_algorithm   = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3_bucket_key.arn
++    }
++    bucket_key_enabled = true
++  }
++}
++
++resource "aws_s3_bucket_public_access_block" "s3_storage_replica" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.s3_storage_replica.id
++  block_public_acls       = true
++  block_public_policy     = true
++  ignore_public_acls      = true
++  restrict_public_buckets = true
++}
++
++# Cross‑region replication configuration
++resource "aws_s3_bucket_replication_configuration" "s3_storage_replication" {
++  bucket = aws_s3_bucket.s3_storage.id
++  role   = aws_iam_role.s3_replication_role.arn
++
++  rule {
++    id       = "replicate-to-${var.replication_region}"
++    status   = "Enabled"
++    priority = 1
++    filter {
++      prefix = ""
++    }
++    destination {
++      bucket        = aws_s3_bucket.s3_storage_replica.arn
++      storage_class = "STANDARD"
++      region        = var.replication_region
++      access_control_translation {
++        owner = "Destination"
++      }
++    }
++  }
++}
++
++resource "aws_iam_role" "s3_replication_role" {
++  name = "${local.name_prefix}-s3-replication-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Principal = { Service = "s3.amazonaws.com" },
++      Action = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_role_policy" "s3_replication_policy" {
++  role = aws_iam_role.s3_replication_role.id
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect   = "Allow",
++      Action   = [
++        "s3:GetObjectVersion",
++        "s3:GetObjectVersionAcl",
++        "s3:GetObjectVersionTagging",
++        "s3:ReplicateObject",
++        "s3:ReplicateDelete",
++        "s3:ReplicateTags",
++        "s3:ObjectOwnerOverrideToBucketOwner"
++      ],
++      Resource = "${aws_s3_bucket.s3_storage.arn}/*"
++    },
++    {
++      Effect = "Allow",
++      Action = ["s3:ListBucket", "s3:GetBucketVersioning"],
++      Resource = aws_s3_bucket.s3_storage.arn
++    }]
++  })
++}
+--- a/terraform/security_groups.tf
++++ b/terraform/security_groups.tf
+@@ -1,4 +1,21 @@
+ # Security groups enforcing least-privilege network access between tiers
++
++data "aws_prefix_list" "s3" {
++  # Prefix list for S3 public endpoints in the current region
++  filter {
++    name   = "service"
++    values = ["s3"]
++  }
++}
++
++data "aws_prefix_list" "ecr" {
++  # Prefix list for ECR public endpoints in the current region
++  filter {
++    name   = "service"
++    values = ["ecr.dkr"]
++  }
++}
++
+ resource "aws_security_group" "alb" {
+   name        = "${local.name_prefix}-alb-sg"
+   description = "Allow HTTPS from internet to ALB"
+@@ -49,7 +66,7 @@
+     from_port   = 443
+     to_port     = 443
+     protocol    = "tcp"
+-    cidr_blocks = ["0.0.0.0/0"]
++    prefix_list_ids = [data.aws_prefix_list.s3.id, data.aws_prefix_list.ecr.id]
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-app-sg" })

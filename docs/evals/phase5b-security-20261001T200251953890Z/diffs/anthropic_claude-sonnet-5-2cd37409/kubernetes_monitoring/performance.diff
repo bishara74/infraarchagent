@@ -1,0 +1,459 @@
+--- a/helm/monitoring/templates/grafana-deployment.yaml
++++ b/helm/monitoring/templates/grafana-deployment.yaml
+@@ -14,14 +14,27 @@
+       labels:
+         app: grafana
+     spec:
++      securityContext:
++        runAsNonRoot: true                # Prevent running as root
++        seccompProfile:
++          type: RuntimeDefault            # Enable seccomp protection
++        fsGroup: 2000                     # Ensures pod files are owned by non‑root group
+       containers:
+         - name: grafana
+-          image: {{ .Values.grafana.image }}
++          # Restrict image to a trusted registry defined in values
++          image: "{{ .Values.trustedRegistry }}/{{ .Values.grafana.image }}"
++          imagePullPolicy: IfNotPresent   # Use a defined pull policy
+           ports:
+             - containerPort: 3000
+           env:
+             - name: GF_SERVER_ROOT_URL
+-              value: "%(protocol)s://%(domain)s/grafana"
++              value: "%{{"protocol"}}s://%{{"domain"}}s/grafana"
++          securityContext:
++            allowPrivilegeEscalation: false # Disallow privilege escalation
++            readOnlyRootFilesystem: true    # Make root filesystem read‑only
++            capabilities:
++              drop:
++                - ALL
+           resources:
+             {{- toYaml .Values.grafana.resources | nindent 12 }}
+ ---
+@@ -36,4 +49,4 @@
+   ports:
+     - port: 3000
+       targetPort: 3000
+-  type: ClusterIP
++  type: ClusterIP--- a/helm/monitoring/templates/prometheus-deployment.yaml
++++ b/helm/monitoring/templates/prometheus-deployment.yaml
+@@ -4,19 +4,50 @@
+ metadata:
+   name: prometheus
+   namespace: monitoring
++  labels:
++    app: prometheus
+ spec:
+-  replicas: {{ .Values.prometheus.replicas }}
++  replicas: {{ .Values.prometheus.replicas | default 2 }}
+   selector:
+     matchLabels:
+       app: prometheus
++  strategy:
++    type: RollingUpdate
++    rollingUpdate:
++      maxSurge: 25%
++      maxUnavailable: 25%
+   template:
+     metadata:
+       labels:
+         app: prometheus
+     spec:
++      affinity:
++        podAntiAffinity:
++          preferredDuringSchedulingIgnoredDuringExecution:
++            - weight: 100
++              podAffinityTerm:
++                topologyKey: "topology.kubernetes.io/zone"
++                labelSelector:
++                  matchLabels:
++                    app: prometheus
++                namespaces:
++                  - monitoring
++      topologySpreadConstraints:
++        - maxSkew: 1
++          topologyKey: "topology.kubernetes.io/zone"
++          whenUnsatisfiable: DoNotSchedule
++          labelSelector:
++            matchLabels:
++              app: prometheus
++      securityContext:
++        runAsNonRoot: true               # Prevent running as root
++        fsGroup: 65534                    # Non‑privileged group for volume access
++        seccompProfile:
++          type: RuntimeDefault          # Enable default seccomp profile
+       containers:
+         - name: prometheus
+-          image: {{ .Values.prometheus.image }}
++          image: {{ .Values.trustedRegistry }}/{{ .Values.prometheus.image }}
++          imagePullPolicy: IfNotPresent   # Use cached image, can be overridden per environment
+           args:
+             - "--config.file=/etc/prometheus/prometheus.yml"
+             - "--storage.tsdb.retention.time={{ .Values.prometheus.retention }}"
+@@ -24,9 +55,16 @@
+             - containerPort: 9090
+           resources:
+             {{- toYaml .Values.prometheus.resources | nindent 12 }}
++          securityContext:
++            readOnlyRootFilesystem: true    # Root FS read‑only
++            allowPrivilegeEscalation: false
++            capabilities:
++              drop:
++                - ALL
+           volumeMounts:
+             - name: prometheus-config
+               mountPath: /etc/prometheus
++              readOnly: true
+       volumes:
+         - name: prometheus-config
+           configMap:
+@@ -37,6 +75,8 @@
+ metadata:
+   name: prometheus
+   namespace: monitoring
++  labels:
++    app: prometheus
+ spec:
+   selector:
+     app: prometheus
+@@ -44,3 +84,23 @@
+     - port: 9090
+       targetPort: 9090
+   type: ClusterIP
++---
++apiVersion: autoscaling/v2
++kind: HorizontalPodAutoscaler
++metadata:
++  name: prometheus-hpa
++  namespace: monitoring
++spec:
++  scaleTargetRef:
++    apiVersion: apps/v1
++    kind: Deployment
++    name: prometheus
++  minReplicas: {{ .Values.prometheus.autoscaling.minReplicas | default 2 }}
++  maxReplicas: {{ .Values.prometheus.autoscaling.maxReplicas | default 5 }}
++  metrics:
++    - type: Resource
++      resource:
++        name: cpu
++        target:
++          type: Utilization
++          averageUtilization: {{ .Values.prometheus.autoscaling.cpuUtilization | default 70 }}
+--- a/k8s/microservice-a-deployment.yaml
++++ b/k8s/microservice-a-deployment.yaml
+@@ -15,9 +15,15 @@
+       labels:
+         app: microservice-a
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 10001
++        fsGroup: 10001
++        seccompProfile:
++          type: RuntimeDefault
+       containers:
+         - name: microservice-a
+-          image: microservice-a:latest
++          image: microservice-a:1.0.0
+           ports:
+             - containerPort: 8080
+           env:
+@@ -30,6 +36,11 @@
+             limits:
+               cpu: 1000m
+               memory: 1Gi
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            runAsNonRoot: true
++            runAsUser: 10001
+           volumeMounts:
+             - name: efs-storage
+               mountPath: /data
+@@ -48,4 +59,4 @@
+   ports:
+     - port: 80
+       targetPort: 8080
+-  type: ClusterIP
++  type: ClusterIP--- a/k8s/microservice-b-deployment.yaml
++++ b/k8s/microservice-b-deployment.yaml
+@@ -15,9 +15,13 @@
+       labels:
+         app: microservice-b
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 10001            # high UID to avoid host conflicts
++        fsGroup: 10001
+       containers:
+         - name: microservice-b
+-          image: microservice-b:latest
++          image: microservice-b:1.0.0   # fixed, non‑latest tag
+           ports:
+             - containerPort: 8080
+           resources:
+@@ -27,6 +31,14 @@
+             limits:
+               cpu: 1000m
+               memory: 1Gi
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop:
++                - ALL
++            seccompProfile:
++              type: RuntimeDefault
+           volumeMounts:
+             - name: efs-storage
+               mountPath: /data
+@@ -46,3 +58,29 @@
+     - port: 80
+       targetPort: 8080
+   type: ClusterIP
++---
++# HorizontalPodAutoscaler for microservice-b deployment (performance optimisation)
++apiVersion: autoscaling/v2
++kind: HorizontalPodAutoscaler
++metadata:
++  name: microservice-b-hpa
++spec:
++  scaleTargetRef:
++    apiVersion: apps/v1
++    kind: Deployment
++    name: microservice-b
++  minReplicas: 3
++  maxReplicas: 10
++  metrics:
++    - type: Resource
++      resource:
++        name: cpu
++        target:
++          type: Utilization
++          averageUtilization: 60
++    - type: Resource
++      resource:
++        name: memory
++        target:
++          type: Utilization
++          averageUtilization: 70--- a/terraform/efs.tf
++++ b/terraform/efs.tf
+@@ -14,13 +14,13 @@
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.main.cidr_block]
+   }
+ }
+ 
+ resource "aws_efs_file_system" "efs_storage" {
+-  creation_token = "efs-storage"
+-  encrypted      = true
++  creation_token   = "efs-storage"
++  encrypted        = true
+   performance_mode = "generalPurpose"
+   throughput_mode  = "bursting"
+   tags = { Name = "efs-storage" }
+--- a/terraform/eks.tf
++++ b/terraform/eks.tf
+@@ -24,10 +24,32 @@
+   vpc_config {
+     subnet_ids              = concat(aws_subnet.public[*].id, aws_subnet.private[*].id)
+     endpoint_private_access = true
+-    endpoint_public_access  = true
++    endpoint_public_access  = false
++  }
++
++  # Enable control plane logging for all supported log types
++  enabled_cluster_log_types = [
++    "api",
++    "audit",
++    "authenticator",
++    "controllerManager",
++    "scheduler"
++  ]
++
++  # Enable secret encryption using a KMS key (assumes aws_kms_key.eks exists)
++  encryption_config {
++    provider {
++      key_arn = aws_kms_key.eks.arn
++    }
++    resources = ["secrets"]
+   }
+ 
+   depends_on = [aws_iam_role_policy_attachment.eks_cluster_policy]
++}
++
++resource "aws_kms_key" "eks" {
++  description = "KMS key for EKS secret encryption"
++  enable_key_rotation = true
+ }
+ 
+ resource "aws_iam_role" "eks_nodes" {
+--- a/terraform/rds.tf
++++ b/terraform/rds.tf
+@@ -15,30 +15,63 @@
+     security_groups = [aws_security_group.eks_nodes.id]
+   }
+ 
++  # Restrict egress to only the VPC CIDR to limit outbound traffic
+   egress {
+-    from_port   = 0
+-    to_port     = 0
+-    protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    from_port   = 443
++    to_port     = 443
++    protocol    = "tcp"
++    cidr_blocks = [aws_vpc.main.cidr_block]
++    description = "Allow outbound HTTPS within VPC"
+   }
+ }
+ 
+ resource "aws_db_instance" "rds_db" {
+-  identifier              = "rds-db"
+-  engine                  = "postgres"
+-  engine_version          = "15.4"
+-  instance_class          = var.db_instance_class
+-  allocated_storage       = 100
+-  max_allocated_storage   = 500
+-  storage_type            = "gp3"
+-  db_name                 = var.db_name
+-  username                = var.db_username
+-  password                = var.db_password
+-  db_subnet_group_name    = aws_db_subnet_group.rds_db.name
+-  vpc_security_group_ids  = [aws_security_group.rds_db.id]
+-  multi_az                = true
+-  backup_retention_period = 7
+-  skip_final_snapshot     = true
+-  storage_encrypted       = true
++  identifier                = "rds-db"
++  engine                    = "postgres"
++  engine_version            = "15.4"
++  instance_class            = var.db_instance_class
++  allocated_storage         = 100
++  max_allocated_storage     = 500
++  storage_type              = "gp3"
++  db_name                   = var.db_name
++  username                  = var.db_username
++  password                  = var.db_password
++  db_subnet_group_name      = aws_db_subnet_group.rds_db.name
++  vpc_security_group_ids    = [aws_security_group.rds_db.id]
++  multi_az                  = true
++  backup_retention_period   = 7
++  skip_final_snapshot       = true
++  storage_encrypted         = true
++  deletion_protection       = true
+   performance_insights_enabled = true
++  performance_insights_kms_key_id = aws_kms_key.rds_performance_insights.arn
++  iam_database_authentication_enabled = true
++  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
++  monitoring_interval       = 60
++  monitoring_role_arn       = aws_iam_role.rds_enhanced_monitoring.arn
+ }
++
++# KMS key for encrypting Performance Insights data with automatic rotation enabled
++resource "aws_kms_key" "rds_performance_insights" {
++  description               = "KMS key for RDS Performance Insights encryption"
++  deletion_window_in_days   = 7
++  enable_key_rotation       = true
++}
++
++# IAM role for Enhanced Monitoring
++resource "aws_iam_role" "rds_enhanced_monitoring" {
++  name = "rds-enhanced-monitoring-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Principal = { Service = "monitoring.rds.amazonaws.com" },
++      Action = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_role_policy_attachment" "rds_enhanced_monitoring" {
++  role       = aws_iam_role.rds_enhanced_monitoring.name
++  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
++}
+--- a/terraform/security_groups.tf
++++ b/terraform/security_groups.tf
+@@ -21,7 +21,8 @@
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    # Restrict egress to the VPC CIDR instead of allowing all traffic
++    cidr_blocks = [var.vpc_cidr]
+   }
+ 
+   tags = { Name = "${var.cluster_name}-node-sg" }
+--- a/terraform/vpc.tf
++++ b/terraform/vpc.tf
+@@ -4,6 +4,14 @@
+   enable_dns_support   = true
+   enable_dns_hostnames = true
+   tags = { Name = "${var.cluster_name}-vpc" }
++}
++
++# Restrict default security group (no ingress or egress rules)
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.main.id
++
++  # Remove all default ingress/egress rules
++  revoke_rules_on_delete = true
+ }
+ 
+ resource "aws_internet_gateway" "igw" {
+@@ -21,7 +29,8 @@
+   vpc_id                  = aws_vpc.main.id
+   cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index)
+   availability_zone       = local.azs[count.index]
+-  map_public_ip_on_launch = true
++  # Do NOT assign public IPs by default (CKV_AWS_130 / AWS-0164)
++  map_public_ip_on_launch = false
+   tags = {
+     Name                                        = "${var.cluster_name}-public-${count.index}"
+     "kubernetes.io/role/elb"                    = "1"
+@@ -83,3 +92,39 @@
+   subnet_id      = aws_subnet.private[count.index].id
+   route_table_id = aws_route_table.private[count.index].id
+ }
++
++# Enable VPC Flow Logs (CKV2_AWS_11 / AWS-0178)
++resource "aws_flow_log" "vpc" {
++  log_group_name = "/aws/vpc/flow-logs-${var.cluster_name}"
++  vpc_id         = aws_vpc.main.id
++  traffic_type   = "ALL"
++  iam_role_arn   = aws_iam_role.flow_log_role.arn
++}
++
++resource "aws_iam_role" "flow_log_role" {
++  name = "flow-log-role-${var.cluster_name}"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Principal = { Service = "vpc-flow-logs.amazonaws.com" },
++      Action = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_role_policy" "flow_log_policy" {
++  role = aws_iam_role.flow_log_role.id
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Action = [
++        "logs:CreateLogGroup",
++        "logs:CreateLogStream",
++        "logs:PutLogEvents"
++      ],
++      Resource = "*"
++    }]
++  })
++}

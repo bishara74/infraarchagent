@@ -1,0 +1,409 @@
+--- a/terraform/alb.tf
++++ b/terraform/alb.tf
+@@ -1,40 +1,78 @@
+ # Application Load Balancer and target groups
+ resource "aws_lb" "alb" {
+   name               = "${var.project_name}-alb"
+-  internal           = false
++  internal           = true
+   load_balancer_type = "application"
+   subnets            = module.vpc.public_subnets
+   security_groups    = [aws_security_group.alb.id]
++
++  # Enable access logging for compliance
++  access_logs {
++    bucket  = aws_s3_bucket.alb_logs.bucket
++    enabled = true
++    prefix  = "alb"
++  }
++
++  # Drop malformed headers to enhance security
++  drop_invalid_header_fields = true
+ }
+ 
+ resource "aws_lb_target_group" "app1" {
+-  name     = "${var.project_name}-tg-app1"
+-  port     = 80
+-  protocol = "HTTP"
+-  vpc_id   = module.vpc.vpc_id
++  name        = "${var.project_name}-tg-app1"
++  port        = 443
++  protocol    = "HTTPS"
++  vpc_id      = module.vpc.vpc_id
+   target_type = "ip"
++  health_check {
++    protocol = "HTTPS"
++    port     = "traffic-port"
++  }
+ }
+ 
+ resource "aws_lb_target_group" "app2" {
+-  name     = "${var.project_name}-tg-app2"
+-  port     = 80
+-  protocol = "HTTP"
+-  vpc_id   = module.vpc.vpc_id
++  name        = "${var.project_name}-tg-app2"
++  port        = 443
++  protocol    = "HTTPS"
++  vpc_id      = module.vpc.vpc_id
+   target_type = "ip"
++  health_check {
++    protocol = "HTTPS"
++    port     = "traffic-port"
++  }
+ }
+ 
++# HTTPS listener (TLS 1.2+) for secure traffic
++resource "aws_lb_listener" "https" {
++  load_balancer_arn = aws_lb.alb.arn
++  port              = "443"
++  protocol          = "HTTPS"
++  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
++  certificate_arn   = var.acm_certificate_arn
++
++  default_action {
++    type             = "forward"
++    target_group_arn = aws_lb_target_group.app1.arn
++  }
++}
++
++# Redirect HTTP to HTTPS
+ resource "aws_lb_listener" "http" {
+   load_balancer_arn = aws_lb.alb.arn
+   port              = "80"
+   protocol          = "HTTP"
++
+   default_action {
+-    type = "forward"
+-    target_group_arn = aws_lb_target_group.app1.arn
++    type = "redirect"
++    redirect {
++      protocol    = "HTTPS"
++      port        = "443"
++      status_code = "HTTP_301"
++    }
+   }
+ }
+ 
+ resource "aws_lb_listener_rule" "app2" {
+-  listener_arn = aws_lb_listener.http.arn
++  listener_arn = aws_lb_listener.https.arn
+   priority     = 10
+   action {
+     type             = "forward"
+@@ -45,4 +83,4 @@
+       values = ["/app2/*"]
+     }
+   }
+-}+}
+--- a/terraform/ecs.tf
++++ b/terraform/ecs.tf
+@@ -21,11 +21,13 @@
+ }
+ 
+ # Task definition shared base
+-locals "task_base" {
+-  cpu    = 512
+-  memory = 1024
+-  network_mode = "awsvpc"
+-  requires_compatibilities = ["FARGATE"]
++locals {
++  task_base = {
++    cpu                     = 1024
++    memory                  = 2048
++    network_mode            = "awsvpc"
++    requires_compatibilities = ["FARGATE"]
++  }
+ }
+ 
+ resource "aws_ecs_task_definition" "app1" {
+@@ -60,7 +62,7 @@
+   ])
+ }
+ 
+-# Services
++# Services with autoscaling
+ resource "aws_ecs_service" "app1" {
+   name            = "${var.project_name}-app1"
+   cluster         = aws_ecs_cluster.main.id
+@@ -95,4 +97,85 @@
+     container_name   = "app-service-2"
+     container_port   = 80
+   }
+-}+}
++
++# Application Auto Scaling for ECS services
++resource "aws_appautoscaling_target" "app1" {
++  max_capacity       = 10
++  min_capacity       = 2
++  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.app1.name}"
++  scalable_dimension = "ecs:service:DesiredCount"
++  service_namespace  = "ecs"
++}
++
++resource "aws_appautoscaling_policy" "app1_cpu" {
++  name               = "${var.project_name}-app1-cpu-policy"
++  resource_id        = aws_appautoscaling_target.app1.resource_id
++  scalable_dimension = aws_appautoscaling_target.app1.scalable_dimension
++  service_namespace  = aws_appautoscaling_target.app1.service_namespace
++  policy_type        = "TargetTrackingScaling"
++  target_tracking_scaling_policy_configuration {
++    target_value       = 60
++    predefined_metric_specification {
++      predefined_metric_type = "ECSServiceAverageCPUUtilization"
++    }
++    scale_in_cooldown  = 300
++    scale_out_cooldown = 300
++  }
++}
++
++resource "aws_appautoscaling_policy" "app1_mem" {
++  name               = "${var.project_name}-app1-mem-policy"
++  resource_id        = aws_appautoscaling_target.app1.resource_id
++  scalable_dimension = aws_appautoscaling_target.app1.scalable_dimension
++  service_namespace  = aws_appautoscaling_target.app1.service_namespace
++  policy_type        = "TargetTrackingScaling"
++  target_tracking_scaling_policy_configuration {
++    target_value       = 70
++    predefined_metric_specification {
++      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
++    }
++    scale_in_cooldown  = 300
++    scale_out_cooldown = 300
++  }
++}
++
++resource "aws_appautoscaling_target" "app2" {
++  max_capacity       = 10
++  min_capacity       = 2
++  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.app2.name}"
++  scalable_dimension = "ecs:service:DesiredCount"
++  service_namespace  = "ecs"
++}
++
++resource "aws_appautoscaling_policy" "app2_cpu" {
++  name               = "${var.project_name}-app2-cpu-policy"
++  resource_id        = aws_appautoscaling_target.app2.resource_id
++  scalable_dimension = aws_appautoscaling_target.app2.scalable_dimension
++  service_namespace  = aws_appautoscaling_target.app2.service_namespace
++  policy_type        = "TargetTrackingScaling"
++  target_tracking_scaling_policy_configuration {
++    target_value       = 60
++    predefined_metric_specification {
++      predefined_metric_type = "ECSServiceAverageCPUUtilization"
++    }
++    scale_in_cooldown  = 300
++    scale_out_cooldown = 300
++  }
++}
++
++resource "aws_appautoscaling_policy" "app2_mem" {
++  name               = "${var.project_name}-app2-mem-policy"
++  resource_id        = aws_appautoscaling_target.app2.resource_id
++  scalable_dimension = aws_appautoscaling_target.app2.scalable_dimension
++  service_namespace  = aws_appautoscaling_target.app2.service_namespace
++  policy_type        = "TargetTrackingScaling"
++  target_tracking_scaling_policy_configuration {
++    target_value       = 70
++    predefined_metric_specification {
++      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
++    }
++    scale_in_cooldown  = 300
++    scale_out_cooldown = 300
++  }
++}
+--- a/terraform/rds.tf
++++ b/terraform/rds.tf
+@@ -5,22 +5,24 @@
+ }
+ 
+ resource "aws_rds_cluster" "postgres" {
+-  cluster_identifier = "${var.project_name}-rds"
+-  engine             = "aurora-postgresql"
+-  engine_version     = "13.9"
+-  master_username    = var.db_username
+-  master_password    = var.db_password
++  cluster_identifier       = "${var.project_name}-rds"
++  engine                   = "aurora-postgresql"
++  engine_version           = "13.9"
++  master_username          = var.db_username
++  master_password          = var.db_password
+   backup_retention_period = 7
+-  skip_final_snapshot = true
+-  db_subnet_group_name = aws_db_subnet_group.rds.name
+-  vpc_security_group_ids = [aws_security_group.rds.id]
+-  storage_encrypted = true
+-  apply_immediately = true
+-  engine_mode = "provisioned"
++  skip_final_snapshot      = true
++  db_subnet_group_name     = aws_db_subnet_group.rds.name
++  vpc_security_group_ids  = [aws_security_group.rds.id]
++  storage_encrypted        = true
++  kms_key_id               = "alias/aws/rds"
++  deletion_protection      = true
++  apply_immediately        = true
++  engine_mode              = "provisioned"
+   scaling_configuration {
+-    auto_pause = false
++    auto_pause   = false
+     min_capacity = 2
+     max_capacity = 8
+   }
+   availability_zones = data.aws_availability_zones.available.names
+-}+}
+--- a/terraform/s3.tf
++++ b/terraform/s3.tf
+@@ -1,8 +1,35 @@
+ # Private S3 bucket for static assets
+ resource "aws_s3_bucket" "static" {
+-  bucket = "${var.project_name}-static-assets"
+-  acl    = "private"
++  bucket        = "${var.project_name}-static-assets"
++  acl           = "private"
+   force_destroy = true
++
++  versioning {
++    enabled = true
++  }
++
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        kms_master_key_id = aws_kms_key.s3.arn
++        sse_algorithm     = "aws:kms"
++      }
++    }
++  }
++
++  logging {
++    target_bucket = aws_s3_bucket.log.id
++    target_prefix = "static-assets/"
++  }
++}
++
++# Enforce public access block settings for the bucket
++resource "aws_s3_bucket_public_access_block" "static" {
++  bucket = aws_s3_bucket.static.id
++  block_public_acls       = true
++  block_public_policy     = true
++  ignore_public_acls      = true
++  restrict_public_buckets = true
+ }
+ 
+ resource "aws_s3_bucket_policy" "static" {
+@@ -10,12 +37,12 @@
+   policy = jsonencode({
+     Version = "2012-10-17",
+     Statement = [{
+-      Effect = "Allow",
++      Effect    = "Allow",
+       Principal = {
+         AWS = aws_iam_role.ecs_task_execution.arn
+       },
+-      Action = ["s3:GetObject", "s3:PutObject"],
++      Action   = ["s3:GetObject", "s3:PutObject"],
+       Resource = "${aws_s3_bucket.static.arn}/*"
+     }]
+   })
+-}+}
+--- /dev/null
++++ b/terraform/s3_logging.tf
+@@ -0,0 +1,39 @@
++resource "aws_s3_bucket" "log" {
++  bucket        = "${var.project_name}-s3-logs"
++  force_destroy = true
++
++  acl = "private"
++
++  versioning {
++    enabled = true
++  }
++
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        kms_master_key_id = aws_kms_key.s3.arn
++        sse_algorithm     = "aws:kms"
++      }
++    }
++  }
++
++  # Enable access logging to the same bucket with a distinct prefix
++  server_access_logging_configuration {
++    target_bucket = "${var.project_name}-s3-logs"
++    target_prefix = "access-logs/"
++  }
++
++  # Block all public access
++  block_public_access {
++    block_public_acls       = true
++    block_public_policy     = true
++    ignore_public_acls      = true
++    restrict_public_buckets = true
++  }
++}
++
++resource "aws_kms_key" "s3" {
++  description             = "KMS key for S3 bucket encryption"
++  deletion_window_in_days = 30
++  enable_key_rotation     = true
++}
+--- a/terraform/security_groups.tf
++++ b/terraform/security_groups.tf
+@@ -4,23 +4,26 @@
+   description = "Allow HTTP/HTTPS inbound"
+   vpc_id      = module.vpc.vpc_id
+ 
++  # Restrict inbound HTTP to only allowed CIDR blocks (e.g., public web traffic)
+   ingress {
+     from_port   = 80
+     to_port     = 80
+     protocol    = "tcp"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = var.alb_allowed_ingress_cidrs
+   }
++  # Restrict inbound HTTPS to only allowed CIDR blocks
+   ingress {
+     from_port   = 443
+     to_port     = 443
+     protocol    = "tcp"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = var.alb_allowed_ingress_cidrs
+   }
++  # Allow outbound traffic only within the VPC
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+ }
+ 
+@@ -35,11 +38,12 @@
+     protocol        = "-1"
+     security_groups = [aws_security_group.alb.id]
+   }
++  # Restrict outbound traffic to the VPC only
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+ }
+ 
+@@ -54,10 +58,11 @@
+     protocol        = "tcp"
+     security_groups = [aws_security_group.ecs.id]
+   }
++  # Restrict outbound traffic to the VPC only
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+ }

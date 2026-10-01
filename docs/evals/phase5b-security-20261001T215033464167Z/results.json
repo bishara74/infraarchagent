@@ -1,0 +1,190 @@
+{
+  "mode": "remediate",
+  "scanners": {
+    "checkov": {
+      "available": true,
+      "version": "3.3.21"
+    },
+    "trivy": {
+      "available": true,
+      "version": "Version: 0.69.3"
+    },
+    "terraform": {
+      "available": true,
+      "version": "Terraform v1.16.4"
+    }
+  },
+  "cases": [
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "security",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 8,
+        "HIGH": 7,
+        "CRITICAL": 1
+      },
+      "first_scan_blocking_count": 16,
+      "first_scan_advisory_count": 19,
+      "first_scan_checkov_high_or_critical": 4,
+      "first_scan_trivy_high_or_critical": 4,
+      "first_scan_terraform_high_or_critical": 0,
+      "first_scan_combined_high_or_critical": 8,
+      "fr_g_05_pass": false,
+      "scanner_errors": {},
+      "scan_timeouts": [],
+      "external_modules_not_scanned": [],
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "CKV_AWS_378",
+        "CKV_AWS_144",
+        "AWS-0132",
+        "CKV_AWS_157",
+        "CKV_AWS_118",
+        "CKV_AWS_353",
+        "CKV2_AWS_12",
+        "CKV2_AWS_65",
+        "CKV_AWS_145",
+        "CKV_AWS_21"
+      ],
+      "outcome": "exhausted",
+      "iterations": 4,
+      "fix_passes": 3,
+      "stop_reason": "iteration limit",
+      "fixing_model": "anthropic/claude-sonnet-5",
+      "blocking_after_count": 2,
+      "blocking_after_by_severity": {
+        "MEDIUM": 1,
+        "HIGH": 1
+      },
+      "fixes_accepted": 9,
+      "fixes_rejected": [],
+      "fixes_rejected_by_reason": {},
+      "remaining_blocking": [
+        {
+          "tool": "checkov",
+          "title": "Ensure that S3 bucket has cross-region replication enabled",
+          "message": "Ensure that S3 bucket has cross-region replication enabled",
+          "rule_id": "CKV_AWS_144",
+          "blocking": true,
+          "line_end": 50,
+          "resource": "aws_s3_bucket.replica_access_logs",
+          "severity": "MEDIUM",
+          "file_path": "terraform/s3.tf",
+          "guide_url": null,
+          "line_start": 46,
+          "advisory_reason": null
+        },
+        {
+          "tool": "trivy",
+          "title": "Load balancer is exposed to the internet.",
+          "message": "Load balancer is exposed publicly.",
+          "rule_id": "AWS-0053",
+          "blocking": true,
+          "line_end": 14,
+          "resource": "aws_lb.alb",
+          "severity": "HIGH",
+          "file_path": "terraform/alb.tf",
+          "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+          "line_start": 14,
+          "advisory_reason": null
+        }
+      ],
+      "input_tokens": 19648,
+      "output_tokens": 23074,
+      "estimated_cost": 0.270036,
+      "elapsed_seconds": 115.639
+    },
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "cost",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 15,
+        "HIGH": 9,
+        "CRITICAL": 4
+      },
+      "first_scan_blocking_count": 28,
+      "first_scan_advisory_count": 35,
+      "first_scan_checkov_high_or_critical": 5,
+      "first_scan_trivy_high_or_critical": 8,
+      "first_scan_terraform_high_or_critical": 0,
+      "first_scan_combined_high_or_critical": 13,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "scan_timeouts": [],
+      "external_modules_not_scanned": [],
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "AWS-0104",
+        "CKV_AWS_378",
+        "CKV_AWS_91",
+        "CKV_AWS_2",
+        "CKV_AWS_130",
+        "CKV_AWS_293",
+        "CKV_AWS_161",
+        "CKV_AWS_129",
+        "CKV_AWS_260",
+        "CKV2_AWS_12"
+      ],
+      "outcome": "exhausted",
+      "iterations": 4,
+      "fix_passes": 3,
+      "stop_reason": "iteration limit",
+      "fixing_model": "anthropic/claude-sonnet-5",
+      "blocking_after_count": 1,
+      "blocking_after_by_severity": {
+        "HIGH": 1
+      },
+      "fixes_accepted": 8,
+      "fixes_rejected": [],
+      "fixes_rejected_by_reason": {},
+      "remaining_blocking": [
+        {
+          "tool": "trivy",
+          "title": "Load balancer is exposed to the internet.",
+          "message": "Load balancer is exposed publicly.",
+          "rule_id": "AWS-0053",
+          "blocking": true,
+          "line_end": 4,
+          "resource": "aws_lb.alb",
+          "severity": "HIGH",
+          "file_path": "terraform/alb.tf",
+          "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+          "line_start": 4,
+          "advisory_reason": null
+        }
+      ],
+      "input_tokens": 14267,
+      "output_tokens": 16472,
+      "estimated_cost": 0.193254,
+      "elapsed_seconds": 81.745
+    }
+  ],
+  "aggregate": {
+    "anthropic/claude-sonnet-5": {
+      "mean_blocking_per_package": 22,
+      "clean_first_scan_share": 0.0,
+      "first_scan_checkov_high_or_critical": 9,
+      "first_scan_trivy_high_or_critical": 12,
+      "first_scan_terraform_high_or_critical": 0,
+      "first_scan_combined_high_or_critical": 21,
+      "scanner_error_count": 0,
+      "syntax_limited_count": 0,
+      "external_modules_not_scanned_count": 0,
+      "fr_g_05_pass": false
+    }
+  },
+  "fixing_aggregate": {
+    "anthropic/claude-sonnet-5": {
+      "packages": 2,
+      "blocking_before": 44,
+      "blocking_after": 3,
+      "total_reduction_percent": 93.18181818181819,
+      "clean_rate": 0.0,
+      "mean_remaining": 1.5
+    }
+  }
+}

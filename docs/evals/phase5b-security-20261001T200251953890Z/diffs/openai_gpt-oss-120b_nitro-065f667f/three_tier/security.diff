@@ -1,0 +1,304 @@
+--- a/terraform/main.tf
++++ b/terraform/main.tf
+@@ -13,11 +13,57 @@
+   }
+ }
+ 
++# Restrict default security group (no inbound/outbound allowed)
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.main.id
++  revoke_rules_on_delete = true
++  # No ingress rules
++  ingress {}
++  # No egress rules
++  egress {}
++  tags = {
++    Name = "default-restricted"
++  }
++}
++
++# Enable VPC Flow Logs
++resource "aws_flow_log" "vpc_flow_log" {
++  log_group_name = "/aws/vpc/flow-logs"
++  vpc_id         = aws_vpc.main.id
++  traffic_type   = "ALL"
++  iam_role_arn   = aws_iam_role.flow_log_role.arn
++}
++
++resource "aws_iam_role" "flow_log_role" {
++  name = "vpc-flow-log-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect    = "Allow",
++      Principal = { Service = "vpc-flow-logs.amazonaws.com" },
++      Action    = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_role_policy" "flow_log_policy" {
++  name = "vpc-flow-log-policy"
++  role = aws_iam_role.flow_log_role.id
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect   = "Allow",
++      Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
++      Resource = "*"
++    }]
++  })
++}
++
+ resource "aws_subnet" "public" {
+   vpc_id            = aws_vpc.main.id
+   cidr_block        = var.public_subnet_cidr
+   availability_zone = local.az
+-  map_public_ip_on_launch = true
++  map_public_ip_on_launch = false
+   tags = {
+     Name = "public-subnet"
+   }
+@@ -55,20 +101,21 @@
+ 
+ resource "aws_security_group" "alb_sg" {
+   name        = "alb-sg"
+-  description = "Allow inbound HTTPS from internet"
++  description = "Allow inbound HTTPS from VPC only"
+   vpc_id      = aws_vpc.main.id
+   ingress {
+     description = "HTTPS"
+     from_port   = 443
+     to_port     = 443
+     protocol    = "tcp"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+   egress {
++    description = "Allow outbound to VPC only"
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+   tags = { Name = "alb-sg" }
+ }
+@@ -78,17 +125,18 @@
+   description = "Allow traffic from ALB and outbound to RDS"
+   vpc_id      = aws_vpc.main.id
+   ingress {
+-    description = "HTTP from ALB"
++    description = "HTTPS from ALB"
+     from_port   = var.container_port
+     to_port     = var.container_port
+     protocol    = "tcp"
+     security_groups = [aws_security_group.alb_sg.id]
+   }
+   egress {
++    description = "Allow outbound to VPC only"
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+   tags = { Name = "app-sg" }
+ }
+@@ -105,33 +153,40 @@
+     security_groups = [aws_security_group.app_sg.id]
+   }
+   egress {
++    description = "Allow outbound to VPC only"
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+   tags = { Name = "rds-sg" }
+ }
+ 
+ resource "aws_lb" "alb" {
+   name               = var.alb_name
+-  internal           = false
++  internal           = true
+   load_balancer_type = "application"
+-  subnets            = [aws_subnet.public.id]
++  subnets            = [aws_subnet.private.id]
+   security_groups    = [aws_security_group.alb_sg.id]
+-  enable_deletion_protection = false
++  enable_deletion_protection = true
++  drop_invalid_header_fields = true
++  access_logs {
++    bucket  = aws_s3_bucket.static_assets.id
++    enabled = true
++    prefix  = "alb-access-logs"
++  }
+   tags = { Name = var.alb_name }
+ }
+ 
+ resource "aws_lb_target_group" "tg_app1" {
+   name        = "tg-${var.app_service_1_name}"
+   port        = var.container_port
+-  protocol    = "HTTP"
++  protocol    = "HTTPS"
+   vpc_id      = aws_vpc.main.id
+   target_type = "ip"
+   health_check {
+     path                = "/"
+-    protocol            = "HTTP"
++    protocol            = "HTTPS"
+     matcher              = "200-399"
+     interval            = 30
+     timeout             = 5
+@@ -143,12 +198,12 @@
+ resource "aws_lb_target_group" "tg_app2" {
+   name        = "tg-${var.app_service_2_name}"
+   port        = var.container_port
+-  protocol    = "HTTP"
++  protocol    = "HTTPS"
+   vpc_id      = aws_vpc.main.id
+   target_type = "ip"
+   health_check {
+     path                = "/"
+-    protocol            = "HTTP"
++    protocol            = "HTTPS"
+     matcher              = "200-399"
+     interval            = 30
+     timeout             = 5
+@@ -161,7 +216,7 @@
+   load_balancer_arn = aws_lb.alb.arn
+   port              = 443
+   protocol          = "HTTPS"
+-  ssl_policy        = "ELBSecurityPolicy-2016-08"
++  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2021"
+   certificate_arn   = var.alb_certificate_arn
+   default_action {
+     type             = "forward"
+@@ -211,7 +266,9 @@
+           "logs:PutLogEvents",
+           "logs:CreateLogGroup"
+         ],
+-        Resource = "*"
++        Resource = [
++          "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/ecs/*"
++        ]
+       },
+       {
+         Effect   = "Allow",
+@@ -298,15 +355,6 @@
+   tags = { Name = "rds-subnet-group" }
+ }
+ 
+-resource "aws_security_group_rule" "rds_egress" {
+-  type              = "egress"
+-  from_port         = 0
+-  to_port           = 0
+-  protocol          = "-1"
+-  security_group_id = aws_security_group.rds_sg.id
+-  cidr_blocks       = ["0.0.0.0/0"]
+-}
+-
+ resource "aws_db_instance" "postgres" {
+   identifier               = var.rds_instance_identifier
+   engine                   = "postgres"
+@@ -321,10 +369,17 @@
+   skip_final_snapshot      = true
+   publicly_accessible      = false
+   storage_encrypted        = true
+-  deletion_protection      = false
++  kms_key_id               = var.kms_key_arn
++  performance_insights_enabled = true
++  performance_insights_kms_key_id = var.kms_key_arn
++  deletion_protection      = true
+   backup_retention_period  = 7
+   backup_window            = "03:00-04:00"
+   maintenance_window       = "Mon:05:00-Mon:06:00"
++  multi_az                 = true
++  iam_database_authentication_enabled = true
++  monitoring_interval      = 60
++  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
+   tags = { Name = var.rds_instance_identifier }
+ }
+ 
+@@ -346,7 +401,8 @@
+   bucket = aws_s3_bucket.static_assets.id
+   rule {
+     apply_server_side_encryption_by_default {
+-      sse_algorithm = "AES256"
++      sse_algorithm = "aws:kms"
++      kms_master_key_id = var.kms_key_arn
+     }
+   }
+ }
+@@ -358,3 +414,69 @@
+   ignore_public_acls      = true
+   restrict_public_buckets = true
+ }
++
++resource "aws_s3_bucket_logging" "static_assets_logging" {
++  bucket = aws_s3_bucket.static_assets.id
++  target_bucket = aws_s3_bucket.static_assets.id
++  target_prefix = "access-logs/"
++}
++
++# Cross‑region replication (destination bucket must exist in another region)
++resource "aws_s3_bucket_replication_configuration" "static_assets_replication" {
++  bucket = aws_s3_bucket.static_assets.id
++  role   = aws_iam_role.replication_role.arn
++  rules {
++    id       = "replicate-to-destination"
++    status   = "Enabled"
++    priority = 1
++    filter {}
++    destination {
++      bucket        = var.replication_destination_bucket_arn
++      storage_class = "STANDARD"
++      # Encryption with same KMS key in destination region
++      encryption_configuration {
++        replica_kms_key_id = var.kms_key_arn
++      }
++    }
++  }
++}
++
++resource "aws_iam_role" "replication_role" {
++  name = "s3-replication-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Principal = { Service = "s3.amazonaws.com" },
++      Action = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_role_policy" "replication_policy" {
++  name = "s3-replication-policy"
++  role = aws_iam_role.replication_role.id
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Action = [
++        "s3:GetObjectVersion",
++        "s3:GetObjectVersionAcl",
++        "s3:GetObjectVersionTagging",
++        "s3:ReplicateObject",
++        "s3:ReplicateDelete",
++        "s3:ReplicateTags"
++      ],
++      Resource = "${aws_s3_bucket.static_assets.arn}/*"
++    },
++    {
++      Effect = "Allow",
++      Action = [
++        "s3:ListBucket",
++        "s3:GetBucketVersioning"
++      ],
++      Resource = aws_s3_bucket.static_assets.arn
++    }]
++  })
++}

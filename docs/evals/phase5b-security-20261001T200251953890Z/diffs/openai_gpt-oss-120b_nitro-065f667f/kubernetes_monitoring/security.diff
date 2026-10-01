@@ -1,0 +1,482 @@
+--- a/k8s/grafana/deployment.yaml
++++ b/k8s/grafana/deployment.yaml
+@@ -15,9 +15,16 @@
+       labels:
+         app: grafana
+     spec:
++      securityContext:
++        runAsNonRoot: true            # ensure container does not run as root
++        runAsUser: 10001              # use a high UID to avoid host conflict
++        fsGroup: 10001
++      imagePullSecrets:
++        - name: ecr-cred-secret        # reference to secret containing ECR credentials
+       containers:
+         - name: grafana
+-          image: grafana/grafana:latest
++          image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/grafana:10.2.2   # image from trusted private registry
++          imagePullPolicy: IfNotPresent
+           ports:
+             - containerPort: 3000
+           env:
+@@ -26,3 +33,17 @@
+                 secretKeyRef:
+                   name: grafana-secret
+                   key: admin-password
++          resources:
++            requests:
++              cpu: "250m"                # CPU request
++              memory: "256Mi"            # Memory request
++            limits:
++              cpu: "500m"                # CPU limit
++              memory: "512Mi"            # Memory limit
++          securityContext:
++            allowPrivilegeEscalation: false
++            capabilities:
++              drop: ["ALL"]
++            readOnlyRootFilesystem: true
++            seccompProfile:
++              type: RuntimeDefault--- a/k8s/microservice-a/deployment.yaml
++++ b/k8s/microservice-a/deployment.yaml
+@@ -15,9 +15,16 @@
+       labels:
+         app: microservice-a
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 10000                # high, non‑root UID to avoid host conflict
++        runAsGroup: 10000
++        fsGroup: 10000
+       containers:
+         - name: app
+-          image: public.ecr.aws/amazonlinux/amazonlinux:latest
++          # Use image from a trusted private registry. Tag must be fixed, not 'latest'.
++          image: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/microservice-a:${IMAGE_TAG}"
++          imagePullPolicy: IfNotPresent
+           ports:
+             - containerPort: 8080
+           env:
+@@ -26,10 +33,24 @@
+                 configMapKeyRef:
+                   name: shared-config
+                   key: efs_id
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop: ["ALL"]
++            seccompProfile:
++              type: RuntimeDefault
++          resources:
++            requests:
++              cpu: "250m"
++              memory: "256Mi"
++            limits:
++              cpu: "500m"
++              memory: "512Mi"
+           volumeMounts:
+             - name: efs
+               mountPath: /mnt/data
+       volumes:
+         - name: efs
+           persistentVolumeClaim:
+-            claimName: efs-pvc
++            claimName: efs-pvc--- a/k8s/microservice-b/deployment.yaml
++++ b/k8s/microservice-b/deployment.yaml
+@@ -1,4 +1,3 @@
+-# Deployment for microservice-b
+ apiVersion: apps/v1
+ kind: Deployment
+ metadata:
+@@ -15,9 +14,18 @@
+       labels:
+         app: microservice-b
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        # Use a high UID to avoid host conflicts (>= 10000)
++        runAsUser: 10001
++        fsGroup: 10001
++        seLinuxOptions:
++          level: "s0:c123,c456"
+       containers:
+         - name: app
+-          image: public.ecr.aws/amazonlinux/amazonlinux:latest
++          # Pull from a trusted private registry; replace with your registry URL
++          image: <private-registry>/microservice-b:v1.0.0
++          imagePullPolicy: IfNotPresent
+           ports:
+             - containerPort: 8081
+           env:
+@@ -26,9 +34,28 @@
+                 secretKeyRef:
+                   name: db-secret
+                   key: url
++          resources:
++            requests:
++              cpu: "250m"
++              memory: "256Mi"
++            limits:
++              cpu: "500m"
++              memory: "512Mi"
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            runAsNonRoot: true
++            # Align container UID with pod security context
++            runAsUser: 10001
++            capabilities:
++              drop:
++                - ALL
++            seccompProfile:
++              type: RuntimeDefault
+           volumeMounts:
+             - name: efs
+               mountPath: /mnt/data
++              readOnly: false
+       volumes:
+         - name: efs
+           persistentVolumeClaim:
+--- a/k8s/prometheus/deployment.yaml
++++ b/k8s/prometheus/deployment.yaml
+@@ -15,16 +15,40 @@
+       labels:
+         app: prometheus
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        # Use a high UID to avoid host conflicts (>=10000)
++        runAsUser: 10000
++        fsGroup: 2000
++      # Ensure images are pulled only from the trusted private registry
++      imagePullSecrets:
++        - name: private-registry-secret
+       containers:
+         - name: prometheus
+-          image: prom/prometheus:latest
++          image: mycompany.registry.com/prometheus:v2.53.0
++          imagePullPolicy: IfNotPresent
+           args:
+             - "--config.file=/etc/prometheus/prometheus.yml"
+           ports:
+             - containerPort: 9090
++          resources:
++            requests:
++              cpu: "100m"
++              memory: "128Mi"
++            limits:
++              cpu: "500m"
++              memory: "256Mi"
++          securityContext:
++            allowPrivilegeEscalation: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop: ["ALL"]
++            seccompProfile:
++              type: RuntimeDefault
+           volumeMounts:
+             - name: config
+               mountPath: /etc/prometheus
++              readOnly: true
+       volumes:
+         - name: config
+           configMap:
+--- a/terraform/main.tf
++++ b/terraform/main.tf
+@@ -34,6 +34,17 @@
+   tags = { Name = "${var.cluster_name}-vpc" }
+ }
+ 
++# Default security group – restrict all traffic
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.this.id
++  revoke_rules_on_delete = true
++  # No inbound rules
++  ingress {}
++  # No outbound rules (restrict to VPC if needed)
++  egress {}
++  tags = { Name = "${var.cluster_name}-default-sg" }
++}
++
+ resource "aws_internet_gateway" "igw" {
+   vpc_id = aws_vpc.this.id
+   tags   = { Name = "${var.cluster_name}-igw" }
+@@ -43,7 +54,7 @@
+   count                   = length(var.public_subnet_cidrs)
+   vpc_id                  = aws_vpc.this.id
+   cidr_block              = var.public_subnet_cidrs[count.index]
+-  map_public_ip_on_launch = true
++  map_public_ip_on_launch = false
+   availability_zone       = data.aws_availability_zones.available.names[count.index]
+   tags = { Name = "${var.cluster_name}-public-${count.index}" }
+ }
+@@ -109,10 +120,11 @@
+     cidr_blocks = ["0.0.0.0/0"]
+   }
+   egress {
++    description = "Allow outbound to VPC only"
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.this.cidr_block]
+   }
+   tags = { Name = "${var.cluster_name}-alb-sg" }
+ }
+@@ -136,10 +148,11 @@
+     security_groups = [aws_security_group.alb_sg.id]
+   }
+   egress {
++    description = "Allow outbound to VPC only"
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [aws_vpc.this.cidr_block]
+   }
+   tags = { Name = "${var.cluster_name}-node-sg" }
+ }
+@@ -194,6 +207,18 @@
+   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+ }
+ 
++# KMS key for EKS secret encryption, RDS, and S3 bucket encryption
++resource "aws_kms_key" "master" {
++  description = "KMS key for EKS secrets, RDS, and S3 bucket encryption"
++  deletion_window_in_days = 30
++  enable_key_rotation = true
++}
++
++resource "aws_kms_alias" "master_alias" {
++  name          = "alias/${var.cluster_name}-master"
++  target_key_id = aws_kms_key.master.id
++}
++
+ # EKS Cluster
+ resource "aws_eks_cluster" "eks" {
+   name    = var.cluster_name
+@@ -205,6 +230,13 @@
+     endpoint_private_access = true
+     endpoint_public_access  = false
+   }
++  encryption_config {
++    provider {
++      key_arn = aws_kms_key.master.arn
++    }
++    resources = ["secrets"]
++  }
++  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+   tags = { Name = var.cluster_name }
+ }
+ 
+@@ -260,30 +292,96 @@
+ }
+ 
+ resource "aws_db_instance" "postgres" {
+-  identifier         = "${var.cluster_name}-postgres"
+-  engine             = "postgres"
+-  engine_version     = "15"
+-  instance_class     = "db.t3.micro"
+-  allocated_storage  = 20
+-  db_subnet_group_name = aws_db_subnet_group.rds_subnet.name
+-  vpc_security_group_ids = [aws_security_group.node_sg.id]
+-  username           = "admin"
+-  password           = random_password.rds_master.result
+-  skip_final_snapshot = true
+-  storage_encrypted   = true
+-  publicly_accessible = false
++  identifier                = "${var.cluster_name}-postgres"
++  engine                    = "postgres"
++  engine_version            = "15"
++  instance_class            = "db.t3.micro"
++  allocated_storage         = 20
++  db_subnet_group_name      = aws_db_subnet_group.rds_subnet.name
++  vpc_security_group_ids    = [aws_security_group.node_sg.id]
++  username                  = "admin"
++  password                  = random_password.rds_master.result
++  skip_final_snapshot       = true
++  storage_encrypted         = true
++  kms_key_id                = aws_kms_key.master.id
++  performance_insights_enabled = true
++  performance_insights_kms_key_id = aws_kms_key.master.id
++  publicly_accessible       = false
++  deletion_protection       = true
++  multi_az                  = true
++  iam_database_authentication_enabled = true
++  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
++  monitoring_interval       = 1
++  backup_retention_period   = 7
+   tags = { Name = "${var.cluster_name}-postgres" }
+ }
+ 
+-# S3 bucket for logs with public access block
++# S3 bucket for logs (primary)
+ resource "aws_s3_bucket" "logs" {
+   bucket = "${var.cluster_name}-logs-${random_id.bucket_suffix.hex}"
+   force_destroy = true
++  versioning {
++    enabled = true
++  }
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        kms_master_key_id = aws_kms_key.master.arn
++        sse_algorithm     = "aws:kms"
++      }
++    }
++  }
++  replication_configuration {
++    role = aws_iam_role.s3_replication_role.arn
++    rules {
++      id       = "log-replication"
++      status   = "Enabled"
++      priority = 1
++      destination {
++        bucket        = aws_s3_bucket.logs_replica.arn
++        storage_class = "STANDARD"
++        access_control_translation {
++          owner = "Destination"
++        }
++        encryption_configuration {
++          replica_kms_key_id = aws_kms_key.master.arn
++        }
++      }
++    }
++  }
+   tags = { Name = "${var.cluster_name}-logs" }
+ }
+ 
+-resource "random_id" "bucket_suffix" {
+-  byte_length = 4
++# Target bucket for access logging (separate to avoid circular logging)
++resource "aws_s3_bucket" "logs_target" {
++  bucket = "${var.cluster_name}-logs-target-${random_id.bucket_suffix.hex}"
++  force_destroy = true
++  versioning {
++    enabled = true
++  }
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        kms_master_key_id = aws_kms_key.master.arn
++        sse_algorithm     = "aws:kms"
++      }
++    }
++  }
++  tags = { Name = "${var.cluster_name}-logs-target" }
++}
++
++resource "aws_s3_bucket_public_access_block" "logs_target_block" {
++  bucket = aws_s3_bucket.logs_target.id
++  block_public_acls   = true
++  block_public_policy = true
++  ignore_public_acls  = true
++  restrict_public_buckets = true
++}
++
++resource "aws_s3_bucket_logging" "logs_logging" {
++  bucket        = aws_s3_bucket.logs.id
++  target_bucket = aws_s3_bucket.logs_target.id
++  target_prefix = "log/"
+ }
+ 
+ resource "aws_s3_bucket_public_access_block" "logs_block" {
+@@ -292,6 +390,76 @@
+   block_public_policy = true
+   ignore_public_acls  = true
+   restrict_public_buckets = true
++}
++
++# Replication destination bucket (cross‑region)
++resource "aws_s3_bucket" "logs_replica" {
++  bucket = "${var.cluster_name}-logs-replica-${random_id.bucket_suffix.hex}"
++  force_destroy = true
++  provider = aws.us_east_1  # Example of different region
++  versioning {
++    enabled = true
++  }
++  server_side_encryption_configuration {
++    rule {
++      apply_server_side_encryption_by_default {
++        kms_master_key_id = aws_kms_key.master.arn
++        sse_algorithm     = "aws:kms"
++      }
++    }
++  }
++  tags = { Name = "${var.cluster_name}-logs-replica" }
++}
++
++resource "aws_s3_bucket_public_access_block" "logs_replica_block" {
++  bucket = aws_s3_bucket.logs_replica.id
++  block_public_acls   = true
++  block_public_policy = true
++  ignore_public_acls  = true
++  restrict_public_buckets = true
++}
++
++resource "random_id" "bucket_suffix" {
++  byte_length = 4
++}
++
++resource "aws_iam_role" "s3_replication_role" {
++  name = "${var.cluster_name}-s3-repl-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Principal = { Service = "s3.amazonaws.com" },
++      Action = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_policy" "s3_replication_policy" {
++  name = "${var.cluster_name}-s3-repl-policy"
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect = "Allow",
++      Action = [
++        "s3:GetObjectVersion",
++        "s3:GetObjectVersionAcl",
++        "s3:GetObjectVersionTagging",
++        "s3:ReplicateObject",
++        "s3:ReplicateDelete",
++        "s3:ReplicateTags"
++      ],
++      Resource = [
++        "arn:aws:s3:::${var.cluster_name}-logs-${random_id.bucket_suffix.hex}/*",
++        "arn:aws:s3:::${var.cluster_name}-logs-replica-${random_id.bucket_suffix.hex}/*"
++      ]
++    }]
++  })
++}
++
++resource "aws_iam_role_policy_attachment" "s3_replication_attach" {
++  role       = aws_iam_role.s3_replication_role.name
++  policy_arn = aws_iam_policy.s3_replication_policy.arn
+ }
+ 
+ # Enable VPC flow logs for auditability
+@@ -319,15 +487,19 @@
+   })
+ }
+ 
+-resource "aws_iam_role_policy" "flow_log" {
++resource "aws_iam_policy" "flow_log_policy" {
+   name = "${var.cluster_name}-flowlog-policy"
+-  role = aws_iam_role.flow_log_role.id
+   policy = jsonencode({
+     Version = "2012-10-17",
+     Statement = [{
+       Effect = "Allow",
+       Action = ["logs:CreateLogStream", "logs:PutLogEvents"],
+-      Resource = "*"
++      Resource = [aws_cloudwatch_log_group.vpc_flow.arn]
+     }]
+   })
+ }
++
++resource "aws_iam_role_policy_attachment" "flow_log_attach" {
++  role       = aws_iam_role.flow_log_role.name
++  policy_arn = aws_iam_policy.flow_log_policy.arn
++}

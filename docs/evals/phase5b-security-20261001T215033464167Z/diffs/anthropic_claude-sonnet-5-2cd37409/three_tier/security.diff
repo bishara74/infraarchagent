@@ -1,0 +1,461 @@
+--- a/terraform/alb.tf
++++ b/terraform/alb.tf
+@@ -37,6 +37,11 @@
+       Principal = { Service = "logdelivery.elasticloadbalancing.amazonaws.com" }
+       Action    = "s3:PutObject"
+       Resource  = "${aws_s3_bucket.access_logs.arn}/alb-access-logs/*"
++      Condition = {
++        StringEquals = {
++          "aws:SecureTransport" = "true"
++        }
++      }
+     }]
+   })
+ }
+@@ -45,12 +50,13 @@
+   for_each    = local.app_services
+   name        = "${local.name_prefix}-${each.key}-tg"
+   port        = var.app_container_port
+-  protocol    = "HTTP"
++  protocol    = "HTTPS"
+   vpc_id      = aws_vpc.main.id
+   target_type = "ip"
+ 
+   health_check {
+     path                = "/"
++    protocol            = "HTTPS"
+     healthy_threshold   = 2
+     unhealthy_threshold = 3
+     interval            = 30
+--- a/terraform/network.tf
++++ b/terraform/network.tf
+@@ -4,6 +4,13 @@
+   enable_dns_support   = true
+   enable_dns_hostnames = true
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-vpc" })
++}
++
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.main.id
++
++  # No ingress or egress rules: restricts all traffic on the default SG
++  tags = merge(local.common_tags, { Name = "${local.name_prefix}-default-sg-restricted" })
+ }
+ 
+ resource "aws_flow_log" "vpc_flow_log" {
+--- a/terraform/rds.tf
++++ b/terraform/rds.tf
+@@ -25,6 +25,30 @@
+   })
+ }
+ 
++resource "aws_iam_role" "rds_enhanced_monitoring" {
++  name = "${local.name_prefix}-rds-monitoring-role"
++
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17"
++    Statement = [
++      {
++        Effect = "Allow"
++        Principal = {
++          Service = "monitoring.rds.amazonaws.com"
++        }
++        Action = "sts:AssumeRole"
++      }
++    ]
++  })
++
++  tags = local.common_tags
++}
++
++resource "aws_iam_role_policy_attachment" "rds_enhanced_monitoring" {
++  role       = aws_iam_role.rds_enhanced_monitoring.name
++  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
++}
++
+ resource "aws_db_instance" "rds" {
+   identifier                          = "${local.name_prefix}-rds"
+   engine                              = "postgres"
+@@ -40,7 +64,7 @@
+   db_subnet_group_name                = aws_db_subnet_group.rds.name
+   vpc_security_group_ids              = [aws_security_group.rds.id]
+   publicly_accessible                 = false
+-  multi_az                            = false
++  multi_az                            = true
+   backup_retention_period             = 7
+   deletion_protection                 = true
+   skip_final_snapshot                 = false
+@@ -49,6 +73,10 @@
+   iam_database_authentication_enabled = true
+   enabled_cloudwatch_logs_exports      = ["postgresql", "upgrade"]
+   auto_minor_version_upgrade           = true
++  monitoring_interval                  = 60
++  monitoring_role_arn                  = aws_iam_role.rds_enhanced_monitoring.arn
++  performance_insights_enabled         = true
++  performance_insights_kms_key_id      = aws_kms_key.main.arn
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-rds" })
+ }
+--- a/terraform/s3.tf
++++ b/terraform/s3.tf
+@@ -1,6 +1,30 @@
+-# Private S3 bucket for static assets with encryption, versioning, logging and public access block
++# Private S3 bucket for static assets with encryption, versioning, logging, replication and public access block
+ resource "random_id" "bucket_suffix" {
+   byte_length = 4
++}
++
++resource "aws_kms_key" "s3" {
++  description         = "${local.name_prefix}-s3-kms-key"
++  enable_key_rotation = true
++  tags                = merge(local.common_tags, { Name = "${local.name_prefix}-s3-kms-key" })
++}
++
++resource "aws_kms_alias" "s3" {
++  name          = "alias/${local.name_prefix}-s3"
++  target_key_id = aws_kms_key.s3.key_id
++}
++
++resource "aws_kms_key" "s3_replica" {
++  provider            = aws.replica
++  description         = "${local.name_prefix}-s3-replica-kms-key"
++  enable_key_rotation = true
++  tags                = merge(local.common_tags, { Name = "${local.name_prefix}-s3-replica-kms-key" })
++}
++
++resource "aws_kms_alias" "s3_replica" {
++  provider      = aws.replica
++  name          = "alias/${local.name_prefix}-s3-replica"
++  target_key_id = aws_kms_key.s3_replica.key_id
+ }
+ 
+ resource "aws_s3_bucket" "s3_storage" {
+@@ -11,6 +35,200 @@
+ resource "aws_s3_bucket" "access_logs" {
+   bucket = "${local.name_prefix}-s3-access-logs-${random_id.bucket_suffix.hex}"
+   tags   = merge(local.common_tags, { Name = "${local.name_prefix}-s3-access-logs" })
++}
++
++resource "aws_s3_bucket" "s3_storage_replica" {
++  provider = aws.replica
++  bucket   = "${local.name_prefix}-s3-storage-replica-${random_id.bucket_suffix.hex}"
++  tags     = merge(local.common_tags, { Name = "${local.name_prefix}-s3-storage-replica" })
++}
++
++resource "aws_s3_bucket" "replica_access_logs" {
++  provider = aws.replica
++  bucket   = "${local.name_prefix}-s3-replica-access-logs-${random_id.bucket_suffix.hex}"
++  tags     = merge(local.common_tags, { Name = "${local.name_prefix}-s3-replica-access-logs" })
++}
++
++resource "aws_s3_bucket_public_access_block" "replica_access_logs" {
++  provider                = aws.replica
++  bucket                  = aws_s3_bucket.replica_access_logs.id
++  block_public_acls       = true
++  block_public_policy     = true
++  ignore_public_acls      = true
++  restrict_public_buckets = true
++}
++
++resource "aws_s3_bucket_server_side_encryption_configuration" "replica_access_logs" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.replica_access_logs.id
++  rule {
++    apply_server_side_encryption_by_default {
++      sse_algorithm     = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3_replica.arn
++    }
++    bucket_key_enabled = true
++  }
++}
++
++resource "aws_s3_bucket_versioning" "replica_access_logs" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.replica_access_logs.id
++  versioning_configuration {
++    status = "Enabled"
++  }
++}
++
++resource "aws_s3_bucket_ownership_controls" "replica_access_logs" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.replica_access_logs.id
++  rule {
++    object_ownership = "BucketOwnerEnforced"
++  }
++}
++
++resource "aws_s3_bucket_policy" "replica_access_logs_tls_only" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.replica_access_logs.id
++  policy = jsonencode({
++    Version = "2012-10-17"
++    Statement = [{
++      Sid       = "DenyInsecureTransport"
++      Effect    = "Deny"
++      Principal = "*"
++      Action    = "s3:*"
++      Resource = [
++        aws_s3_bucket.replica_access_logs.arn,
++        "${aws_s3_bucket.replica_access_logs.arn}/*"
++      ]
++      Condition = {
++        Bool = { "aws:SecureTransport" = "false" }
++      }
++    }]
++  })
++}
++
++resource "aws_s3_bucket_logging" "s3_storage_replica" {
++  provider      = aws.replica
++  bucket        = aws_s3_bucket.s3_storage_replica.id
++  target_bucket = aws_s3_bucket.replica_access_logs.id
++  target_prefix = "s3-storage-replica-access-logs/"
++}
++
++resource "aws_s3_bucket_public_access_block" "s3_storage_replica" {
++  provider                = aws.replica
++  bucket                  = aws_s3_bucket.s3_storage_replica.id
++  block_public_acls       = true
++  block_public_policy     = true
++  ignore_public_acls      = true
++  restrict_public_buckets = true
++}
++
++resource "aws_s3_bucket_server_side_encryption_configuration" "s3_storage_replica" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.s3_storage_replica.id
++  rule {
++    apply_server_side_encryption_by_default {
++      sse_algorithm     = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3_replica.arn
++    }
++    bucket_key_enabled = true
++  }
++}
++
++resource "aws_s3_bucket_versioning" "s3_storage_replica" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.s3_storage_replica.id
++  versioning_configuration {
++    status = "Enabled"
++  }
++}
++
++resource "aws_s3_bucket_policy" "s3_storage_replica_tls_only" {
++  provider = aws.replica
++  bucket   = aws_s3_bucket.s3_storage_replica.id
++  policy = jsonencode({
++    Version = "2012-10-17"
++    Statement = [{
++      Sid       = "DenyInsecureTransport"
++      Effect    = "Deny"
++      Principal = "*"
++      Action    = "s3:*"
++      Resource = [
++        aws_s3_bucket.s3_storage_replica.arn,
++        "${aws_s3_bucket.s3_storage_replica.arn}/*"
++      ]
++      Condition = {
++        Bool = { "aws:SecureTransport" = "false" }
++      }
++    }]
++  })
++}
++
++resource "aws_iam_role" "s3_replication" {
++  name = "${local.name_prefix}-s3-replication-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17"
++    Statement = [{
++      Effect    = "Allow"
++      Principal = { Service = "s3.amazonaws.com" }
++      Action    = "sts:AssumeRole"
++    }]
++  })
++  tags = merge(local.common_tags, { Name = "${local.name_prefix}-s3-replication-role" })
++}
++
++resource "aws_iam_policy" "s3_replication" {
++  name = "${local.name_prefix}-s3-replication-policy"
++  policy = jsonencode({
++    Version = "2012-10-17"
++    Statement = [
++      {
++        Effect = "Allow"
++        Action = [
++          "s3:GetReplicationConfiguration",
++          "s3:ListBucket"
++        ]
++        Resource = [aws_s3_bucket.s3_storage.arn]
++      },
++      {
++        Effect = "Allow"
++        Action = [
++          "s3:GetObjectVersionForReplication",
++          "s3:GetObjectVersionAcl",
++          "s3:GetObjectVersionTagging"
++        ]
++        Resource = ["${aws_s3_bucket.s3_storage.arn}/*"]
++      },
++      {
++        Effect = "Allow"
++        Action = [
++          "s3:ReplicateObject",
++          "s3:ReplicateDelete",
++          "s3:ReplicateTags"
++        ]
++        Resource = ["${aws_s3_bucket.s3_storage_replica.arn}/*"]
++      },
++      {
++        Effect = "Allow"
++        Action = [
++          "kms:Decrypt"
++        ]
++        Resource = [aws_kms_key.s3.arn]
++      },
++      {
++        Effect = "Allow"
++        Action = [
++          "kms:Encrypt"
++        ]
++        Resource = [aws_kms_key.s3_replica.arn]
++      }
++    ]
++  })
++}
++
++resource "aws_iam_role_policy_attachment" "s3_replication" {
++  role       = aws_iam_role.s3_replication.name
++  policy_arn = aws_iam_policy.s3_replication.arn
+ }
+ 
+ resource "aws_s3_bucket_public_access_block" "access_logs" {
+@@ -25,15 +243,69 @@
+   bucket = aws_s3_bucket.access_logs.id
+   rule {
+     apply_server_side_encryption_by_default {
+-      sse_algorithm = "AES256"
+-    }
++      sse_algorithm     = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3.arn
++    }
++    bucket_key_enabled = true
++  }
++}
++
++resource "aws_s3_bucket_versioning" "access_logs" {
++  bucket = aws_s3_bucket.access_logs.id
++  versioning_configuration {
++    status = "Enabled"
+   }
+ }
+ 
+ resource "aws_s3_bucket_ownership_controls" "access_logs" {
+   bucket = aws_s3_bucket.access_logs.id
+   rule {
+-    object_ownership = "BucketOwnerPreferred"
++    object_ownership = "BucketOwnerEnforced"
++  }
++}
++
++resource "aws_s3_bucket_policy" "access_logs_tls_only" {
++  bucket = aws_s3_bucket.access_logs.id
++  policy = jsonencode({
++    Version = "2012-10-17"
++    Statement = [{
++      Sid       = "DenyInsecureTransport"
++      Effect    = "Deny"
++      Principal = "*"
++      Action    = "s3:*"
++      Resource = [
++        aws_s3_bucket.access_logs.arn,
++        "${aws_s3_bucket.access_logs.arn}/*"
++      ]
++      Condition = {
++        Bool = { "aws:SecureTransport" = "false" }
++      }
++    }]
++  })
++}
++
++resource "aws_s3_bucket_replication_configuration" "access_logs" {
++  depends_on = [aws_s3_bucket_versioning.access_logs]
++  bucket     = aws_s3_bucket.access_logs.id
++  role       = aws_iam_role.s3_replication.arn
++
++  rule {
++    id     = "access-logs-replication"
++    status = "Enabled"
++
++    destination {
++      bucket        = aws_s3_bucket.s3_storage_replica.arn
++      storage_class = "STANDARD"
++      encryption_configuration {
++        replica_kms_key_id = aws_kms_key.s3_replica.arn
++      }
++    }
++
++    source_selection_criteria {
++      sse_kms_encrypted_objects {
++        status = "Enabled"
++      }
++    }
+   }
+ }
+ 
+@@ -54,7 +326,8 @@
+   bucket = aws_s3_bucket.s3_storage.id
+   rule {
+     apply_server_side_encryption_by_default {
+-      sse_algorithm = "aws:kms"
++      sse_algorithm     = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3.arn
+     }
+     bucket_key_enabled = true
+   }
+@@ -87,3 +360,28 @@
+     }]
+   })
+ }
++
++resource "aws_s3_bucket_replication_configuration" "s3_storage" {
++  depends_on = [aws_s3_bucket_versioning.s3_storage]
++  bucket     = aws_s3_bucket.s3_storage.id
++  role       = aws_iam_role.s3_replication.arn
++
++  rule {
++    id     = "s3-storage-replication"
++    status = "Enabled"
++
++    destination {
++      bucket        = aws_s3_bucket.s3_storage_replica.arn
++      storage_class = "STANDARD"
++      encryption_configuration {
++        replica_kms_key_id = aws_kms_key.s3_replica.arn
++      }
++    }
++
++    source_selection_criteria {
++      sse_kms_encrypted_objects {
++        status = "Enabled"
++      }
++    }
++  }
++}
+--- a/terraform/security_groups.tf
++++ b/terraform/security_groups.tf
+@@ -45,11 +45,11 @@
+   }
+ 
+   egress {
+-    description = "HTTPS to AWS services (S3, ECR)"
++    description = "HTTPS to AWS services (S3, ECR) via VPC endpoints"
+     from_port   = 443
+     to_port     = 443
+     protocol    = "tcp"
+-    cidr_blocks = ["0.0.0.0/0"]
++    prefix_list_ids = [aws_vpc_endpoint.s3.prefix_list_id]
+   }
+ 
+   tags = merge(local.common_tags, { Name = "${local.name_prefix}-app-sg" })

@@ -1,0 +1,404 @@
+--- a/terraform/alb.tf
++++ b/terraform/alb.tf
+@@ -1,10 +1,18 @@
+-# Internet-facing ALB with listener and per-service target groups
++# Internal ALB with listener and per-service target groups
+ resource "aws_lb" "main" {
+   name               = "${var.project_name}-alb"
+-  internal           = false
++  internal           = true
+   load_balancer_type = "application"
+   security_groups    = [aws_security_group.alb.id]
+-  subnets            = aws_subnet.public[*].id
++  subnets            = aws_subnet.private[*].id
++
++  access_logs {
++    bucket  = aws_s3_bucket.alb_logs.id
++    enabled = true
++    prefix  = "alb-logs"
++  }
++
++  drop_invalid_header_fields = true
+ 
+   tags = { Name = "${var.project_name}-alb" }
+ }
+@@ -12,11 +20,12 @@
+ resource "aws_lb_target_group" "app_service_1" {
+   name        = "app-service-1-tg"
+   port        = var.app_container_port
+-  protocol    = "HTTP"
++  protocol    = "HTTPS"
+   vpc_id      = aws_vpc.main.id
+   target_type = "ip"
+ 
+   health_check {
++    protocol            = "HTTPS"
+     path                = "/"
+     healthy_threshold   = 3
+     unhealthy_threshold = 3
+@@ -30,11 +39,12 @@
+ resource "aws_lb_target_group" "app_service_2" {
+   name        = "app-service-2-tg"
+   port        = var.app_container_port
+-  protocol    = "HTTP"
++  protocol    = "HTTPS"
+   vpc_id      = aws_vpc.main.id
+   target_type = "ip"
+ 
+   health_check {
++    protocol            = "HTTPS"
+     path                = "/"
+     healthy_threshold   = 3
+     unhealthy_threshold = 3
+@@ -45,10 +55,12 @@
+   tags = { Name = "app-service-2-tg" }
+ }
+ 
+-resource "aws_lb_listener" "http" {
++resource "aws_lb_listener" "https" {
+   load_balancer_arn = aws_lb.main.arn
+-  port               = 80
+-  protocol           = "HTTP"
++  port              = 443
++  protocol          = "HTTPS"
++  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
++  certificate_arn   = var.acm_certificate_arn
+ 
+   default_action {
+     type             = "forward"
+@@ -56,8 +68,23 @@
+   }
+ }
+ 
++resource "aws_lb_listener" "http_redirect" {
++  load_balancer_arn = aws_lb.main.arn
++  port              = 80
++  protocol          = "HTTP"
++
++  default_action {
++    type = "redirect"
++    redirect {
++      protocol    = "HTTPS"
++      port        = "443"
++      status_code = "HTTP_301"
++    }
++  }
++}
++
+ resource "aws_lb_listener_rule" "app_service_1" {
+-  listener_arn = aws_lb_listener.http.arn
++  listener_arn = aws_lb_listener.https.arn
+   priority     = 10
+ 
+   action {
+@@ -73,7 +100,7 @@
+ }
+ 
+ resource "aws_lb_listener_rule" "app_service_2" {
+-  listener_arn = aws_lb_listener.http.arn
++  listener_arn = aws_lb_listener.https.arn
+   priority     = 20
+ 
+   action {
+--- a/terraform/network.tf
++++ b/terraform/network.tf
+@@ -4,6 +4,67 @@
+   enable_dns_support   = true
+   enable_dns_hostnames = true
+   tags = { Name = "${var.project_name}-vpc" }
++}
++
++# Ensure the default security group of the VPC restricts all traffic
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.main.id
++  revoke_rules_on_delete = true
++  # No inbound rules – deny all inbound traffic
++  ingress {}
++  # No outbound rules – deny all outbound traffic
++  egress {}
++  tags = { Name = "${var.project_name}-default-restrict" }
++}
++
++# Additional custom security group (optional for explicit deny)
++resource "aws_security_group" "default_restrict" {
++  name        = "${var.project_name}-default-restrict"
++  description = "Custom security group with all traffic denied"
++  vpc_id      = aws_vpc.main.id
++  tags = { Name = "${var.project_name}-default-restrict" }
++  egress = []
++  # No ingress rules -> deny all inbound traffic
++}
++
++# Enable VPC Flow Logs
++resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
++  name              = "/aws/vpc/${var.project_name}-flow-logs"
++  retention_in_days = 7
++}
++
++resource "aws_flow_log" "vpc" {
++  vpc_id        = aws_vpc.main.id
++  traffic_type  = "ALL"
++  log_group_name = aws_cloudwatch_log_group.vpc_flow_logs.name
++  iam_role_arn   = aws_iam_role.flow_log_role.arn
++}
++
++resource "aws_iam_role" "flow_log_role" {
++  name = "${var.project_name}-flow-log-role"
++  assume_role_policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect    = "Allow",
++      Principal = { Service = "vpc-flow-logs.amazonaws.com" },
++      Action    = "sts:AssumeRole"
++    }]
++  })
++}
++
++resource "aws_iam_role_policy" "flow_log_policy" {
++  role = aws_iam_role.flow_log_role.id
++  policy = jsonencode({
++    Version = "2012-10-17",
++    Statement = [{
++      Effect   = "Allow",
++      Action   = [
++        "logs:CreateLogStream",
++        "logs:PutLogEvents"
++      ],
++      Resource = "${aws_cloudwatch_log_group.vpc_flow_logs.arn}:*"
++    }]
++  })
+ }
+ 
+ resource "aws_internet_gateway" "igw" {
+@@ -16,7 +77,7 @@
+   vpc_id                  = aws_vpc.main.id
+   cidr_block              = var.public_subnet_cidrs[count.index]
+   availability_zone       = var.availability_zones[count.index]
+-  map_public_ip_on_launch = true
++  map_public_ip_on_launch = false
+   tags = { Name = "${var.project_name}-public-${count.index}" }
+ }
+ 
+--- a/terraform/rds.tf
++++ b/terraform/rds.tf
+@@ -7,24 +7,28 @@
+ }
+ 
+ resource "aws_db_instance" "rds" {
+-  identifier             = "rds-storage"
+-  engine                 = "postgres"
+-  engine_version         = var.db_engine_version
+-  instance_class         = var.db_instance_class
+-  allocated_storage      = 100
+-  max_allocated_storage  = 500
+-  storage_type           = "gp3"
+-  db_name                = var.db_name
+-  username               = var.db_username
+-  password               = var.db_password
+-  db_subnet_group_name   = aws_db_subnet_group.rds.name
+-  vpc_security_group_ids = [aws_security_group.rds.id]
+-  multi_az               = true
+-  storage_encrypted      = true
+-  backup_retention_period = 7
+-  skip_final_snapshot    = true
+-  deletion_protection    = false
+-  performance_insights_enabled = true
++  identifier                     = "rds-storage"
++  engine                         = "postgres"
++  engine_version                 = var.db_engine_version
++  instance_class                 = var.db_instance_class
++  allocated_storage              = 100
++  max_allocated_storage          = 500
++  storage_type                   = "gp3"
++  db_name                        = var.db_name
++  username                       = var.db_username
++  password                       = var.db_password
++  db_subnet_group_name           = aws_db_subnet_group.rds.name
++  vpc_security_group_ids        = [aws_security_group.rds.id]
++  multi_az                       = true
++  storage_encrypted              = true
++  backup_retention_period        = 7
++  deletion_protection            = true
++  iam_database_authentication_enabled = true
++  performance_insights_enabled  = true
++  performance_insights_kms_key_id = var.kms_key_arn
++  monitoring_interval            = 60
++  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
++  skip_final_snapshot            = false
+ 
+   tags = { Name = "rds-storage" }
+ }
+--- a/terraform/s3.tf
++++ b/terraform/s3.tf
+@@ -1,8 +1,19 @@
+-# Private S3 bucket for static assets with encryption and versioning
++# Private S3 bucket for static assets with encryption, versioning, access logging and KMS encryption
++resource "aws_kms_key" "s3_storage" {
++  description = "KMS key for S3 storage bucket encryption"
++  deletion_window_in_days = 30
++  enable_key_rotation = true
++  tags = {
++    Name = "${var.project_name}-s3-storage-key"
++  }
++}
++
+ resource "aws_s3_bucket" "storage" {
+   bucket = "${var.project_name}-s3-storage-${data.aws_caller_identity.current.account_id}"
+ 
+-  tags = { Name = "s3-storage" }
++  tags = {
++    Name = "s3-storage"
++  }
+ }
+ 
+ data "aws_caller_identity" "current" {}
+@@ -22,11 +33,20 @@
+   }
+ }
+ 
++# Enable server-side encryption using the customer managed KMS key
+ resource "aws_s3_bucket_server_side_encryption_configuration" "storage" {
+   bucket = aws_s3_bucket.storage.id
+   rule {
+     apply_server_side_encryption_by_default {
+-      sse_algorithm = "AES256"
++      sse_algorithm   = "aws:kms"
++      kms_master_key_id = aws_kms_key.s3_storage.arn
+     }
+   }
+ }
++
++# Enable access logging for the bucket
++resource "aws_s3_bucket_logging" "storage" {
++  bucket = aws_s3_bucket.storage.id
++  target_bucket = aws_s3_bucket.storage.id
++  target_prefix = "log/"
++}
+--- /dev/null
++++ b/terraform/s3_alb_logs.tf
+@@ -0,0 +1,68 @@
++resource "aws_s3_bucket" "alb_logs" {
++  bucket = "${var.project_name}-alb-logs"
++  acl    = "private"
++
++  force_destroy = true
++
++  tags = {
++    Name = "${var.project_name}-alb-logs"
++  }
++}
++
++# Enable versioning
++resource "aws_s3_bucket_versioning" "alb_logs_versioning" {
++  bucket = aws_s3_bucket.alb_logs.id
++  versioning_configuration {
++    status = "Enabled"
++  }
++}
++
++# Enable server‑side encryption with a customer‑managed KMS key (the key is created elsewhere in the plan)
++resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs_encryption" {
++  bucket = aws_s3_bucket.alb_logs.id
++
++  rule {
++    apply_server_side_encryption_by_default {
++      kms_master_key_id = aws_kms_key.s3_alb_logs_key.arn
++      sse_algorithm     = "aws:kms"
++    }
++  }
++}
++
++# Public access block – block all public ACLs and policies
++resource "aws_s3_bucket_public_access_block" "alb_logs_public_access" {
++  bucket = aws_s3_bucket.alb_logs.id
++
++  block_public_acls   = true
++  block_public_policy = true
++  ignore_public_acls  = true
++  restrict_public_buckets = true
++}
++
++# Enable access logging – logs are written to the same bucket under a "logs/" prefix
++resource "aws_s3_bucket_logging" "alb_logs_logging" {
++  bucket        = aws_s3_bucket.alb_logs.id
++  target_bucket = aws_s3_bucket.alb_logs.id
++  target_prefix = "logs/"
++}
++
++resource "aws_s3_bucket_policy" "alb_logs_policy" {
++  bucket = aws_s3_bucket.alb_logs.id
++  policy = jsonencode({
++    Version = "2012-10-17"
++    Statement = [{
++      Sid       = "AllowALBLogging"
++      Effect    = "Allow"
++      Principal = { Service = "logging.amazonaws.com" }
++      Action    = "s3:PutObject"
++      Resource  = "${aws_s3_bucket.alb_logs.arn}/*"
++    }]
++  })
++}
++
++# Customer‑managed KMS key for bucket encryption (if not already defined elsewhere)
++resource "aws_kms_key" "s3_alb_logs_key" {
++  description               = "KMS key for ALB logs bucket encryption"
++  deletion_window_in_days   = 30
++  enable_key_rotation       = true
++}
+--- a/terraform/security_groups.tf
++++ b/terraform/security_groups.tf
+@@ -1,21 +1,23 @@
+ # Security groups for ALB, app tier, and DB tier
+ resource "aws_security_group" "alb" {
+   name        = "${var.project_name}-alb-sg"
+-  description = "Allow inbound HTTP from internet"
++  description = "Allow inbound HTTP from allowed sources"
+   vpc_id      = aws_vpc.main.id
+ 
+   ingress {
+     from_port   = 80
+     to_port     = 80
+     protocol    = "tcp"
+-    cidr_blocks = ["0.0.0.0/0"]
++    # Restrict HTTP ingress to explicitly allowed CIDR blocks instead of allowing all traffic
++    cidr_blocks = var.allowed_http_cidrs
+   }
+ 
++  # Restrict egress to the VPC CIDR only, preventing unrestricted internet access
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+ 
+   tags = { Name = "${var.project_name}-alb-sg" }
+@@ -33,11 +35,12 @@
+     security_groups = [aws_security_group.alb.id]
+   }
+ 
++  # Restrict egress to the VPC CIDR and any required external endpoints (e.g., DNS)
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+ 
+   tags = { Name = "${var.project_name}-app-sg" }
+@@ -55,11 +58,12 @@
+     security_groups = [aws_security_group.app.id]
+   }
+ 
++  # Restrict egress to the VPC CIDR only; RDS does not need unrestricted internet egress
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = [var.vpc_cidr]
+   }
+ 
+   tags = { Name = "${var.project_name}-rds-sg" }

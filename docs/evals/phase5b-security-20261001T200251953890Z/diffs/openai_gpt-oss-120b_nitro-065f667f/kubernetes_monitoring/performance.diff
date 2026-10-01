@@ -1,0 +1,294 @@
+--- a/k8s/microservice-a/deployment.yaml
++++ b/k8s/microservice-a/deployment.yaml
+@@ -15,11 +15,17 @@
+       labels:
+         app: microservice-a
+     spec:
++      securityContext:
++        runAsNonRoot: true
++        runAsUser: 10000 # high‑UID to avoid host conflict
++        fsGroup: 10000
++        seccompProfile:
++          type: RuntimeDefault
+       containers:
+         - name: microservice-a
+-          image: nginx:latest
++          image: nginx:1.25.2 # fixed, non‑latest tag
+           ports:
+-            - containerPort: 80
++            - containerPort: 8080 # non‑privileged port
+           env:
+             - name: DB_HOST
+               value: "${aws_rds_instance.rds.endpoint}"
+@@ -32,3 +38,20 @@
+                 secretKeyRef:
+                   name: rds-credentials
+                   key: password
++          securityContext:
++            allowPrivilegeEscalation: false
++            privileged: false
++            capabilities:
++              drop:
++                - ALL
++            readOnlyRootFilesystem: true
++            runAsUser: 10000
++            runAsGroup: 10000
++            runAsNonRoot: true
++          resources:
++            requests:
++              cpu: "250m"
++              memory: "256Mi"
++            limits:
++              cpu: "500m"
++              memory: "512Mi"
+--- a/k8s/microservice-b/deployment.yaml
++++ b/k8s/microservice-b/deployment.yaml
+@@ -15,8 +15,29 @@
+       labels:
+         app: microservice-b
+     spec:
++      securityContext:
++        runAsUser: 10001            # non‑root user
++        runAsGroup: 10001
++        fsGroup: 10001
++        seccompProfile:
++          type: RuntimeDefault
+       containers:
+         - name: microservice-b
+-          image: nginx:latest
++          image: nginx:1.25.2          # fixed tag, avoid latest
+           ports:
+-            - containerPort: 80
++            - containerPort: 8080      # non‑privileged port
++          securityContext:
++            runAsNonRoot: true        # ensure non‑root execution
++            allowPrivilegeEscalation: false
++            privileged: false
++            readOnlyRootFilesystem: true
++            capabilities:
++              drop:
++                - ALL
++          resources:
++            requests:
++              cpu: "250m"
++              memory: "256Mi"
++            limits:
++              cpu: "500m"
++              memory: "512Mi"
+--- /dev/null
++++ b/k8s/microservice-b/hpa.yaml
+@@ -0,0 +1,26 @@
++apiVersion: autoscaling/v2
++kind: HorizontalPodAutoscaler
++metadata:
++  name: microservice-b-hpa
++  labels:
++    app: microservice-b
++spec:
++  scaleTargetRef:
++    apiVersion: apps/v1
++    kind: Deployment
++    name: microservice-b
++  minReplicas: 3
++  maxReplicas: 10
++  metrics:
++    - type: Resource
++      resource:
++        name: cpu
++        target:
++          type: Utilization
++          averageUtilization: 70
++    - type: Resource
++      resource:
++        name: memory
++        target:
++          type: Utilization
++          averageUtilization: 75
+--- a/terraform/main.tf
++++ b/terraform/main.tf
+@@ -21,10 +21,34 @@
+   region = var.region
+ }
+ 
++# VPC with flow logs and restrictive default security group
+ resource "aws_vpc" "this" {
+   cidr_block = var.vpc_cidr
+   tags = {
+     Name = "${var.cluster_name}-vpc"
++  }
++}
++
++resource "aws_flow_log" "vpc" {
++  log_destination      = aws_cloudwatch_log_group.vpc.id
++  traffic_type         = "ALL"
++  vpc_id               = aws_vpc.this.id
++  max_aggregation_interval = 60
++}
++
++resource "aws_cloudwatch_log_group" "vpc" {
++  name = "${var.cluster_name}-vpc-flow-logs"
++  retention_in_days = 7
++}
++
++# Restrictive default security group
++resource "aws_default_security_group" "default" {
++  vpc_id = aws_vpc.this.id
++  revoke_rules_on_delete = true
++  ingress {}
++  egress {}
++  tags = {
++    Name = "${var.cluster_name}-default-sg"
+   }
+ }
+ 
+@@ -33,7 +57,7 @@
+   vpc_id                  = aws_vpc.this.id
+   cidr_block              = cidrsubnet(var.vpc_cidr, 8, count.index)
+   availability_zone       = data.aws_availability_zones.available.names[count.index]
+-  map_public_ip_on_launch = true
++  map_public_ip_on_launch = false
+   tags = {
+     Name = "${var.cluster_name}-public-${count.index}"
+   }
+@@ -63,16 +87,32 @@
+   route_table_id = aws_route_table.public.id
+ }
+ 
++# EKS cluster with encryption, private endpoint and full logging
+ resource "aws_eks_cluster" "this" {
+   name     = var.cluster_name
+   role_arn = aws_iam_role.eks_cluster.arn
+   version  = "1.30"
+   vpc_config {
+     subnet_ids = aws_subnet.public[*].id
+-  }
++    endpoint_private_access = true
++    endpoint_public_access  = false
++  }
++  encryption_config {
++    provider {
++      key_arn = aws_kms_key.eks_secrets.arn
++    }
++    resources = ["secrets"]
++  }
++  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+   tags = {
+     Name = var.cluster_name
+   }
++}
++
++resource "aws_kms_key" "eks_secrets" {
++  description = "KMS key for EKS secrets encryption"
++  deletion_window_in_days = 10
++  enable_key_rotation = true
+ }
+ 
+ resource "aws_iam_role" "eks_cluster" {
+@@ -111,6 +151,7 @@
+     min_size     = var.node_min_size
+   }
+   instance_types = [var.node_instance_type]
++  ami_type       = "AL2_x86_64"
+   tags = {
+     Name = "${var.cluster_name}-node-group"
+   }
+@@ -141,12 +182,21 @@
+   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+ }
+ 
++# EFS with encryption at rest and restricted SG egress
+ resource "aws_efs_file_system" "efs" {
+-  creation_token = "${var.cluster_name}-efs"
++  creation_token   = "${var.cluster_name}-efs"
+   performance_mode = var.efs_performance_mode
++  encrypted         = true
++  kms_key_id        = aws_kms_key.efs.arn
+   tags = {
+     Name = "${var.cluster_name}-efs"
+   }
++}
++
++resource "aws_kms_key" "efs" {
++  description = "KMS key for EFS encryption"
++  deletion_window_in_days = 10
++  enable_key_rotation = true
+ }
+ 
+ resource "aws_efs_mount_target" "efs_mt" {
+@@ -170,7 +220,7 @@
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
++    cidr_blocks = []
+   }
+ }
+ 
+@@ -183,41 +233,50 @@
+ }
+ 
+ resource "aws_rds_instance" "rds" {
+-  identifier              = "${var.cluster_name}-db"
+-  engine                  = "postgres"
+-  instance_class          = var.rds_instance_class
+-  allocated_storage       = 20
+-  db_name                 = var.rds_db_name
+-  username                = var.rds_username
+-  password                = var.rds_password
+-  multi_az                = true
+-  publicly_accessible    = false
+-  db_subnet_group_name    = aws_db_subnet_group.rds_subnet.name
++  identifier           = "${var.cluster_name}-db"
++  engine               = "postgres"
++  instance_class       = var.rds_instance_class
++  allocated_storage    = 20
++  db_name              = var.rds_db_name
++  username             = var.rds_username
++  password             = var.rds_password
++  multi_az             = true
++  publicly_accessible = false
++  storage_encrypted    = true
++  kms_key_id           = aws_kms_key.rds.arn
++  db_subnet_group_name = aws_db_subnet_group.rds_subnet.name
+   vpc_security_group_ids = [aws_security_group.rds.id]
+-  skip_final_snapshot     = true
++  skip_final_snapshot  = true
+   tags = {
+     Name = "${var.cluster_name}-rds"
+   }
++}
++
++resource "aws_kms_key" "rds" {
++  description = "KMS key for RDS encryption"
++  deletion_window_in_days = 10
++  enable_key_rotation = true
+ }
+ 
+ resource "aws_security_group" "rds" {
+   name        = "${var.cluster_name}-rds-sg"
+-  description = "Allow traffic from the EKS nodes"
++  description = "Allow traffic from EKS worker nodes"
+   vpc_id      = aws_vpc.this.id
+   ingress {
+     from_port   = 5432
+     to_port     = 5432
+     protocol    = "tcp"
+-    security_groups = [aws_iam_role.eks_node.arn] # Using node role SG would be more precise
++    security_groups = [aws_eks_node_group.worker.node_security_group_ids[0]]
+   }
+   egress {
+     from_port   = 0
+     to_port     = 0
+     protocol    = "-1"
+-    cidr_blocks = ["0.0.0.0/0"]
+-  }
+-}
+-
++    cidr_blocks = []
++  }
++}
++
++# Helm releases for monitoring components
+ resource "helm_release" "prometheus" {
+   name       = "prometheus"
+   chart      = "prometheus"
