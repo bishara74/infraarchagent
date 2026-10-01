@@ -330,7 +330,9 @@ class SecurityAgent:
 
         while True:
             try:
-                scan = await self.scanner.scan(files, variant)
+                scan = await self.scanner.scan(
+                    files, variant, iteration=iteration_count
+                )
             except ToolFailure as error:
                 reason = (
                     f"{error.tool} is not installed"

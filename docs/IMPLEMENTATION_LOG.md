@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-01 — Phase 5b section 1 — Bounded scanner process groups
+
+**Summary:** Scanners start in separate sessions; timeout and cancellation kill
+all group members and bound pipe cleanup to five seconds. Evaluation prints
+per-package/per-attempt progress and retains recovered timeouts; adds
+`--packages-limit N`.
+
+**Requirements addressed:** FR-S-01, FR-S-07, NFR-01, NFR-04.
+
+**Files:** scanner runner/orchestration, SecurityAgent iteration propagation,
+evaluation script, scanner timeout/evaluation/agent tests, README, deviations.
+
+**Decisions:** D-32. Checkov supports `CHECKOV_PARALLELIZATION_TYPE=none`.
+The published interleaved-drain implementation matches its PyPI 3.3.21 wheel.
+
+**Tests:** `make lint` passed (124 formatted files; mypy 75 source files).
+`make test` → **414 passed, 0 failed, 0 skipped**. Three isolated forked-child
+regressions (timeout, cancellation, full scanner retry/temp cleanup) pass;
+the same tests against the original runner fail (3 failures, watchdog expiry).
+Docker is unavailable; tests used an isolated local PostgreSQL 16 cluster with
+the ordinary migrations/roles and no extra privileges. A temporary bootstrap
+disabled dotenv loading, without reading `.env`.
+
+**Known gaps / follow-ups:** Trivy migration and full evaluation follow in
+sections 2–5. Single measurements show no consistent Checkov speed advantage.
+
+---
+
 ## 2026-10-01 — Phase 5 follow-up — Fix diagnostics and model-aware evaluation
 
 **Summary:** Replaced generic fix rejection labels with safe schema paths and

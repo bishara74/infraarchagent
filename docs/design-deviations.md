@@ -508,6 +508,28 @@ Status values:
 
 ---
 
+### D-32 — Scanner timeout terminates the whole process group
+The Phase 5 evaluation hung for 28 minutes after a timeout killed the Checkov
+parent but left a forked worker holding stdout. Each scanner now starts a
+new session. Timeout/cancellation sends SIGKILL to its process group; subsequent
+communication is bounded to five seconds and transports close on expiry.
+Deterministic subprocess regressions verify no surviving group and temp cleanup;
+all three fail against the old parent-only kill logic.
+
+Checkov 3.3.21 accepts `CHECKOV_PARALLELIZATION_TYPE` values `fork`, `spawn`,
+`thread`, `none`; runtime sets `none`. Its interleaved-drain code is upstream,
+not a local customization: installed
+`/home/bishara/.local/share/pipx/venvs/checkov/lib/python3.12/site-packages/checkov/common/parallelizer/parallel_runner.py`,
+lines 21–28 (switch), 132–135 (branch), 154–190 (drain). Downloading the exact
+PyPI wheel with `pip download --no-deps` and comparing that file produced the
+same SHA-256: `89019b62299807b8c5f21fda72e221a09d1c81a9ef53b1fd92006de99a99ee9b`.
+This corrects the earlier characterization as a customization.
+
+Single default/none timings (seconds), identical finding counts: vulnerable
+3.795/3.505, fixed 3.324/3.269, syntax 3.175/3.202, committed gpt-oss
+kubernetes-monitoring cost 3.285/3.406. No consistent speedup is claimed.
+Evaluation now logs every attempt and preserves recovered timeouts.
+
 ## Open questions
 
 ### OQ-01 — HTTP 410 for expired packages (Deferred)

@@ -47,7 +47,9 @@ class ScriptedScanner:
         self.scans = scans
         self.calls = 0
 
-    async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+    async def scan(
+        self, files: dict[str, str], variant: Variant, *, iteration: int = 0
+    ) -> ScanResult:
         self.calls += 1
         return ScanResult(self.scans.pop(0), {"checkov": "ok", "tfsec": "ok"})
 
@@ -171,7 +173,9 @@ async def test_syntax_fix_pass_rescans_full_package(
         def __init__(self) -> None:
             super().__init__([])
 
-        async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+        async def scan(
+            self, files: dict[str, str], variant: Variant, *, iteration: int = 0
+        ) -> ScanResult:
             self.calls += 1
             if files["terraform/main.tf"] == invalid:
                 syntax = finding("TERRAFORM_SYNTAX", "tfsec").model_copy(
@@ -357,7 +361,9 @@ async def test_time_budget_stops_before_fix_call(
     ctx = replace(ctx, clock=lambda: now[0])
 
     class ExpiringScanner(ScriptedScanner):
-        async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+        async def scan(
+            self, files: dict[str, str], variant: Variant, *, iteration: int = 0
+        ) -> ScanResult:
             now[0] = 239.5
             return await super().scan(files, variant)
 
@@ -414,7 +420,9 @@ async def test_scan_error_has_no_first_scan_counts(
     ctx, package = await setup(engine)
 
     class FailingScanner:
-        async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+        async def scan(
+            self, files: dict[str, str], variant: Variant, *, iteration: int = 0
+        ) -> ScanResult:
             raise ToolFailure("checkov", "invalid_json")
 
     security = agent(engine, FailingScanner(), ScriptedFix())  # type: ignore[arg-type]

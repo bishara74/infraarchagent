@@ -217,3 +217,7 @@ run's model selection.
 `infraarch_app` serves the API and runs the retention sweep. It cannot delete
 run rows, update or delete event rows, or truncate tables. Tests use the owner
 role to reset test tables while exercising application code as `infraarch_app`.
+
+For a quick security evaluation, pass `--packages-limit N` in `EVAL_ARGS`.
+Per-package and scanner-attempt progress goes to stderr; timeout records are
+retained even when a retry succeeds.

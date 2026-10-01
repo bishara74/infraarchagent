@@ -10,7 +10,7 @@ from app.core.config import Settings, get_settings
 from app.domain.enums import Severity
 from app.domain.models import Violation
 from app.scanners.runner import RecordedToolRunner, ToolFailure, ToolResult
-from app.scanners.scan import ScanResult
+from app.scanners.scan import Scanner, ScanResult
 from scripts import eval_security
 
 
@@ -22,11 +22,13 @@ async def test_scan_only_reports_separate_and_combined_high_counts(
     (folder / "terraform").mkdir(parents=True)
     (folder / "terraform/main.tf").write_text("terraform {}\n")
 
-    class FakeScanner:
+    class FakeScanner(Scanner):
         def __init__(self, runner: object) -> None:
             pass
 
-        async def scan(self, files: dict[str, str], variant: object) -> ScanResult:
+        async def scan(
+            self, files: dict[str, str], variant: object, *, iteration: int = 0
+        ) -> ScanResult:
             return ScanResult(
                 [
                     Violation(
@@ -79,7 +81,7 @@ async def test_evaluation_retains_checkov_measure_when_tfsec_cannot_parse(
         }
     )
 
-    class PartialScanner:
+    class PartialScanner(Scanner):
         def __init__(self, runner: object) -> None:
             self.runner = RecordedToolRunner(
                 {
@@ -88,7 +90,9 @@ async def test_evaluation_retains_checkov_measure_when_tfsec_cannot_parse(
                 }
             )
 
-        async def scan(self, files: dict[str, str], variant: object) -> ScanResult:
+        async def scan(
+            self, files: dict[str, str], variant: object, *, iteration: int = 0
+        ) -> ScanResult:
             raise ToolFailure("tfsec", "invalid_json")
 
     monkeypatch.setattr(eval_security, "Scanner", PartialScanner)
@@ -121,7 +125,9 @@ async def test_evaluation_reports_syntax_limited_scan(
         def __init__(self, runner: object) -> None:
             pass
 
-        async def scan(self, files: dict[str, str], variant: object) -> ScanResult:
+        async def scan(
+            self, files: dict[str, str], variant: object, *, iteration: int = 0
+        ) -> ScanResult:
             return ScanResult(
                 [
                     Violation(
@@ -164,11 +170,13 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
     (folder / "terraform").mkdir(parents=True)
     (folder / "terraform/main.tf").write_text("terraform {}\n")
 
-    class FakeScanner:
+    class FakeScanner(Scanner):
         def __init__(self, runner: object) -> None:
             pass
 
-        async def scan(self, files: dict[str, str], variant: object) -> ScanResult:
+        async def scan(
+            self, files: dict[str, str], variant: object, *, iteration: int = 0
+        ) -> ScanResult:
             return ScanResult(
                 [
                     Violation(
@@ -271,3 +279,45 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
     )
     unpriced = json.loads((unknown_price / "results.json").read_text())
     assert unpriced["cases"][0]["estimated_cost"] is None
+
+
+@pytest.mark.req("FR-S-01", "FR-S-04")
+async def test_progress_retains_recovered_timeout_and_limits_packages(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = tmp_path / "model" / "plan" / "security"
+    folder.mkdir(parents=True)
+    (folder / "main.tf").write_text("locals {}")
+    runner = RecordedToolRunner(
+        {
+            "checkov": [
+                ToolResult('{"passed":0,"failed":0,"resource_count":0}', "", 0, 0)
+            ]
+            * 2,
+            "tfsec": [
+                ToolFailure("tfsec", "timeout"),
+                ToolResult('{"results":[]}', "", 0, 0),
+            ],
+        }
+    )
+    monkeypatch.setattr(eval_security, "ProcessToolRunner", lambda _: runner)
+    settings = Settings.model_construct()
+    output = await eval_security.run_evaluation(
+        settings,
+        packages=[folder, tmp_path / "must-not-be-read"],
+        packages_limit=1,
+        output_root=tmp_path,
+    )
+    case = json.loads((output / "results.json").read_text())["cases"][0]
+    assert case["scanner_errors"] == {}
+    assert case["scan_timeouts"][0]["tool"] == "tfsec"
+    assert case["scan_timeouts"][0]["iteration"] == 0
+    assert case["scan_timeouts"][0]["attempt"] == 1
+    assert runner.calls.count("checkov") == runner.calls.count("tfsec") == 2
+    stderr = capsys.readouterr().err
+    assert "package=model/plan/security status=started" in stderr
+    assert "iteration=0 attempt=1 tool=tfsec" in stderr
+    assert "status=timeout" in stderr
+    assert "status=finished" in stderr
+    with pytest.raises(ValueError, match="packages_limit"):
+        await eval_security.run_evaluation(settings, packages_limit=0)

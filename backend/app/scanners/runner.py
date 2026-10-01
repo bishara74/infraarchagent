@@ -3,6 +3,7 @@
 import asyncio
 import os
 import shutil
+import signal
 import time
 from dataclasses import dataclass
 from functools import lru_cache
@@ -34,6 +35,21 @@ class ToolRunner(Protocol):
 class ProcessToolRunner:
     def __init__(self, timeout_seconds: float = 120) -> None:
         self.timeout_seconds = timeout_seconds
+
+    async def _terminate(self, process: asyncio.subprocess.Process) -> None:
+        """Kill inherited workers as well as their parent; bound pipe cleanup."""
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        try:
+            await asyncio.wait_for(process.communicate(), timeout=5)
+        except TimeoutError:
+            # asyncio exposes no public subprocess pipe-close API. Closing the
+            # transport prevents a pipe-owning descendant from blocking exit.
+            transport = getattr(process, "_transport", None)
+            if transport is not None:
+                transport.close()
 
     async def run(self, tool: ToolName, workdir: Path) -> ToolResult:
         args = (
@@ -69,6 +85,8 @@ class ProcessToolRunner:
             "LANG": "C.UTF-8",
             "TMPDIR": str(workdir),
         }
+        if tool == "checkov":
+            env["CHECKOV_PARALLELIZATION_TYPE"] = "none"
         started = time.monotonic()
         try:
             process = await asyncio.create_subprocess_exec(
@@ -77,6 +95,7 @@ class ProcessToolRunner:
                 env=env,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                start_new_session=True,
             )
         except FileNotFoundError:
             raise ToolFailure(tool, "not_installed") from None
@@ -87,9 +106,11 @@ class ProcessToolRunner:
                 process.communicate(), timeout=self.timeout_seconds
             )
         except TimeoutError:
-            process.kill()
-            await process.communicate()
+            await self._terminate(process)
             raise ToolFailure(tool, "timeout") from None
+        except asyncio.CancelledError:
+            await self._terminate(process)
+            raise
         return ToolResult(
             stdout.decode("utf-8", errors="replace"),
             stderr.decode("utf-8", errors="replace"),

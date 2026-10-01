@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import json
 import statistics
+import sys
 import time
 from collections import Counter
 from datetime import UTC, datetime
@@ -31,7 +32,7 @@ from app.pipeline.stages import StageContext, UnavailableValidationStage
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.checkov_parser import parse_checkov
 from app.scanners.runner import ProcessToolRunner, ToolFailure, scanner_versions
-from app.scanners.scan import Scanner
+from app.scanners.scan import Scanner, ScanObservation
 from app.scanners.tfsec_parser import parse_tfsec
 from app.security.policy import classify
 
@@ -136,7 +137,7 @@ async def _partial_scan(
             target.write_text(content, encoding="utf-8", newline="")
         names = ("checkov", "tfsec")
         outputs = await asyncio.gather(
-            *(scanner.runner.run(name, root) for name in names),
+            *(scanner.run_tool(name, root, attempt=3) for name in names),
             return_exceptions=True,
         )
         findings: list[Any] = []
@@ -241,6 +242,7 @@ async def run_evaluation(
     settings: Settings,
     *,
     packages: list[Path] | None = None,
+    packages_limit: int | None = None,
     remediate: bool = False,
     max_iterations: int | None = None,
     price_in: dict[str, float] | None = None,
@@ -249,6 +251,10 @@ async def run_evaluation(
     output_root: Path = EVALS,
 ) -> Path:
     selected = packages if packages is not None else _default_packages()
+    if packages_limit is not None:
+        if packages_limit < 1:
+            raise ValueError("packages_limit must be positive")
+        selected = selected[:packages_limit]
     if not selected:
         raise ValueError("no saved packages found")
     limit = max_iterations or settings.max_remediation_iterations
@@ -258,11 +264,39 @@ async def run_evaluation(
         "phase5-security-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     )
     output.mkdir(parents=True, exist_ok=False)
-    scanner = Scanner(ProcessToolRunner(settings.scanner_timeout_seconds))
     cases: list[dict[str, Any]] = []
     versions = scanner_versions()
     for folder in selected:
         folder = folder.resolve()
+        package_name = "/".join(folder.parts[-3:])
+        timeouts: list[dict[str, Any]] = []
+
+        def observe(
+            event: ScanObservation,
+            package_name: str = package_name,
+            timeouts: list[dict[str, Any]] = timeouts,
+        ) -> None:
+            print(
+                f"package={package_name} iteration={event.iteration} "
+                f"attempt={event.attempt} tool={event.tool} "
+                f"duration={event.duration:.3f}s status={event.category}",
+                file=sys.stderr,
+                flush=True,
+            )
+            if event.category == "timeout":
+                timeouts.append(
+                    {
+                        "package": package_name,
+                        "iteration": event.iteration,
+                        "attempt": event.attempt,
+                        "tool": event.tool,
+                        "duration_seconds": round(event.duration, 3),
+                    }
+                )
+
+        scanner = Scanner(ProcessToolRunner(settings.scanner_timeout_seconds))
+        scanner.observer = observe
+        print(f"package={package_name} status=started", file=sys.stderr, flush=True)
         variant = Variant(folder.name)
         model = _model_name(folder.parent.parent)
         plan = folder.parent.name
@@ -298,6 +332,7 @@ async def run_evaluation(
             if variant == Variant.SECURITY and checkov_high is not None
             else None,
             "scanner_errors": errors,
+            "scan_timeouts": timeouts,
             "syntax_limited": syntax_limited,
             "syntax_findings": [
                 {
@@ -394,6 +429,12 @@ async def run_evaluation(
             )
         case["elapsed_seconds"] = round(time.monotonic() - started, 3)
         cases.append(case)
+        print(
+            f"package={package_name} status=finished "
+            f"duration={case['elapsed_seconds']:.3f}s",
+            file=sys.stderr,
+            flush=True,
+        )
     aggregate: dict[str, Any] = {}
     for model in sorted({case["generator_model"] for case in cases}):
         group = [case for case in cases if case["generator_model"] == model]
@@ -537,9 +578,17 @@ async def run_evaluation(
     return output
 
 
+def _positive_int(value: str) -> int:
+    number = int(value)
+    if number < 1:
+        raise argparse.ArgumentTypeError("must be positive")
+    return number
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--packages", nargs="+", type=Path)
+    parser.add_argument("--packages-limit", type=_positive_int)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--scan-only", action="store_true")
     mode.add_argument("--remediate", action="store_true")
@@ -562,6 +611,7 @@ def main() -> None:
         run_evaluation(
             settings,
             packages=args.packages,
+            packages_limit=args.packages_limit,
             remediate=args.remediate,
             max_iterations=args.max_iterations,
             price_in=_prices(args.price_in),

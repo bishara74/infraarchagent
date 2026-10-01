@@ -1,6 +1,8 @@
 """Temporary package materialisation and concurrent scanner orchestration."""
 
 import asyncio
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -9,7 +11,7 @@ from app.domain.enums import Variant
 from app.domain.models import Violation
 from app.domain.paths import validate_file_map
 from app.scanners.checkov_parser import parse_checkov
-from app.scanners.runner import ToolFailure, ToolName, ToolRunner
+from app.scanners.runner import ToolFailure, ToolName, ToolResult, ToolRunner
 from app.scanners.tfsec_parser import parse_tfsec
 from app.security.policy import classify
 
@@ -21,22 +23,64 @@ class ScanResult:
     syntax_limited: bool = False
 
 
-class Scanner:
-    def __init__(self, runner: ToolRunner) -> None:
-        self.runner = runner
+@dataclass(frozen=True)
+class ScanObservation:
+    iteration: int
+    attempt: int
+    tool: ToolName
+    duration: float
+    category: str
 
-    async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+
+class Scanner:
+    def __init__(
+        self,
+        runner: ToolRunner,
+        observer: Callable[[ScanObservation], None] | None = None,
+    ) -> None:
+        self.runner = runner
+        self.observer = observer
+
+    async def run_tool(
+        self, tool: ToolName, root: Path, *, iteration: int = 0, attempt: int = 1
+    ) -> ToolResult:
+        started = time.monotonic()
+        category = "ok"
+        try:
+            return await self.runner.run(tool, root)
+        except ToolFailure as error:
+            category = error.category
+            raise
+        except asyncio.CancelledError:
+            category = "cancelled"
+            raise
+        except Exception:
+            category = "crash"
+            raise
+        finally:
+            if self.observer is not None:
+                self.observer(
+                    ScanObservation(
+                        iteration, attempt, tool, time.monotonic() - started, category
+                    )
+                )
+
+    async def scan(
+        self, files: dict[str, str], variant: Variant, *, iteration: int = 0
+    ) -> ScanResult:
         safe_files = validate_file_map(files)
         last_error: ToolFailure | None = None
-        for _ in range(2):
+        for attempt in range(1, 3):
             try:
-                return await self._once(safe_files, variant)
+                return await self._once(safe_files, variant, iteration, attempt)
             except ToolFailure as error:
                 last_error = error
         assert last_error is not None
         raise last_error
 
-    async def _once(self, files: dict[str, str], variant: Variant) -> ScanResult:
+    async def _once(
+        self, files: dict[str, str], variant: Variant, iteration: int, attempt: int
+    ) -> ScanResult:
         with TemporaryDirectory(prefix="infraarch-scan-") as directory:
             root = Path(directory)
             for path, content in files.items():
@@ -45,7 +89,10 @@ class Scanner:
                 target.write_text(content, encoding="utf-8", newline="")
             names: tuple[ToolName, ToolName] = ("checkov", "tfsec")
             outputs = await asyncio.gather(
-                *(self.runner.run(name, root) for name in names),
+                *(
+                    self.run_tool(name, root, iteration=iteration, attempt=attempt)
+                    for name in names
+                ),
                 return_exceptions=True,
             )
             violations: list[Violation] = []
