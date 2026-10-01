@@ -51,8 +51,17 @@ def package_generated_payload(
     }
 
 
-def stage_notice_payload(variant: Variant, notice: str) -> dict[str, Any]:
-    return {"kind": EventKind.STAGE_NOTICE, "variant": variant.value, "notice": notice}
+def stage_notice_payload(
+    variant: Variant, notice: str, metrics: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "kind": EventKind.STAGE_NOTICE,
+        "variant": variant.value,
+        "notice": notice,
+    }
+    if metrics:
+        payload.update(metrics)
+    return payload
 
 
 def to_sse(record: EventRecord) -> str:

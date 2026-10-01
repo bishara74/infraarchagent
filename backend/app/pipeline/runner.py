@@ -23,7 +23,7 @@ class PipelineRunner:
         factory: AgentFactory,
         session_factory: async_sessionmaker[AsyncSession],
         writer: PipelineStateWriter,
-        security_stage: SecurityStage,
+        security_stage: SecurityStage | None,
         validation_stage: ValidationStage,
     ) -> None:
         self.capacity = capacity

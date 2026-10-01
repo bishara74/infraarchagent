@@ -43,7 +43,7 @@ class PipelineOrchestrator:
         factory: AgentFactory,
         session_factory: async_sessionmaker[AsyncSession],
         writer: PipelineStateWriter,
-        security_stage: SecurityStage,
+        security_stage: SecurityStage | None,
         validation_stage: ValidationStage,
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
@@ -165,6 +165,13 @@ class PipelineOrchestrator:
                 PackageStatus.SCANNING,
                 message="security stage started",
             )
+        elif current == PackageStatus.REMEDIATING:
+            await self.writer.package_transition(
+                self.run_id,
+                variant,
+                PackageStatus.SCANNING,
+                message="security stage could not complete",
+            )
         await self.writer.package_transition(
             self.run_id,
             variant,
@@ -178,7 +185,10 @@ class PipelineOrchestrator:
         self, ctx: StageContext, variant: Variant, package: IaCPackage
     ) -> PackageStatus:
         try:
-            scan = await self.security_stage.run(ctx, variant, package)
+            stage = self.security_stage or self.factory.create_security_agent(
+                self.run_config
+            )
+            scan = await stage.run(ctx, variant, package)
         except Exception:
             logger.exception(
                 "security stage failed for run %s variant %s", self.run_id, variant
@@ -186,8 +196,20 @@ class PipelineOrchestrator:
             scan = await self._stage_error(variant, validation=False)
         if scan == PackageStatus.SCAN_ERROR:
             return scan
+        async with self.session_factory() as session:
+            remediated_row = await PackageRepository(session).get(self.run_id, variant)
+            if remediated_row is None:
+                raise LookupError("package not found")
+            remediated_package = package.model_copy(
+                update={
+                    "files": dict(remediated_row.files),
+                    "security_report": remediated_row.security_report,
+                }
+            )
         try:
-            validation = await self.validation_stage.run(ctx, variant, package)
+            validation = await self.validation_stage.run(
+                ctx, variant, remediated_package
+            )
         except Exception:
             logger.exception(
                 "validation stage failed for run %s variant %s", self.run_id, variant
@@ -275,7 +297,15 @@ class PipelineOrchestrator:
                 error_message="no package could be generated",
             )
             return RunStatus.FAILED
-        ctx = StageContext(self.run_id, self.writer, plan, self.clock)
+        ctx = StageContext(
+            self.run_id,
+            self.writer,
+            plan,
+            self.clock,
+            self.run_config.resolve(self.factory.settings).max_iterations
+            if hasattr(self.factory, "settings")
+            else self.run_config.max_iterations or 3,
+        )
         await asyncio.gather(
             *(
                 self._post_generation(ctx, variant, package)

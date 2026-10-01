@@ -36,6 +36,7 @@ class GeneratedPackage(Base):
     )
     variant: Mapped[str] = mapped_column(String(16), nullable=False)
     files: Mapped[dict[str, str]] = mapped_column(JSONB, nullable=False)
+    original_files: Mapped[dict[str, str] | None] = mapped_column(JSONB)
     security_report: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     validation_report: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     remediation_diff: Mapped[str | None] = mapped_column(Text)
