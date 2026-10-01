@@ -4,7 +4,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, field_validator
 
-from app.domain.enums import Variant
+from app.domain.enums import Severity, Variant
 from app.domain.paths import validate_file_map
 from app.domain.plan import DeploymentPlan
 
@@ -15,11 +15,17 @@ class Violation(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     rule_id: str
-    severity: str
+    severity: Severity = Severity.UNKNOWN
     file_path: str
     resource: str
     message: str
     tool: Literal["checkov", "tfsec"]
+    line_start: int | None = None
+    line_end: int | None = None
+    title: str = ""
+    guide_url: str | None = None
+    blocking: bool = False
+    advisory_reason: str | None = None
 
     def fingerprint(self) -> tuple[str, str, str]:
         return self.rule_id, self.file_path, self.resource
