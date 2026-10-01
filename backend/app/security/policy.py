@@ -6,9 +6,7 @@ from app.domain.enums import Severity, Variant
 from app.domain.models import Violation
 
 SECURITY_POLICY_VERSION = "1"
-BLOCKING_SEVERITIES = frozenset(
-    {Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM}
-)
+BLOCKING_SEVERITIES = frozenset({Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM})
 
 # Sources: Checkov 3.3.21 `--list` check names and the equivalent tfsec
 # v1.28.14 rule severity where available. The mapping is deliberately curated;
@@ -76,14 +74,26 @@ CHECKOV_SEVERITY: dict[str, Severity] = {
 
 # The check is still reported; only its blocking classification changes.
 VARIANT_EXEMPTIONS: dict[tuple[Variant, str], str] = {
-    (Variant.COST, "CKV_AWS_144"): "cross-region replication conflicts with minimal cost",
-    (Variant.PERFORMANCE, "CKV_AWS_144"): "cross-region replication is outside same-region latency goals",
+    (
+        Variant.COST,
+        "CKV_AWS_144",
+    ): "cross-region replication conflicts with minimal cost",
+    (
+        Variant.PERFORMANCE,
+        "CKV_AWS_144",
+    ): "cross-region replication is outside same-region latency goals",
     (Variant.COST, "CKV_AWS_157"): "single-AZ database is the cost directive",
     (Variant.COST, "CKV_AWS_118"): "enhanced monitoring adds cost",
     (Variant.COST, "CKV_AWS_353"): "Performance Insights adds cost",
     (Variant.COST, "CKV_AWS_354"): "Performance Insights adds cost",
-    (Variant.COST, "aws-rds-enable-performance-insights"): "Performance Insights adds cost",
-    (Variant.COST, "aws-rds-enable-enhanced-monitoring"): "enhanced monitoring adds cost",
+    (
+        Variant.COST,
+        "aws-rds-enable-performance-insights",
+    ): "Performance Insights adds cost",
+    (
+        Variant.COST,
+        "aws-rds-enable-enhanced-monitoring",
+    ): "enhanced monitoring adds cost",
     (Variant.COST, "CKV_AWS_145"): "SSE-AES256 is present; KMS adds cost",
 }
 
@@ -94,7 +104,7 @@ def classify(
     files: Mapping[str, str] | None = None,
 ) -> list[Violation]:
     """Classify every scanner record without dropping cross-tool duplicates."""
-    has_aes256 = bool(files) and any(
+    has_aes256 = files is not None and any(
         "AES256" in content for content in files.values()
     )
     result: list[Violation] = []

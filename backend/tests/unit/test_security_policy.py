@@ -7,7 +7,9 @@ from app.domain.models import Violation
 from app.security.policy import CHECKOV_SEVERITY, classify
 
 
-def finding(rule_id: str, tool: str = "checkov", severity: str = "UNKNOWN") -> Violation:
+def finding(
+    rule_id: str, tool: str = "checkov", severity: str = "UNKNOWN"
+) -> Violation:
     return Violation.model_validate(
         {
             "rule_id": rule_id,
