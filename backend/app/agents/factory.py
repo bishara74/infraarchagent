@@ -6,14 +6,16 @@ from app.agents.generators.cost import CostGeneratorAgent
 from app.agents.generators.performance import PerformanceGeneratorAgent
 from app.agents.generators.security import SecurityGeneratorAgent
 from app.core.config import Settings
-from app.domain.enums import Variant
+from app.domain.enums import LLMProvider, Variant
 from app.domain.run_config import RunConfig
 from app.llm.factory import build_adapter
+from app.pipeline.demo_stub import PipelineDemoStub
 
 
 class AgentFactory:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, *, pipeline_demo_stub: bool = False) -> None:
         self.settings = settings
+        self.pipeline_demo_stub = pipeline_demo_stub
 
     def create_architect(self, run_config: RunConfig | None = None) -> ArchitectAgent:
         resolved = (run_config or RunConfig()).resolve(self.settings)
@@ -22,6 +24,8 @@ class AgentFactory:
             provider=resolved.provider,
             model=resolved.model,
         )
+        if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
+            adapter = PipelineDemoStub(None, adapter.policy)
         return ArchitectAgent(
             adapter,
             deadline_seconds=self.settings.agent_deadline_seconds,
@@ -45,6 +49,8 @@ class AgentFactory:
         adapter = build_adapter(
             self.settings, provider=resolved.provider, model=resolved.model
         )
+        if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
+            adapter = PipelineDemoStub(variant, adapter.policy)
         return classes[Variant(variant)](
             adapter,
             deadline_seconds=self.settings.generator_deadline_seconds,
