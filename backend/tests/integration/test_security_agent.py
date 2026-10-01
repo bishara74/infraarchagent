@@ -443,3 +443,139 @@ async def test_scan_error_has_no_first_scan_counts(
         assert final["first_scan_checkov_high_or_critical"] is None
         assert final["first_scan_trivy_high_or_critical"] is None
         assert final["first_scan_combined_high_or_critical"] is None
+
+
+@pytest.mark.req("FR-S-01", "FR-S-03", "FR-S-05", "FR-S-07", "FR-S-09")
+@pytest.mark.parametrize(
+    "scenario",
+    [
+        "clean",
+        "one_pass",
+        "two_passes",
+        "exhausted",
+        "no_progress",
+        "syntax",
+        "historical_retry",
+    ],
+)
+async def test_loop_with_recorded_trivy_and_terraform(
+    db_engines: tuple[AsyncEngine, AsyncEngine], scenario: str
+) -> None:
+    from pathlib import Path
+
+    from app.scanners.runner import RecordedToolRunner, ToolResult
+    from app.scanners.scan import Scanner
+    from scripts.normalize_security_fixture import RECORDED_ROOT
+    from tests.unit.test_scanners import FIXTURES, files
+
+    engine, _ = db_engines
+    states = {
+        "clean": ["fixed"],
+        "one_pass": ["vulnerable", "fixed"],
+        "two_passes": ["vulnerable", "middle", "fixed"],
+        "exhausted": ["vulnerable", "vulnerable"],
+        "no_progress": ["vulnerable", "vulnerable"],
+        "syntax": ["syntax-error", "fixed"],
+        "historical_retry": ["vulnerable", "vulnerable", "fixed"],
+    }[scenario]
+    scripts = {}
+    for tool in ("checkov", "trivy", "terraform"):
+        outputs = []
+        for state in states:
+            if tool == "checkov" and state == "syntax-error":
+                data = '{"passed":0,"failed":0,"resource_count":0}'
+            else:
+                data = (
+                    FIXTURES
+                    / f"{tool}-{'vulnerable' if state == 'middle' else state}.json"
+                ).read_text()
+            if state == "middle":
+                # Keep the actual recorded Kubernetes failures for a second pass.
+                report = json.loads(data)
+                if tool == "trivy":
+                    report["Results"] = [
+                        r for r in report["Results"] if r["Type"] == "kubernetes"
+                    ]
+                elif tool == "checkov":
+                    report = [r for r in report if r["check_type"] == "kubernetes"]
+                data = json.dumps(report)
+            outputs.append(ToolResult(data, "", 0, 0))
+        scripts[tool] = outputs
+    scanner = Scanner(RecordedToolRunner(scripts, recorded_root=Path(RECORDED_ROOT)))
+    ctx, _ = await setup(engine, max_iterations=1 if scenario == "exhausted" else 3)
+    initial = files(
+        "fixed"
+        if scenario == "clean"
+        else "syntax_error"
+        if scenario == "syntax"
+        else "vulnerable"
+    )
+    # The fixed recordings include both files; include the valid Kubernetes file
+    # in the syntax package so the same full-package recording can be rescanned.
+    if scenario == "syntax":
+        initial["k8s/deployment.yaml"] = files("fixed")["k8s/deployment.yaml"]
+    package = IaCPackage(variant=Variant.SECURITY, files=initial)
+    async with make_session_factory(engine)() as session:
+        async with session.begin():
+            await PackageRepository(session).save_files(
+                ctx.run_id, Variant.SECURITY, initial
+            )
+
+    class RecordedFix(ScriptedFix):
+        async def propose(self, **kwargs: Any) -> FixProposal:
+            self.calls.append(kwargs)
+            path = kwargs["path"]
+            # The first of two passes fixes Terraform only. Kubernetes then has
+            # a different remaining fingerprint set and gets its second pass.
+            content = files("fixed")[path]
+            if (
+                scenario == "two_passes"
+                and len(self.calls) <= 2
+                and path.startswith("k8s/")
+            ):
+                content = kwargs["files"][path]
+            return FixProposal(path, True, None, content, {}, ())
+
+    fixer = RecordedFix()
+    security = agent(engine, scanner, fixer)  # type: ignore[arg-type]
+    status = await security.run(ctx, Variant.SECURITY, package)
+    exhausted = scenario in {"exhausted", "no_progress", "historical_retry"}
+    assert status == (
+        PackageStatus.SCAN_EXHAUSTED if exhausted else PackageStatus.SCAN_CLEAN
+    )
+    async with make_session_factory(engine)() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+        report = deepcopy(row.security_report)
+        current = IaCPackage(variant=Variant.SECURITY, files=row.files)
+    assert report["policy_version"] == "2"
+    assert report["sessions"][0]["fix_passes"] == (
+        0 if scenario == "clean" else 2 if scenario == "two_passes" else 1
+    )
+    if scenario == "historical_retry":
+        # Persist an old tfsec finding as an existing report, then prove review
+        # retry targets it rather than silently dropping a now-historical tool.
+        report["final"]["remaining_blocking"][0]["tool"] = "tfsec"
+        async with make_session_factory(engine)() as session:
+            async with session.begin():
+                row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+                row.security_report = report
+        for target in (
+            PackageStatus.VALIDATING,
+            PackageStatus.VALIDATION_ERROR,
+            PackageStatus.PENDING_REVIEW,
+        ):
+            await ctx.writer.package_transition(
+                ctx.run_id, Variant.SECURITY, target, message="review"
+            )
+        before = len(fixer.calls)
+        assert (
+            await security.remediate_from_review(
+                ctx, Variant.SECURITY, current, "repair", []
+            )
+            == PackageStatus.SCAN_CLEAN
+        )
+        assert len(fixer.calls) > before
+        async with make_session_factory(engine)() as session:
+            row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+            assert row.security_report["sessions"][0] == report["sessions"][0]
+            assert len(row.security_report["sessions"]) == 2

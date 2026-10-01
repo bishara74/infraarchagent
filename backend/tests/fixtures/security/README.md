@@ -37,3 +37,9 @@ Only FAIL misconfigurations count. Trivy's emitted `AWS-0133` on the vulnerable
 RDS instance confirms the sole Trivy variant exemption. It emits `ID` rather
 than `AVDID`; the parser preserves that ID without fabricating an AVD prefix.
 Helm uses Trivy's built-in renderer; it does not require the Helm executable.
+
+`single_argument_block` is the two-argument one-line HCL error. `helm` is a
+templated chart with a privileged container; `remote_module` combines a
+registry module with insecure local RDS. Their Trivy/Terraform recordings use
+the same capture commands with those directory names substituted. Captures
+were made in disposable copies, so scanner caches never enter fixture inputs.

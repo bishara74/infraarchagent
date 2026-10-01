@@ -268,7 +268,7 @@ async def run_evaluation(
     if limit < 1:
         raise ValueError("max_iterations must be positive")
     output = output_root / (
-        "phase5-security-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
+        "phase5b-security-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     )
     output.mkdir(parents=True, exist_ok=False)
     cases: list[dict[str, Any]] = []

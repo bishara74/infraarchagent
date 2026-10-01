@@ -536,7 +536,12 @@ The author confirms installation checksum output:
 provenance, not an independently repeated installation verification. The task
 identifies malicious 0.69.4 and CVE-2026-33634; runtime uses only installed
 0.69.3. Trivy's built-in Helm renderer closes the Checkov-only Helm gap without
-installing Helm. Detailed verification/tests/evaluation follow below.
+installing Helm. Network-isolated tests with `unshare -Urn` succeeded in this session (unlike
+the earlier Phase 5 environment). Debug logs confirm 563 embedded checks and
+no downloadable checks loaded. The fresh-cache fallback is logged as ERROR;
+tests allow only that expected fallback and reject other errors. Two fresh
+namespace scans produce identical normalized findings. Remote-module refusal
+also preserves local findings. Detailed evaluation follows in section 4.
 
 ### D-32 — Scanner timeout terminates the whole process group
 The Phase 5 evaluation hung for 28 minutes after a timeout killed the Checkov

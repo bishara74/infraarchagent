@@ -27,7 +27,7 @@ include = ["app*", "scripts*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-markers = ["req(*ids): thesis requirement identifiers", "scanners: requires Checkov and tfsec"]
+markers = ["req(*ids): thesis requirement identifiers", "scanners: requires local Checkov, Trivy and Terraform (some tests also require network namespaces)"]
 testpaths = ["tests"]
 
 [tool.ruff]

@@ -20,7 +20,9 @@ def parse_trivy(output: str, root: Path, files: set[str]) -> list[Violation]:
         for result in results:
             if not isinstance(result, dict):
                 raise ValueError
-            entries = result.get("Misconfigurations") or []
+            entries = result.get("Misconfigurations")
+            if entries is None:
+                entries = []
             if not isinstance(entries, list):
                 raise ValueError
             for entry in entries:

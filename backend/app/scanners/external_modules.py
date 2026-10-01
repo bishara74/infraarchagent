@@ -36,7 +36,11 @@ def external_module_findings(files: Mapping[str, str]) -> list[Violation]:
                 and tokens[index + 1].lastgroup == "string"
                 and tokens[index + 2].group() == "{"
             ):
-                name = json.loads(tokens[index + 1].group())
+                try:
+                    name = json.loads(tokens[index + 1].group())
+                except ValueError:
+                    index += 1
+                    continue
                 cursor, module_depth = index + 3, 1
                 while cursor < len(tokens) and module_depth:
                     current = tokens[cursor]
@@ -48,8 +52,13 @@ def external_module_findings(files: Mapping[str, str]) -> list[Violation]:
                         and tokens[cursor + 1].group() == "="
                         and tokens[cursor + 2].lastgroup == "string"
                     ):
-                        source = json.loads(tokens[cursor + 2].group())
-                        if not source.startswith(("./", "../", "/")):
+                        try:
+                            source = json.loads(tokens[cursor + 2].group())
+                        except ValueError:
+                            source = None
+                        if isinstance(source, str) and not source.startswith(
+                            ("./", "../", "/")
+                        ):
                             findings.append(
                                 Violation(
                                     tool="trivy",

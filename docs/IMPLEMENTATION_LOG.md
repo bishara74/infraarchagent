@@ -27,7 +27,48 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
-#### 2026-10-01 — Phase 5b section 2 — Trivy and filtered Terraform syntax gate
+#### 2026-10-01 — Phase 5b section 3 — Recorded and isolated scanner verification
+
+**Summary:** Added focused parser, syntax, module-coverage, compatibility and
+real-tool tests, plus seven recorded SecurityAgent loop scenarios. Confirmed
+three-tool concurrency using a synchronization barrier, without timing guesses.
+
+**Requirements addressed:** FR-S-01, FR-S-02, FR-S-03, FR-S-05, FR-S-07,
+FR-S-09, FR-G-05, NFR-01, NFR-04.
+
+**Files:** added `tests/unit/test_{trivy_parser,terraform_parser,external_modules,
+security_reports,trivy_scanners}.py`; extended scanner/agent tests and scanner
+marker; added Helm/remote-module/single-argument-block inputs and real recordings;
+changed Trivy parser to reject malformed empty objects, module lexer to tolerate
+invalid quoted input, evaluation output prefix, fixture README/deviations/log.
+
+**Decisions:** D-31/D-32. Every allowlisted diagnostic has a recorded real probe
+and real Terraform reproduction; providers/modules/references/types/schema
+errors and valid uninitialized configurations remain finding-free. Trivy AVDID
+precedence, emitted IDs, paths/lines/severity, empty/malformed/non-FAIL output,
+variant exemptions and legacy report attribution are checked. Namespace scans
+include ordinary and remote-module packages, run twice with fresh cache, and
+retain local findings. Debug evidence shows exactly 563 embedded checks; the
+one expected ERROR is the successful missing-cache fallback, not a download.
+All three subprocesses/version probes exclude secret canaries and inherited
+scanner settings. Historical tfsec findings survive a database-backed review
+retry, and previous report sessions remain unchanged.
+
+**Tests:** `make lint` passed (132 formatted files, mypy 78 source files).
+Explicit Ruff check/format for both changed scripts passed. Final `make test`
+→ **507 passed, 0 failed, 0 skipped in 57.85 s**; **30 scanner-marked tests
+passed, 0 skipped**, including real tools and network namespaces. Earlier
+negative timeout verification remains 3 expected failures against old logic.
+The installed Checkov file hash was rechecked and still matches the verified
+PyPI wheel hash documented in D-32.
+
+**Known gaps / follow-ups:** Runtime proxies are not kernel network isolation.
+The syntax allowlist intentionally excludes uncertain diagnostics; full semantic
+validation remains Phase 6. No tool install/upgrade, dependency or LLM call.
+
+---
+
+## 2026-10-01 — Phase 5b section 2 — Trivy and filtered Terraform syntax gate
 
 **Summary:** Replaced active tfsec scanning with concurrent Checkov, Trivy
 0.69.3 and Terraform validate without init. Added strict Trivy location/FAIL

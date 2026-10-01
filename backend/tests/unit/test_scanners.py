@@ -228,3 +228,25 @@ async def test_real_terraform_hcl_error_is_fixable_finding(tmp_path: Path) -> No
     )
     checkov = await ProcessToolRunner(120).run("checkov", checkov_root)
     assert json.loads(checkov.stdout)["parsing_errors"] == 0
+
+
+@pytest.mark.req("FR-S-01")
+async def test_all_three_tools_start_before_any_finishes() -> None:
+    import asyncio
+
+    entered: set[str] = set()
+    release = asyncio.Event()
+    outputs = recorded("fixed")
+
+    class BarrierRunner:
+        async def run(self, tool, workdir):
+            entered.add(tool)
+            if entered == {"checkov", "trivy", "terraform"}:
+                release.set()
+            async with asyncio.timeout(2):
+                await release.wait()
+            return await outputs.run(tool, workdir)
+
+    result = await Scanner(BarrierRunner()).scan(files("fixed"), Variant.SECURITY)
+    assert entered == {"checkov", "trivy", "terraform"}
+    assert not any(f.blocking for f in result.violations)
