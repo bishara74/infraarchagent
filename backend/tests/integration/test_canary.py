@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from uuid import UUID
 
@@ -13,6 +14,7 @@ from app.agents.generators.base import GeneratorLLMFailure
 from app.core.config import Settings, get_settings
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
+from app.db.session import make_session_factory
 from app.domain.enums import AgentName, AgentState, LLMProvider, Variant
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import RetryPolicy
@@ -101,4 +103,43 @@ async def test_provider_error_does_not_expose_canary(
     generator_error = GeneratorLLMFailure(Variant.SECURITY, captured.value.category)
     assert key not in str(generator_error)
     assert key not in repr(generator_error)
+    assert key not in caplog.text
+
+
+@pytest.mark.req("NFR-01", "FR-P-03")
+async def test_pipeline_unexpected_error_redacts_canary_everywhere(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+    canary_key: Settings,
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    engine, _ = db_engines
+    key = canary_key.require_llm_key()
+    app = create_app(canary_key, engine)
+
+    class BombArchitect:
+        def parse_input(self, text: str) -> None:
+            return None
+
+        async def generate_plan(self) -> None:
+            raise RuntimeError(key)
+
+    monkeypatch.setattr(
+        app.state.runner.factory, "create_architect", lambda config: BombArchitect()
+    )
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.post(
+                "/api/pipeline/run", json={"text": "Deploy an AWS web service"}
+            )
+            assert response.status_code == 202
+            await asyncio.gather(*app.state.runner.tasks.values())
+            stream = await client.get(response.json()["stream_url"])
+    run_id = UUID(response.json()["run_id"])
+    async with make_session_factory(engine)() as session:
+        row = await RunRepository(session).get(run_id)
+    assert row is not None and row.error_message == "internal error; see server logs"
+    assert key not in stream.text
     assert key not in caplog.text
