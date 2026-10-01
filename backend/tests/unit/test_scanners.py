@@ -16,12 +16,13 @@ from app.scanners.runner import (
 )
 from app.scanners.scan import Scanner
 from app.scanners.tfsec_parser import parse_tfsec
+from scripts.normalize_security_fixture import RECORDED_ROOT, normalize_capture
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures/security"
 
 
-def files(state: str) -> dict[str, str]:
-    root = FIXTURES / state
+def files(state: str, fixtures: Path = FIXTURES) -> dict[str, str]:
+    root = fixtures / state
     return {
         path.relative_to(root).as_posix(): path.read_text(encoding="utf-8")
         for path in root.rglob("*")
@@ -29,15 +30,25 @@ def files(state: str) -> dict[str, str]:
     }
 
 
-def recorded(state: str, repeat: int = 1) -> RecordedToolRunner:
+def recorded(
+    state: str, repeat: int = 1, fixtures: Path = FIXTURES
+) -> RecordedToolRunner:
     outputs = {
         tool: [
-            ToolResult((FIXTURES / f"{tool}-{state}.json").read_text(), "", 0, 0.1)
+            ToolResult((fixtures / f"{tool}-{state}.json").read_text(), "", 0, 0.1)
             for _ in range(repeat)
         ]
         for tool in ("checkov", "tfsec")
     }
-    return RecordedToolRunner(outputs, recorded_root=(FIXTURES / state).resolve())
+    return RecordedToolRunner(outputs, recorded_root=Path(RECORDED_ROOT))
+
+
+def recorded_output(tool: str, state: str, fixtures: Path = FIXTURES) -> str:
+    return (
+        (fixtures / f"{tool}-{state}.json")
+        .read_text()
+        .replace(RECORDED_ROOT, str((fixtures / state).resolve()))
+    )
 
 
 @pytest.mark.req("FR-S-01", "FR-S-04")
@@ -57,14 +68,14 @@ async def test_recorded_vulnerable_and_fixed_scans() -> None:
 def test_checkov_list_and_tfsec_banner_shapes() -> None:
     root = (FIXTURES / "vulnerable").resolve()
     paths = set(files("vulnerable"))
-    checkov = (FIXTURES / "checkov-vulnerable.json").read_text()
+    checkov = recorded_output("checkov", "vulnerable")
     assert parse_checkov(checkov, root, paths)
     reports = json.loads(checkov)
     assert isinstance(reports, list)
     assert len(parse_checkov(json.dumps(reports[0]), root, paths)) == len(
         parse_checkov(json.dumps([reports[0]]), root, paths)
     )
-    tfsec = (FIXTURES / "tfsec-vulnerable.json").read_text()
+    tfsec = recorded_output("tfsec", "vulnerable")
     assert parse_tfsec("tfsec is joining the Trivy family\n" + tfsec, root, paths)
     with pytest.raises(ValueError):
         parse_tfsec("unexpected banner\n" + tfsec, root, paths)
@@ -78,6 +89,26 @@ def test_checkov_list_and_tfsec_banner_shapes() -> None:
         )
         == []
     )
+
+
+@pytest.mark.req("FR-S-01")
+async def test_recorded_fixtures_parse_after_copy(tmp_path: Path) -> None:
+    copied = tmp_path / "portable-security-fixtures"
+    shutil.copytree(FIXTURES, copied)
+    package_root = copied / "vulnerable"
+    paths = set(files("vulnerable", copied))
+    assert parse_checkov(
+        recorded_output("checkov", "vulnerable", copied), package_root, paths
+    )
+    assert parse_tfsec(
+        recorded_output("tfsec", "vulnerable", copied), package_root, paths
+    )
+    result = await Scanner(recorded("vulnerable", fixtures=copied)).scan(
+        files("vulnerable", copied), Variant.SECURITY
+    )
+    assert all(item.file_path in paths for item in result.violations)
+    raw = recorded_output("tfsec", "vulnerable", copied)
+    assert RECORDED_ROOT in normalize_capture(raw, package_root)
 
 
 @pytest.mark.req("FR-S-01")
