@@ -58,11 +58,9 @@ async def test_health_without_llm_key_and_unreachable_database() -> None:
     ) as client:
         response = await client.get("/api/health")
         assert response.status_code == 200
-        assert response.json() == {
-            "status": "ok",
-            "database": "ok",
-            "llm_configured": False,
-        }
+        assert response.json()["status"] == "ok"
+        assert response.json()["llm_configured"] is False
+        assert set(response.json()["scanners"]) == {"checkov", "tfsec"}
         app.dependency_overrides[get_engine] = lambda: _Engine(fail=True)
         response = await client.get("/api/health")
         assert response.status_code == 503

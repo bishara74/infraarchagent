@@ -5,6 +5,7 @@ import os
 import shutil
 import time
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal, Protocol
 
@@ -127,6 +128,7 @@ class RecordedToolRunner:
         return result
 
 
+@lru_cache
 def scanner_versions() -> dict[str, dict[str, str | bool | None]]:
     """Probe once at startup; version commands receive the same safe environment."""
     import subprocess

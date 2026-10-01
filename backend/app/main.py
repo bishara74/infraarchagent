@@ -1,5 +1,6 @@
 """FastAPI application factory."""
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -18,8 +19,11 @@ from app.domain.enums import RunStatus
 from app.events.broker import InMemoryBroker
 from app.events.log import EventLog
 from app.pipeline.runner import PipelineRunner
-from app.pipeline.stages import UnavailableSecurityStage, UnavailableValidationStage
+from app.pipeline.stages import UnavailableValidationStage
 from app.pipeline.state import PipelineStateWriter
+from app.scanners.runner import scanner_versions
+
+logger = logging.getLogger(__name__)
 
 
 def create_app(
@@ -35,18 +39,31 @@ def create_app(
     broker = InMemoryBroker(configured.broker_queue_size)
     event_log = EventLog(session_factory, broker)
     writer = PipelineStateWriter(session_factory, event_log)
+    scanner_info = scanner_versions()
+    factory = AgentFactory(
+        configured,
+        pipeline_demo_stub=True,
+        session_factory=session_factory,
+        scanner_versions={
+            tool: details["version"] if isinstance(details["version"], str) else None
+            for tool, details in scanner_info.items()
+        },
+    )
     runner = PipelineRunner(
         capacity=configured.max_concurrent_runs,
-        factory=AgentFactory(configured, pipeline_demo_stub=True),
+        factory=factory,
         session_factory=session_factory,
         writer=writer,
-        security_stage=UnavailableSecurityStage(),
+        security_stage=None,
         validation_stage=UnavailableValidationStage(),
     )
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.engine = app_engine
+        for tool, details in scanner_info.items():
+            if not details["available"]:
+                logger.warning("%s is not installed", tool)
         async with session_factory() as session:
             interrupted = await RunRepository(session).list_interrupted()
         for run_id in interrupted:
@@ -79,6 +96,7 @@ def create_app(
     app.state.runner = runner
     app.state.settings = configured
     app.state.session_factory = session_factory
+    app.state.scanners = scanner_info
     app.add_exception_handler(Exception, internal_error_handler)
     app.include_router(health_router)
     app.include_router(pipeline_router)

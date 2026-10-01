@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 @router.get("/api/health")
 async def health(
+    request: Request,
     engine: Annotated[AsyncEngine, Depends(get_engine)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> JSONResponse:
@@ -29,8 +30,14 @@ async def health(
                 "status": "degraded",
                 "database": "unavailable",
                 "llm_configured": configured,
+                "scanners": request.app.state.scanners,
             },
         )
     return JSONResponse(
-        content={"status": "ok", "database": "ok", "llm_configured": configured}
+        content={
+            "status": "ok",
+            "database": "ok",
+            "llm_configured": configured,
+            "scanners": request.app.state.scanners,
+        }
     )

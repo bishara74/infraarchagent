@@ -19,11 +19,10 @@ async def test_health_real_database_and_unreachable_override(
     ) as client:
         response = await client.get("/api/health")
         assert response.status_code == 200
-        assert response.json() == {
-            "status": "ok",
-            "database": "ok",
-            "llm_configured": False,
-        }
+        assert response.json()["status"] == "ok"
+        assert response.json()["database"] == "ok"
+        assert response.json()["llm_configured"] is False
+        assert set(response.json()["scanners"]) == {"checkov", "tfsec"}
 
         configured = settings.model_copy(update={"llm_api_key": SecretStr("test-only")})
         app.dependency_overrides[get_settings] = lambda: configured
@@ -36,10 +35,9 @@ async def test_health_real_database_and_unreachable_override(
             app.dependency_overrides[get_engine] = lambda: unreachable
             response = await client.get("/api/health")
             assert response.status_code == 503
-            assert response.json() == {
-                "status": "degraded",
-                "database": "unavailable",
-                "llm_configured": True,
-            }
+            assert response.json()["status"] == "degraded"
+            assert response.json()["database"] == "unavailable"
+            assert response.json()["llm_configured"] is True
+            assert set(response.json()["scanners"]) == {"checkov", "tfsec"}
         finally:
             await unreachable.dispose()

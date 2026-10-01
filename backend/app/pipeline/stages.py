@@ -6,11 +6,11 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
-from app.domain.enums import AgentName, AgentState, PackageStatus, Variant
+from app.domain.enums import PackageStatus, Variant
 from app.domain.models import IaCPackage
 from app.domain.plan import DeploymentPlan
-from app.events.kinds import stage_notice_payload
 from app.pipeline.state import PipelineStateWriter
+
 
 @dataclass(frozen=True)
 class StageContext:
