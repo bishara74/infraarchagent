@@ -287,6 +287,41 @@ Status values:
 - **Evaluation:** OQ-07's configuration mechanism is resolved; its effect on
   generation quality is measured in the evaluation, not assumed here.
 
+### D-17 — Default evaluation model (Accepted)
+- **Decision:** use `anthropic/claude-sonnet-5` through OpenRouter's
+  OpenAI-compatible endpoint with `LLM_REASONING_EFFORT=off` for the thesis
+  evaluation. The runtime default remains `stub`.
+- **Evidence:** committed evaluations under `docs/evals/` found 5/5 Architect
+  plans valid on the first attempt and 6/6 generator packages with 100%
+  heuristic compliance, about 72 seconds median per package and about $0.65
+  for six packages. With reasoning enabled, only 3/6 packages completed due
+  to truncation and deadlines. `openai/gpt-oss-120b:nitro` completed 6/6 at
+  about 3 seconds and two cents, with 87.5–93.8% compliance; it remains the
+  fast, low-cost configuration. `qwen/qwen3-coder` completed 3/6 and was too
+  slow for the budget.
+
+### D-18 — SSE message format (Accepted)
+- **Implementation:** frames use `id: <seq>`, `event: <kind>`, and JSON data
+  with `seq`, `kind`, `agent`, `status`, `previous_status`, `message`, `variant`,
+  `timestamp`, and `payload`. `payload.kind` is persisted through `EventLog`;
+  package events include `payload.variant` and never file contents.
+
+### D-19 — Failed launch edge (Accepted)
+- **Implementation:** permit `created → failed` for a persisted run that
+  cannot start or is found at startup. Terminal run states remain frozen.
+  State and event commits are separate transactions; a hard crash between
+  them can leave a missing event even though the state is correct.
+
+### D-20 — Unavailable security stage (Accepted, temporary)
+- **Implementation:** until Phase 5, generated packages move through
+  `scanning` to `scan_error` with an explicit unavailable notice. Such runs
+  classify as `failed`; unscanned packages are never labelled ready.
+
+### D-21 — Bounded in-process runner (Accepted)
+- **Implementation:** `MAX_CONCURRENT_RUNS` defaults to five. Capacity is
+  reserved before persistence; a full runner returns HTTP 429 without a run
+  row. This caps resource use while meeting PR-03's three-run requirement.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -363,7 +398,9 @@ packages per run, so absence may mean "generation failed" or "removed by
 retention". 410 needs a durable record of which variants once existed, for
 example an `agent_events` row with a defined payload such as
 `{"kind": "package_stored", "variant": "cost"}`. Decide in Phase 4 (event
-payload schema) or Phase 7 (download/results endpoints). Until then, no 410.
+payload schema) or Phase 7 (download/results endpoints). Phase 4 now records
+`package_generated` with a variant and paths, providing durable evidence.
+Phase 7 still decides and implements the 410 response. Until then, no 410.
 
 ### OQ-02 — Terminality of `invalid` and `validation_error` (Resolved)
 Resolved by D-06 (Option C).
@@ -385,9 +422,9 @@ setup. The stub result remains a report-format check only. **OQ-03 stays open**
 until the evaluation provider is chosen.
 
 ### OQ-04 — Single-process assumption
-The in-memory SSE broker requires a single backend process. This should be
-stated explicitly in the thesis design (Section 4.4 or the deployment
-section).
+The in-memory SSE broker requires a single backend process. Phase 4 relies on
+this: `make run` starts one Uvicorn worker, and the README states the
+requirement. The thesis design should state it in Section 4.4 or deployment.
 
 ### OQ-05 — End-to-end agent deadline (Resolved)
 One monotonic `AgentBudget` tracks elapsed time across plan attempts, prompt
@@ -408,9 +445,25 @@ The optional request control is implemented in D-16. Compare output quality,
 completion, and token use across settings in the evaluation before claiming
 that any effort level improves generator results.
 
+### OQ-08 — Strict JSON diagnostics and JSON mode (Mechanism implemented)
+Malformed responses now produce a safe reason code and, for syntax errors,
+only a character offset; response text is never logged. Optional
+`LLM_RESPONSE_FORMAT=json_object` sends OpenRouter's documented JSON mode on
+the OpenAI-compatible adapter, while Anthropic ignores it. The author must
+measure whether the option improves completion reliability on real runs.
+
 ---
 
 ## Thesis text to update (collected)
+- In the run-state table, replace `failed = 0 packages` with `failed = 0 usable
+  packages`: Phase 4 retains generated rows that ended `scan_error` for audit.
+- Section 4.4: include the 202 acceptance response, 429 capacity response,
+  SSE frame fields, startup recovery, and `created → failed` edge.
+- Add the model-comparison table and a quality-versus-latency discussion
+  using D-17's committed results.
+- Record the Aurora example: a structurally complete package had an Aurora
+  cluster without instances. Structural checks, Checkov, tfsec, and planned
+  Validator checks would not detect this; human review remains necessary.
 - Describe the fixed package layout in Chapter 4 or 5 (D-12).
 - State that `FR-G-01`, `FR-G-06`, and `FR-G-07` pipeline integration tests
   arrive with the Phase 4 orchestrator.

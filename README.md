@@ -22,10 +22,10 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 3 adds the three pure GeneratorAgents, package completeness rules,
-directive reports, and an offline model-comparison evaluator. The API
-currently exposes only `GET /api/health`; pipeline orchestration, persistence
-of generated packages, and the frontend arrive in later phases. See
+Phase 4 adds pipeline orchestration, package persistence, progress SSE, and a
+command-line watcher. Security scanning and validation arrive in later phases;
+the current security placeholder marks generated packages `scan_error` and
+the run `failed`. See
 [`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
 [`docs/design-deviations.md`](docs/design-deviations.md) for where the
 implementation differs from the thesis design.
@@ -51,6 +51,28 @@ the offline tests, stub spike, or stub agent evaluations.
 deletes generated package rows older than the configured retention period;
 `cd backend && .venv/bin/python -m app.cli sweep-packages --dry-run` reports
 the count without deleting. The CLI also accepts `--days N`.
+
+## Running a pipeline
+
+Start PostgreSQL and the backend in one terminal with `make up` and `make run`.
+In another terminal, run:
+
+```text
+make run-pipeline TEXT="Deploy a small AWS web service"
+```
+
+The watcher submits the request, prints SSE progress, reconnects with
+`Last-Event-ID` if necessary, and shows the final run and package statuses.
+Optional `CONFIG_PROVIDER`, `CONFIG_MODEL`, and `API_URL` select a request
+configuration and API root. With `LLM_PROVIDER=stub`, the API uses a
+pipeline-only deterministic demo; the Phase 1 spike and Phase 2–3 evaluation
+stubs are unchanged. Until Phase 5, generated packages end `scan_error`
+because security scanning is unavailable, and the run ends `failed`.
+
+The in-memory event broker requires **one backend process** (OQ-04 in
+[`docs/design-deviations.md`](docs/design-deviations.md)). `make run`
+explicitly starts one Uvicorn worker. Multiple workers would split subscribers
+and publishers across separate brokers.
 
 Run `make spike` with the default `stub` provider to create a JSON result
 and Markdown summary under `docs/spikes/`. To pass arguments, use for example
@@ -123,6 +145,10 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_API_KEY` | Real-adapter credential | Unset |
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
+| `LLM_RESPONSE_FORMAT` | `json_object` sends OpenAI-compatible JSON mode; Anthropic ignores it | Unset |
+| `BROKER_QUEUE_SIZE` | Maximum queued events per SSE subscriber | `1000` |
+| `MAX_CONCURRENT_RUNS` | Maximum active or reserved pipeline runs | `5` |
+| `SSE_KEEPALIVE_SECONDS` | Idle interval before an SSE keep-alive comment | `15` |
 | `LLM_ATTEMPT_TIMEOUT_SECONDS` | Per-call attempt limit | `30` |
 | `LLM_MAX_ATTEMPTS` | Total attempts per call | `3` |
 | `LLM_DEADLINE_SECONDS` | Overall limit per `complete_json` call | `150` |

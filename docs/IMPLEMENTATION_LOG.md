@@ -27,6 +27,50 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-01 — Phase 4 — Pipeline orchestration and live progress
+
+**Summary:** Added the asynchronous pipeline API, Architect-to-parallel-generator
+barrier, durable state/event writing, bounded in-memory SSE broker, recovery,
+and command-line watcher. The production security placeholder leaves generated
+packages in `scan_error`, so Phase 4 runs truthfully settle as `failed`.
+
+**Requirements addressed:** FR-I-01--04, FR-A-04, FR-G-01, FR-G-06--07,
+FR-P-01--04, PR-02, PR-03, UC-01, UC-02, NFR-01.
+
+**Files:** added `backend/app/events/{kinds,broker}.py`,
+`backend/app/pipeline/{state,stages,demo_stub,orchestrator,runner}.py`,
+`backend/app/api/pipeline.py`, `backend/scripts/run_pipeline.py`, and Phase 4
+unit and integration tests; changed the LLM parser and OpenAI adapter,
+repositories, state machine, app wiring, settings, `Makefile`, `.env.example`,
+`README.md`, and `docs/design-deviations.md`.
+
+**Decisions:** D-17--D-21 record the evaluation model, SSE format, launch
+failure edge, unavailable security stage, and capacity limit. OQ-01 now has a
+durable `package_generated` variant record; OQ-04 is enforced by one Uvicorn
+worker; OQ-08 implements safe format diagnostics and optional JSON mode.
+The deterministic pipeline demo is an explicit factory opt-in, preserving all
+Phase 1--3 stub consumers. State commits before the event transaction, so a
+hard crash in that window can leave a missing event. The spec's `failed = 0
+packages` wording is recorded for correction to `0 usable packages`.
+
+**Tests:** `make lint` passed Ruff check, Ruff format check (100 files), and
+mypy (61 source files). `make test` passed with **371 passed, 0 failed, 0
+skipped**. New tests cover API rejection and persistence, the generator
+barrier, success and partial outcomes with fake stages, placeholder failure,
+startup recovery, cancellation, canary redaction, broker isolation and
+overflow, replay/live overlap, keep-alives, concurrency, and stub regression.
+With `LLM_PROVIDER=stub`, `make run` and `make run-pipeline TEXT="Deploy a small
+AWS web service"` produced a full stream ending `failed`, with all
+three packages in `scan_error`. No real LLM API call was made.
+
+**Known gaps / follow-ups:** Real scanning and remediation (Phase 5), real
+validation (Phase 6), results/review/download APIs (Phase 7), and frontend
+(Phase 8) remain. A database outage or hard crash cannot be settled until
+recovery; an event missing from the state/event commit window cannot be
+reconstructed by replay.
+
+---
+
 ## 2026-09-30 — Phase 2 follow-up — Architect evaluation placement checks
 
 **Summary:** Corrected the architect evaluator's three-tier relational
