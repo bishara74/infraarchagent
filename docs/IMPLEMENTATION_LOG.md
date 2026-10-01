@@ -27,7 +27,74 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
-#### 2026-10-01 — Phase 5b section 3 — Recorded and isolated scanner verification
+#### 2026-10-01 — Phase 5b section 4 — Scan-only comparison on all committed packages
+
+**Summary:** Ran `make eval-security EVAL_ARGS="--scan-only"` on all 12 default
+Phase 3 packages. Committed the report under `docs/evals/phase5b-security-20261001T191131076470Z/`.
+Evaluation now exposes safe file/line/module coverage advisory records explicitly,
+with no source URLs, and aggregates them; its regression test verifies this.
+
+**Requirements addressed:** FR-S-01, FR-S-04, FR-G-05, NFR-01.
+
+**Files:** added evaluation `results.json`/`summary.md`; changed evaluation
+script/test and this log. The existing untracked Phase 5 evaluation is preserved.
+
+**Comparison:** baseline `phase5-security-20261001T060220849316Z`:
+
+| Model / package | Blocking old → new | Checkov H/C old = new | tfsec H/C old | Trivy H/C new | Terraform H/C new | Combined H/C old → new |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| gpt-oss / kubernetes_monitoring / cost | 30 → 46 | 10 | 1 | 6 | 1 | 11 → 17 |
+| gpt-oss / kubernetes_monitoring / performance | 38 → 54 | 8 | 8 | 14 | 0 | 16 → 22 |
+| gpt-oss / kubernetes_monitoring / security | 66 → 94 | 10 | 9 | 18 | 0 | 19 → 28 |
+| gpt-oss / three_tier / cost | 35 → 31 | 6 | 12 | 9 | 0 | 18 → 15 |
+| gpt-oss / three_tier / performance | 11 → 25 | 4 | 1 | 12 | 1 | 5 → 17 |
+| gpt-oss / three_tier / security | 31 → 27 | 2 | 12 | 9 | 0 | 14 → 11 |
+| Sonnet / kubernetes_monitoring / cost | 37 → 65 | 9 | 9 | 21 | 0 | 18 → 30 |
+| Sonnet / kubernetes_monitoring / performance | 40 → 67 | 8 | 10 | 21 | 0 | 18 → 29 |
+| Sonnet / kubernetes_monitoring / security | 28 → 54 | 7 | 10 | 20 | 0 | 17 → 27 |
+| Sonnet / three_tier / cost | 31 → 28 | 5 | 10 | 8 | 0 | 15 → 13 |
+| Sonnet / three_tier / performance | 34 → 30 | 5 | 12 | 9 | 0 | 17 → 14 |
+| Sonnet / three_tier / security | 21 → 16 | 4 | 8 | 4 | 0 | 12 → 8 |
+
+All 12 scans completed with zero scanner errors and zero timeouts. One external
+module advisory is recorded: gpt-oss three_tier/performance, module.vpc at
+`terraform/main.tf:8` (a registry source). Its downloaded contents were unavailable
+but local findings were retained; all other module sources are local. Checkov counts are
+identical per package. Mean blocking counts changed from 35.17 to 46.17 for
+gpt-oss and 31.83 to 43.33 for Sonnet. All packages still have blocking findings;
+FR-G-05 still fails for both models. HIGH/CRITICAL totals: gpt-oss Checkov 40
+unchanged, old tfsec 43 versus new Trivy 68 plus Terraform 2; Sonnet Checkov 38
+unchanged, old tfsec 59 versus new Trivy 83 plus Terraform 0.
+
+Both gpt-oss syntax findings remain: kubernetes_monitoring/cost at
+`terraform/main.tf:172` (Invalid single-argument block definition) and
+three_tier/performance at `terraform/ecs.tf:24` (Extraneous label for locals).
+The old tfsec syntax count is replaced by Terraform, not added to Trivy.
+
+Large increases occur in monitoring packages (+16/+16/+28 for gpt-oss,
++28/+27/+26 for Sonnet) and the syntax-limited gpt-oss three-tier performance
+package (+14). Likely causes are additional Kubernetes and Helm coverage,
+including Kubernetes findings despite failed Terraform parsing. A direct Trivy
+probe of Sonnet monitoring/cost confirms both rendered Helm workloads, with
+13 findings and three HIGH/CRITICAL findings each; gpt-oss monitoring/cost
+still has no Terraform findings but scans both Kubernetes deployments. Trivy
+can also omit unrenderable templates; built-in Helm support is not universal
+chart validation. Three-tier reductions of 3–5 findings are consistent with
+rule/severity differences in the pinned embedded library; Checkov's severity
+policy did not change. No remediation quality or timing speedup is inferred.
+
+**Tests:** After the coverage-record addition, `make lint` passed (132 format
+checks, mypy 78 files), explicit script Ruff check passed, and `make test`
+→ **507 passed, 0 failed, 0 skipped in 60.75 s** (30 scanner tests, none skipped).
+The final 12-package evaluation has no DB connection, dotenv read or LLM calls.
+
+**Known gaps / follow-ups:** No fix evaluation was run. Full semantic validation
+remains Phase 6; syntax-limited Terraform findings are incomplete security
+coverage. Raw JSON timestamps/IDs and elapsed times are not deterministic.
+
+---
+
+## 2026-10-01 — Phase 5b section 3 — Recorded and isolated scanner verification
 
 **Summary:** Added focused parser, syntax, module-coverage, compatibility and
 real-tool tests, plus seven recorded SecurityAgent loop scenarios. Confirmed

@@ -342,6 +342,15 @@ async def run_evaluation(
             else None,
             "scanner_errors": errors,
             "scan_timeouts": timeouts,
+            "external_modules_not_scanned": [
+                {
+                    "file_path": item.file_path,
+                    "line_start": item.line_start,
+                    "resource": item.resource,
+                }
+                for item in violations
+                if item.rule_id == "EXTERNAL_MODULE_NOT_SCANNED"
+            ],
             "syntax_limited": syntax_limited,
             "syntax_findings": [
                 {
@@ -470,6 +479,9 @@ async def run_evaluation(
             ),
             "scanner_error_count": sum(bool(case["scanner_errors"]) for case in group),
             "syntax_limited_count": sum(case["syntax_limited"] for case in group),
+            "external_modules_not_scanned_count": sum(
+                len(case.get("external_modules_not_scanned", [])) for case in group
+            ),
             "fr_g_05_pass": bool(security)
             and all(case["fr_g_05_pass"] is True for case in security),
         }
@@ -549,6 +561,17 @@ async def run_evaluation(
             f"syntax-limited scans {values['syntax_limited_count']}; "
             f"FR-G-05 {'PASS' if values['fr_g_05_pass'] else 'FAIL'}"
         )
+    lines.extend(["", "## External module coverage advisories", ""])
+    coverage = [case for case in cases if case.get("external_modules_not_scanned")]
+    if not coverage:
+        lines.append("None.")
+    for case in coverage:
+        for item in case["external_modules_not_scanned"]:
+            lines.append(
+                f"- {case['generator_model']} / {case['plan']} / {case['variant']}: "
+                f"{item['resource']} at {item['file_path']}:{item['line_start']} "
+                "(EXTERNAL_MODULE_NOT_SCANNED, advisory)."
+            )
     if remediate:
         lines.extend(["", "## Remediation results", ""])
         lines.extend(

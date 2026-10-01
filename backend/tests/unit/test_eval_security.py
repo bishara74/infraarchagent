@@ -39,7 +39,17 @@ async def test_scan_only_reports_separate_and_combined_high_counts(
                         message="unsafe",
                         tool="trivy",
                         blocking=True,
-                    )
+                    ),
+                    Violation(
+                        rule_id="EXTERNAL_MODULE_NOT_SCANNED",
+                        severity=Severity.LOW,
+                        file_path="terraform/main.tf",
+                        resource="module.remote",
+                        line_start=2,
+                        message="Remote module not scanned",
+                        tool="trivy",
+                        advisory_reason="external_module_not_scanned",
+                    ),
                 ],
                 {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
             )
@@ -56,6 +66,14 @@ async def test_scan_only_reports_separate_and_combined_high_counts(
     assert case["fr_g_05_pass"] is True
     assert result["aggregate"]["model"]["fr_g_05_pass"] is True
     assert "Trivy HIGH/CRITICAL 1" in (output / "summary.md").read_text()
+
+    assert case["external_modules_not_scanned"] == [
+        {"file_path": "terraform/main.tf", "line_start": 2, "resource": "module.remote"}
+    ]
+    assert result["aggregate"]["model"]["external_modules_not_scanned_count"] == 1
+    assert (
+        "EXTERNAL_MODULE_NOT_SCANNED, advisory" in (output / "summary.md").read_text()
+    )
 
 
 @pytest.mark.req("FR-G-05", "FR-S-01")
