@@ -33,7 +33,11 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as client:
             response = await client.post(
-                "/api/pipeline/run", json={"text": "Deploy an AWS web service"}
+                "/api/pipeline/run",
+                json={
+                    "text": "Deploy an AWS web service",
+                    "config": {"max_iterations": 2},
+                },
             )
             assert response.status_code == 202
             run_id = UUID(response.json()["run_id"])
@@ -44,6 +48,9 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
                 run = await RunRepository(session).get(run_id)
                 packages = await PackageRepository(session).list_for_run(run_id)
             assert run is not None and run.status == RunStatus.FAILED
+            assert run.llm_provider == LLMProvider.STUB
+            assert run.model == "stub"
+            assert run.max_iterations == 2
             assert len(packages) == 3
             assert all(row.status == PackageStatus.SCAN_ERROR for row in packages)
             assert all(row.files for row in packages)
@@ -75,6 +82,7 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
         ("{}", 400),
         ('{"text": 3}', 400),
         ('{"text":"hi"}', 400),
+        ('{"text":"Deploy AWS ' + "x" * 2000 + '"}', 400),
         ('{"text":"Deploy AWS\\u0001 service"}', 400),
         ('{"text":"tell me a joke about cats"}', 422),
         ('{"text":"Deploy AWS service","config":{"max_iterations":0}}', 400),
@@ -115,6 +123,12 @@ async def test_stream_rejects_bad_and_unknown_ids(
                 "/api/pipeline/00000000-0000-0000-0000-000000000001/stream"
             )
         ).status_code == 404
+        assert (
+            await client.get(
+                "/api/pipeline/00000000-0000-0000-0000-000000000001/stream",
+                headers={"Last-Event-ID": "bad"},
+            )
+        ).status_code == 400
 
 
 @pytest.mark.req("PR-03")

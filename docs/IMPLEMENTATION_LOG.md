@@ -54,7 +54,7 @@ hard crash in that window can leave a missing event. The spec's `failed = 0
 packages` wording is recorded for correction to `0 usable packages`.
 
 **Tests:** `make lint` passed Ruff check, Ruff format check (100 files), and
-mypy (61 source files). `make test` passed with **371 passed, 0 failed, 0
+mypy (61 source files). `make test` passed with **372 passed, 0 failed, 0
 skipped**. New tests cover API rejection and persistence, the generator
 barrier, success and partial outcomes with fake stages, placeholder failure,
 startup recovery, cancellation, canary redaction, broker isolation and
