@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import quote
 
-from app.core.config import ReasoningEffort, Settings
+from app.core.config import ReasoningEffort, ResponseFormat, Settings
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -73,15 +73,46 @@ class LLMResult:
 
 def extract_json_object(text: str) -> dict[str, Any]:
     candidate = text.strip()
+    if not candidate:
+        raise LLMResponseFormatError("empty")
+    if candidate.count("```") >= 4:
+        raise LLMResponseFormatError("multiple_blocks")
     fenced = FENCE.fullmatch(candidate)
     if fenced:
         candidate = fenced.group(1).strip()
+    elif candidate.startswith("```"):
+        raise LLMResponseFormatError(
+            "truncated" if candidate.count("```") == 1 else "prose_after"
+        )
+    elif "```" in candidate:
+        raise LLMResponseFormatError("prose_before")
+    if not candidate:
+        raise LLMResponseFormatError("empty")
+    if not candidate.startswith("{"):
+        if "{" in candidate:
+            raise LLMResponseFormatError("prose_before")
+        try:
+            json.loads(candidate)
+        except (ValueError, TypeError):
+            pass
+        else:
+            raise LLMResponseFormatError("not_object")
     try:
-        parsed = json.loads(candidate)
-    except (ValueError, TypeError):
-        raise LLMResponseFormatError() from None
+        parsed, end = json.JSONDecoder().raw_decode(candidate)
+    except json.JSONDecodeError as error:
+        incomplete = error.pos >= len(candidate) - 1 and (
+            "Unterminated" in error.msg
+            or "Expecting value" in error.msg
+            or "Expecting ',' delimiter" in error.msg
+            or "Expecting property name" in error.msg
+        )
+        raise LLMResponseFormatError(
+            "truncated" if incomplete else f"syntax_error@{error.pos}"
+        ) from None
     if not isinstance(parsed, dict):
-        raise LLMResponseFormatError()
+        raise LLMResponseFormatError("not_object")
+    if candidate[end:].strip():
+        raise LLMResponseFormatError("prose_after")
     return parsed
 
 
@@ -97,10 +128,12 @@ class LLMAdapter(ABC):
         clock: Callable[[], float] = time.monotonic,
         rng: random.Random | None = None,
         reasoning_effort: ReasoningEffort | None = None,
+        response_format: ResponseFormat | None = None,
     ) -> None:
         self.model = model
         self.policy = policy
         self.reasoning_effort = reasoning_effort
+        self.response_format = response_format
         self._sleep = sleep
         self._clock = clock
         self._rng = rng or random.Random()
@@ -157,6 +190,7 @@ class LLMAdapter(ABC):
             retry_after: float | None = None
             rate_limit_headers: tuple[str, ...] = ()
             category = "success"
+            format_reason: str | None = None
             try:
                 response = await asyncio.wait_for(
                     self.send_prompt(
@@ -188,7 +222,10 @@ class LLMAdapter(ABC):
                 retry_after = error.retry_after
                 rate_limit_headers = error.rate_limit_headers
             except LLMResponseFormatError as error:
-                category = error.reason
+                category = (
+                    "truncated" if error.reason == "truncated" else "invalid_json"
+                )
+                format_reason = error.reason
                 last_stats = error.stats or last_stats
             except LLMDeadlineExceeded:
                 category = "deadline"
@@ -221,6 +258,8 @@ class LLMAdapter(ABC):
                     fields.append(f"served_by={host}")
                 if response is not None and response.reasoning_tokens is not None:
                     fields.append(f"reasoning_tokens={response.reasoning_tokens}")
+                if format_reason is not None:
+                    fields.append(f"format_reason={format_reason}")
                 logger.info("%s", " ".join(fields))
             elapsed = self._clock() - started
             if self._clock() >= ends_at:

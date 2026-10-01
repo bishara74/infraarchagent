@@ -79,7 +79,7 @@ async def test_attempt_log_is_parseable_for_every_outcome(
     assert len(lines) == 1
     assert "  " not in lines[0]
     parsed = dict(field.split("=", 1) for field in lines[0].split(" "))
-    assert set(parsed) == {
+    assert set(parsed) - {"format_reason"} == {
         "provider",
         "model",
         "attempt",
@@ -333,6 +333,25 @@ def test_extract_json_accepts_one_object(source: str, expected: dict[str, Any]) 
 def test_extract_json_rejects_non_object_or_extra_text(source: str) -> None:
     with pytest.raises(LLMResponseFormatError):
         extract_json_object(source)
+
+
+@pytest.mark.req("NFR-01")
+@pytest.mark.parametrize(
+    "source,reason",
+    [
+        ("", "empty"),
+        ('before {"a":1}', "prose_before"),
+        ('{"a":1} after', "prose_after"),
+        ("```json\n{}\n```\n```json\n{}\n```", "multiple_blocks"),
+        ("[]", "not_object"),
+        ('{"a":', "truncated"),
+        ('{"a":,}', "syntax_error@5"),
+    ],
+)
+def test_json_format_reason_is_safe(source: str, reason: str) -> None:
+    with pytest.raises(LLMResponseFormatError) as captured:
+        extract_json_object(source)
+    assert captured.value.reason == reason
 
 
 @pytest.mark.req("FR-A-04", "PR-05")

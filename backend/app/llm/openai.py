@@ -5,7 +5,7 @@ from typing import Any
 import httpx2
 import openai
 
-from app.core.config import ReasoningEffort
+from app.core.config import ReasoningEffort, ResponseFormat
 from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_object
 from app.llm.errors import (
     LLMPermanentError,
@@ -27,8 +27,14 @@ class OpenAIAdapter(LLMAdapter):
         http_client: httpx2.AsyncClient | None = None,
         base_url: str | None = None,
         reasoning_effort: ReasoningEffort | None = None,
+        response_format: ResponseFormat | None = None,
     ) -> None:
-        super().__init__(model, policy, reasoning_effort=reasoning_effort)
+        super().__init__(
+            model,
+            policy,
+            reasoning_effort=reasoning_effort,
+            response_format=response_format,
+        )
         options: dict[str, Any] = {
             "api_key": api_key,
             "max_retries": 0,
@@ -60,6 +66,8 @@ class OpenAIAdapter(LLMAdapter):
             params["extra_body"] = {"reasoning": {"enabled": False}}
         elif self.reasoning_effort is not None:
             params["extra_body"] = {"reasoning": {"effort": self.reasoning_effort}}
+        if self.response_format == "json_object":
+            params["response_format"] = {"type": "json_object"}
         try:
             completion = await self.client.chat.completions.create(**params)
         except openai.APITimeoutError:

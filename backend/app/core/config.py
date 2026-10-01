@@ -11,6 +11,7 @@ from app.domain.enums import LLMProvider
 
 ROOT = Path(__file__).resolve().parents[3]
 ReasoningEffort = Literal["off", "low", "medium", "high"]
+ResponseFormat = Literal["json_object"]
 
 
 class ConfigurationError(ValueError):
@@ -29,6 +30,10 @@ class Settings(BaseSettings):
     llm_api_key: SecretStr | None = None
     llm_base_url: str | None = None
     llm_reasoning_effort: ReasoningEffort | None = None
+    llm_response_format: ResponseFormat | None = None
+    broker_queue_size: int = Field(default=1000, ge=1)
+    max_concurrent_runs: int = Field(default=5, ge=1)
+    sse_keepalive_seconds: float = Field(default=15.0, gt=0)
     llm_attempt_timeout_seconds: float = Field(default=30.0, gt=0)
     llm_max_attempts: int = Field(default=3, ge=1)
     llm_deadline_seconds: float = Field(default=150.0, gt=0)
@@ -62,6 +67,11 @@ class Settings(BaseSettings):
     @field_validator("llm_reasoning_effort", mode="before")
     @classmethod
     def empty_reasoning_effort_is_none(cls, value: object) -> object:
+        return None if value == "" else value
+
+    @field_validator("llm_response_format", mode="before")
+    @classmethod
+    def empty_response_format_is_none(cls, value: object) -> object:
         return None if value == "" else value
 
     def require_llm_key(self) -> str:

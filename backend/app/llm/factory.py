@@ -26,6 +26,7 @@ def build_adapter(
             model or settings.llm_model or "stub",
             chosen_policy,
             reasoning_effort=settings.llm_reasoning_effort,
+            response_format=settings.llm_response_format,
         )
     chosen_model = model or settings.llm_model
     if not chosen_model:
@@ -43,10 +44,19 @@ def build_adapter(
             key,
             reasoning_effort=settings.llm_reasoning_effort,
         )
+    if settings.llm_response_format is None:
+        return OpenAIAdapter(
+            chosen_model,
+            chosen_policy,
+            key,
+            base_url=settings.llm_base_url,
+            reasoning_effort=settings.llm_reasoning_effort,
+        )
     return OpenAIAdapter(
         chosen_model,
         chosen_policy,
         key,
         base_url=settings.llm_base_url,
         reasoning_effort=settings.llm_reasoning_effort,
+        response_format=settings.llm_response_format,
     )

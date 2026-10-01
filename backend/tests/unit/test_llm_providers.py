@@ -6,13 +6,70 @@ from typing import Any
 import httpx2
 import pytest
 
-from app.core.config import ReasoningEffort
+from app.core.config import ReasoningEffort, Settings
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import RetryPolicy
 from app.llm.errors import LLMDeadlineExceeded, LLMPermanentError, LLMTransientError
+from app.llm.factory import build_adapter
 from app.llm.openai import OpenAIAdapter
 
 POLICY = RetryPolicy(30, 3, 150, 0, 16000)
+
+
+@pytest.mark.req("NFR-03")
+@pytest.mark.parametrize("response_format", [None, "json_object"])
+async def test_optional_json_object_request_format(
+    response_format: str | None,
+) -> None:
+    requests: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        requests.append(request)
+        return httpx2.Response(200, json=success_body("openai"))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = OpenAIAdapter(
+            "test-model",
+            POLICY,
+            "canary-placeholder",
+            http_client=client,
+            response_format=response_format,  # type: ignore[arg-type]
+        )
+        await adapter.complete_json("hello")
+    payload = json.loads(requests[0].content)
+    if response_format is None:
+        assert "response_format" not in payload
+    else:
+        assert payload["response_format"] == {"type": "json_object"}
+
+
+@pytest.mark.req("NFR-03")
+async def test_anthropic_request_ignores_json_object_setting() -> None:
+    requests: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        requests.append(request)
+        return httpx2.Response(200, json=success_body("anthropic"))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        configured = Settings(
+            database_url="postgresql+asyncpg://app:placeholder@localhost/db",
+            migration_database_url="postgresql+asyncpg://owner:placeholder@localhost/db",
+            test_database_url="postgresql+asyncpg://app:placeholder@localhost/test",
+            test_migration_database_url="postgresql+asyncpg://owner:placeholder@localhost/test",
+            llm_provider="anthropic",
+            llm_model="test-model",
+            llm_api_key="canary-placeholder",
+            llm_response_format="json_object",
+            _env_file=None,
+        )
+        adapter = build_adapter(configured)
+        assert isinstance(adapter, AnthropicAdapter)
+        adapter.client = AnthropicAdapter(
+            "test-model", POLICY, "canary-placeholder", http_client=client
+        ).client
+        await adapter.complete_json("hello")
+    assert "response_format" not in json.loads(requests[0].content)
 
 
 class FakeClock:
