@@ -137,6 +137,44 @@ class BrokenSecurity:
         raise RuntimeError("hidden provider failure")
 
 
+@pytest.mark.req("FR-S-02", "FR-S-07")
+async def test_validation_receives_remediated_files(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+) -> None:
+    engine, _ = db_engines
+
+    class ChangedSecurity:
+        async def run(
+            self, ctx: StageContext, variant: Variant, package: IaCPackage
+        ) -> PackageStatus:
+            await ctx.writer.package_transition(
+                ctx.run_id, variant, PackageStatus.SCANNING, message="scanning"
+            )
+            async with make_session_factory(engine)() as session:
+                async with session.begin():
+                    await PackageRepository(session).save_files(
+                        ctx.run_id, variant, {"terraform/main.tf": "remediated\n"}
+                    )
+            await ctx.writer.package_transition(
+                ctx.run_id, variant, PackageStatus.SCAN_CLEAN, message="clean"
+            )
+            return PackageStatus.SCAN_CLEAN
+
+    class InspectValidation(FakeValidation):
+        async def run(
+            self, ctx: StageContext, variant: Variant, package: IaCPackage
+        ) -> PackageStatus:
+            assert package.files == {"terraform/main.tf": "remediated\n"}
+            return await super().run(ctx, variant, package)
+
+    orchestrator, _, _ = await make_orchestrator(
+        engine, FakeFactory([FakeGenerator(v) for v in Variant])
+    )
+    orchestrator.security_stage = ChangedSecurity()
+    orchestrator.validation_stage = InspectValidation()
+    assert await orchestrator.run() == RunStatus.SUCCESS
+
+
 async def make_orchestrator(
     engine: AsyncEngine,
     factory: FakeFactory,

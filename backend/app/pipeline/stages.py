@@ -6,9 +6,10 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
-from app.domain.enums import PackageStatus, Variant
+from app.domain.enums import AgentName, AgentState, PackageStatus, Variant
 from app.domain.models import IaCPackage
 from app.domain.plan import DeploymentPlan
+from app.events.kinds import stage_notice_payload
 from app.pipeline.state import PipelineStateWriter
 
 
@@ -37,4 +38,40 @@ class UnavailableValidationStage:
     async def run(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
     ) -> PackageStatus:
-        raise RuntimeError("validation stage is unavailable in this build")
+        message = "validation is not available in this build"
+        await ctx.writer.agent_state(
+            ctx.run_id,
+            AgentName.VALIDATOR,
+            AgentState.RUNNING,
+            message="validation started",
+            variant=variant,
+        )
+        await ctx.writer.package_transition(
+            ctx.run_id,
+            variant,
+            PackageStatus.VALIDATING,
+            message="validation started",
+        )
+        await ctx.writer.event_log.append(
+            ctx.run_id,
+            AgentName.VALIDATOR,
+            PackageStatus.VALIDATING,
+            message=message,
+            payload=stage_notice_payload(variant, message),
+        )
+        await ctx.writer.package_transition(
+            ctx.run_id,
+            variant,
+            PackageStatus.VALIDATION_ERROR,
+            message=message,
+            error=message,
+        )
+        await ctx.writer.agent_state(
+            ctx.run_id,
+            AgentName.VALIDATOR,
+            AgentState.FAILED,
+            previous=AgentState.RUNNING,
+            message=message,
+            variant=variant,
+        )
+        return PackageStatus.VALIDATION_ERROR
