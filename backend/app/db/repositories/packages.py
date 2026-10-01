@@ -51,8 +51,24 @@ class PackageRepository:
         return list(result)
 
     async def set_status(
-        self, run_id: UUID, variant: Variant, target: PackageStatus
+        self,
+        run_id: UUID,
+        variant: Variant,
+        target: PackageStatus,
+        *,
+        error: str | None = None,
     ) -> GeneratedPackage:
+        row, _ = await self.transition_status(run_id, variant, target, error=error)
+        return row
+
+    async def transition_status(
+        self,
+        run_id: UUID,
+        variant: Variant,
+        target: PackageStatus,
+        *,
+        error: str | None = None,
+    ) -> tuple[GeneratedPackage, PackageStatus]:
         row = await self.session.scalar(
             select(GeneratedPackage)
             .where(
@@ -63,10 +79,13 @@ class PackageRepository:
         )
         if row is None:
             raise LookupError("package not found")
-        assert_package_transition(PackageStatus(row.status), target)
+        previous = PackageStatus(row.status)
+        assert_package_transition(previous, target)
         row.status = target
+        if error is not None:
+            row.error = error
         await self.session.flush()
-        return row
+        return row, previous
 
     async def save_files(
         self, run_id: UUID, variant: Variant, files: dict[str, str]

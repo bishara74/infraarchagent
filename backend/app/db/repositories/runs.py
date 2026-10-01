@@ -44,7 +44,17 @@ class RunRepository:
     async def get(self, run_id: UUID) -> PipelineRun | None:
         return await self.session.get(PipelineRun, run_id)
 
-    async def set_status(self, run_id: UUID, target: RunStatus) -> PipelineRun:
+    async def set_status(
+        self, run_id: UUID, target: RunStatus, *, error_message: str | None = None
+    ) -> PipelineRun:
+        row, _ = await self.transition_status(
+            run_id, target, error_message=error_message
+        )
+        return row
+
+    async def transition_status(
+        self, run_id: UUID, target: RunStatus, *, error_message: str | None = None
+    ) -> tuple[PipelineRun, RunStatus]:
         row = await self.session.scalar(
             select(PipelineRun)
             .where(PipelineRun.run_id == run_id)
@@ -53,9 +63,20 @@ class RunRepository:
         )
         if row is None:
             raise LookupError("run not found")
-        assert_run_transition(RunStatus(row.status), target)
+        previous = RunStatus(row.status)
+        assert_run_transition(previous, target)
         row.status = target
+        if error_message is not None:
+            row.error_message = error_message
         if target in {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}:
             row.end_time = datetime.now(UTC)
         await self.session.flush()
-        return row
+        return row, previous
+
+    async def list_interrupted(self) -> list[UUID]:
+        rows = await self.session.scalars(
+            select(PipelineRun.run_id).where(
+                PipelineRun.status.in_((RunStatus.CREATED, RunStatus.RUNNING))
+            )
+        )
+        return list(rows)

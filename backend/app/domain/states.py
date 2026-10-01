@@ -16,7 +16,7 @@ class IllegalTransition(ValueError):
 
 
 RUN_TRANSITIONS: dict[RunStatus, frozenset[RunStatus]] = {
-    RunStatus.CREATED: frozenset({RunStatus.RUNNING}),
+    RunStatus.CREATED: frozenset({RunStatus.RUNNING, RunStatus.FAILED}),
     RunStatus.RUNNING: frozenset(
         {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}
     ),
