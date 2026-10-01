@@ -27,7 +27,7 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
-#### 2026-10-01 — Phase 5b section 5 — Tool provenance and thesis documentation
+## 2026-10-01 — Phase 5b section 5 — Tool provenance and thesis documentation
 
 **Summary:** Documented current scanning, offline/coverage limits, syntax gate,
 Helm support, whole-process-group termination and exact reproducible installs.
@@ -209,7 +209,7 @@ kernel isolation. External module contents remain unavailable.
 
 ---
 
- 2026-10-01 — Phase 5b section 1 — Bounded scanner process groups
+## 2026-10-01 — Phase 5b section 1 — Bounded scanner process groups
 
 **Summary:** Scanners start in separate sessions; timeout and cancellation kill
 all group members and bound pipe cleanup to five seconds. Evaluation prints
