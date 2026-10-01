@@ -49,6 +49,31 @@ class FixOutput(BaseModel):
     fixes: list[FixSummary] = Field(default_factory=list)
 
 
+def _schema_reason(error: ValidationError) -> str:
+    issue = error.errors(include_input=False, include_context=False)[0]
+    location = issue["loc"]
+    root = location[0] if location else None
+    if root == "file":
+        field = location[1] if len(location) > 1 else None
+        path = f"file.{field}" if field in {"path", "content"} else "file"
+    elif root == "new_files":
+        path = "new_files.value" if len(location) > 1 else "new_files"
+    elif root == "fixes":
+        index = location[1] if len(location) > 1 else None
+        path = f"fixes[{index}]" if isinstance(index, int) else "fixes"
+        field = location[2] if len(location) > 2 else None
+        if field in {"rule_id", "resource", "summary"}:
+            path += f".{field}"
+    else:
+        path = "response"
+    code = {
+        "missing": "missing",
+        "string_too_long": "too_long",
+        "extra_forbidden": "extra",
+    }.get(issue["type"], "type")
+    return f"schema:{path}.{code}"
+
+
 @dataclass(frozen=True)
 class FixProposal:
     path: str
@@ -70,10 +95,10 @@ def validate_fix(
 ) -> FixProposal:
     try:
         output = FixOutput.model_validate(raw)
-    except ValidationError:
-        return FixProposal(path, False, "invalid_response", None, {}, ())
+    except ValidationError as error:
+        return FixProposal(path, False, _schema_reason(error), None, {}, ())
     if output.file.path != path:
-        return FixProposal(path, False, "wrong_path", None, {}, ())
+        return FixProposal(path, False, "path_mismatch", None, {}, ())
     if not output.file.content:
         return FixProposal(path, False, "empty_content", None, {}, ())
     if len(output.new_files) > 3:
@@ -145,7 +170,14 @@ class FixAgent:
                 attempt_timeout=self.attempt_timeout,
                 max_output_tokens=self.max_output_tokens,
             )
-        except (LLMDeadlineExceeded, LLMPermanentError, LLMRetryExhausted):
+        except LLMRetryExhausted as error:
+            reason = (
+                "json_invalid"
+                if error.last_category in {"invalid_json", "truncated"}
+                else "llm_failure"
+            )
+            return FixProposal(path, False, reason, None, {}, ())
+        except (LLMDeadlineExceeded, LLMPermanentError):
             return FixProposal(path, False, "llm_failure", None, {}, ())
         proposal = validate_fix(response.data, path=path, files=files, plan=plan)
         return FixProposal(

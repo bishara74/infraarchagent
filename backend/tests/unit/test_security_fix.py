@@ -8,6 +8,7 @@ from app.agents.prompts.security_fix import user_prompt
 from app.agents.security.fix import FixAgent, validate_fix
 from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
+from app.llm.base import RetryPolicy
 from app.llm.stub import StubAdapter
 from app.pipeline.demo_stub import DEMO_PLAN
 
@@ -41,7 +42,7 @@ def test_fix_rejects_suppression_wrong_path_and_invalid_layout() -> None:
             files=FILES,
             plan=PLAN,
         ).reason
-        == "wrong_path"
+        == "path_mismatch"
     )
     bad = output("resource {}\n")
     bad["new_files"] = {"k8s/new.yaml": "kind: Pod"}
@@ -57,6 +58,37 @@ def test_fix_rejects_suppression_wrong_path_and_invalid_layout() -> None:
     )
     assert accepted.accepted
     assert FILES["terraform/main.tf"] == "resource {}\n"
+
+
+@pytest.mark.req("FR-S-02", "NFR-01")
+def test_schema_rejections_name_safe_field_and_rule() -> None:
+    missing = {"file": {"path": "terraform/main.tf"}, "fixes": []}
+    result = validate_fix(missing, path="terraform/main.tf", files=FILES, plan=PLAN)
+    assert result.reason == "schema:file.content.missing"
+    long_summary = output("resource {}\n")
+    long_summary["fixes"] = [
+        {"rule_id": "CKV_AWS_16", "resource": "db", "summary": "secret" * 40}
+    ]
+    result = validate_fix(
+        long_summary, path="terraform/main.tf", files=FILES, plan=PLAN
+    )
+    assert result.reason == "schema:fixes[0].summary.too_long"
+    assert "secret" not in result.reason
+
+
+@pytest.mark.req("FR-S-02", "NFR-01")
+async def test_invalid_json_has_safe_fix_reason() -> None:
+    adapter = StubAdapter(script=["not JSON"], policy=RetryPolicy(30, 1, 150, 0, 100))
+    proposal = await FixAgent(adapter).propose(
+        path="terraform/main.tf",
+        files=FILES,
+        findings=[],
+        plan=PLAN,
+        directive="secure",
+        remaining=30,
+    )
+    assert proposal.reason == "json_invalid"
+    assert "not JSON" not in proposal.reason
 
 
 @pytest.mark.req("FR-S-09")
