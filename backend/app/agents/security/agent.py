@@ -443,6 +443,7 @@ class SecurityAgent:
             "kind": kind,
             "started_at": started_at,
             "feedback_present": bool(feedback),
+            "fix_passes": iteration_count,
             "iterations": iterations,
             "final": {
                 "outcome": outcome,

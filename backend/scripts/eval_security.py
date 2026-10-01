@@ -71,7 +71,7 @@ def _model_name(folder: Path) -> str:
     if results.is_file():
         data = json.loads(results.read_text(encoding="utf-8"))
         for case in data.get("cases", []):
-            model = case.get("model")
+            model = case.get("generator_model") or case.get("model")
             if isinstance(model, str) and _model_folder(model) == folder.name:
                 return model
     return folder.name
@@ -118,6 +118,10 @@ def _high_counts(violations: list[Any]) -> dict[str, int]:
 
 def _display(value: Any) -> str:
     return "—" if value is None else str(value)
+
+
+def _count_text(counts: dict[str, int]) -> str:
+    return ", ".join(f"{name}:{count}" for name, count in sorted(counts.items())) or "—"
 
 
 async def _partial_scan(
@@ -319,22 +323,40 @@ async def run_evaluation(
             ]
             input_tokens = sum(fix.get("input_tokens") or 0 for fix in fixes)
             output_tokens = sum(fix.get("output_tokens") or 0 for fix in fixes)
+            remaining = report["final"]["remaining_blocking"]
+            fixing_model = report.get("fixing_model") or settings.llm_model or "stub"
+            rejected = [fix for fix in fixes if not fix["accepted"]]
+            rejected_by_reason = dict(
+                Counter(str(fix.get("reason") or "unknown") for fix in rejected)
+            )
+            remaining_by_severity = dict(
+                Counter(str(item["severity"]) for item in remaining)
+            )
             case.update(
                 {
                     "outcome": report["final"]["outcome"],
                     "iterations": len(report["iterations"]),
+                    "fix_passes": report.get(
+                        "fix_passes",
+                        sum(bool(entry.get("fixes")) for entry in report["iterations"]),
+                    ),
+                    "stop_reason": report["final"].get("reason")
+                    or report["final"]["outcome"],
+                    "fixing_model": fixing_model,
+                    "blocking_after_count": len(remaining),
+                    "blocking_after_by_severity": remaining_by_severity,
                     "fixes_accepted": sum(bool(fix["accepted"]) for fix in fixes),
                     "fixes_rejected": [
                         {"file": fix["file"], "reason": fix["reason"]}
-                        for fix in fixes
-                        if not fix["accepted"]
+                        for fix in rejected
                     ],
-                    "remaining_blocking": report["final"]["remaining_blocking"],
+                    "fixes_rejected_by_reason": rejected_by_reason,
+                    "remaining_blocking": remaining,
                     "input_tokens": input_tokens,
                     "output_tokens": output_tokens,
                     "estimated_cost": (
-                        input_tokens * (price_in or {}).get(model, 0)
-                        + output_tokens * (price_out or {}).get(model, 0)
+                        input_tokens * (price_in or {}).get(fixing_model, 0)
+                        + output_tokens * (price_out or {}).get(fixing_model, 0)
                     )
                     / 1_000_000,
                 }
@@ -371,11 +393,32 @@ async def run_evaluation(
             "fr_g_05_pass": bool(security)
             and all(case["fr_g_05_pass"] is True for case in security),
         }
+    fixing_aggregate: dict[str, Any] = {}
+    for model in sorted(
+        {case["fixing_model"] for case in cases if "fixing_model" in case}
+    ):
+        group = [case for case in cases if case.get("fixing_model") == model]
+        before = sum(case["first_scan_blocking_count"] for case in group)
+        after = sum(case["blocking_after_count"] for case in group)
+        fixing_aggregate[model] = {
+            "packages": len(group),
+            "blocking_before": before,
+            "blocking_after": after,
+            "total_reduction_percent": 100 * (before - after) / before
+            if before
+            else 0.0,
+            "clean_rate": sum(case["outcome"] == "clean" for case in group)
+            / len(group),
+            "mean_remaining": statistics.mean(
+                case["blocking_after_count"] for case in group
+            ),
+        }
     result = {
         "mode": "remediate" if remediate else "scan_only",
         "scanners": versions,
         "cases": cases,
         "aggregate": aggregate,
+        "fixing_aggregate": fixing_aggregate,
     }
     (output / "results.json").write_text(
         json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
@@ -422,6 +465,46 @@ async def run_evaluation(
             f"syntax-limited scans {values['syntax_limited_count']}; "
             f"FR-G-05 {'PASS' if values['fr_g_05_pass'] else 'FAIL'}"
         )
+    if remediate:
+        lines.extend(["", "## Remediation results", ""])
+        lines.extend(
+            [
+                "| Generator | Plan | Variant | Fixing model | Blocking "
+                "before → after | Fix passes | Stop reason | Remaining by "
+                "severity | Fixes accepted / rejected | Rejection reasons | "
+                "Elapsed seconds | Tokens in / out | Cost |",
+                "| --- | --- | --- | --- | ---: | ---: | --- | --- | ---: | "
+                "--- | ---: | ---: | ---: |",
+            ]
+        )
+        for case in cases:
+            if "fixing_model" not in case:
+                continue
+            fields = [
+                case["generator_model"],
+                case["plan"],
+                case["variant"],
+                case["fixing_model"],
+                f"{case['first_scan_blocking_count']} → {case['blocking_after_count']}",
+                case["fix_passes"],
+                case["stop_reason"],
+                _count_text(case["blocking_after_by_severity"]),
+                f"{case['fixes_accepted']} / {len(case['fixes_rejected'])}",
+                _count_text(case["fixes_rejected_by_reason"]),
+                case["elapsed_seconds"],
+                f"{case['input_tokens']} / {case['output_tokens']}",
+                f"{case['estimated_cost']:.6f}",
+            ]
+            lines.append("| " + " | ".join(map(str, fields)) + " |")
+        lines.extend(["", "## Fixing model aggregates", ""])
+        for model, values in fixing_aggregate.items():
+            lines.append(
+                f"- {model}: blocking {values['blocking_before']} → "
+                f"{values['blocking_after']}; reduction "
+                f"{values['total_reduction_percent']:.1f}%; clean rate "
+                f"{values['clean_rate']:.1%}; mean remaining "
+                f"{values['mean_remaining']:.2f}"
+            )
     (output / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     return output
 

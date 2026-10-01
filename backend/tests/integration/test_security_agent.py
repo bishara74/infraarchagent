@@ -137,6 +137,7 @@ async def test_two_fix_passes_and_three_first_scan_counts(
         assert first["first_scan_checkov_high_or_critical"] == 1
         assert first["first_scan_tfsec_high_or_critical"] == 1
         assert first["first_scan_combined_high_or_critical"] == 2
+        assert report["sessions"][0]["fix_passes"] == 2
         assert len(report["sessions"][0]["iterations"]) == 3
         assert "# pass 1" in row.remediation_diff
         assert "# pass 2" in row.remediation_diff

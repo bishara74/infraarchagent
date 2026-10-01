@@ -4,8 +4,9 @@ import json
 from pathlib import Path
 
 import pytest
+from pydantic import SecretStr
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.domain.enums import Severity
 from app.domain.models import Violation
 from app.scanners.runner import RecordedToolRunner, ToolFailure, ToolResult
@@ -147,3 +148,110 @@ async def test_evaluation_reports_syntax_limited_scan(
     assert case["first_scan_combined_high_or_critical"] == 1
     assert "syntax-limited" in (output / "summary.md").read_text()
     assert result["aggregate"]["model"]["syntax_limited_count"] == 1
+
+
+@pytest.mark.req("FR-S-04", "FR-G-05")
+async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    folder = tmp_path / "packages" / "generator-model" / "three_tier" / "security"
+    (folder / "terraform").mkdir(parents=True)
+    (folder / "terraform/main.tf").write_text("terraform {}\n")
+
+    class FakeScanner:
+        def __init__(self, runner: object) -> None:
+            pass
+
+        async def scan(self, files: dict[str, str], variant: object) -> ScanResult:
+            return ScanResult(
+                [
+                    Violation(
+                        rule_id=rule,
+                        severity=Severity.HIGH,
+                        file_path="terraform/main.tf",
+                        resource="db",
+                        message="unsafe",
+                        tool="tfsec",
+                        blocking=True,
+                    )
+                    for rule in ("aws-rds-encrypt", "aws-rds-public")
+                ],
+                {"checkov": "ok", "tfsec": "ok"},
+            )
+
+    async def fake_remediate(*args: object) -> tuple[dict[str, object], str]:
+        return (
+            {
+                "fixing_model": "fixer-model",
+                "fix_passes": 2,
+                "iterations": [
+                    {
+                        "fixes": [
+                            {
+                                "file": "terraform/main.tf",
+                                "accepted": True,
+                                "reason": None,
+                                "input_tokens": 1000,
+                                "output_tokens": 1000,
+                            }
+                        ]
+                    },
+                    {
+                        "fixes": [
+                            {
+                                "file": "terraform/main.tf",
+                                "accepted": False,
+                                "reason": "schema:file.content.missing",
+                                "input_tokens": 0,
+                                "output_tokens": 1000,
+                            }
+                        ]
+                    },
+                ],
+                "final": {
+                    "outcome": "exhausted",
+                    "reason": "no progress",
+                    "remaining_blocking": [{"severity": "HIGH"}],
+                },
+            },
+            "",
+        )
+
+    monkeypatch.setattr(eval_security, "Scanner", FakeScanner)
+    monkeypatch.setattr(eval_security, "_remediate", fake_remediate)
+    settings = Settings.model_construct(
+        database_url=SecretStr("unused"),
+        migration_database_url=SecretStr("unused"),
+        test_database_url=SecretStr("unused"),
+        test_migration_database_url=SecretStr("unused"),
+        llm_model="generator-model",
+    )
+    output = await eval_security.run_evaluation(
+        settings,
+        packages=[folder],
+        remediate=True,
+        price_in={"generator-model": 1000, "fixer-model": 2},
+        price_out={"generator-model": 1000, "fixer-model": 3},
+        output_root=tmp_path,
+    )
+    result = json.loads((output / "results.json").read_text())
+    case = result["cases"][0]
+    assert case["generator_model"] == "generator-model"
+    assert case["fixing_model"] == "fixer-model"
+    assert case["first_scan_blocking_count"] == 2
+    assert case["blocking_after_count"] == 1
+    assert case["fix_passes"] == 2
+    assert case["stop_reason"] == "no progress"
+    assert case["blocking_after_by_severity"] == {"HIGH": 1}
+    assert case["fixes_accepted"] == 1
+    assert case["fixes_rejected_by_reason"] == {"schema:file.content.missing": 1}
+    assert case["estimated_cost"] == pytest.approx(0.008)
+    aggregate = result["fixing_aggregate"]["fixer-model"]
+    assert aggregate["total_reduction_percent"] == 50
+    assert aggregate["clean_rate"] == 0
+    assert aggregate["mean_remaining"] == 1
+    summary = (output / "summary.md").read_text()
+    assert "## Remediation results" in summary
+    assert "schema:file.content.missing:1" in summary
+    assert "no progress" in summary
+    assert "## Fixing model aggregates" in summary
