@@ -317,6 +317,8 @@ Status values:
   `scan_error` with an explicit unavailable notice. Phase 5 replaces that
   placeholder with Checkov, tfsec, and the remediation loop.
 
+- **Phase 5b update:** Phase 5 scanner names in this history are superseded by D-31.
+
 ### D-21 — Bounded in-process runner (Accepted)
 - **Implementation:** `MAX_CONCURRENT_RUNS` defaults to five. Capacity is
   reserved before persistence; a full runner returns HTTP 429 without a run
@@ -346,6 +348,11 @@ Status values:
 - **Report bound:** every blocking finding is retained, but advisory samples
   and embedded diffs are capped with omitted counts. This narrows FR-S-04's
   literal "full scan report" wording to a bounded, auditable report.
+
+- **Phase 5b update:** Phase 5 scanner/count naming is superseded by D-31 (policy 2): Checkov
+  severities/thresholds stay unchanged; Trivy and Terraform counts are separate,
+  combined counts sum all three tools, and FR-G-05 still measures Checkov alone.
+  The historical Checkov severity derivation from tfsec remains its provenance.
 
 ### D-23 — Per-file fixes and retry audit baseline (Accepted)
 - **Implementation:** one LLM call handles all blocking findings for an
@@ -382,6 +389,12 @@ Status values:
   inputs do not require network access; they are not OS-level network
   isolation (`unshare -n` is unavailable on this machine).
 
+- **Phase 5b update:** The Phase 5 environment/timeout implementation is superseded by D-31
+  and D-32. All three scanners and version probes now receive fixed loopback
+  refusal proxies, empty NO_PROXY, disabled Git prompting and tool-specific
+  offline settings. `unshare -Urn` works in the Phase 5b session; namespace tests
+  confirm offline execution, while runtime does not enforce kernel isolation.
+
 ### D-26 — Reached validation placeholder (Accepted, temporary)
 - **Implementation:** Phase 5's real scan reaches the Phase 6 placeholder.
   It records `scan_clean|scan_exhausted → validating → validation_error`
@@ -397,6 +410,10 @@ Status values:
   that root. This keeps scanner-path validation independent of checkout
   location while preserving the original relative file references.
 
+- **Phase 5b update:** Phase 5 fixture formats are extended by D-31: active tfsec recordings
+  are removed; Trivy relative Targets and recognized rootless Trivy/Terraform
+  JSON are normalized without requiring a capture-machine path in every report.
+
 ### D-28 — Terraform parser failures as blocking findings (Accepted)
 - **Implementation:** a tfsec HCL parse diagnostic with a package file,
   line, and parser message becomes a CRITICAL `TERRAFORM_SYNTAX` finding.
@@ -406,6 +423,12 @@ Status values:
   malformed output, missing binaries, and timeouts still follow the scan
   retry and `scan_error` path. The evaluation includes the syntax finding
   and counts it once under tfsec, leaving FR-G-05's Checkov measure intact.
+
+- **Phase 5b update:** The tfsec implementation is superseded by D-31. Terraform supplies
+  critical syntax findings from a broadened, empirically verified allowlist.
+  Checkov and Trivy still scan available resources; syntax-limited means
+  Terraform coverage may be incomplete, not that all other findings disappear.
+  Syntax is counted only under Terraform in the three-tool combined diagnostic.
 
 ### D-29 — Safe fix rejection reasons and descriptive metadata (Accepted)
 - **Implementation:** invalid fix responses record a bounded schema field
@@ -426,6 +449,76 @@ Status values:
   each report session and in the latest security report. Remediation
   evaluation prices tokens using that fixer, independently of the generator
   model associated with the saved package.
+
+### D-31 — tfsec replaced by Trivy v0.69.3 (Accepted)
+
+tfsec is in maintenance mode; Trivy config is its official successor with
+the shared rule library and broader Kubernetes/Helm coverage. Phase 5b uses
+installed Trivy 0.69.3 with its embedded checks bundle, filtered
+Terraform 1.16.4 syntax diagnostics, and Checkov 3.3.21. It supersedes active
+tfsec scanning in D-22/D-25/D-28. Historical report findings retain `tool=tfsec`.
+Trivy IDs are taken from actual output (AVDID if present, otherwise ID);
+`AWS-0133` is confirmed in the vulnerable recording. No enhanced-monitoring
+Trivy check was emitted; only the existing Checkov exemption remains.
+
+Fresh per-scan cache, `--skip-check-update`, `--skip-version-check`, and
+`--disable-telemetry` pin the embedded rules. All scanner/version environments
+exclude application secrets and set fixed loopback refusal proxies (including
+lowercase variables, with empty NO_PROXY); Git prompting is disabled. This
+prevents practical download attempts from completing, without claiming kernel
+network isolation. Local findings are retained when external module downloads
+fail; `EXTERNAL_MODULE_NOT_SCANNED` explicitly marks literal remote sources.
+
+Trivy silently skips tested malformed HCL; `fmt` misses extraneous labels.
+`validate -json` without init supplies only demonstrated configuration-loading
+and HCL parse summaries. Provider/module/reference/type errors are ignored;
+Unsupported block type is limited by source context to avoid resource schemas.
+The three tools run concurrently. Terraform syntax counts are separate and
+included once in combined counts; FR-G-05 still measures Checkov alone.
+
+The author confirms installation checksum output:
+`trivy_0.69.3_Linux-64bit.tar.gz: OK` from `sha256sum -c`. This is author-confirmed
+provenance, not an independently repeated installation verification. The task
+identifies malicious 0.69.4 and CVE-2026-33634; runtime uses only installed
+0.69.3. Trivy's built-in Helm renderer closes the Checkov-only Helm gap without
+installing Helm. Network-isolated tests with `unshare -Urn` succeeded in this session (unlike
+the earlier Phase 5 environment). Debug logs confirm 563 embedded checks and
+no downloadable checks loaded. The fresh-cache fallback is logged as ERROR;
+tests allow only that expected fallback and reject other errors. Two fresh
+namespace scans produce identical normalized findings. Remote-module refusal
+also preserves local findings. The [12-package evaluation](evals/phase5b-security-20261001T191131076470Z/summary.md)
+retains both known syntax findings and records the one inaccessible registry
+module explicitly. Runtime syntax diagnostics cover the root Terraform module
+without init, not recursive semantic validation of uninstalled child modules.
+Unknown diagnostic summaries/contexts are ignored until demonstrated with the
+pinned Terraform version; normalized findings, not raw timestamps/IDs, are
+the deterministic comparison.
+
+### D-32 — Scanner timeout terminates the whole process group (Accepted)
+
+The Phase 5 evaluation hung for 28 minutes after a timeout killed the Checkov
+parent but left a forked worker holding stdout. Each scanner now starts a
+new session. Timeout/cancellation sends SIGKILL to its process group; subsequent
+communication is bounded to five seconds and transports close on expiry.
+Deterministic subprocess regressions verify no surviving group and temp cleanup;
+all three fail against the old parent-only kill logic.
+
+Checkov 3.3.21 accepts `CHECKOV_PARALLELIZATION_TYPE` values `fork`, `spawn`,
+`thread`, `none`; runtime sets `none`. Its interleaved-drain code is upstream,
+not a local customization: installed
+`/home/bishara/.local/share/pipx/venvs/checkov/lib/python3.12/site-packages/checkov/common/parallelizer/parallel_runner.py`,
+lines 21–28 (switch), 132–135 (branch), 154–190 (drain). Downloading the exact
+PyPI wheel with `pip download --no-deps` and comparing that file produced the
+same SHA-256: `89019b62299807b8c5f21fda72e221a09d1c81a9ef53b1fd92006de99a99ee9b`.
+This corrects the earlier characterization as a customization.
+
+Single default/none timings (seconds), identical finding counts: vulnerable
+3.795/3.505, fixed 3.324/3.269, syntax 3.175/3.202, committed gpt-oss
+kubernetes-monitoring cost 3.285/3.406. No consistent speedup is claimed.
+Evaluation now logs every attempt and preserves recovered timeouts.
+
+
+---
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -506,64 +599,13 @@ Status values:
   errors and zero resources on the same invalid `locals "x" { a = 1 }` file,
   so Checkov alone does not detect this syntax error.
 
+- **Phase 5b update:** Phase 5 tool availability/syntax observations are superseded by D-31.
+  Active tools are Checkov 3.3.21, Trivy 0.69.3 and Terraform 1.16.4. Trivy
+  silently skipped the malformed HCL probes, so the filtered Terraform gate
+  supplies syntax findings. Trivy renders and scans Helm templates without
+  the Helm executable, closing the Checkov-only gap; Checkov still skips Helm.
+
 ---
-
-### D-31 — tfsec replaced by Trivy v0.69.3
-Phase 5b uses installed Trivy 0.69.3 with its embedded checks bundle, filtered
-Terraform 1.16.4 syntax diagnostics, and Checkov 3.3.21. It supersedes active
-tfsec scanning in D-22/D-25/D-28. Historical report findings retain `tool=tfsec`.
-Trivy IDs are taken from actual output (AVDID if present, otherwise ID);
-`AWS-0133` is confirmed in the vulnerable recording. No enhanced-monitoring
-Trivy check was emitted; only the existing Checkov exemption remains.
-
-Fresh per-scan cache, `--skip-check-update`, `--skip-version-check`, and
-`--disable-telemetry` pin the embedded rules. All scanner/version environments
-exclude application secrets and set fixed loopback refusal proxies (including
-lowercase variables, with empty NO_PROXY); Git prompting is disabled. This
-prevents practical download attempts from completing, without claiming kernel
-network isolation. Local findings are retained when external module downloads
-fail; `EXTERNAL_MODULE_NOT_SCANNED` explicitly marks literal remote sources.
-
-Trivy silently skips tested malformed HCL; `fmt` misses extraneous labels.
-`validate -json` without init supplies only demonstrated configuration-loading
-and HCL parse summaries. Provider/module/reference/type errors are ignored;
-Unsupported block type is limited by source context to avoid resource schemas.
-The three tools run concurrently. Terraform syntax counts are separate and
-included once in combined counts; FR-G-05 still measures Checkov alone.
-
-The author confirms installation checksum output:
-`trivy_0.69.3_Linux-64bit.tar.gz: OK` from `sha256sum -c`. This is author-confirmed
-provenance, not an independently repeated installation verification. The task
-identifies malicious 0.69.4 and CVE-2026-33634; runtime uses only installed
-0.69.3. Trivy's built-in Helm renderer closes the Checkov-only Helm gap without
-installing Helm. Network-isolated tests with `unshare -Urn` succeeded in this session (unlike
-the earlier Phase 5 environment). Debug logs confirm 563 embedded checks and
-no downloadable checks loaded. The fresh-cache fallback is logged as ERROR;
-tests allow only that expected fallback and reject other errors. Two fresh
-namespace scans produce identical normalized findings. Remote-module refusal
-also preserves local findings. Detailed evaluation follows in section 4.
-
-### D-32 — Scanner timeout terminates the whole process group
-The Phase 5 evaluation hung for 28 minutes after a timeout killed the Checkov
-parent but left a forked worker holding stdout. Each scanner now starts a
-new session. Timeout/cancellation sends SIGKILL to its process group; subsequent
-communication is bounded to five seconds and transports close on expiry.
-Deterministic subprocess regressions verify no surviving group and temp cleanup;
-all three fail against the old parent-only kill logic.
-
-Checkov 3.3.21 accepts `CHECKOV_PARALLELIZATION_TYPE` values `fork`, `spawn`,
-`thread`, `none`; runtime sets `none`. Its interleaved-drain code is upstream,
-not a local customization: installed
-`/home/bishara/.local/share/pipx/venvs/checkov/lib/python3.12/site-packages/checkov/common/parallelizer/parallel_runner.py`,
-lines 21–28 (switch), 132–135 (branch), 154–190 (drain). Downloading the exact
-PyPI wheel with `pip download --no-deps` and comparing that file produced the
-same SHA-256: `89019b62299807b8c5f21fda72e221a09d1c81a9ef53b1fd92006de99a99ee9b`.
-This corrects the earlier characterization as a customization.
-
-Single default/none timings (seconds), identical finding counts: vulnerable
-3.795/3.505, fixed 3.324/3.269, syntax 3.175/3.202, committed gpt-oss
-kubernetes-monitoring cost 3.285/3.406. No consistent speedup is claimed.
-Evaluation now logs every attempt and preserves recovered timeouts.
 
 ## Open questions
 
@@ -643,14 +685,23 @@ file-targeting rule for feedback-only retries.
   and price remediation tokens using the latter.
 - Explain the `TERRAFORM_SYNTAX` critical finding, the syntax-limited scan
   status, and the full rescan after repair. Note that Checkov 3.3.21 reported
-  zero parsing errors on the invalid `locals "x" { a = 1 }` fixture while
-  tfsec located the error.
+  zero parsing errors on the invalid `locals "x" { a = 1 }` fixture. Trivy
+  silently skipped it; filtered Terraform validate detects it (D-31 supersedes
+  the old tfsec implementation).
 - In FR-S-02, state the HIGH/MEDIUM/CRITICAL remediation threshold and the
   advisory policy; in FR-S-04, state the bounded advisory sample and diff.
 - In FR-G-05, define zero Checkov HIGH/CRITICAL first-scan findings as the
-  pass criterion, and report tfsec and combined counts as diagnostics.
-- Update Appendix A with Checkov 3.3.21, tfsec v1.28.14, and Terraform
-  v1.16.4; describe the missing Helm binary and tfsec maintenance status.
+  pass criterion, and report Trivy, Terraform and combined counts as diagnostics.
+  Historical tfsec reports preserve their original attribution.
+- FR-S-01 and NFR-04 name tfsec 1.x; update them to Trivy v0.69.3 (D-31).
+- Update Appendix A with Checkov 3.3.21 (exact installation pin
+  `pipx install "checkov==3.3.21"`), Trivy v0.69.3, and Terraform v1.16.4.
+  Record Helm scanning without Helm and tfsec's maintenance status.
+- Add one sentence on the malicious Trivy v0.69.4 supply-chain incident
+  (CVE-2026-33634), version pinning and author-confirmed release checksum.
+- Add one sentence on process-group termination and bounded pipe cleanup
+  as robustness measures (D-32). Checkov's interleaved drain is published
+  upstream 3.3.21 code, verified against its PyPI wheel, not a customization.
 - Update the ERD with `generated_packages.original_files` JSONB, the
   session-based security report, and its cumulative versus per-session diffs.
 - Add `Violation`'s severity, location, title, guide, and advisory fields to
@@ -662,7 +713,8 @@ file-targeting rule for feedback-only retries.
 - Add the model-comparison table and a quality-versus-latency discussion
   using D-17's committed results.
 - Record the Aurora example: a structurally complete package had an Aurora
-  cluster without instances. Structural checks, Checkov, tfsec, and planned
+  cluster without instances. Historical Phase 5 structural checks, Checkov,
+  tfsec (superseded by Trivy in D-31), and planned
   Validator checks would not detect this; human review remains necessary.
 - Describe the fixed package layout in Chapter 4 or 5 (D-12).
 - State that `FR-G-01`, `FR-G-06`, and `FR-G-07` pipeline integration tests

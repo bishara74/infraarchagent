@@ -27,7 +27,46 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
-#### 2026-10-01 — Phase 5b section 4 — Scan-only comparison on all committed packages
+#### 2026-10-01 — Phase 5b section 5 — Tool provenance and thesis documentation
+
+**Summary:** Documented current scanning, offline/coverage limits, syntax gate,
+Helm support, whole-process-group termination and exact reproducible installs.
+Preserved historical entries and annotated their supersession. Moved D-31/D-32
+into the deviations section and updated collected thesis changes.
+
+**Requirements addressed:** FR-S-01, FR-S-02, FR-S-04, FR-G-05, NFR-01, NFR-04.
+
+**Files:** changed `README.md`, `docs/design-deviations.md`, this log.
+
+**Decisions:** D-31 records the author's confirmed installation output
+`trivy_0.69.3_Linux-64bit.tar.gz: OK`; it does not claim independently repeated
+checksum verification or incident research. README reproduces the task's exact
+Trivy install snippet and pins `pipx install "checkov==3.3.21"`; no install was
+performed in this task. D-32 records the upstream interleaved-drain file/lines,
+matching PyPI wheel SHA-256, supported parallelization values, measured fixture
+and package timings, and negative regression evidence. D-22/D-25/D-27/D-28,
+CL-07, historical names and Appendix A/FR-S-01/NFR-04 notes are updated.
+
+**Tests:** Final implementation `make test` → **507 passed, 0 failed, 0 skipped**
+(30 scanner-marked tests, including namespace and all real Terraform probes).
+`make lint` passed Ruff check, 132 formatted files and mypy 78 source files;
+changed scripts pass explicit Ruff checks/format. Documentation-only changes
+were checked with `git diff --check`. The final 12-package scan-only evaluation
+has 0 errors, 0 timeouts and 1 remote-module advisory. Blocking counts agree
+with the preceding scan; elapsed times/metadata differ as expected.
+
+**Known gaps / follow-ups:** Docker is unavailable in this WSL session; database
+tests used an isolated PostgreSQL 16 cluster with ordinary roles/migrations and
+no extra grants. A temporary bootstrap disabled dotenv loading. The Trivy
+checksum confirmation and incident provenance are author-supplied. Runtime
+proxies do not enforce kernel isolation; remote module contents and unrecognized
+syntax diagnostics remain coverage limits. No new open question or dependency;
+Phase 6 semantic validation remains out of scope. No real LLM call, `.env` read,
+API/frontend/schema change, tool upgrade, push or history rewrite.
+
+---
+
+## 2026-10-01 — Phase 5b section 4 — Scan-only comparison on all committed packages
 
 **Summary:** Ran `make eval-security EVAL_ARGS="--scan-only"` on all 12 default
 Phase 3 packages. Committed the report under `docs/evals/phase5b-security-20261001T191131076470Z/`.

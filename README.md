@@ -41,6 +41,35 @@ Trivy renders Helm charts without the `helm` binary. Recorded tests
 run without these scanners; real-tool checks skip when they are absent. Tests
 need no LLM key or cloud credentials.
 
+Install only the pinned, checksum-verified Trivy release below. For
+reproducibility, do not use `get.trivy.dev`, apt/rpm, or “latest”. The author
+confirmed that checksum verification printed
+`trivy_0.69.3_Linux-64bit.tar.gz: OK`. The task records the malicious v0.69.4
+release and CVE-2026-33634; this project uses v0.69.3.
+
+```bash
+V=0.69.3
+cd /tmp
+curl -fsSLO https://github.com/aquasecurity/trivy/releases/download/v${V}/trivy_${V}_Linux-64bit.tar.gz
+curl -fsSLO https://github.com/aquasecurity/trivy/releases/download/v${V}/trivy_${V}_checksums.txt
+grep " trivy_${V}_Linux-64bit.tar.gz$" trivy_${V}_checksums.txt | sha256sum -c -
+tar -xzf trivy_${V}_Linux-64bit.tar.gz trivy
+sudo install -m 0755 trivy /usr/local/bin/trivy
+trivy --version
+```
+
+Scanner attempts use fresh temporary HOME/cache state, Trivy's pinned embedded
+checks (`--skip-check-update`), disabled version checks/telemetry, and fixed
+loopback refusal proxies for every tool. Tests also verify scans in a network
+namespace; runtime proxies do not provide kernel isolation. Literal remote
+Terraform modules have an `EXTERNAL_MODULE_NOT_SCANNED` advisory because their
+contents are unavailable. Terraform runs `validate -json` without `init`; only
+demonstrated HCL/configuration-loading diagnostics become CRITICAL
+`TERRAFORM_SYNTAX`. Missing providers/modules, references, types, formatting and
+schema validation are outside that gate. Full validation comes in Phase 6.
+Checkov parallelism is disabled with `CHECKOV_PARALLELIZATION_TYPE=none`;
+scanner timeout/cancellation kills the whole process group and bounds pipe cleanup.
+
 1. Copy `.env.example` to `.env`. Replace the three placeholder passwords and
    make the passwords in the four database URLs match their roles. `.env` is
    ignored by Git.
@@ -119,13 +148,14 @@ the offline evaluator does not connect to PostgreSQL.
 
 Run `make eval-security EVAL_ARGS='--scan-only'` to scan the committed gpt-oss
 v3 and Sonnet reasoning-off packages without LLM calls. The command writes
-`results.json` and `summary.md` under `docs/evals/phase5-security-<timestamp>/`.
+`results.json` and `summary.md` under `docs/evals/phase5b-security-<timestamp>/`.
 Scan-only mode does not load `.env` or connect to the database.
 Checkov HIGH/CRITICAL findings on the security variant determine FR-G-05;
-tfsec and combined counts are reported separately. The latest committed
-Phase 5 report marks two generated packages with CRITICAL
-`TERRAFORM_SYNTAX` findings; tfsec could not run its other checks until those
-files are repaired. Their Checkov counts remain available. Use
+Trivy, Terraform, and combined counts are reported separately. Historical
+reports retain their tfsec attribution. The Phase 5b report preserves both
+gpt-oss `TERRAFORM_SYNTAX` findings while Trivy scans available local Terraform
+resources, Kubernetes manifests and Helm templates. External-module coverage
+advisories and recovered scan timeouts are recorded explicitly. Use
 `--packages DIR [DIR ...]` for other saved
 package directories. `--remediate` explicitly enables LLM calls and writes
 evaluation runs to PostgreSQL; `--max-iterations`, `--price-in`, `--price-out`,
