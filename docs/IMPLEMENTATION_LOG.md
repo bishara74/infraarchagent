@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-01 — Phase 4 follow-up — Stream closure and core failure guards
+
+**Summary:** Added integration tests for SSE closure after a terminal run with
+an active remediation retry, and for unexpected orchestrator failures settling
+the run without exposing exception text in persisted or streamed data.
+
+**Requirements addressed:** FR-P-03, FR-P-04, FR-S-09, NFR-01.
+
+**Files:** changed `backend/tests/integration/test_pipeline_sse.py`,
+`backend/tests/integration/test_pipeline_orchestrator.py`, and this log.
+
+**Decisions:** The stream test uses a 0.01-second keep-alive setting and
+two-second timeouts on every read, so premature closure or a stalled stream
+fails promptly. No design deviation or new open question was introduced.
+
+**Tests:** `make test` passed with **374 passed, 0 failed, 0 skipped**.
+`make lint` passed Ruff check, Ruff format check (100 files), and mypy
+(61 source files). Replacing the active-package condition in `_can_close`
+with `True` made the stream test fail before the keep-alive. Removing the
+generic exception handler's `_fail_unexpected` call made the core failure
+test fail because the persisted run remained `running`. Both mutations were
+restored before the full checks.
+
+**Known gaps / follow-ups:** None from this test-only follow-up.
+
+---
+
 ## 2026-10-01 — Phase 4 — Pipeline orchestration and live progress
 
 **Summary:** Added the asynchronous pipeline API, Architect-to-parallel-generator

@@ -5,9 +5,13 @@ from uuid import UUID
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine
+from starlette.requests import Request
+from starlette.responses import StreamingResponse
 
 from app.agents.architect import ArchitectInvalidPlan
 from app.agents.generators.base import GeneratorError
+from app.api.pipeline import stream_run
+from app.core.config import get_settings
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
@@ -17,6 +21,7 @@ from app.domain.plan import DeploymentPlan
 from app.domain.run_config import RunConfig
 from app.events.log import EventLog
 from app.events.publisher import NullPublisher
+from app.main import create_app
 from app.pipeline.demo_stub import DEMO_PLAN
 from app.pipeline.orchestrator import PipelineOrchestrator
 from app.pipeline.stages import StageContext
@@ -285,6 +290,59 @@ async def test_unexpected_stage_error_becomes_scan_error(
         rows = await PackageRepository(session).list_for_run(run_id)
     assert len(rows) == 3
     assert all(row.status == PackageStatus.SCAN_ERROR for row in rows)
+
+
+@pytest.mark.req("FR-P-03", "FR-P-04", "NFR-01")
+async def test_unexpected_core_error_fails_run_without_exposing_exception(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+) -> None:
+    engine, _ = db_engines
+    private_message = "private create_generators failure marker"
+    public_message = "internal error; see server logs"
+
+    class BrokenFactory(FakeFactory):
+        def create_generators(self, config: RunConfig) -> list[FakeGenerator]:
+            self.generators_created = True
+            raise RuntimeError(private_message)
+
+    factory = BrokenFactory([])
+    orchestrator, run_id, writer = await make_orchestrator(engine, factory)
+    assert await orchestrator.run() == RunStatus.FAILED
+    assert factory.generators_created
+
+    async with make_session_factory(engine)() as session:
+        row = await RunRepository(session).get(run_id)
+    assert row is not None
+    assert row.status == RunStatus.FAILED
+    assert row.error_message == public_message
+    assert private_message not in str(
+        {column.key: getattr(row, column.key) for column in row.__table__.columns}
+    )
+
+    events = await writer.event_log.list_after(run_id, None)
+    assert any(
+        event.new_state == RunStatus.FAILED and event.message == public_message
+        for event in events
+    )
+    assert private_message not in str(events)
+
+    app = create_app(get_settings(), engine)
+    request = Request(
+        {"type": "http", "method": "GET", "path": "/", "headers": [], "app": app}
+    )
+    response = await stream_run(
+        str(run_id), request, app.state.event_log, app.state.broker, None
+    )
+    assert isinstance(response, StreamingResponse)
+    stream = response.body_iterator
+    try:
+        frames = [await asyncio.wait_for(anext(stream), timeout=2) for _ in events]
+        with pytest.raises(StopAsyncIteration):
+            await asyncio.wait_for(anext(stream), timeout=2)
+    finally:
+        await stream.aclose()
+    assert public_message in "".join(frames)
+    assert private_message not in "".join(frames)
 
 
 @pytest.mark.req("FR-P-03")
