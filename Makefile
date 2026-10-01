@@ -2,7 +2,7 @@ PYTHON := python3
 VENV := backend/.venv
 BACKEND := cd backend &&
 
-.PHONY: up down install migrate migrate-test run test lint sweep spike eval-architect eval-generators
+.PHONY: up down install migrate migrate-test run run-pipeline test lint sweep spike eval-architect eval-generators
 
 up:
 	docker compose up -d --wait
@@ -21,7 +21,11 @@ migrate-test:
 	$(BACKEND) .venv/bin/alembic -x database=test upgrade head
 
 run:
-	$(BACKEND) .venv/bin/uvicorn app.main:app --reload
+	$(BACKEND) .venv/bin/uvicorn app.main:app --workers 1
+
+run-pipeline: export PIPELINE_TEXT = $(TEXT)
+run-pipeline:
+	$(BACKEND) .venv/bin/python scripts/run_pipeline.py
 
 test: migrate-test
 	$(BACKEND) .venv/bin/pytest -q
