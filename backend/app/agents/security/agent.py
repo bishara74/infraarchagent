@@ -91,12 +91,18 @@ class SecurityAgent:
         return value
 
     async def _notice(
-        self, ctx: StageContext, variant: Variant, message: str, **metrics: Any
+        self,
+        ctx: StageContext,
+        variant: Variant,
+        message: str,
+        *,
+        status: PackageStatus = PackageStatus.REMEDIATING,
+        **metrics: Any,
     ) -> None:
         await ctx.writer.event_log.append(
             ctx.run_id,
             AgentName.SECURITY,
-            PackageStatus.REMEDIATING,
+            status,
             message=message,
             payload=stage_notice_payload(variant, message, metrics),
         )
@@ -353,6 +359,7 @@ class SecurityAgent:
                     ctx,
                     variant,
                     "security scan complete",
+                    status=PackageStatus.SCANNING,
                     iteration=iteration_count,
                     blocking_by_severity={},
                     advisory_count=entry["scan"]["advisory_count"],
@@ -428,7 +435,8 @@ class SecurityAgent:
                 message="security rescan started",
             )
 
-        counts = first_counts or {"checkov": 0, "tfsec": 0}
+        checkov_count = first_counts["checkov"] if first_counts is not None else None
+        tfsec_count = first_counts["tfsec"] if first_counts is not None else None
         session_report = {
             "kind": kind,
             "started_at": started_at,
@@ -438,10 +446,13 @@ class SecurityAgent:
                 "outcome": outcome,
                 "reason": reason,
                 "remaining_blocking": [_finding(item) for item in last_blocking],
-                "first_scan_checkov_high_or_critical": counts["checkov"],
-                "first_scan_tfsec_high_or_critical": counts["tfsec"],
-                "first_scan_combined_high_or_critical": counts["checkov"]
-                + counts["tfsec"],
+                "first_scan_checkov_high_or_critical": checkov_count,
+                "first_scan_tfsec_high_or_critical": tfsec_count,
+                "first_scan_combined_high_or_critical": (
+                    checkov_count + tfsec_count
+                    if checkov_count is not None and tfsec_count is not None
+                    else None
+                ),
             },
         }
         session_report["diff"], session_report["diff_omitted_chars"] = _capped_diff(

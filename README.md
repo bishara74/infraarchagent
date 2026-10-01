@@ -22,10 +22,10 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 4 adds pipeline orchestration, package persistence, progress SSE, and a
-command-line watcher. Security scanning and validation arrive in later phases;
-the current security placeholder marks generated packages `scan_error` and
-the run `failed`. See
+Phase 5 adds local Checkov and tfsec scanning, bounded per-file remediation,
+versioned security reports, and cumulative diffs. Validation arrives in
+Phase 6; until then scanned packages pass through `validation_error` to
+`pending_review`, so stub pipeline runs end `partial_success`. See
 [`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
 [`docs/design-deviations.md`](docs/design-deviations.md) for where the
 implementation differs from the thesis design.
@@ -33,8 +33,13 @@ implementation differs from the thesis design.
 ## Local setup
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
-port 5432. No LLM key, cloud credentials, Checkov, or tfsec are needed for
-the offline tests, stub spike, or stub agent evaluations.
+port 5432. To run live scanning or `make eval-security`, put Checkov 3.3.21
+and tfsec v1.28.14 on PATH. The author's WSL setup uses
+`pipx install checkov==3.3.21`, the tfsec v1.28.14 release binary installed
+on PATH, and Terraform v1.16.4 from HashiCorp's apt repository. Helm scanning
+also needs `helm`, which is absent in the Phase 5 environment. Recorded tests
+run without these scanners; real-tool checks skip when they are absent. Tests
+need no LLM key or cloud credentials.
 
 1. Copy `.env.example` to `.env`. Replace the three placeholder passwords and
    make the passwords in the four database URLs match their roles. `.env` is
@@ -45,7 +50,8 @@ the offline tests, stub spike, or stub agent evaluations.
 3. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
    using the owner role; code under test connects as the app role.
 4. Run `make run`, then open `http://127.0.0.1:8000/api/health`. A healthy
-   database returns HTTP 200 even when `LLM_API_KEY` is unset.
+   database returns HTTP 200 even when `LLM_API_KEY` or a scanner is absent;
+   the response reports scanner availability and versions.
 
 `make down` stops PostgreSQL without deleting its named volume. `make sweep`
 deletes generated package rows older than the configured retention period;
@@ -66,8 +72,10 @@ The watcher submits the request, prints SSE progress, reconnects with
 Optional `CONFIG_PROVIDER`, `CONFIG_MODEL`, and `API_URL` select a request
 configuration and API root. With `LLM_PROVIDER=stub`, the API uses a
 pipeline-only deterministic demo; the Phase 1 spike and Phase 2–3 evaluation
-stubs are unchanged. Until Phase 5, generated packages end `scan_error`
-because security scanning is unavailable, and the run ends `failed`.
+stubs are unchanged. The demo packages are scanned by the installed tools;
+validation is still unavailable, so they reach `pending_review` and the run
+ends `partial_success`. A missing or repeatedly failing scanner places its
+package in `scan_error`.
 
 The in-memory event broker requires **one backend process** (OQ-04 in
 [`docs/design-deviations.md`](docs/design-deviations.md)). `make run`
@@ -108,6 +116,17 @@ cost estimates take per-million-token rates as `--price-in model-a=1,model-b=2`
 and `--price-out model-a=3,model-b=4`. The evaluator never saves prompts or
 keys. The `--no-env-file` mode uses placeholder database settings because
 the offline evaluator does not connect to PostgreSQL.
+
+Run `make eval-security EVAL_ARGS='--scan-only'` to scan the committed gpt-oss
+v3 and Sonnet reasoning-off packages without LLM calls. The command writes
+`results.json` and `summary.md` under `docs/evals/phase5-security-<timestamp>/`.
+Checkov HIGH/CRITICAL findings on the security variant determine FR-G-05;
+tfsec and combined counts are reported separately. The committed Phase 5
+report marks two generated packages whose Terraform tfsec cannot parse and
+retains their Checkov counts. Use `--packages DIR [DIR ...]` for other saved
+package directories. `--remediate` explicitly enables LLM calls and writes
+evaluation runs to PostgreSQL; `--max-iterations`, `--price-in`, `--price-out`,
+and `--save-diffs` control its report. Real LLM calls can cost money.
 
 For OpenRouter through the OpenAI-compatible adapter, its
 [:nitro model suffix](https://openrouter.ai/docs/guides/routing/model-variants/nitro)
@@ -161,6 +180,11 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_BACKOFF_BASE_SECONDS` | Exponential retry backoff base | `1.0` |
 | `LLM_MAX_OUTPUT_TOKENS` | Output token limit per request | `16000` |
 | `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `3` |
+| `SECURITY_DEADLINE_SECONDS` | Overall security budget per package | `240` |
+| `SCANNER_TIMEOUT_SECONDS` | Limit for each local scanner call | `120` |
+| `FIX_ATTEMPT_TIMEOUT_SECONDS` | Limit for each LLM fix attempt | `90` |
+| `FIX_MAX_OUTPUT_TOKENS` | Output limit for a per-file fix | `16000` |
+| `SECURITY_MAX_PARALLEL_FIXES` | Maximum concurrent file fixes | `4` |
 | `PACKAGE_RETENTION_DAYS` | Package sweep cutoff | `30` |
 | `LOG_LEVEL` | Python log level | `INFO` |
 

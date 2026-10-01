@@ -27,6 +27,57 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-01 — Phase 5 — Security scanning, remediation, and audit
+
+**Summary:** Added offline Checkov and tfsec scans, severity classification,
+parallel per-file LLM fix proposals with suppression and package validation,
+bounded remediation and retry sessions, immutable generated-file baselines,
+and cumulative diffs. A reached validation placeholder now moves scanned
+packages through `validation_error` to `pending_review`.
+
+**Requirements addressed:** FR-S-01–07, FR-S-09, FR-G-05, NFR-01, CL-01.
+
+**Files:** added `backend/app/security/`, `backend/app/scanners/`,
+`backend/app/agents/security/`, `backend/app/agents/prompts/security_fix.py`,
+Alembic revision `0002_original_files`, security fixtures and tests,
+`backend/scripts/eval_security.py`, and
+`docs/evals/phase5-security-20261001T051255463643Z/`; changed domain
+models/enums, package repository, agent factory, pipeline stages and
+orchestrator, app wiring, settings, health, `Makefile`, `.env.example`,
+`README.md`, `docs/design-deviations.md`, and this log.
+
+**Decisions:** D-22–D-26 record advisory findings, bounded reports, retry
+audit, suppression rejection, subprocess isolation, and the temporary
+validation outcome. CL-07 records installed scanner behavior. OQ-09 defers
+feedback-only file targeting to Phase 7. FR-G-05 uses only the Checkov
+HIGH/CRITICAL first-scan count; tfsec and combined counts are diagnostics.
+Counts are null when no valid first scan exists. The combined per-package
+count sums both tools' records, including equivalent findings. The report's
+top-level `final` mirrors the latest session for direct access.
+
+**Tests:** `make lint` passed Ruff check, Ruff format check (123 files), and
+mypy (75 source files). Ruff check and format also passed for the evaluation
+script. `make test` passed with **397 passed, 0 failed, 0 skipped**, including
+real Checkov/tfsec fixture scans. New tests cover parser shapes and retries,
+policy, prompt and fix validation, concurrent fixes, loop outcomes and time
+budget, first-scan counts, diff and session persistence, canary redaction,
+validation transitions, and orchestrator settlement. Scan-only evaluation
+completed for 12 committed generator packages. After `make migrate` applied
+the new column to the development database, `LLM_PROVIDER=stub make run` plus
+`make run-pipeline TEXT="Deploy a small AWS web service"` ended
+`partial_success`, with all three packages in `pending_review`; no real LLM
+call was made.
+
+**Known gaps / follow-ups:** The committed evaluation marks two gpt-oss
+Terraform packages that tfsec cannot parse; their Checkov counts remain
+available, while tfsec and combined counts are unavailable. Helm is absent
+locally. Scanner flags and a restricted subprocess environment avoid network
+dependencies, but kernel-enforced network isolation was unavailable. The
+optional `--remediate` evaluation mode was not run because it makes real LLM
+calls. Real validation, review/results APIs, and UI remain for Phases 6–8.
+
+---
+
 ## 2026-10-01 — Phase 4 follow-up — Stream closure and core failure guards
 
 **Summary:** Added integration tests for SSE closure after a terminal run with

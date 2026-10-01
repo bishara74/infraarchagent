@@ -312,15 +312,82 @@ Status values:
   State and event commits are separate transactions; a hard crash between
   them can leave a missing event even though the state is correct.
 
-### D-20 — Unavailable security stage (Accepted, temporary)
-- **Implementation:** until Phase 5, generated packages move through
-  `scanning` to `scan_error` with an explicit unavailable notice. Such runs
-  classify as `failed`; unscanned packages are never labelled ready.
+### D-20 — Unavailable security stage (Removed in Phase 5)
+- **History:** Phase 4 moved generated packages through `scanning` to
+  `scan_error` with an explicit unavailable notice. Phase 5 replaces that
+  placeholder with Checkov, tfsec, and the remediation loop.
 
 ### D-21 — Bounded in-process runner (Accepted)
 - **Implementation:** `MAX_CONCURRENT_RUNS` defaults to five. Capacity is
   reserved before persistence; a full runner returns HTTP 429 without a run
   row. This caps resource use while meeting PR-03's three-run requirement.
+
+### D-22 — Blocking severity policy and first-scan measures (Accepted)
+- **Spec difference:** FR-S-02 says to remediate every violation. Phase 5
+  remediates CRITICAL, HIGH, and MEDIUM findings. LOW findings, unknown
+  Checkov IDs, and narrow variant exemptions remain visible but advisory.
+  This avoids costly fixes for checks that lack a defensible severity or
+  contradict the cost/performance directive. Security-variant checks are
+  never exempted.
+- **Checkov severity source:** the local `CHECKOV_SEVERITY` table covers
+  common AWS, Kubernetes, and Dockerfile checks. Assignments use Checkov
+  3.3.21 check descriptions (`checkov --list`) and tfsec v1.28.14 severity
+  for comparable Terraform rules. Free Checkov does not supply severity in
+  offline JSON; unknown IDs are `UNKNOWN` and advisory.
+- **Exemptions:** cost may omit cross-region S3 replication, RDS multi-AZ,
+  Performance Insights, and enhanced monitoring; performance may omit
+  cross-region S3 replication. Cost may treat Checkov's KMS-by-default S3
+  check as advisory only when the package contains SSE-AES256. The finding
+  remains in the report with its reason.
+- **FR-G-05:** the security variant passes only with zero Checkov HIGH or
+  CRITICAL records on its first scan. The report also stores tfsec's count
+  and their sum; equivalent findings reported by both tools count twice in
+  that combined diagnostic, while each tool's count stays separate.
+- **Report bound:** every blocking finding is retained, but advisory samples
+  and embedded diffs are capped with omitted counts. This narrows FR-S-04's
+  literal "full scan report" wording to a bounded, auditable report.
+
+### D-23 — Per-file fixes and retry audit baseline (Accepted)
+- **Implementation:** one LLM call handles all blocking findings for an
+  affected file; file calls run concurrently. Untouched file strings remain
+  byte-identical. A response can add at most three planned-layout files.
+  Conflicting new-file proposals are rejected in deterministic path order.
+- **Audit:** `generated_packages.original_files` is written on the first
+  security-result save and never overwritten. A new migration adds the
+  nullable JSONB column without changing grants. `remediation_diff` always
+  compares this baseline to current files. The JSON report holds automated
+  and review-retry sessions; a retry appends a session, resets the current
+  iteration count, and includes its own diff. Only the latest ten sessions
+  remain in the bounded report; `omitted_session_count` records older ones.
+  `security_report.final` mirrors the latest session's `final` for direct
+  access to the current outcome and first-scan counts.
+- **Phase 6 contract:** each failed validation check supplied for a review
+  retry names its package-relative file and, when known, its lines. A
+  validation-only retry then targets those files and carries feedback and
+  failed checks in each applicable file prompt.
+
+### D-24 — Reject new suppression annotations (Accepted)
+- **Implementation:** the fix validator compares case-insensitive Checkov,
+  tfsec, Trivy, Bridgecrew, and `#nosec` suppression comments in the old
+  and proposed content. Any newly introduced annotation rejects that file
+  response; new files must contain none. The original file and finding
+  remain for the rescan and report.
+
+### D-25 — Scanner subprocess environment (Accepted)
+- **Implementation:** Checkov and tfsec run without a shell under a timeout,
+  with only PATH, fresh HOME/TMPDIR, and LANG. Database URLs, LLM credentials,
+  cloud credentials, and inherited scanner configuration are excluded.
+  Checkov uses `--skip-download --skip-results-upload`; tfsec uses
+  `--no-module-downloads`. These flags and the offline test show that these
+  inputs do not require network access; they are not OS-level network
+  isolation (`unshare -n` is unavailable on this machine).
+
+### D-26 — Reached validation placeholder (Accepted, temporary)
+- **Implementation:** Phase 5's real scan reaches the Phase 6 placeholder.
+  It records `scan_clean|scan_exhausted → validating → validation_error`
+  and a stage notice, then the existing readiness rule sends the package to
+  `pending_review`. Stub pipeline runs therefore end `partial_success`,
+  never `production_ready`, until real validation arrives in Phase 6.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -388,6 +455,16 @@ Status values:
 - **Reason:** a multi-file package is substantially longer than a plan.
 - **Implemented in Phase 3:** per-call adapter overrides and generator settings.
 
+### CL-07 — Local scanner availability and output (Phase 5)
+- Checkov 3.3.21 and tfsec v1.28.14 are installed; tfsec is in maintenance
+  mode and prints a Trivy banner on stderr in JSON mode. Checkov can return
+  one report, a framework list, or a summary-only object for zero resources.
+  It can exit 1 with valid finding JSON. `helm` is absent, so Checkov skips
+  Helm chart scanning; Phase 5 does not install it.
+- The committed scan-only evaluation records two gpt-oss packages with
+  invalid Terraform that tfsec cannot parse. It preserves Checkov's partial
+  first-scan result and marks tfsec and combined counts unavailable there.
+
 ---
 
 ## Open questions
@@ -452,9 +529,26 @@ only a character offset; response text is never logged. Optional
 the OpenAI-compatible adapter, while Anthropic ignores it. The author must
 measure whether the option improves completion reliability on real runs.
 
+### OQ-09 — Feedback-only retry targeting (Deferred to Phase 7)
+When review feedback arrives with no blocking scanner finding and no
+file-linked failed validation check, Phase 5 has no file to target under its
+one-call-per-file rule. It records a notice and report entry saying feedback
+was not applied, then rescans. Phase 7 should decide whether to add another
+file-targeting rule for feedback-only retries.
+
 ---
 
 ## Thesis text to update (collected)
+- In FR-S-02, state the HIGH/MEDIUM/CRITICAL remediation threshold and the
+  advisory policy; in FR-S-04, state the bounded advisory sample and diff.
+- In FR-G-05, define zero Checkov HIGH/CRITICAL first-scan findings as the
+  pass criterion, and report tfsec and combined counts as diagnostics.
+- Update Appendix A with Checkov 3.3.21, tfsec v1.28.14, and Terraform
+  v1.16.4; describe the missing Helm binary and tfsec maintenance status.
+- Update the ERD with `generated_packages.original_files` JSONB, the
+  session-based security report, and its cumulative versus per-session diffs.
+- Add `Violation`'s severity, location, title, guide, and advisory fields to
+  the class diagram; specify Phase 6 failed-check file paths for retries.
 - In the run-state table, replace `failed = 0 packages` with `failed = 0 usable
   packages`: Phase 4 retains generated rows that ended `scan_error` for audit.
 - Section 4.4: include the 202 acceptance response, 429 capacity response,

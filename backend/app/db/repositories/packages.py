@@ -158,6 +158,7 @@ class PackageRepository:
             "prompt_version": prompt_version,
             "tools": tools,
             "sessions": sessions,
+            "final": session_report["final"],
             "omitted_session_count": omitted,
         }
         await self.session.flush()

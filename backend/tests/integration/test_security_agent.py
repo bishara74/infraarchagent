@@ -24,6 +24,7 @@ from app.events.publisher import NullPublisher
 from app.pipeline.demo_stub import DEMO_PLAN
 from app.pipeline.stages import StageContext
 from app.pipeline.state import PipelineStateWriter
+from app.scanners.runner import ToolFailure
 from app.scanners.scan import ScanResult
 
 
@@ -132,6 +133,7 @@ async def test_two_fix_passes_and_three_first_scan_counts(
         report = row.security_report
         assert report is not None
         first = report["sessions"][0]["final"]
+        assert report["final"] == first
         assert first["first_scan_checkov_high_or_critical"] == 1
         assert first["first_scan_tfsec_high_or_critical"] == 1
         assert first["first_scan_combined_high_or_critical"] == 2
@@ -185,6 +187,8 @@ async def test_no_progress_then_retry_appends_session_and_keeps_baseline(
         assert row.original_files == {"terraform/main.tf": "original\n"}
         assert row.security_report["sessions"][0] == old_session
         assert row.security_report["sessions"][1]["kind"] == "review_retry"
+        latest = row.security_report["sessions"][1]["final"]
+        assert row.security_report["final"] == latest
         assert row.iteration_count == 1
         assert "# pass 1" in row.remediation_diff
         assert row.remediation_diff.count("# pass 1") == 2
@@ -301,3 +305,27 @@ async def test_scanner_finding_does_not_store_canary_key(
         assert row is not None
         assert key not in json.dumps(row.security_report)
         assert key not in json.dumps([item.payload for item in events])
+
+
+@pytest.mark.req("FR-S-01", "FR-G-05")
+async def test_scan_error_has_no_first_scan_counts(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+) -> None:
+    engine, _ = db_engines
+    ctx, package = await setup(engine)
+
+    class FailingScanner:
+        async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+            raise ToolFailure("checkov", "invalid_json")
+
+    security = agent(engine, FailingScanner(), ScriptedFix())  # type: ignore[arg-type]
+    assert (
+        await security.run(ctx, Variant.SECURITY, package) == PackageStatus.SCAN_ERROR
+    )
+    async with make_session_factory(engine)() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+        assert row is not None and row.security_report is not None
+        final = row.security_report["final"]
+        assert final["first_scan_checkov_high_or_critical"] is None
+        assert final["first_scan_tfsec_high_or_critical"] is None
+        assert final["first_scan_combined_high_or_critical"] is None
