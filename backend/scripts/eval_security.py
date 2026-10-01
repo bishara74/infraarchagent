@@ -12,6 +12,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from pydantic import SecretStr
+
 from app.agents.factory import AgentFactory
 from app.core.config import Settings, get_settings
 from app.db.repositories.packages import PackageRepository
@@ -269,6 +271,10 @@ async def run_evaluation(
             violations = scan.violations
         except ToolFailure:
             violations, errors = await _partial_scan(scanner, files, variant)
+        syntax_limited = any(
+            item.tool == "tfsec" and item.rule_id == "TERRAFORM_SYNTAX"
+            for item in violations
+        )
         blocking = [item for item in violations if item.blocking]
         high = _high_counts(violations)
         checkov_high = high["checkov"] if "checkov" not in errors else None
@@ -288,6 +294,17 @@ async def run_evaluation(
             if variant == Variant.SECURITY and checkov_high is not None
             else None,
             "scanner_errors": errors,
+            "syntax_limited": syntax_limited,
+            "syntax_findings": [
+                {
+                    "rule_id": item.rule_id,
+                    "file_path": item.file_path,
+                    "line_start": item.line_start,
+                    "title": item.title,
+                }
+                for item in violations
+                if item.tool == "tfsec" and item.rule_id == "TERRAFORM_SYNTAX"
+            ],
             "top_rule_ids": [
                 rule
                 for rule, _ in Counter(item.rule_id for item in blocking).most_common(
@@ -350,6 +367,7 @@ async def run_evaluation(
                 case["first_scan_combined_high_or_critical"] or 0 for case in group
             ),
             "scanner_error_count": sum(bool(case["scanner_errors"]) for case in group),
+            "syntax_limited_count": sum(case["syntax_limited"] for case in group),
             "fr_g_05_pass": bool(security)
             and all(case["fr_g_05_pass"] is True for case in security),
         }
@@ -375,6 +393,8 @@ async def run_evaluation(
                 for tool, category in case["scanner_errors"].items()
             )
             if case["scanner_errors"]
+            else "syntax-limited (TERRAFORM_SYNTAX)"
+            if case["syntax_limited"]
             else "ok"
         )
         fields = [
@@ -399,6 +419,7 @@ async def run_evaluation(
             f"tfsec HIGH/CRITICAL {values['first_scan_tfsec_high_or_critical']}; "
             f"combined {values['first_scan_combined_high_or_critical']}; "
             f"scanner errors {values['scanner_error_count']}; "
+            f"syntax-limited scans {values['syntax_limited_count']}; "
             f"FR-G-05 {'PASS' if values['fr_g_05_pass'] else 'FAIL'}"
         )
     (output / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -416,9 +437,19 @@ def main() -> None:
     parser.add_argument("--price-out")
     parser.add_argument("--save-diffs", action="store_true")
     args = parser.parse_args()
+    settings = (
+        get_settings()
+        if args.remediate
+        else Settings.model_construct(
+            database_url=SecretStr("unused"),
+            migration_database_url=SecretStr("unused"),
+            test_database_url=SecretStr("unused"),
+            test_migration_database_url=SecretStr("unused"),
+        )
+    )
     output = asyncio.run(
         run_evaluation(
-            get_settings(),
+            settings,
             packages=args.packages,
             remediate=args.remediate,
             max_iterations=args.max_iterations,

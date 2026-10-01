@@ -120,10 +120,13 @@ the offline evaluator does not connect to PostgreSQL.
 Run `make eval-security EVAL_ARGS='--scan-only'` to scan the committed gpt-oss
 v3 and Sonnet reasoning-off packages without LLM calls. The command writes
 `results.json` and `summary.md` under `docs/evals/phase5-security-<timestamp>/`.
+Scan-only mode does not load `.env` or connect to the database.
 Checkov HIGH/CRITICAL findings on the security variant determine FR-G-05;
-tfsec and combined counts are reported separately. The committed Phase 5
-report marks two generated packages whose Terraform tfsec cannot parse and
-retains their Checkov counts. Use `--packages DIR [DIR ...]` for other saved
+tfsec and combined counts are reported separately. The latest committed
+Phase 5 report marks two generated packages with CRITICAL
+`TERRAFORM_SYNTAX` findings; tfsec could not run its other checks until those
+files are repaired. Their Checkov counts remain available. Use
+`--packages DIR [DIR ...]` for other saved
 package directories. `--remediate` explicitly enables LLM calls and writes
 evaluation runs to PostgreSQL; `--max-iterations`, `--price-in`, `--price-out`,
 and `--save-diffs` control its report. Real LLM calls can cost money.

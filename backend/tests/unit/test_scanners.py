@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from app.domain.enums import Variant
+from app.domain.enums import Severity, Variant
 from app.scanners.checkov_parser import parse_checkov
 from app.scanners.runner import (
     ProcessToolRunner,
@@ -122,6 +122,41 @@ async def test_one_whole_scan_retry_and_two_failures() -> None:
     failed.results["tfsec"] = [ToolFailure("tfsec", "timeout")] * 2
     with pytest.raises(ToolFailure, match="tfsec: timeout"):
         await Scanner(failed).scan(files("fixed"), Variant.SECURITY)
+    unparseable = recorded("fixed", repeat=2)
+    unparseable.results["tfsec"] = [
+        ToolResult("Error: scan failed: no HCL location", "", 1, 0) for _ in range(2)
+    ]
+    with pytest.raises(ToolFailure, match="tfsec: invalid_json"):
+        await Scanner(unparseable).scan(files("fixed"), Variant.SECURITY)
+    assert unparseable.calls.count("tfsec") == 2
+
+
+@pytest.mark.req("FR-S-01", "FR-S-02")
+async def test_recorded_tfsec_hcl_error_is_a_syntax_limited_finding() -> None:
+    root = (FIXTURES / "syntax_error").resolve()
+    raw = (FIXTURES / "tfsec-syntax-error.txt").read_text()
+    output = raw.replace(RECORDED_ROOT, str(root))
+    finding = parse_tfsec(output, root, {"terraform/main.tf"})[0]
+    assert finding.rule_id == "TERRAFORM_SYNTAX"
+    assert finding.tool == "tfsec"
+    assert finding.severity == Severity.CRITICAL
+    assert finding.file_path == "terraform/main.tf"
+    assert finding.line_start == finding.line_end == 1
+    assert finding.title.startswith("Extraneous label for locals")
+    assert str(root) not in str(finding.model_dump())
+    runner = RecordedToolRunner(
+        {
+            "checkov": [
+                ToolResult('{"passed":0,"failed":0,"resource_count":0}', "", 0, 0)
+            ],
+            "tfsec": [ToolResult(raw, "", 1, 0)],
+        },
+        recorded_root=Path(RECORDED_ROOT),
+    )
+    scan = await Scanner(runner).scan(files("syntax_error"), Variant.SECURITY)
+    assert scan.syntax_limited
+    assert scan.tool_status["tfsec"] == "syntax_limited"
+    assert scan.violations[0].blocking
 
 
 @pytest.mark.req("NFR-01")
@@ -156,3 +191,29 @@ async def test_real_scanners_run_offline_on_both_fixtures() -> None:
     assert any(v.tool == "tfsec" and v.blocking for v in vulnerable.violations)
     fixed = await scanner.scan(files("fixed"), Variant.SECURITY)
     assert not any(v.blocking for v in fixed.violations)
+
+
+@pytest.mark.scanners
+@pytest.mark.req("FR-S-01", "FR-S-02")
+@pytest.mark.skipif(
+    not shutil.which("checkov") or not shutil.which("tfsec"),
+    reason="local scanners are not installed",
+)
+async def test_real_tfsec_hcl_error_is_fixable_finding(tmp_path: Path) -> None:
+    scanner = Scanner(ProcessToolRunner(120))
+    scan = await scanner.scan(files("syntax_error"), Variant.SECURITY)
+    assert scan.syntax_limited
+    assert scan.tool_status["tfsec"] == "syntax_limited"
+    assert len(scan.violations) == 1
+    finding = scan.violations[0]
+    assert finding.rule_id == "TERRAFORM_SYNTAX"
+    assert finding.file_path == "terraform/main.tf"
+    assert finding.line_start == 1
+    assert finding.blocking
+    checkov_root = tmp_path / "checkov"
+    (checkov_root / "terraform").mkdir(parents=True)
+    (checkov_root / "terraform/main.tf").write_text(
+        (FIXTURES / "syntax_error/terraform/main.tf").read_text()
+    )
+    checkov = await ProcessToolRunner(120).run("checkov", checkov_root)
+    assert json.loads(checkov.stdout)["parsing_errors"] == 0

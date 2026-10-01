@@ -142,6 +142,66 @@ async def test_two_fix_passes_and_three_first_scan_counts(
         assert "# pass 2" in row.remediation_diff
 
 
+@pytest.mark.req("FR-S-01", "FR-S-02", "FR-S-03")
+async def test_syntax_fix_pass_rescans_full_package(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+) -> None:
+    engine, _ = db_engines
+    ctx, _ = await setup(engine)
+    invalid = 'locals "x" { a = 1 }\n'
+    valid = "locals { a = 1 }\n"
+    package = IaCPackage(variant=Variant.SECURITY, files={"terraform/main.tf": invalid})
+    async with make_session_factory(engine)() as session:
+        async with session.begin():
+            await PackageRepository(session).save_files(
+                ctx.run_id, Variant.SECURITY, package.files
+            )
+
+    class SyntaxScanner(ScriptedScanner):
+        def __init__(self) -> None:
+            super().__init__([])
+
+        async def scan(self, files: dict[str, str], variant: Variant) -> ScanResult:
+            self.calls += 1
+            if files["terraform/main.tf"] == invalid:
+                syntax = finding("TERRAFORM_SYNTAX", "tfsec").model_copy(
+                    update={
+                        "severity": Severity.CRITICAL,
+                        "line_start": 1,
+                        "line_end": 1,
+                    }
+                )
+                return ScanResult(
+                    [syntax], {"checkov": "ok", "tfsec": "syntax_limited"}, True
+                )
+            assert files["terraform/main.tf"] == valid
+            return ScanResult([], {"checkov": "ok", "tfsec": "ok"})
+
+    class SyntaxFix(ScriptedFix):
+        async def propose(self, **kwargs: Any) -> FixProposal:
+            self.calls.append(kwargs)
+            return FixProposal(kwargs["path"], True, None, valid, {}, ())
+
+    scanner = SyntaxScanner()
+    fixer = SyntaxFix()
+    assert (
+        await agent(engine, scanner, fixer).run(ctx, Variant.SECURITY, package)
+        == PackageStatus.SCAN_CLEAN
+    )
+    assert scanner.calls == 2
+    assert len(fixer.calls) == 1
+    async with make_session_factory(engine)() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+        assert row is not None and row.security_report is not None
+        assert row.files["terraform/main.tf"] == valid
+        assert row.original_files == package.files
+        iterations = row.security_report["sessions"][0]["iterations"]
+        assert iterations[0]["scan"]["syntax_limited"] is True
+        assert iterations[0]["scan"]["tfsec_other_findings_unavailable"] is True
+        assert iterations[1]["scan"]["syntax_limited"] is False
+        assert row.security_report["final"]["first_scan_tfsec_high_or_critical"] == 1
+
+
 @pytest.mark.req("FR-S-05", "FR-S-07", "FR-S-09")
 async def test_no_progress_then_retry_appends_session_and_keeps_baseline(
     db_engines: tuple[AsyncEngine, AsyncEngine],

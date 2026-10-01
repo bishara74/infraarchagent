@@ -22,3 +22,8 @@ valid. Repeat the commands with `fixed` in place of `vulnerable` for the fixed
 outputs. The normalization script requires the absolute package root to be
 present and checks that the result is JSON. `helm` was not installed; Checkov
 skipped Helm chart scanning.
+
+`syntax_error/terraform/main.tf` contains `locals "x" { a = 1 }` for the
+real-tool syntax test. `tfsec-syntax-error.txt` records tfsec's file-and-line
+diagnostic using the same root marker. Checkov 3.3.21 reports zero parsing
+errors for this invalid file.

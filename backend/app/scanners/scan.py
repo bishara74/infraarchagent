@@ -18,6 +18,7 @@ from app.security.policy import classify
 class ScanResult:
     violations: list[Violation]
     tool_status: dict[str, str]
+    syntax_limited: bool = False
 
 
 class Scanner:
@@ -48,6 +49,7 @@ class Scanner:
                 return_exceptions=True,
             )
             violations: list[Violation] = []
+            syntax_limited = False
             for name, output in zip(names, outputs, strict=True):
                 if isinstance(output, ToolFailure):
                     raise output
@@ -63,7 +65,16 @@ class Scanner:
                     raise ToolFailure(name, "invalid_json") from None
                 if output.exit_code not in (0, 1):
                     raise ToolFailure(name, "crash")
+                if name == "tfsec" and any(
+                    item.rule_id == "TERRAFORM_SYNTAX" for item in parsed
+                ):
+                    syntax_limited = True
                 violations.extend(parsed)
             return ScanResult(
-                classify(violations, variant, files), {name: "ok" for name in names}
+                classify(violations, variant, files),
+                {
+                    "checkov": "ok",
+                    "tfsec": "syntax_limited" if syntax_limited else "ok",
+                },
+                syntax_limited=syntax_limited,
             )

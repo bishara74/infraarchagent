@@ -389,6 +389,24 @@ Status values:
   `pending_review`. Stub pipeline runs therefore end `partial_success`,
   never `production_ready`, until real validation arrives in Phase 6.
 
+### D-27 — Portable recorded scanner fixtures (Accepted)
+- **Implementation:** recorded Checkov and tfsec JSON uses the fixed
+  `/__RECORDED_ROOT__` marker in place of the capture machine's absolute
+  package root. The test runner replaces it with each temporary scan root;
+  a capture script normalizes new recordings and rejects captures without
+  that root. This keeps scanner-path validation independent of checkout
+  location while preserving the original relative file references.
+
+### D-28 — Terraform parser failures as blocking findings (Accepted)
+- **Implementation:** a tfsec HCL parse diagnostic with a package file,
+  line, and parser message becomes a CRITICAL `TERRAFORM_SYNTAX` finding.
+  Its scan is marked `syntax_limited`: tfsec produced no other findings, so
+  a fix pass must repair syntax before a full rescan. The path is constrained
+  to the package file map and the temporary root is never reported. Other
+  malformed output, missing binaries, and timeouts still follow the scan
+  retry and `scan_error` path. The evaluation includes the syntax finding
+  and counts it once under tfsec, leaving FR-G-05's Checkov measure intact.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -462,8 +480,11 @@ Status values:
   It can exit 1 with valid finding JSON. `helm` is absent, so Checkov skips
   Helm chart scanning; Phase 5 does not install it.
 - The committed scan-only evaluation records two gpt-oss packages with
-  invalid Terraform that tfsec cannot parse. It preserves Checkov's partial
-  first-scan result and marks tfsec and combined counts unavailable there.
+  invalid Terraform. tfsec reports a file and line for each syntax error;
+  both now have a CRITICAL `TERRAFORM_SYNTAX` finding and a syntax-limited
+  scan instead of a scanner error. Checkov 3.3.21 reported zero parsing
+  errors and zero resources on the same invalid `locals "x" { a = 1 }` file,
+  so Checkov alone does not detect this syntax error.
 
 ---
 
@@ -539,6 +560,10 @@ file-targeting rule for feedback-only retries.
 ---
 
 ## Thesis text to update (collected)
+- Explain the `TERRAFORM_SYNTAX` critical finding, the syntax-limited scan
+  status, and the full rescan after repair. Note that Checkov 3.3.21 reported
+  zero parsing errors on the invalid `locals "x" { a = 1 }` fixture while
+  tfsec located the error.
 - In FR-S-02, state the HIGH/MEDIUM/CRITICAL remediation threshold and the
   advisory policy; in FR-S-04, state the bounded advisory sample and diff.
 - In FR-G-05, define zero Checkov HIGH/CRITICAL first-scan findings as the

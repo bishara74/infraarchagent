@@ -52,6 +52,8 @@ def _scan_report(scan: ScanResult) -> dict[str, Any]:
             Counter(item.severity.value for item in scan.violations)
         ),
         "tool_status": scan.tool_status,
+        "syntax_limited": scan.syntax_limited,
+        "tfsec_other_findings_unavailable": scan.syntax_limited,
     }
 
 

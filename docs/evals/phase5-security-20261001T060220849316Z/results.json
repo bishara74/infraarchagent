@@ -1,0 +1,435 @@
+{
+  "mode": "scan_only",
+  "scanners": {
+    "checkov": {
+      "available": true,
+      "version": "3.3.21"
+    },
+    "tfsec": {
+      "available": true,
+      "version": "v1.28.14"
+    }
+  },
+  "cases": [
+    {
+      "generator_model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "first_scan_blocking_by_severity": {
+        "HIGH": 10,
+        "MEDIUM": 19,
+        "CRITICAL": 1
+      },
+      "first_scan_blocking_count": 30,
+      "first_scan_advisory_count": 42,
+      "first_scan_checkov_high_or_critical": 10,
+      "first_scan_tfsec_high_or_critical": 1,
+      "first_scan_combined_high_or_critical": 11,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": true,
+      "syntax_findings": [
+        {
+          "rule_id": "TERRAFORM_SYNTAX",
+          "file_path": "terraform/main.tf",
+          "line_start": 172,
+          "title": "Invalid single-argument block definition; A single-line block definition must end with a closing brace immediately after its single argument definition."
+        }
+      ],
+      "top_rule_ids": [
+        "CKV_K8S_20",
+        "CKV_K8S_12",
+        "CKV_K8S_23",
+        "CKV_K8S_11",
+        "CKV_K8S_10",
+        "CKV_K8S_13",
+        "CKV_K8S_14",
+        "CKV_K8S_40",
+        "CKV_AWS_130",
+        "CKV_AWS_58"
+      ],
+      "elapsed_seconds": 3.31
+    },
+    {
+      "generator_model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "first_scan_blocking_by_severity": {
+        "HIGH": 12,
+        "MEDIUM": 22,
+        "CRITICAL": 4
+      },
+      "first_scan_blocking_count": 38,
+      "first_scan_advisory_count": 39,
+      "first_scan_checkov_high_or_critical": 8,
+      "first_scan_tfsec_high_or_critical": 8,
+      "first_scan_combined_high_or_critical": 16,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-eks-enable-control-plane-logging",
+        "CKV_K8S_20",
+        "CKV_K8S_12",
+        "CKV_K8S_23",
+        "CKV_K8S_11",
+        "CKV_K8S_10",
+        "CKV_K8S_13",
+        "CKV_K8S_14",
+        "CKV_K8S_40",
+        "CKV_AWS_130"
+      ],
+      "elapsed_seconds": 3.571
+    },
+    {
+      "generator_model": "openai/gpt-oss-120b:nitro",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "first_scan_blocking_by_severity": {
+        "HIGH": 16,
+        "MEDIUM": 47,
+        "CRITICAL": 3
+      },
+      "first_scan_blocking_count": 66,
+      "first_scan_advisory_count": 76,
+      "first_scan_checkov_high_or_critical": 10,
+      "first_scan_tfsec_high_or_critical": 9,
+      "first_scan_combined_high_or_critical": 19,
+      "fr_g_05_pass": false,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-eks-enable-control-plane-logging",
+        "CKV_K8S_20",
+        "CKV_K8S_12",
+        "CKV_K8S_23",
+        "CKV_K8S_11",
+        "CKV_K8S_10",
+        "CKV_K8S_13",
+        "CKV_K8S_14",
+        "CKV_K8S_40",
+        "CKV_AWS_130"
+      ],
+      "elapsed_seconds": 4.678
+    },
+    {
+      "generator_model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "cost",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 17,
+        "HIGH": 12,
+        "CRITICAL": 6
+      },
+      "first_scan_blocking_count": 35,
+      "first_scan_advisory_count": 29,
+      "first_scan_checkov_high_or_critical": 6,
+      "first_scan_tfsec_high_or_critical": 12,
+      "first_scan_combined_high_or_critical": 18,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-ec2-no-public-egress-sgr",
+        "CKV_AWS_378",
+        "aws-ec2-no-public-ingress-sgr",
+        "CKV_AWS_130",
+        "CKV_AWS_260",
+        "CKV_AWS_91",
+        "CKV_AWS_2",
+        "CKV_AWS_16",
+        "CKV_AWS_293",
+        "CKV_AWS_161"
+      ],
+      "elapsed_seconds": 3.406
+    },
+    {
+      "generator_model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "performance",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 6,
+        "HIGH": 4,
+        "CRITICAL": 1
+      },
+      "first_scan_blocking_count": 11,
+      "first_scan_advisory_count": 27,
+      "first_scan_checkov_high_or_critical": 4,
+      "first_scan_tfsec_high_or_critical": 1,
+      "first_scan_combined_high_or_critical": 5,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": true,
+      "syntax_findings": [
+        {
+          "rule_id": "TERRAFORM_SYNTAX",
+          "file_path": "terraform/ecs.tf",
+          "line_start": 24,
+          "title": "Extraneous label for locals; No labels are expected for locals blocks."
+        }
+      ],
+      "top_rule_ids": [
+        "CKV_AWS_378",
+        "CKV_AWS_91",
+        "CKV_AWS_2",
+        "CKV_AWS_260",
+        "CKV2_AWS_20",
+        "CKV_AWS_18",
+        "CKV_AWS_21",
+        "CKV_AWS_145",
+        "CKV_AWS_103",
+        "TERRAFORM_SYNTAX"
+      ],
+      "elapsed_seconds": 3.935
+    },
+    {
+      "generator_model": "openai/gpt-oss-120b:nitro",
+      "plan": "three_tier",
+      "variant": "security",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 17,
+        "HIGH": 8,
+        "CRITICAL": 6
+      },
+      "first_scan_blocking_count": 31,
+      "first_scan_advisory_count": 27,
+      "first_scan_checkov_high_or_critical": 2,
+      "first_scan_tfsec_high_or_critical": 12,
+      "first_scan_combined_high_or_critical": 14,
+      "fr_g_05_pass": false,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-ec2-no-public-egress-sgr",
+        "aws-iam-no-policy-wildcards",
+        "CKV_AWS_130",
+        "CKV_AWS_91",
+        "CKV_AWS_293",
+        "CKV_AWS_157",
+        "CKV_AWS_161",
+        "CKV_AWS_129",
+        "CKV_AWS_118",
+        "CKV_AWS_353"
+      ],
+      "elapsed_seconds": 4.154
+    },
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "cost",
+      "first_scan_blocking_by_severity": {
+        "HIGH": 13,
+        "MEDIUM": 19,
+        "CRITICAL": 5
+      },
+      "first_scan_blocking_count": 37,
+      "first_scan_advisory_count": 48,
+      "first_scan_checkov_high_or_critical": 9,
+      "first_scan_tfsec_high_or_critical": 9,
+      "first_scan_combined_high_or_critical": 18,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-eks-enable-control-plane-logging",
+        "aws-ec2-no-public-egress-sgr",
+        "CKV_K8S_20",
+        "CKV_K8S_23",
+        "CKV_K8S_40",
+        "CKV_AWS_130",
+        "aws-ec2-no-public-ip-subnet",
+        "CKV_AWS_58",
+        "CKV_AWS_38",
+        "CKV_AWS_37"
+      ],
+      "elapsed_seconds": 4.123
+    },
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "performance",
+      "first_scan_blocking_by_severity": {
+        "HIGH": 13,
+        "MEDIUM": 22,
+        "CRITICAL": 5
+      },
+      "first_scan_blocking_count": 40,
+      "first_scan_advisory_count": 49,
+      "first_scan_checkov_high_or_critical": 8,
+      "first_scan_tfsec_high_or_critical": 10,
+      "first_scan_combined_high_or_critical": 18,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-eks-enable-control-plane-logging",
+        "CKV_AWS_130",
+        "aws-ec2-no-public-egress-sgr",
+        "aws-ec2-no-public-ip-subnet",
+        "CKV_K8S_20",
+        "CKV_K8S_23",
+        "CKV_K8S_14",
+        "CKV_K8S_40",
+        "CKV_AWS_58",
+        "CKV_AWS_38"
+      ],
+      "elapsed_seconds": 4.047
+    },
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "kubernetes_monitoring",
+      "variant": "security",
+      "first_scan_blocking_by_severity": {
+        "HIGH": 9,
+        "MEDIUM": 11,
+        "CRITICAL": 8
+      },
+      "first_scan_blocking_count": 28,
+      "first_scan_advisory_count": 62,
+      "first_scan_checkov_high_or_critical": 7,
+      "first_scan_tfsec_high_or_critical": 10,
+      "first_scan_combined_high_or_critical": 17,
+      "fr_g_05_pass": false,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-ec2-no-public-egress-sgr",
+        "CKV_K8S_20",
+        "CKV_K8S_23",
+        "CKV_K8S_14",
+        "CKV_K8S_40",
+        "CKV_AWS_38",
+        "CKV_AWS_39",
+        "CKV_AWS_157",
+        "CKV_AWS_161",
+        "CKV_AWS_129"
+      ],
+      "elapsed_seconds": 4.771
+    },
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "cost",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 16,
+        "HIGH": 10,
+        "CRITICAL": 5
+      },
+      "first_scan_blocking_count": 31,
+      "first_scan_advisory_count": 34,
+      "first_scan_checkov_high_or_critical": 5,
+      "first_scan_tfsec_high_or_critical": 10,
+      "first_scan_combined_high_or_critical": 15,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-ec2-no-public-egress-sgr",
+        "CKV_AWS_378",
+        "CKV_AWS_91",
+        "CKV_AWS_2",
+        "CKV_AWS_130",
+        "CKV_AWS_293",
+        "CKV_AWS_161",
+        "CKV_AWS_129",
+        "CKV_AWS_260",
+        "CKV2_AWS_12"
+      ],
+      "elapsed_seconds": 4.04
+    },
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "performance",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 17,
+        "HIGH": 12,
+        "CRITICAL": 5
+      },
+      "first_scan_blocking_count": 34,
+      "first_scan_advisory_count": 27,
+      "first_scan_checkov_high_or_critical": 5,
+      "first_scan_tfsec_high_or_critical": 12,
+      "first_scan_combined_high_or_critical": 17,
+      "fr_g_05_pass": null,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-ec2-no-public-egress-sgr",
+        "CKV_AWS_130",
+        "CKV_AWS_378",
+        "aws-ec2-no-public-ip-subnet",
+        "CKV_AWS_91",
+        "CKV_AWS_2",
+        "CKV_AWS_293",
+        "CKV_AWS_354",
+        "CKV_AWS_161",
+        "CKV_AWS_129"
+      ],
+      "elapsed_seconds": 4.229
+    },
+    {
+      "generator_model": "anthropic/claude-sonnet-5",
+      "plan": "three_tier",
+      "variant": "security",
+      "first_scan_blocking_by_severity": {
+        "MEDIUM": 9,
+        "HIGH": 10,
+        "CRITICAL": 2
+      },
+      "first_scan_blocking_count": 21,
+      "first_scan_advisory_count": 18,
+      "first_scan_checkov_high_or_critical": 4,
+      "first_scan_tfsec_high_or_critical": 8,
+      "first_scan_combined_high_or_critical": 12,
+      "fr_g_05_pass": false,
+      "scanner_errors": {},
+      "syntax_limited": false,
+      "syntax_findings": [],
+      "top_rule_ids": [
+        "aws-iam-no-policy-wildcards",
+        "CKV_AWS_378",
+        "CKV_AWS_144",
+        "aws-s3-encryption-customer-key",
+        "CKV_AWS_157",
+        "CKV_AWS_118",
+        "CKV_AWS_353",
+        "CKV2_AWS_12",
+        "CKV_AWS_21",
+        "CKV_AWS_145"
+      ],
+      "elapsed_seconds": 4.186
+    }
+  ],
+  "aggregate": {
+    "anthropic/claude-sonnet-5": {
+      "mean_blocking_per_package": 31.833333333333332,
+      "clean_first_scan_share": 0.0,
+      "first_scan_checkov_high_or_critical": 38,
+      "first_scan_tfsec_high_or_critical": 59,
+      "first_scan_combined_high_or_critical": 97,
+      "scanner_error_count": 0,
+      "syntax_limited_count": 0,
+      "fr_g_05_pass": false
+    },
+    "openai/gpt-oss-120b:nitro": {
+      "mean_blocking_per_package": 35.166666666666664,
+      "clean_first_scan_share": 0.0,
+      "first_scan_checkov_high_or_critical": 40,
+      "first_scan_tfsec_high_or_critical": 43,
+      "first_scan_combined_high_or_critical": 83,
+      "scanner_error_count": 0,
+      "syntax_limited_count": 2,
+      "fr_g_05_pass": false
+    }
+  }
+}

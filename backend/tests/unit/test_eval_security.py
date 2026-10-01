@@ -100,3 +100,50 @@ async def test_evaluation_retains_checkov_measure_when_tfsec_cannot_parse(
     assert case["first_scan_tfsec_high_or_critical"] is None
     assert case["first_scan_combined_high_or_critical"] is None
     assert case["fr_g_05_pass"] is False
+
+
+@pytest.mark.req("FR-S-01", "FR-G-05")
+async def test_evaluation_reports_syntax_limited_scan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    folder = tmp_path / "packages" / "model" / "three_tier" / "security"
+    (folder / "terraform").mkdir(parents=True)
+    (folder / "terraform/main.tf").write_text('locals "x" { a = 1 }\n')
+
+    class SyntaxScanner:
+        def __init__(self, runner: object) -> None:
+            pass
+
+        async def scan(self, files: dict[str, str], variant: object) -> ScanResult:
+            return ScanResult(
+                [
+                    Violation(
+                        rule_id="TERRAFORM_SYNTAX",
+                        severity=Severity.CRITICAL,
+                        file_path="terraform/main.tf",
+                        resource="",
+                        message="Extraneous label for locals",
+                        title="Extraneous label for locals",
+                        line_start=1,
+                        tool="tfsec",
+                        blocking=True,
+                    )
+                ],
+                {"checkov": "ok", "tfsec": "syntax_limited"},
+                True,
+            )
+
+    monkeypatch.setattr(eval_security, "Scanner", SyntaxScanner)
+    output = await eval_security.run_evaluation(
+        get_settings(), packages=[folder], output_root=tmp_path
+    )
+    result = json.loads((output / "results.json").read_text())
+    case = result["cases"][0]
+    assert case["syntax_limited"] is True
+    assert case["scanner_errors"] == {}
+    assert case["syntax_findings"][0]["file_path"] == "terraform/main.tf"
+    assert case["top_rule_ids"] == ["TERRAFORM_SYNTAX"]
+    assert case["first_scan_tfsec_high_or_critical"] == 1
+    assert case["first_scan_combined_high_or_critical"] == 1
+    assert "syntax-limited" in (output / "summary.md").read_text()
+    assert result["aggregate"]["model"]["syntax_limited_count"] == 1

@@ -27,6 +27,48 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-01 — Phase 5 follow-up — Portable fixtures and Terraform syntax findings
+
+**Summary:** Normalized recorded scanner paths to a fixed placeholder so
+tests run from any checkout. tfsec HCL parse diagnostics now become file-linked
+CRITICAL `TERRAFORM_SYNTAX` findings; the fix loop can repair and rescan them
+instead of ending in `scan_error`.
+
+**Requirements addressed:** FR-S-01, FR-S-02, FR-S-03, FR-S-04, FR-G-05,
+NFR-01.
+
+**Files:** added `backend/scripts/normalize_security_fixture.py`,
+`backend/tests/fixtures/security/{syntax_error/,tfsec-syntax-error.txt}`,
+and `docs/evals/phase5-security-20261001T060220849316Z/`; normalized four
+recorded JSON fixtures; changed the scanner parser and loop report,
+`backend/scripts/eval_security.py`, scanner/agent/evaluation tests, fixture
+README, repository README, design deviations, and this log.
+
+**Decisions:** D-27 records the portable fixture marker and capture script;
+D-28 records syntax-limited scans and the `TERRAFORM_SYNTAX` classification.
+CL-07 now notes that Checkov 3.3.21 reported zero parsing errors for the
+invalid `locals "x" { a = 1 }` fixture. The temporary scanner directory is
+stripped from the finding, and other tfsec failures still retry before
+`scan_error`. Scan-only evaluation constructs offline settings without
+loading `.env` or connecting to PostgreSQL.
+
+**Tests:** `make lint` passed Ruff check, Ruff format check (123 files), and
+mypy (75 source files). Ruff check and format passed for both evaluation and
+fixture scripts. `make test` passed with **402 passed, 0 failed, 0 skipped**.
+New tests copy recordings to another directory, parse recorded and real tfsec
+syntax errors, verify a fix pass and full rescan, confirm unparseable output
+still retries, and check syntax-limited evaluation output. The real Checkov
+test observed zero parsing errors on the invalid Terraform fixture.
+`make eval-security EVAL_ARGS='--scan-only'` scanned all 12 saved packages;
+the two affected gpt-oss packages now show `TERRAFORM_SYNTAX` findings with
+relative files and lines 172 and 24, rather than `tfsec:invalid_json`.
+
+**Known gaps / follow-ups:** A syntax-limited scan has no other tfsec findings
+until the syntax is repaired and rescanned. No real LLM call or remediation
+evaluation was run.
+
+---
+
 ## 2026-10-01 — Phase 5 — Security scanning, remediation, and audit
 
 **Summary:** Added offline Checkov and tfsec scans, severity classification,

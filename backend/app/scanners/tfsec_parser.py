@@ -1,14 +1,51 @@
 """tfsec JSON parsing, including a known human-readable preamble if present."""
 
 import json
+import re
 from pathlib import Path
 
 from app.domain.enums import Severity
 from app.domain.models import Violation
 from app.scanners.paths import scanner_path
 
+_SYNTAX_ERROR = re.compile(
+    r"^Error: scan failed: (?P<path>.+):(?P<line>[1-9]\d*),\d+(?:-\d+)?: "
+    r"(?P<message>.+)$",
+    re.MULTILINE,
+)
+
+
+def _parse_syntax_error(output: str, root: Path, files: set[str]) -> Violation | None:
+    match = _SYNTAX_ERROR.search(output)
+    if match is None:
+        return None
+    raw_path = match.group("path")
+    root_without_slash = str(root.resolve()).lstrip("/")
+    if raw_path.startswith(root_without_slash + "/"):
+        raw_path = "/" + raw_path
+    path = scanner_path(raw_path, root, files)
+    message = match.group("message")
+    for prefix in (str(root.resolve()), root_without_slash):
+        message = message.replace(prefix, "[package]")
+    line = int(match.group("line"))
+    return Violation(
+        rule_id="TERRAFORM_SYNTAX",
+        severity=Severity.CRITICAL,
+        file_path=path,
+        resource="",
+        message=message[:1000],
+        title=message[:200],
+        line_start=line,
+        line_end=line,
+        tool="tfsec",
+        blocking=True,
+    )
+
 
 def parse_tfsec(output: str, root: Path, files: set[str]) -> list[Violation]:
+    syntax = _parse_syntax_error(output, root, files)
+    if syntax is not None:
+        return [syntax]
     try:
         start = output.find("{")
         if start < 0 or (
