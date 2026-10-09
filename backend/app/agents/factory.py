@@ -133,4 +133,5 @@ class AgentFactory:
                 deadline_seconds=self.settings.validation_deadline_seconds,
             ),
             self.session_factory,
+            settings=self.settings,
         )

@@ -116,7 +116,7 @@ class ResultsService:
                 start_time=row.start_time,
                 end_time=row.end_time,
                 provider=LLMProvider(row.llm_provider),
-                model=row.model,
+                model=self.safety.value(row.model),
                 max_iterations=row.max_iterations,
                 error_message=self.safety.value(row.error_message),
             ),

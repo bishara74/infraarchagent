@@ -147,3 +147,11 @@ def test_prompt_cache_configuration() -> None:
 def test_validator_settings_enforce_bounds(field, value):
     with pytest.raises(ValidationError):
         Settings(**{field: value}, _env_file=None)
+
+
+@pytest.mark.req("NFR-01")
+def test_api_key_empty_is_unset_and_configured_value_is_secret():
+    assert _settings(api_key="").api_key is None
+    settings = _settings(api_key="phase7-api-canary")
+    assert settings.api_key.get_secret_value() == "phase7-api-canary"
+    assert "phase7-api-canary" not in repr(settings)

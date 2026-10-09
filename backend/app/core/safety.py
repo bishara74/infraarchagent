@@ -9,15 +9,13 @@ from app.core.logging import REDACTED, RedactingFilter
 
 class PublicDataSafety:
     def __init__(self, settings: Settings) -> None:
-        self.redactors = [
-            RedactingFilter(value.get_secret_value())
-            for value in (settings.llm_api_key, getattr(settings, "api_key", None))
-            if value is not None
-        ] or [RedactingFilter()]
+        self.redactor = RedactingFilter(
+            settings.llm_api_key.get_secret_value() if settings.llm_api_key else None,
+            settings.api_key.get_secret_value() if settings.api_key else "",
+        )
 
     def text(self, value: str) -> str:
-        for redactor in self.redactors:
-            value = redactor.redact(value)
+        value = self.redactor.redact(value)
         value = value.replace(str(ROOT), REDACTED)
         return re.sub(
             r"/tmp/(?:infraarch[^\s\"'<>]*|pytest-of-[^\s\"'<>]*)", REDACTED, value

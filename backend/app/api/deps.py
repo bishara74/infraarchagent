@@ -1,12 +1,26 @@
 """Accessors for application-owned resources."""
 
-from fastapi import Request
+import hmac
+from typing import Annotated
+
+from fastapi import Header, Request
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from app.core.errors import UnauthorizedError
 from app.events.broker import InMemoryBroker
 from app.events.log import EventLog
 from app.pipeline.runner import PipelineRunner
 from app.pipeline.state import PipelineStateWriter
+
+
+def require_api_key(
+    request: Request, supplied: Annotated[str | None, Header(alias="X-API-Key")] = None
+) -> None:
+    configured = request.app.state.settings.api_key
+    if configured is not None and not hmac.compare_digest(
+        (supplied or "").encode("utf-8"), configured.get_secret_value().encode("utf-8")
+    ):
+        raise UnauthorizedError()
 
 
 def get_engine(request: Request) -> AsyncEngine:

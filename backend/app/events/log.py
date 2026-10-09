@@ -21,6 +21,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import insert, select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.safety import PublicDataSafety
 from app.db.models import AgentEvent
 from app.domain.enums import AgentName, AgentState, PackageStatus, RunStatus
 from app.events.publisher import EventRecord, Publisher
@@ -33,10 +34,15 @@ STATE_VALUES = {
 
 class EventLog:
     def __init__(
-        self, session_factory: async_sessionmaker[AsyncSession], publisher: Publisher
+        self,
+        session_factory: async_sessionmaker[AsyncSession],
+        publisher: Publisher,
+        *,
+        safety: PublicDataSafety | None = None,
     ) -> None:
         self.session_factory = session_factory
         self.publisher = publisher
+        self.safety = safety
         self._locks: weakref.WeakValueDictionary[UUID, asyncio.Lock] = (
             weakref.WeakValueDictionary()
         )
@@ -78,6 +84,9 @@ class EventLog:
         data = {} if payload is None else payload
         if not isinstance(data, dict):
             raise ValueError("event payload must be an object")
+        if self.safety is not None:
+            data = self.safety.value(data)
+            message = self.safety.value(message)
         try:
             encoded = json.dumps(data, ensure_ascii=False, allow_nan=False).encode(
                 "utf-8"

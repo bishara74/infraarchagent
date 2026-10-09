@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import httpx
 import pytest
 from fastapi import Request
@@ -82,7 +80,7 @@ async def test_unexpected_error_is_client_safe() -> None:
         response = await client.get("/fail")
     assert response.status_code == 500
     assert response.json()["error"] == "internal_error"
-    UUID(response.json()["request_id"])
+    assert response.json()["message"] == "An unexpected error occurred."
     assert "private exception detail" not in response.text
 
 

@@ -19,13 +19,14 @@ DB_PASSWORD = re.compile(
 
 
 class RedactingFilter(logging.Filter):
-    def __init__(self, api_key: str | None = None) -> None:
+    def __init__(self, api_key: str | None = None, *additional_keys: str) -> None:
         super().__init__()
         self.api_key = api_key
+        self.keys = tuple(key for key in (api_key, *additional_keys) if key)
 
     def redact(self, value: str) -> str:
-        if self.api_key:
-            value = value.replace(self.api_key, REDACTED)
+        for key in sorted(self.keys, key=len, reverse=True):
+            value = value.replace(key, REDACTED)
         for pattern in KEY_PATTERNS:
             value = pattern.sub(REDACTED, value)
         value = BEARER.sub(f"Bearer {REDACTED}", value)
@@ -55,8 +56,9 @@ def configure_logging(settings: Settings) -> None:
         )
         root.addHandler(new_handler)
     key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
+    api_key = settings.api_key.get_secret_value() if settings.api_key else ""
     for handler in root.handlers:
         for old_filter in list(handler.filters):
             if isinstance(old_filter, RedactingFilter):
                 handler.removeFilter(old_filter)
-        handler.addFilter(RedactingFilter(key))
+        handler.addFilter(RedactingFilter(key, api_key))

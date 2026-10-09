@@ -162,7 +162,9 @@ def install_retry(app, monkeypatch, *, result="valid", scanner=None, adapter=Non
         async def validate(self, _plan, _files):
             return validation_report(result)
 
-    runner.validation_stage = ValidatorAgent(Engine(), runner.session_factory)
+    runner.validation_stage = ValidatorAgent(
+        Engine(), runner.session_factory, settings=runner.factory.settings
+    )
     return adapter, security
 
 

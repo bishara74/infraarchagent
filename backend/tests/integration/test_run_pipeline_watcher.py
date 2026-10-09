@@ -59,3 +59,35 @@ async def test_watcher_prints_terminal_summary_offline(
     output = capsys.readouterr().out
     assert "Run " in output
     assert "Final: success" in output
+
+
+@pytest.mark.req("NFR-01", "FR-P-04")
+async def test_watcher_main_sets_environment_header_without_printing_key(
+    monkeypatch, capsys
+):
+    from scripts import run_pipeline
+
+    key = "phase7-watcher-canary"
+    monkeypatch.setenv("PIPELINE_TEXT", "Deploy AWS web app")
+    monkeypatch.setenv("API_KEY", key)
+    observed = {}
+
+    class Client:
+        def __init__(self, **kwargs):
+            observed.update(kwargs)
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+    async def watch(text, **kwargs):
+        assert text == "Deploy AWS web app"
+        assert isinstance(kwargs["client"], Client)
+
+    monkeypatch.setattr(run_pipeline.httpx, "AsyncClient", Client)
+    monkeypatch.setattr(run_pipeline, "watch_pipeline", watch)
+    await run_pipeline.main()
+    assert observed["headers"] == {"X-API-Key": key}
+    assert key not in capsys.readouterr().out

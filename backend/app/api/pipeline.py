@@ -10,7 +10,13 @@ from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.api.deps import get_broker, get_event_log, get_runner, get_state_writer
+from app.api.deps import (
+    get_broker,
+    get_event_log,
+    get_runner,
+    get_state_writer,
+    require_api_key,
+)
 from app.api.schemas import (
     ResultsResponse,
     RetryResponse,
@@ -18,6 +24,7 @@ from app.api.schemas import (
     ReviewResponse,
 )
 from app.core.config import Settings
+from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.domain.enums import AgentName, RunStatus, Variant
@@ -34,7 +41,7 @@ from app.pipeline.review import ReviewError, ReviewService
 from app.pipeline.runner import PipelineRunner
 from app.pipeline.state import PipelineStateWriter
 
-router = APIRouter(prefix="/api/pipeline")
+router = APIRouter(prefix="/api/pipeline", dependencies=[Depends(require_api_key)])
 TERMINAL_RUNS = {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}
 ACTIVE_PACKAGE_STATES = {"scanning", "remediating", "validating"}
 
@@ -128,7 +135,9 @@ async def submit_run(
     if set(body) - {"text", "config"}:
         return failure(400, "invalid_request", "Unknown request field.")
     try:
-        text = validate_request_text(body["text"])
+        text = PublicDataSafety(request.app.state.settings).text(
+            validate_request_text(body["text"])
+        )
     except InputRuleError as error:
         status = 422 if error.code == "no_infrastructure_intent" else 400
         return failure(status, error.code, error.message)
@@ -159,8 +168,10 @@ async def submit_run(
                     text,
                     resolved.provider,
                     resolved.max_iterations,
-                    model=resolved.model
-                    or ("stub" if resolved.provider.value == "stub" else None),
+                    model=PublicDataSafety(settings).value(
+                        resolved.model
+                        or ("stub" if resolved.provider.value == "stub" else None)
+                    ),
                 )
                 run_id = row.run_id
         await event_log.append(
@@ -242,6 +253,7 @@ async def stream_run(
         if await RunRepository(session).get(parsed_id) is None:
             return failure(404, "not_found", "Pipeline run not found.")
     keepalive: float = request.app.state.settings.sse_keepalive_seconds
+    safety = PublicDataSafety(request.app.state.settings)
 
     async def events() -> AsyncIterator[str]:
         last_sent = cursor
@@ -266,7 +278,7 @@ async def stream_run(
             for record in await event_log.list_after(parsed_id, cursor):
                 if last_sent is not None and record.seq <= last_sent:
                     continue
-                yield to_sse(record)
+                yield safety.text(to_sse(record))
                 last_sent = record.seq
                 observe(record)
                 if (
@@ -291,7 +303,7 @@ async def stream_run(
                 record = queued
                 if last_sent is not None and record.seq <= last_sent:
                     continue
-                yield to_sse(record)
+                yield safety.text(to_sse(record))
                 last_sent = record.seq
                 if (
                     record.payload.get("kind") == EventKind.RUN_STATUS

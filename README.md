@@ -101,7 +101,9 @@ make run-pipeline TEXT="Deploy a small AWS web service"
 The watcher submits the request, prints SSE progress, reconnects with
 `Last-Event-ID` if necessary, and shows the final run and package statuses.
 Optional `CONFIG_PROVIDER`, `CONFIG_MODEL`, and `API_URL` select a request
-configuration and API root. With `LLM_PROVIDER=stub`, the API uses a
+configuration and API root. The watcher takes `API_KEY` from its process
+environment and sends `X-API-Key`; it does not read dotenv or print the key.
+With `LLM_PROVIDER=stub`, the API uses a
 pipeline-only deterministic demo; the Phase 1 spike and Phase 2–3 evaluation
 stubs are unchanged. The demo packages are scanned by the installed tools;
 validation uses the real engine. With clean scans, installed Terraform and the
@@ -201,6 +203,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_PROVIDER` | `anthropic`, `openai`, or `stub` | `stub` |
 | `LLM_MODEL` | Model name, required for a real adapter | Unset |
 | `LLM_API_KEY` | Real-adapter credential | Unset |
+| `API_KEY` | Optional static pipeline API credential, sent as `X-API-Key`; empty leaves local access open | Unset |
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
 | `LLM_RESPONSE_FORMAT` | `json_object` sends OpenAI-compatible JSON mode; Anthropic ignores it | Unset |

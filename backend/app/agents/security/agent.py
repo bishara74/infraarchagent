@@ -16,6 +16,7 @@ from app.agents.prompts.security_fix import SECURITY_FIX_PROMPT_VERSION
 from app.agents.security.fix import FixAgent, FixProposal
 from app.core.config import Settings
 from app.core.logging import RedactingFilter
+from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.domain.enums import AgentName, AgentState, PackageStatus, Severity, Variant
 from app.domain.models import IaCPackage, Violation
@@ -92,16 +93,13 @@ class SecurityAgent:
             settings.security_max_parallel_fixes
         )
         key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
-        self.redactor = RedactingFilter(key)
+        self.redactor = RedactingFilter(
+            key, settings.api_key.get_secret_value() if settings.api_key else ""
+        )
+        self.safety = PublicDataSafety(settings)
 
     def _redact_report(self, value: Any) -> Any:
-        if isinstance(value, str):
-            return self.redactor.redact(value)
-        if isinstance(value, list):
-            return [self._redact_report(item) for item in value]
-        if isinstance(value, dict):
-            return {key: self._redact_report(item) for key, item in value.items()}
-        return value
+        return self.safety.value(value)
 
     async def _notice(
         self,
@@ -505,8 +503,8 @@ class SecurityAgent:
                 await PackageRepository(session).save_security_results(
                     ctx.run_id,
                     variant,
-                    original_files=session_start_files,
-                    files=files,
+                    original_files=self.safety.value(session_start_files),
+                    files=self.safety.value(files),
                     session_report=self._redact_report(session_report),
                     iteration_count=iteration_count,
                     policy_version=SECURITY_POLICY_VERSION,

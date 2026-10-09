@@ -707,6 +707,23 @@ out of scope for this offline phase. Helm, hadolint, ansible-lint and promtool
 remain optional local linters. Built-ins need only the approved installed
 Python libraries, with no service, credentials or extra executable.
 
+### D-36 — Optional API key and fetch-based SSE (Accepted; Phase 7)
+
+One pipeline-router dependency checks the static API_KEY SecretStr against the
+X-API-Key header with hmac.compare_digest over UTF-8 bytes. Empty/unset means
+open access with one startup warning; health remains public. Missing and wrong
+headers receive identical generic 401 responses. Query-string authentication is
+not supported. Phase 8's useRunStream must use fetch-based SSE so it can send
+this header; native EventSource cannot send custom headers.
+
+Operator logs retain existing traceback rendering and absolute paths, while
+configured LLM_API_KEY and API_KEY values are redacted, including traceback
+text. Unexpected HTTP responses use {error, message}; correlation IDs stay in
+logs. New output/persistence protection covers feedback, generated files,
+security/validation reports, events, results and ZIP contents. Backend execution
+paths are removed on those surfaces; legitimate deployment paths inside IaC
+remain meaningful. No scanner policy or validation checks change.
+
 ### D-37 — Explicit review targets and results interpretation (Accepted; Phase 7)
 
 Review retry targets combine remaining blocking findings, file-linked failed validation checks and up to five explicit existing package paths, deduplicated per file. Targetless feedback is refused with feedback_needs_target; targetless retry without feedback uses nothing_to_retry. OQ-09 is resolved by this decision. The results endpoint reads the architect plan from plan_created in the same SELECT as the run and packages. Packages contains only variants that produced files from generated onward; failed generation rows appear only in missing_variants. Review availability requires pending_review and a terminal run; earlier review actions return run_in_progress, preserving automated classification. Review acceptance and retries are implemented in section 2. Download archives use the terminal package transition event time, displayed as “Labelled at”, replacing request-time download time. Fixed metadata and ZIP_DEFLATED level 6 make repeated unchanged downloads byte-identical. Reserved readiness-name collisions use deterministic numbered fallback paths without overwriting package files.

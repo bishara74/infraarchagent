@@ -89,7 +89,9 @@ async def main() -> None:
         if value
     }
     api_url = os.environ.get("API_URL", "http://localhost:8000").rstrip("/")
-    async with httpx.AsyncClient(timeout=None) as client:
+    api_key = os.environ.get("API_KEY")
+    headers = {"X-API-Key": api_key} if api_key else {}
+    async with httpx.AsyncClient(timeout=None, headers=headers) as client:
         await watch_pipeline(text, client=client, api_url=api_url, config=config)
 
 

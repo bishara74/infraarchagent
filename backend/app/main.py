@@ -11,8 +11,13 @@ from app.agents.factory import AgentFactory
 from app.api.health import router as health_router
 from app.api.pipeline import router as pipeline_router
 from app.core.config import Settings, get_settings
-from app.core.errors import internal_error_handler
+from app.core.errors import (
+    UnauthorizedError,
+    internal_error_handler,
+    unauthorized_error_handler,
+)
 from app.core.logging import configure_logging
+from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
@@ -38,7 +43,7 @@ def create_app(
     )
     session_factory = make_session_factory(app_engine)
     broker = InMemoryBroker(configured.broker_queue_size)
-    event_log = EventLog(session_factory, broker)
+    event_log = EventLog(session_factory, broker, safety=PublicDataSafety(configured))
     writer = PipelineStateWriter(session_factory, event_log)
     scanner_info = scanner_versions()
     factory = AgentFactory(
@@ -62,6 +67,10 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.engine = app_engine
+        if configured.api_key is None:
+            logger.warning(
+                "API_KEY is unset; pipeline API is open for local development"
+            )
         for tool, details in scanner_info.items():
             if not details["available"]:
                 logger.warning("%s is not installed", tool)
@@ -114,6 +123,7 @@ def create_app(
     app.state.validators = validator_versions()
     app.state.provider_mirror_present = mirror_present()
     app.add_exception_handler(Exception, internal_error_handler)
+    app.add_exception_handler(UnauthorizedError, unauthorized_error_handler)
     app.include_router(health_router)
     app.include_router(pipeline_router)
     return app

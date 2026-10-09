@@ -4,10 +4,12 @@ import time
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.config import Settings
+from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.domain.enums import AgentName, AgentState, PackageStatus, Variant
 from app.domain.models import IaCPackage
-from app.domain.validation import package_validation_status
+from app.domain.validation import ValidationReport, package_validation_status
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.validation.engine import ValidationEngine
@@ -18,9 +20,12 @@ class ValidatorAgent:
         self,
         engine: ValidationEngine,
         session_factory: async_sessionmaker[AsyncSession],
+        *,
+        settings: Settings | None = None,
     ) -> None:
         self.engine = engine
         self.session_factory = session_factory
+        self.safety = PublicDataSafety(settings) if settings else None
 
     async def run(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
@@ -37,6 +42,10 @@ class ValidatorAgent:
             ctx.run_id, variant, PackageStatus.VALIDATING, message="validation started"
         )
         report = await self.engine.validate(ctx.plan, package.files)
+        if self.safety is not None:
+            report = ValidationReport.model_validate(
+                self.safety.value(report.model_dump(mode="json"))
+            )
         async with self.session_factory() as session:
             async with session.begin():
                 await PackageRepository(session).save_validation_results(

@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 4 — Protect pipeline endpoints and public data
+
+**Summary:** Add optional shared API-key authentication, dual-key redaction, safe errors and authenticated watcher requests. Sanitize event/report/file persistence and output without changing traceback rendering or validation checks.
+
+**Requirements addressed:** NFR-01, FR-P-04, FR-UI-06, FR-S-08, FR-S-09.
+
+**Files:** .env.example, README.md, backend/app/agents/factory.py, backend/app/agents/security/agent.py, backend/app/agents/validator.py, backend/app/api/deps.py, backend/app/api/pipeline.py, backend/app/core/config.py, backend/app/core/errors.py, backend/app/core/logging.py, backend/app/core/safety.py, backend/app/events/log.py, backend/app/main.py, backend/app/pipeline/orchestrator.py, backend/app/pipeline/results.py, backend/scripts/run_pipeline.py, backend/tests/integration/test_pipeline_auth.py, backend/tests/integration/test_pipeline_review.py, backend/tests/integration/test_run_pipeline_watcher.py, backend/tests/unit/test_app.py, backend/tests/unit/test_config.py, backend/tests/unit/test_logging.py, docs/IMPLEMENTATION_LOG.md, docs/design-deviations.md.
+
+**Decisions:** D-36 records the open-when-unset static header and fetch-based SSE. EventLog receives optional configured safety without changing locks or ordering; ValidatorAgent sanitizes the report before saving, leaving checks intact. Logs preserve paths and tracebacks; only operator logs retain correlation IDs.
+
+**Tests:** Focused authentication, canary, watcher, validation, event, API and unit checks: 81 passed, 0 failed, 0 skipped in 20.66s. make lint passed (175 formatted files, 97 mypy files). Initial test-only Unicode-header fixture failed in httpx before requests; corrected to an ASCII HTTP header canary and reran successfully.
+
+**Known gaps / follow-ups:** Remaining Phase 7 acceptance/documentation follows. No installs, dotenv reads or real LLM calls; no push.
+
+---
+
 ## 2026-10-10 — Phase 7 section 3 — Download deterministic labelled archives
 
 **Summary:** Add pure ZIP/readiness rendering and persisted-file downloads with event-derived label time/provenance and safe path validation.

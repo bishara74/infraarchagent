@@ -40,3 +40,24 @@ def test_redacts_message_args_and_exception_text() -> None:
         assert secret not in output
     assert output.count("[REDACTED]") >= 6
     assert "ValueError" in output
+
+
+@pytest.mark.req("NFR-01")
+def test_both_keys_redacted_without_replacing_operator_traceback():
+    stream = io.StringIO()
+    handler = logging.StreamHandler(stream)
+    handler.addFilter(RedactingFilter("prefix-key", "prefix-key-long"))
+    logger = logging.getLogger("phase7_operator_trace")
+    logger.addHandler(handler)
+    logger.propagate = False
+    try:
+        try:
+            raise RuntimeError("prefix-key-long prefix-key /home/operator/app.py")
+        except RuntimeError:
+            logger.exception("operator traceback")
+    finally:
+        logger.removeHandler(handler)
+    output = stream.getvalue()
+    assert "prefix-key" not in output and "-long" not in output
+    assert "Traceback (most recent call last)" in output
+    assert "RuntimeError" in output and "/home/operator/app.py" in output

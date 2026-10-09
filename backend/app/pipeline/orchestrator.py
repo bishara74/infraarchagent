@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.agents.architect import ArchitectError
 from app.agents.factory import AgentFactory
 from app.agents.generators.base import GeneratorAgent, GeneratorError
+from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.domain.enums import AgentName, AgentState, PackageStatus, RunStatus, Variant
@@ -51,6 +52,9 @@ class PipelineOrchestrator:
         self.text = text
         self.run_config = run_config
         self.factory = factory
+        self.safety = (
+            PublicDataSafety(factory.settings) if hasattr(factory, "settings") else None
+        )
         self.session_factory = session_factory
         self.writer = writer
         self.security_stage = security_stage
@@ -71,6 +75,10 @@ class PipelineOrchestrator:
         )
         try:
             package = await generator.generate(plan)  # type: ignore[arg-type]
+            if self.safety is not None:
+                package = package.model_copy(
+                    update={"files": self.safety.value(package.files)}
+                )
             async with self.session_factory() as session:
                 async with session.begin():
                     await PackageRepository(session).save_files(
