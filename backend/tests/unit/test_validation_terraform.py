@@ -227,3 +227,21 @@ asyncio.run(main())
         timeout=45,
     )
     assert completed.returncode == 0, completed.stderr
+
+
+@pytest.mark.req("FR-V-01", "FR-V-03")
+def test_preflight_reuses_shared_parser_index(tmp_path, monkeypatch):
+    import hcl2
+
+    from app.validation.documents import PackageDocuments
+
+    files = write_fixture(tmp_path)
+    documents = PackageDocuments.parse(
+        {path: (tmp_path / path).read_text() for path in files}
+    )
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("Terraform must not parse the source a second time")
+
+    monkeypatch.setattr(hcl2, "loads", unexpected)
+    assert module_preflight(tmp_path, files, documents) == (None, False)

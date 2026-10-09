@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 4 — Cross-file references and module scopes
+
+**Summary:** Add deterministic checks for all specified Terraform, Kubernetes, Helm, Ansible and Prometheus references, including local-module outputs, namespace-scoped resources and safe package-contained paths/globs. Terraform preflight now accepts the shared parser index.
+
+**Requirements addressed:** FR-V-01, FR-V-03, FR-V-04, NFR-01.
+
+**Files:** backend/app/validation/references.py, backend/app/validation/terraform.py, backend/tests/unit/test_validation_references.py, backend/tests/unit/test_validation_terraform.py, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-35 documents exact reference scope, missing-Secret warnings, remote Helm dependency and Values warnings, symbolic inventory host patterns and one finding per Prometheus rule reference. Literal strings and comments do not create Terraform/Helm references.
+
+**Tests:** make lint passed (Ruff/format, mypy 85 app files). Combined reference/Terraform/structure tests: 85 passed in 7.50 s, including real Terraform and network namespace checks. Final reference-only verification: 29 passed. The full-suite clock flake was corrected in section 3; full regression will run after integration.
+
+**Known gaps / follow-ups:** Conservative static analysis does not infer dynamic references or fetch remote dependencies. Naming, optional linters and pipeline persistence remain pending.
+
+---
+
 ## 2026-10-09 — Phase 6 section 3 — Shared parsing and structural validation
 
 **Summary:** Declare the exact installed parser dependencies and add a shared parsed document index with YAML positions, deterministic HCL line fallback, and built-in checks for every supported artifact type. Implement the approved Nginx resolution rule.

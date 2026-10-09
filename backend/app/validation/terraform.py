@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-from typing import Any
 
 import hcl2
 from hcl2.utils import SerializationOptions
@@ -11,6 +10,7 @@ from lark.exceptions import LarkError
 from app.domain.paths import validate_relative_path
 from app.domain.validation import ValidationCheck
 from app.scanners.runner import ProcessToolRunner, ToolFailure
+from app.validation.documents import PackageDocuments
 from app.validation.tools import DEFAULT_MIRROR, mirror_present
 
 SAFE_TITLES = {
@@ -119,7 +119,9 @@ def terraform_diagnostics(
     return checks
 
 
-def module_preflight(root: Path, files: set[str]) -> tuple[str | None, bool]:
+def module_preflight(
+    root: Path, files: set[str], documents: PackageDocuments | None = None
+) -> tuple[str | None, bool]:
     """Inspect every reachable local module; never fetch remote module sources."""
     queue = [root / "terraform"]
     visited: set[Path] = set()
@@ -133,18 +135,32 @@ def module_preflight(root: Path, files: set[str]) -> tuple[str | None, bool]:
             if path.suffix != ".tf" and not path.name.endswith(".tf.json"):
                 continue
             try:
-                data: dict[str, Any] = (
-                    json.loads(path.read_text())
-                    if path.name.endswith(".tf.json")
-                    else hcl2.loads(
-                        path.read_text(),
-                        serialization_options=SerializationOptions(
-                            strip_string_quotes=True,
-                            with_comments=False,
-                            explicit_blocks=False,
-                        ),
-                    )
+                indexed = (
+                    documents.documents.get(path.relative_to(root).as_posix())
+                    if documents is not None
+                    else None
                 )
+                if documents is not None:
+                    if (
+                        indexed is None
+                        or indexed.parse_error
+                        or not isinstance(indexed.data, dict)
+                    ):
+                        continue
+                    data = indexed.data
+                else:
+                    data = (
+                        json.loads(path.read_text())
+                        if path.name.endswith(".tf.json")
+                        else hcl2.loads(
+                            path.read_text(),
+                            serialization_options=SerializationOptions(
+                                strip_string_quotes=True,
+                                with_comments=False,
+                                explicit_blocks=False,
+                            ),
+                        )
+                    )
             except (ValueError, TypeError, LarkError):
                 # Syntax remains the real Terraform executable's responsibility.
                 continue
@@ -172,6 +188,7 @@ async def validate_terraform(
     files: set[str],
     runner: ProcessToolRunner,
     mirror: Path = DEFAULT_MIRROR,
+    documents: PackageDocuments | None = None,
 ) -> list[ValidationCheck]:
     tf = root / "terraform"
     if not tf.is_dir() or not any(tf.glob("*.tf*")):
@@ -188,7 +205,7 @@ async def validate_terraform(
                 message="Terraform configuration is missing",
             )
         ]
-    reason, local = module_preflight(root, files)
+    reason, local = module_preflight(root, files, documents)
     if reason in {"unsafe_local_module", "local_module_missing"}:
         path = next(
             (

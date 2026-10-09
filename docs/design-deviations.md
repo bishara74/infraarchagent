@@ -582,7 +582,16 @@ Normalization lowercases and equates hyphens, underscores and dots. Variables
 such as `$host` produce warnings. An unresolved bare name fails and its message
 names the file and line. Quoted text and comments cannot invent directives;
 `.Release.Name` does not invent a literal Helm release. Analysis tiers and
-remaining reference/naming rules follow in subsequent sections.
+Terraform references use module-directory scopes, including `.tf.json`; local
+outputs are inspected when their source is available. Variable and local
+references in ordinary strings/comments are ignored. Filesystem references
+cannot escape the package. Kubernetes references use exact names and namespaces;
+selectorless Services have no selector to check, and missing Secrets warn.
+Helm remote dependency URLs warn when not vendored, and absent Values paths warn
+because defaults may be intended. Ansible inventory groups are checked only
+when inventory is present; symbolic host patterns warn, and role references
+must exist. Prometheus rule paths/globs yield one finding per distinct reference.
+Remaining naming rules follow in subsequent sections.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
