@@ -707,6 +707,10 @@ out of scope for this offline phase. Helm, hadolint, ansible-lint and promtool
 remain optional local linters. Built-ins need only the approved installed
 Python libraries, with no service, credentials or extra executable.
 
+### D-37 — Explicit review targets and results interpretation (Accepted; Phase 7)
+
+Review retry targets combine remaining blocking findings, file-linked failed validation checks and up to five explicit existing package paths, deduplicated per file. Targetless feedback is refused with feedback_needs_target; targetless retry without feedback uses nothing_to_retry. OQ-09 is resolved by this decision. The results endpoint reads the architect plan from plan_created in the same SELECT as the run and packages. Packages contains only variants that produced files from generated onward; failed generation rows appear only in missing_variants. Review availability requires pending_review and a terminal run; earlier review actions return run_in_progress, preserving automated classification. Implementation continues in section 2.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

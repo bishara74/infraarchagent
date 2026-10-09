@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.deps import get_broker, get_event_log, get_runner, get_state_writer
+from app.api.schemas import ResultsResponse
 from app.core.config import Settings
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
@@ -22,6 +23,7 @@ from app.events.kinds import EventKind, run_status_payload, to_sse
 from app.events.log import EventLog
 from app.llm.errors import LLMConfigurationError
 from app.llm.factory import build_adapter
+from app.pipeline.results import ResultsService
 from app.pipeline.runner import PipelineRunner
 from app.pipeline.state import PipelineStateWriter
 
@@ -32,6 +34,22 @@ ACTIVE_PACKAGE_STATES = {"scanning", "remediating", "validating"}
 
 def failure(status: int, code: str, message: str) -> JSONResponse:
     return JSONResponse(status_code=status, content={"error": code, "message": message})
+
+
+@router.get("/{run_id}/results", response_model=ResultsResponse)
+async def get_results(run_id: str, request: Request) -> ResultsResponse | JSONResponse:
+    try:
+        parsed = UUID(run_id)
+    except ValueError:
+        return failure(400, "invalid_request", "Malformed run ID.")
+    result = await ResultsService(
+        request.app.state.session_factory, request.app.state.settings
+    ).results(parsed)
+    return (
+        result
+        if result is not None
+        else failure(404, "not_found", "Pipeline run not found.")
+    )
 
 
 @router.post("/run", status_code=202)

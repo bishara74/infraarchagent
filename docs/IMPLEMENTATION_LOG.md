@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 1 — Expose current results snapshots
+
+**Summary:** Add strict results schemas, ordered package/failure lists, shared derived fields and a single SELECT including the persisted architect plan.
+
+**Requirements addressed:** FR-G-07, FR-UI-06, FR-UI-07, FR-S-07, FR-S-09.
+
+**Files:** Phase 7 section 1 changes listed in this commit; app, tests and documentation paths are recorded by Git.
+
+**Decisions:** Plan comes from plan_created payload; no plan column. Failed generation rows are missing_variants only. Reviews require terminal runs.
+
+**Tests:** Focused results/domain tests: 80 passed, 0 failed, 0 skipped in 7.88s. make lint passed Ruff/format (166 files) and mypy (94 files). An initial fixture duplicated terraform in its plan; corrected before the passing run.
+
+**Known gaps / follow-ups:** Remaining Phase 7 acceptance/documentation follows. No installs, dotenv reads or real LLM calls; no push.
+
+---
+
 ## 2026-10-10 — Phase 7 section 0 — Resolve Helm release namespaces
 
 **Summary:** Treat omitted Helm namespaces as dynamic release namespaces, protect raw-manifest precedence with port regressions, and format the pipeline watcher.
