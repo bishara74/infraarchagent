@@ -285,3 +285,13 @@ before outcome events. Deadline/internal aborts produce `validation_error`;
 ordinary failures produce `invalid`. Naming findings and optional tool skips
 remain visible for review. The reusable `app.validation.engine.validate` API
 requires no database or LLM adapter.
+
+`make eval-validation` validates the twelve original committed Phase 3 packages
+with the local offline engine, without database access or LLM calls. Optional
+`EVAL_ARGS='--package <package-directory> --mirror <mirror-directory>'` narrows
+the inputs or selects an existing mirror. JSON/Markdown reports record results,
+category failures, warnings, skip reasons, durations, tool versions and source
+hashes under `docs/evals/phase6-validation-<UTC timestamp>/`. The measured run
+was **2 valid, 10 invalid, 0 error**; both known gpt-oss syntax failures were
+confirmed from Terraform output. [Per-package results](docs/evals/phase6-validation-20261009T175917789637Z/summary.md).
+An Aurora cluster without instances remains a semantic gap requiring review.

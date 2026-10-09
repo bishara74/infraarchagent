@@ -652,6 +652,12 @@ boolean/string metrics remain unknown. Fixture normalization supports recorded
 Terraform, Helm, hadolint, ansible-lint and promtool formats. The `scanners`
 marker covers validators and their explicit tool/mirror/namespace prerequisites.
 
+The offline evaluation of the twelve original Phase 3 packages measured
+2 valid, 10 invalid and 0 error. Both known gpt-oss syntax failures were
+confirmed from real Terraform diagnostics. Source hashes remained unchanged.
+The Aurora cluster without instances remains an undetected semantic deployment
+gap: validation is static and does not prove that infrastructure will deploy.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

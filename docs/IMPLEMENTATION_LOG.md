@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 9 — Offline validation evaluation of twelve original packages
+
+**Summary:** Add make eval-validation and a database/LLM-independent evaluator; commit full reports with immutable input hashes, categories, warnings, skips, durations and versions.
+
+**Requirements addressed:** FR-V-01, FR-V-02, FR-V-03, FR-V-04, NFR-01.
+
+**Files:** Makefile, README.md, backend/scripts/eval_validation.py, backend/tests/unit/test_eval_validation.py, docs/design-deviations.md, docs/evals/phase6-validation-20261009T175917789637Z/results.json, docs/evals/phase6-validation-20261009T175917789637Z/summary.md; new files are included in the section commit.
+
+**Decisions:** D-35: measure original inputs unchanged; record the Aurora-without-instances semantic gap without adding deployment checks.
+
+**Tests:** Evaluator tests: 8 passed, 0 failed, 0 skipped in 2.62 s. make lint passed Ruff, format and mypy (89 source files); explicit evaluator/script Ruff checks passed. make eval-validation succeeded: 2 valid, 10 invalid, 0 error; all gpt-oss variants invalid, Sonnet three-tier cost/performance valid, remaining Sonnet variants invalid. Both known gpt-oss syntax failures confirmed at main.tf:172 and ecs.tf:24. Recomputed hashes confirmed all twelve source packages unchanged.
+
+**Known gaps / follow-ups:** One remote Terraform module could not be fetched offline and is a recorded skip; ordinary failures still make that package invalid. Static validation does not detect Aurora clusters lacking instances. Final full-suite verification is section 10.
+
+---
+
 ## 2026-10-09 — Phase 6 section 8 — Acceptance coverage and recorded-output normalization
 
 **Summary:** Complete real Terraform stub success and mixed outcomes, PostgreSQL row-lock evidence, forked validator deadline cleanup, cache metric propagation and recorded linter normalization.

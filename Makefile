@@ -2,7 +2,7 @@ PYTHON := python3
 VENV := backend/.venv
 BACKEND := cd backend &&
 
-.PHONY: up down install migrate migrate-test run run-pipeline test lint sweep spike eval-architect eval-generators eval-security
+.PHONY: up down install migrate migrate-test run run-pipeline test lint sweep spike eval-architect eval-generators eval-security eval-validation
 
 up:
 	docker compose up -d --wait
@@ -49,6 +49,9 @@ eval-generators:
 
 eval-security:
 	$(BACKEND) .venv/bin/python scripts/eval_security.py $(EVAL_ARGS)
+
+eval-validation:
+	$(BACKEND) .venv/bin/python -m scripts.eval_validation $(EVAL_ARGS)
 
 .PHONY: providers
 providers:
