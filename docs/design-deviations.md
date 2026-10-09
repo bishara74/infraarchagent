@@ -546,7 +546,7 @@ in responses, attempt logs, reports and evaluations; missing remains unknown,
 explicit zero remains zero. This mechanism supports a later richer-prompt
 experiment; no paid measurement or cache-aware pricing is claimed.
 
-### D-35 — Deterministic validator and offline tools (Accepted; implementation in progress)
+### D-35 — Deterministic validator and offline tools (Accepted; implemented in Phase 6)
 
 The versioned report centralizes outcome calculation: any ordinary failed check
 makes a package invalid; otherwise a required Terraform check that cannot run
@@ -557,7 +557,9 @@ sampled in deterministic order, with full pre-sampling counts and omitted
 counts. Every file-linked failure remains in `failed_checks_for_remediation`;
 fileless failures remain in the main report. The report records whether
 Terraform was required and any stage abort, so persisted outcomes can be
-validated against the same rule. The offline mirror contains AWS 5.100.0 and 6.68.0, random 3.9.1,
+validated against the same rule.
+
+The offline mirror contains AWS 5.100.0 and 6.68.0, random 3.9.1,
 Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null 3.3.2 for linux_amd64.
 The sole authorized provisioning invocation succeeded; its file size is
 391,710,515 bytes (373.56 MiB). Terraform authenticated all seven packages as
@@ -570,7 +572,9 @@ provider-schema diagnostics are separate from the Phase 5b syntax filter;
 malformed init still triggers validate to collect real syntax diagnostics.
 Diagnostic summaries are allowlisted; source snippets and details are excluded
 from reports. Validator availability/version and mirror presence are exposed
-in healthy and degraded health responses. Built-ins use the expressly approved PyYAML 6.0.3 and Python-HCL2 8.1.4,
+in healthy and degraded health responses.
+
+Built-ins use the expressly approved PyYAML 6.0.3 and Python-HCL2 8.1.4,
 with explicit Lark 1.3.1 and locked regex 2026.9.29 from the installed environment;
 no installation was performed. YAML positions are retained in a shared index;
 HCL uses deterministic source-line fallback because the installed serializer
@@ -595,6 +599,7 @@ Helm remote dependency URLs warn when not vendored, and absent Values paths warn
 because defaults may be intended. Ansible inventory groups are checked only
 when inventory is present; symbolic host patterns warn, and role references
 must exist. Prometheus rule paths/globs yield one finding per distinct reference.
+
 Naming findings are warnings: FR-V-02 requires flagging, and fuzzy deployment
 semantics must not invalidate packages. Rules lowercase names and equate `-`,
 `_` and `.`, then require an exact normalized match or token-boundary embedding
@@ -630,7 +635,6 @@ and unsafe file inputs skip as `tool_error`. Optional skips do not cause error.
 Ansible file lookups/dynamic external inputs and file-reading references that
 escape temporary package copies are refused before launching optional tools.
 
-
 The database-independent engine shares parsed documents, runs at most three
 external commands per package and enforces a 120-second stage deadline. Tool
 cancellation kills process groups before temporary-copy cleanup. A whole-stage
@@ -657,6 +661,15 @@ The offline evaluation of the twelve original Phase 3 packages measured
 confirmed from real Terraform diagnostics. Source hashes remained unchanged.
 The Aurora cluster without instances remains an undetected semantic deployment
 gap: validation is static and does not prove that infrastructure will deploy.
+
+The thesis artifact table is revised deliberately: Kubernetes, Jenkins, Nginx
+and Grafana use the deterministic built-ins above. `kubectl --dry-run` requires
+a cluster or kubeconfig; Jenkins pipeline-model-converter requires a running
+Jenkins server; `nginx -t` requires the nginx binary and resolves upstream DNS;
+`grafana-cli` requires a Grafana installation. Those external integrations are
+out of scope for this offline phase. Helm, hadolint, ansible-lint and promtool
+remain optional local linters. Built-ins need only the approved installed
+Python libraries, with no service, credentials or extra executable.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -814,8 +827,6 @@ one-call-per-file rule. It records a notice and report entry saying feedback
 was not applied, then rescans. Phase 7 should decide whether to add another
 file-targeting rule for feedback-only retries.
 
----
-
 ### OQ-10 — Static naming applicability without deployment roles
 The plan does not distinguish application workloads from control-plane and
 infrastructure services. Phase 6 uses the centralized conservative rules in
@@ -824,7 +835,32 @@ dynamic names, Helm aggregate workloads and workload kinds outside the named
 Deployment/StatefulSet categories are not fully comparable. Any richer role
 metadata or semantic naming inference is a later design decision.
 
+---
+
 ## Thesis text to update (collected)
+- Revise the artifact-validation table: deterministic built-ins for Kubernetes,
+  Nginx, Jenkins and Grafana; keep `promtool`, `hadolint`, `helm lint` and
+  `ansible-lint`. Explain why kubectl dry-run, Jenkins pipeline-model-converter,
+  nginx testing and Grafana CLI integration need unavailable runtime services
+  or executables and are out of scope (D-35).
+- FR-V-02 flags naming mismatches as warnings. Document normalization, token
+  boundaries, suffix rules and conservative artifact applicability (OQ-10).
+- FR-V-03 uses the offline provider mirror and real provider-schema validation;
+  distinguish this from the Phase 5b syntax-only gate. Document required-tool
+  skips, failure precedence and whole-stage aborts.
+- Update Appendix A: Terraform 1.16.4, Helm v4.3.0+gbec5b06, hadolint 2.15.1,
+  promtool 3.15.0 and ansible-lint 26.9.0. List linux_amd64 providers AWS 5.100.0
+  and 6.68.0, random 3.9.1, Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null
+  3.3.2, with committed lock hashes/signature evidence and the 373.56 MiB mirror.
+- Show the versioned ValidationReport, file-linked retry targets, row-locked
+  persistence before events, three-command concurrency limit and 120-second
+  stage deadline. Option C now permits a complete stub run to reach success.
+- Record D-33's hybrid generation/remediation evidence and MEDIUM blocking;
+  D-34 adds optional cached-input metrics with caching off by default, without
+  a paid experiment or cache-aware price claims.
+- Report the Phase 6 original-package evaluation: 2 valid, 10 invalid, 0 error;
+  both known gpt-oss syntax failures detected. Static validation still misses
+  Aurora clusters without instances and does not prove deployability.
 - Explain the safe rejection reason taxonomy, lenient descriptive fix
   metadata with strict file validation, and the per-agent fixing model
   override. Evaluation should compare generator and fixing models separately
@@ -860,8 +896,8 @@ metadata or semantic naming inference is a later design decision.
   using D-17's committed results.
 - Record the Aurora example: a structurally complete package had an Aurora
   cluster without instances. Historical Phase 5 structural checks, Checkov,
-  tfsec (superseded by Trivy in D-31), and planned
-  Validator checks would not detect this; human review remains necessary.
+  tfsec (superseded by Trivy in D-31), and implemented
+  Phase 6 Validator checks do not detect this; human review remains necessary.
 - Describe the fixed package layout in Chapter 4 or 5 (D-12).
 - State that `FR-G-01`, `FR-G-06`, and `FR-G-07` pipeline integration tests
   arrive with the Phase 4 orchestrator.

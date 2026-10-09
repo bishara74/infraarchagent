@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 10 — Finalize Phase 6 documentation and verification
+
+**Summary:** Finalize D-33–D-35, superseded placeholder history, thesis-update notes, setup/settings/tool/mirror/evaluation documentation and measured acceptance evidence.
+
+**Requirements addressed:** FR-V-01, FR-V-02, FR-V-03, FR-V-04, FR-V-05, FR-S-09, NFR-01, FR-P-04.
+
+**Files:** README.md, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-35 completed; D-26 superseded; D-20 identified as historical security placeholder. OQ-10 records static naming applicability. Keep the artifact table and Appendix A updates in notes; do not edit docs/spec. No phase-7 endpoint work, installs, dotenv reads or real LLM calls.
+
+**Tests:** Final make lint: Ruff check passed, 156 app/test files formatted, mypy passed on 89 source files. Explicit script/capture Ruff checks and format checks passed (9 files). Final PYTHONPATH temporary-dotenv-bootstrap make test ran migrations and the plain pytest entry point against real PostgreSQL with normal roles/grants: 766 passed, 0 failed, 0 skipped in 78.06 s. All 43 scanners-marked tests ran; collection recorded 43/766 (723 deselected). Real Terraform stub success and partial_success tests passed. Git diff --check passed; spec, applied migrations, installer and REVISION.txt were preserved. Mirror remeasure: 391,710,515 bytes (373.56 MiB), seven signed provider archives. Offline evaluation: 2 valid, 10 invalid, 0 error, both known syntax failures confirmed, twelve source hashes unchanged.
+
+**Known gaps / follow-ups:** Static naming limits remain OQ-10. Aurora without instances is undetected; validation does not prove cloud deployability. Remote modules stay unavailable offline. Paid cache experiments and Phase 7 review/results/download endpoints are out of scope.
+
+---
+
 ## 2026-10-09 — Phase 6 section 9 — Offline validation evaluation of twelve original packages
 
 **Summary:** Add make eval-validation and a database/LLM-independent evaluator; commit full reports with immutable input hashes, categories, warnings, skips, durations and versions.

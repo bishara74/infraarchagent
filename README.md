@@ -67,7 +67,8 @@ Terraform modules have an `EXTERNAL_MODULE_NOT_SCANNED` advisory because their
 contents are unavailable. Terraform runs `validate -json` without `init`; only
 demonstrated HCL/configuration-loading diagnostics become CRITICAL
 `TERRAFORM_SYNTAX`. Missing providers/modules, references, types, formatting and
-schema validation are outside that gate. Full validation comes in Phase 6.
+schema validation are outside that scanner gate. The Phase 6 validator follows
+with full offline provider-schema validation.
 Checkov parallelism is disabled with `CHECKOV_PARALLELIZATION_TYPE=none`;
 scanner timeout/cancellation kills the whole process group and bounds pipe cleanup.
 
@@ -295,3 +296,31 @@ hashes under `docs/evals/phase6-validation-<UTC timestamp>/`. The measured run
 was **2 valid, 10 invalid, 0 error**; both known gpt-oss syntax failures were
 confirmed from Terraform output. [Per-package results](docs/evals/phase6-validation-20261009T175917789637Z/summary.md).
 An Aurora cluster without instances remains a semantic gap requiring review.
+
+Validation settings are read with the existing application settings:
+
+| Setting | Default | Purpose |
+|---|---|---|
+| `LLM_PROMPT_CACHE` | `off` | `system` adds an Anthropic compatible system cache marker. |
+| `VALIDATOR_TOOL_TIMEOUT_SECONDS` | `60` | Maximum time for each external validator command. |
+| `VALIDATOR_MAX_PARALLEL_TOOLS` | `3` | Concurrent commands per package, from 1 to 3. |
+| `VALIDATION_DEADLINE_SECONDS` | `120` | Whole-package validation deadline. |
+
+Provision the provider mirror once with `make providers` before live validation
+or evaluation. This needs network access; a failed download stops provisioning.
+Runtime tools use temporary copies, minimal environments and refusal proxies;
+real-tool tests also use network namespaces where supported. The mirror is
+ignored by Git; the pinned configurations and provenance are committed. No
+provider, role, collection or Helm schema is downloaded during validation.
+
+Built-in structural checks cover all nine artifact families. Kubernetes,
+Jenkins, Nginx and Grafana use built-ins; their server/cluster integrations
+are outside this offline phase. Naming findings and absent Secrets warn. An
+unresolved bare Nginx proxy target fails with its file and line; package names,
+IP addresses, dotted hosts and explicit external-host comments resolve, and
+variables warn. D-35 records the exact rules and static naming limits.
+
+Verified local versions: Terraform 1.16.4, Helm v4.3.0+gbec5b06, hadolint 2.15.1,
+promtool 3.15.0 and ansible-lint 26.9.0. Mirror coverage is AWS 5.100.0/6.68.0,
+random 3.9.1, Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null 3.3.2,
+391,710,515 bytes (373.56 MiB) on linux_amd64.
