@@ -65,6 +65,39 @@ spec:
     }
 
 
+@pytest.mark.req("FR-V-01", "FR-V-04")
+def test_helm_release_namespace_warns_but_missing_service_fails():
+    files = ingress_files()
+    files["helm/web/templates/service.yaml"] = json.dumps(
+        manifest("Service", "grafana", spec={"ports": [{"port": 3000}]})
+    )
+    found = kubernetes_references(PackageDocuments.parse(files))
+    assert [(c.check_id, c.status) for c in found] == [
+        ("k8s.ingress_service", "warning")
+    ]
+    del files["helm/web/templates/service.yaml"]
+    assert kubernetes_references(PackageDocuments.parse(files))[0].status == "failed"
+
+
+@pytest.mark.req("FR-V-01", "FR-V-04")
+@pytest.mark.parametrize("raw_port,expected", [(3000, "passed"), (8080, "failed")])
+def test_raw_manifest_wins_over_same_helm_identity(raw_port, expected):
+    files = ingress_files()
+    for path, port in (
+        ("k8s/service.yaml", raw_port),
+        ("helm/web/templates/service.yaml", 3000 if raw_port == 8080 else 8080),
+    ):
+        files[path] = json.dumps(
+            {
+                "kind": "Service",
+                "metadata": {"name": "grafana", "namespace": "apps"},
+                "spec": {"ports": [{"port": port}]},
+            }
+        )
+    found = kubernetes_references(PackageDocuments.parse(files))
+    assert next(c for c in found if c.check_id == "k8s.ingress_port").status == expected
+
+
 @pytest.mark.req("FR-V-01")
 @pytest.mark.parametrize("field", ["name", "namespace"])
 def test_helm_templated_identity_warns_for_same_kind_only(field):

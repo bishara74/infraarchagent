@@ -176,7 +176,11 @@ def kubernetes_references(package: PackageDocuments) -> list[ValidationCheck]:
             namespace = metadata.get("namespace")
             if not isinstance(kind, str) or helm_expression(kind):
                 continue
-            if helm_expression(name) or helm_expression(namespace):
+            if (
+                helm_expression(name)
+                or helm_expression(namespace)
+                or "namespace" not in metadata
+            ):
                 dynamic_kinds.add(kind)
             elif isinstance(name, str) and isinstance(namespace, str):
                 helm_key = (namespace, kind, name)

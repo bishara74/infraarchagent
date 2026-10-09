@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 0 — Resolve Helm release namespaces
+
+**Summary:** Treat omitted Helm namespaces as dynamic release namespaces, protect raw-manifest precedence with port regressions, and format the pipeline watcher.
+
+**Requirements addressed:** FR-V-01, FR-V-04.
+
+**Files:** backend/app/validation/references.py, backend/tests/unit/test_validation_references.py, backend/scripts/run_pipeline.py, docs/design-deviations.md, docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** D-35 clarifies release-namespace warnings and raw declaration precedence. No validator policy changes beyond the approved follow-ups.
+
+**Tests:** Focused reference tests: 55 passed, 0 failed, 0 skipped in 2.15s. make lint passed Ruff, formatting (159 files), and mypy (89 source files).
+
+**Known gaps / follow-ups:** Remaining Phase 7 sections follow. No installs, dotenv reads or real LLM calls.
+
+---
+
 ## 2026-10-09 — Phase 6b item 5 — Refresh offline validation evaluation and final verification
 
 **Summary:** Run make eval-validation on the twelve original packages, retain the previous report, commit a new timestamped JSON/Markdown report with a per-package comparison, and update README and D-35 with measured results.

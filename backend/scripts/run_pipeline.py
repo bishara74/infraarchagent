@@ -10,7 +10,9 @@ import httpx
 
 
 async def watch_pipeline(
-    text: str, *, client: httpx.AsyncClient,
+    text: str,
+    *,
+    client: httpx.AsyncClient,
     api_url: str = "http://localhost:8000",
     config: dict[str, str] | None = None,
 ) -> tuple[str, dict[str, str]]:
@@ -54,7 +56,8 @@ async def watch_pipeline(
                         previous = item.get("previous_status")
                         change = (
                             f"{previous} → {item['status']}"
-                            if previous else item["status"]
+                            if previous
+                            else item["status"]
                         )
                         elapsed = time.monotonic() - started
                         print(

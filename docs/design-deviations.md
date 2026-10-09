@@ -608,9 +608,12 @@ selectorless Services have no selector to check, and missing Secrets warn.
 Phase 6b extends reference targets to Helm template resources with explicit
 literal kind, name and namespace, without rendering templates or running
 Kubernetes structural checks on them. Unresolved references warn when Helm
-contains that target kind with a templated name or namespace; a genuinely
+contains that target kind with a templated name or namespace, or an omitted
+release namespace (Phase 7 follow-up); a genuinely
 missing kind still fails. An Ingress Service can resolve even when its port
 is templated: that port check warns, while literal port mismatches fail.
+Raw Kubernetes declarations take precedence over Helm templates with the same
+identity, including literal port validation.
 The actual original Sonnet variants differ: cost has a literal apps Service;
 performance has a monitoring Service but an Ingress with no namespace (default),
 which remains a genuine failure; security has templated identities and warns.
