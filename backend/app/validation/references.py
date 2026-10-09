@@ -91,57 +91,57 @@ def terraform_references(package: PackageDocuments) -> list[ValidationCheck]:
                     )
                 )
         for doc in documents:
-            for _, value in walk(doc.data):
-                if not isinstance(value, str):
-                    continue
-                for expression in re.findall(r"(?<!\$)\$\{([^}]*)\}", value):
-                    for match in re.finditer(
-                        r"\b(var|local|module)\.([A-Za-z_][\w-]*)(?:\.([A-Za-z_][\w-]*))?",
-                        code_text(expression),
-                    ):
-                        family, name, output = match.groups()
-                        known = name in (
-                            declared_vars
-                            if family == "var"
-                            else declared_locals
-                            if family == "local"
-                            else declared_modules
+            seen: set[str] = set()
+            for reference, line in sorted(
+                doc.reference_locations.items(), key=lambda item: (item[1], item[0])
+            ):
+                parts = reference.split(".")
+                family, name = parts[:2]
+                output = parts[2] if len(parts) > 2 else None
+                known = name in (
+                    declared_vars
+                    if family == "var"
+                    else declared_locals
+                    if family == "local"
+                    else declared_modules
+                )
+                token = f"{family}.{name}"
+                if token not in seen:
+                    seen.add(token)
+                    checks.append(
+                        finding(
+                            doc,
+                            f"terraform.{family}_ref",
+                            known,
+                            f"{token} is {'declared' if known else 'not declared'}",
+                            line=line,
+                            category="reference",
                         )
-                        token = f"{family}.{name}"
-                        checks.append(
-                            finding(
-                                doc,
-                                f"terraform.{family}_ref",
-                                known,
-                                f"Terraform {family} reference must be declared",
-                                line=source_line(doc, token),
-                                category="reference",
+                    )
+                if known and family == "module" and output:
+                    module = declared_modules[name][1]
+                    source = module.get("source")
+                    if isinstance(source, str) and source.startswith(("./", "../")):
+                        target = safe_reference(scope, source)
+                        child = scopes.get(target or "", [])
+                        if child:
+                            outputs = {
+                                labels[0]
+                                for document in child
+                                for labels, _ in blocks(document.data, "output")
+                            }
+                            exists = output in outputs
+                            state = "declared" if exists else "not declared"
+                            checks.append(
+                                finding(
+                                    doc,
+                                    "terraform.module_output",
+                                    exists,
+                                    f"{reference} is {state}",
+                                    line=line,
+                                    category="reference",
+                                )
                             )
-                        )
-                        if known and family == "module" and output:
-                            module = declared_modules[name][1]
-                            source = module.get("source")
-                            if isinstance(source, str) and source.startswith(
-                                ("./", "../")
-                            ):
-                                target = safe_reference(scope, source)
-                                child = scopes.get(target or "", [])
-                                if child:
-                                    outputs = {
-                                        labels[0]
-                                        for document in child
-                                        for labels, _ in blocks(document.data, "output")
-                                    }
-                                    checks.append(
-                                        finding(
-                                            doc,
-                                            "terraform.module_output",
-                                            output in outputs,
-                                            "Local module output must be declared",
-                                            line=source_line(doc, token),
-                                            category="reference",
-                                        )
-                                    )
     return checks
 
 

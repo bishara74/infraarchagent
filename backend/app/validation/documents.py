@@ -9,6 +9,7 @@ from typing import Any
 import hcl2
 import yaml  # type: ignore[import-untyped]
 from hcl2.utils import SerializationOptions
+from lark import Token, Tree
 from lark.exceptions import LarkError
 from yaml.nodes import (  # type: ignore[import-untyped]
     MappingNode,
@@ -81,6 +82,58 @@ def code_text(
     return re.sub(pattern, mask, source)
 
 
+def hcl_reference_locations(tree: Tree[Any]) -> dict[str, int]:
+    """Retain identifier positions from the same tree used for serialization."""
+
+    def chain(node: Tree[Any]) -> tuple[list[str], int] | None:
+        children = [child for child in node.children if isinstance(child, Tree)]
+        if node.data == "identifier":
+            token = node.children[0]
+            if isinstance(token, Token):
+                return [str(token)], token.line or 1
+        elif node.data == "expr_term" and len(children) == 1:
+            return chain(children[0])
+        elif node.data == "get_attr_expr_term" and len(children) == 2:
+            base = chain(children[0])
+            attribute = next(children[1].find_data("identifier"), None)
+            if base and attribute is not None:
+                return base[0] + [str(attribute.children[0])], base[1]
+        return None
+
+    locations: dict[str, int] = {}
+    for node in tree.find_data("get_attr_expr_term"):
+        found = chain(node)
+        if found is None:
+            continue
+        names, line = found
+        if len(names) < 2 or names[0] not in {"var", "local", "module"}:
+            continue
+        reference = ".".join(names[:3] if names[0] == "module" else names[:2])
+        locations[reference] = min(line, locations.get(reference, line))
+    return locations
+
+
+def json_reference_locations(source: str) -> dict[str, int]:
+    """Locate interpolations in JSON values, excluding keys and plain literals."""
+    locations: dict[str, int] = {}
+    for scalar in re.finditer(r'"(?:\\.|[^"\\])*"', source):
+        if source[scalar.end() :].lstrip().startswith(":"):
+            continue
+        value = json.loads(scalar.group())
+        line = source.count("\n", 0, scalar.start()) + 1
+        for expression in re.findall(r"(?<!\$)\$\{([^}]*)\}", value):
+            for match in re.finditer(
+                r"\b(var|local|module)\.([A-Za-z_][\w-]*)(?:\.([A-Za-z_][\w-]*))?",
+                code_text(expression),
+            ):
+                family, name, output = match.groups()
+                reference = f"{family}.{name}"
+                if family == "module" and output:
+                    reference += f".{output}"
+                locations.setdefault(reference, line)
+    return locations
+
+
 @dataclass(frozen=True)
 class YamlDocument:
     data: Any
@@ -114,6 +167,7 @@ class Document:
     yaml_documents: tuple[YamlDocument, ...] = ()
     error_line: int | None = None
     parse_error: bool = False
+    reference_locations: dict[str, int] = field(default_factory=dict)
 
     def line(self, token: str | None = None) -> int:
         if token:
@@ -138,12 +192,16 @@ class PackageDocuments:
             documents: list[YamlDocument] = []
             error_line: int | None = None
             failed = False
+            references: dict[str, int] = {}
             try:
                 if kind == FileType.TERRAFORM and path.endswith(".tf.json"):
                     data = json.loads(source)
+                    references = json_reference_locations(source)
                 elif kind == FileType.TERRAFORM and path.endswith((".tf", ".tfvars")):
-                    data = hcl2.loads(
-                        source,
+                    tree = hcl2.parses_to_tree(source)
+                    references = hcl_reference_locations(tree)
+                    data = hcl2.serialize(
+                        hcl2.transform(tree),
                         serialization_options=SerializationOptions(
                             strip_string_quotes=True,
                             with_comments=False,
@@ -184,7 +242,14 @@ class PackageDocuments:
                     else getattr(error, "line", None) or getattr(error, "lineno", 1)
                 )
             package.documents[path] = Document(
-                path, source, kind, data, tuple(documents), error_line, failed
+                path,
+                source,
+                kind,
+                data,
+                tuple(documents),
+                error_line,
+                failed,
+                references,
             )
         return package
 

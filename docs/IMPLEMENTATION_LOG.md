@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6b item 4 — Deduplicate and locate Terraform references
+
+**Summary:** Retain Terraform reference positions from the shared HCL parse tree and JSON interpolation values, emit one finding per file and identifier, and include the reference in declaration/output messages.
+
+**Requirements addressed:** FR-V-01, FR-V-04, NFR-01.
+
+**Files:** backend/app/validation/documents.py, backend/app/validation/references.py, backend/tests/unit/test_validation_references.py, backend/tests/unit/test_validation_terraform.py, docs/design-deviations.md; docs/IMPLEMENTATION_LOG.md records this item.
+
+**Decisions:** Parse HCL once, retaining original identifier positions before serialization; ignore comments, ordinary quoted strings and escaped interpolations. Module declaration references are deduplicated by module name; inspectable output references are deduplicated by full module/output name. Updated D-35 to distinguish exact reference positions from other source-line fallbacks.
+
+**Tests:** Focused reference/structure/engine/Terraform tests: 131 passed, 0 failed, 0 skipped (4.14s). make lint passed Ruff, formatting and mypy (89 source files). Added repeated-reference tests for all three families across files, JSON interpolation positions, exact identifier boundaries, local-module outputs, and shared-parser reuse.
+
+**Known gaps / follow-ups:** Full-suite verification and the twelve-package evaluation follow in item 5; original package files are untouched.
+
+---
+
 ## 2026-10-09 — Phase 6b item 3 — Isolate security evaluator integration writes to the test database
 
 **Summary:** Map app and migration settings to test URLs in the evaluator test; assert both role URLs at its engine boundary and reject any integration non-test DBAPI connection via a shared fixture.

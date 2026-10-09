@@ -583,8 +583,10 @@ in healthy and degraded health responses.
 Built-ins use the expressly approved PyYAML 6.0.3 and Python-HCL2 8.1.4,
 with explicit Lark 1.3.1 and locked regex 2026.9.29 from the installed environment;
 no installation was performed. YAML positions are retained in a shared index;
-HCL uses deterministic source-line fallback because the installed serializer
-omits line metadata. Helm templates, Ansible role task/support files and
+HCL reference locations are retained from the original parse tree before
+serialization, without parsing twice; other HCL analysers retain deterministic
+source-line fallback. Undeclared references emit one finding per file and
+identifier, naming the reference and its first actual occurrence. Helm templates, Ansible role task/support files and
 Prometheus rule files are distinguished from standalone manifests, playbooks
 and scrape configs. Kubernetes identities include namespace, kind and name.
 

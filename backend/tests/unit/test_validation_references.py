@@ -206,6 +206,103 @@ def test_terraform_comments_literals_and_escaped_interpolation_are_not_reference
     ]
 
 
+@pytest.mark.req("FR-V-01", "FR-V-04")
+@pytest.mark.parametrize("family", ["var", "local", "module"])
+def test_undeclared_references_are_unique_per_file_with_first_actual_line(family):
+    reference = f"{family}.common_tags"
+    expression = reference + (".output" if family == "module" else "")
+    source = (
+        f"# {reference}\n"
+        f'output "plain" {{ value = "{reference}" }}\n'
+        f'output "escaped" {{ value = "$${{{expression}}}" }}\n'
+        f'output "first" {{ value = {expression} }}\n'
+        f'output "repeat" {{ value = "${{{expression}}}" }}\n'
+        f'output "again" {{ value = {expression} }}\n'
+    )
+    found = [
+        c
+        for c in checks(
+            {
+                "terraform/main.tf": source,
+                "terraform/another.tf": f'output "other" {{ value = {expression} }}',
+            }
+        )
+        if c.status == "failed"
+    ]
+    assert {(c.file_path, c.line_start, c.message) for c in found} == {
+        ("terraform/main.tf", 4, f"{reference} is not declared"),
+        ("terraform/another.tf", 1, f"{reference} is not declared"),
+    }
+    assert len(found) == 2
+
+
+@pytest.mark.req("FR-V-01")
+def test_reference_locations_use_exact_identifiers_and_parse_only_once(monkeypatch):
+    import hcl2
+
+    original = hcl2.parses_to_tree
+    calls = []
+
+    def capture(source):
+        calls.append(source)
+        return original(source)
+
+    monkeypatch.setattr(hcl2, "parses_to_tree", capture)
+    source = (
+        'output "longer" { value = local.common_tags_long }\n'
+        'output "literal" { value = "${format("local.common_tags")}" }\n'
+        'output "shorter" { value = local.common_tags }\n'
+        'output "resource" { value = aws_lambda_function.local.id }\n'
+    )
+    package = PackageDocuments.parse({"terraform/main.tf": source})
+    assert calls == [source]
+    assert not package.documents["terraform/main.tf"].parse_error
+    found = reference_checks(package)
+    assert [(c.message, c.line_start) for c in found] == [
+        ("local.common_tags_long is not declared", 1),
+        ("local.common_tags is not declared", 3),
+    ]
+    assert calls == [source]
+
+
+@pytest.mark.req("FR-V-01", "FR-V-04")
+def test_json_reference_first_interpolation_line_and_deduplication():
+    source = """{
+  "locals": {"plain": "local.common_tags", "escaped": "$${local.common_tags}"},
+  "output": {
+    "first": {"value": "${local.common_tags}"},
+    "repeat": {"value": "${local.common_tags}"}
+  }
+}"""
+    found = checks({"terraform/main.tf.json": source})
+    assert [(c.message, c.line_start) for c in found] == [
+        ("local.common_tags is not declared", 4)
+    ]
+
+
+@pytest.mark.req("FR-V-01")
+def test_local_module_outputs_are_unique_and_located():
+    found = checks(
+        {
+            "terraform/main.tf": (
+                'module "child" { source = "./child" }\n'
+                'output "first" { value = module.child.missing }\n'
+                'output "repeat" { value = module.child.missing }\n'
+                'output "present" { value = module.child.present }\n'
+            ),
+            "terraform/child/main.tf": 'output "present" { value = 1 }',
+        }
+    )
+    assert [
+        (c.message, c.line_start, c.status)
+        for c in found
+        if c.check_id == "terraform.module_output"
+    ] == [
+        ("module.child.missing is not declared", 2, "failed"),
+        ("module.child.present is declared", 4, "passed"),
+    ]
+
+
 @pytest.mark.req("FR-V-01")
 @pytest.mark.parametrize("source", ["../../escape", "/etc/config", "C:/config"])
 def test_local_module_path_escape_is_failure(source):

@@ -289,4 +289,5 @@ def test_preflight_reuses_shared_parser_index(tmp_path, monkeypatch):
         raise AssertionError("Terraform must not parse the source a second time")
 
     monkeypatch.setattr(hcl2, "loads", unexpected)
+    monkeypatch.setattr(hcl2, "parses_to_tree", unexpected)
     assert module_preflight(tmp_path, files, documents) == (None, False)
