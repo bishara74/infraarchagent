@@ -1,0 +1,18 @@
+{
+  "command": [
+    "ansible-lint",
+    "--offline",
+    "--nocolor",
+    "-f",
+    "json",
+    "--project-dir",
+    "ansible",
+    "ansible/playbook.yaml"
+  ],
+  "exit_code": 2,
+  "stdout": "[{\"type\": \"issue\", \"check_name\": \"name[play]\", \"categories\": [\"idiom\"], \"url\": \"https://docs.ansible.com/projects/lint/rules/name/\", \"severity\": \"major\", \"description\": \"All plays should be named.\", \"fingerprint\": \"40b55e4d37a98bc75d767e5795e2623a0bd1fb654c6748f72234f97a205d4116\", \"location\": {\"path\": \"ansible/playbook.yaml\", \"positions\": {\"begin\": {\"line\": 1, \"column\": 3}}}}, {\"type\": \"issue\", \"check_name\": \"command-instead-of-shell\", \"categories\": [\"command-shell\", \"idiom\"], \"url\": \"https://docs.ansible.com/projects/lint/rules/command-instead-of-shell/\", \"severity\": \"major\", \"description\": \"Use shell only when shell functionality is required.\", \"fingerprint\": \"9ad0eecd4a04c1fd5be73db8c8b020f51b1e7bad86cca05c4e9ceb72fd4a6cc5\", \"location\": {\"path\": \"ansible/playbook.yaml\", \"lines\": {\"begin\": 3}}, \"content\": {\"body\": \"Task/Handler: shell echo hello\"}}, {\"type\": \"issue\", \"check_name\": \"fqcn[action-core]\", \"categories\": [\"formatting\"], \"url\": \"https://docs.ansible.com/projects/lint/rules/fqcn/\", \"severity\": \"major\", \"description\": \"Use FQCN for builtin module actions (shell).\", \"fingerprint\": \"fcb8fc7f45052333867aaacab15b14e33cbcbe4aad334c1d972dcfd6d368f284\", \"location\": {\"path\": \"ansible/playbook.yaml\", \"positions\": {\"begin\": {\"line\": 3, \"column\": 7}}}, \"content\": {\"body\": \"Use `ansible.builtin.shell` or `ansible.legacy.shell` instead.\"}}, {\"type\": \"issue\", \"check_name\": \"name[missing]\", \"categories\": [\"idiom\"], \"url\": \"https://docs.ansible.com/projects/lint/rules/name/\", \"severity\": \"major\", \"description\": \"All tasks should be named.\", \"fingerprint\": \"b77b0394681e7a4903ba4d7d0b4d4110ee926faf0754e35c2dacf4e60b300341\", \"location\": {\"path\": \"ansible/playbook.yaml\", \"lines\": {\"begin\": 3}}, \"content\": {\"body\": \"Task/Handler: shell echo hello\"}}, {\"type\": \"issue\", \"check_name\": \"no-changed-when\", \"categories\": [\"command-shell\", \"idempotency\"], \"url\": \"https://docs.ansible.com/projects/lint/rules/no-changed-when/\", \"severity\": \"major\", \"description\": \"Commands should not change things if nothing needs doing.\", \"fingerprint\": \"70343ef75737d324468038331ca7b82fe7381ad17ab60a37b99bd9f80973658d\", \"location\": {\"path\": \"ansible/playbook.yaml\", \"lines\": {\"begin\": 3}}, \"content\": {\"body\": \"Task/Handler: shell echo hello\"}}]\n",
+  "stderr": "Read documentation for instructions on how to ignore specific rule violations.\n\n# Rule Violation Summary\n\n  1 command-instead-of-shell profile:basic tags:command-shell,idiom\n  1 name profile:basic tags:idiom\n  1 name profile:basic tags:idiom\n  1 no-changed-when profile:basic tags:command-shell,idempotency\n  1 fqcn profile:basic tags:formatting\n\nFailed: 5 failure(s), 0 warning(s) in 1 files processed of 1 encountered. Last profile that met the validation criteria was 'min'.\n",
+  "files": {
+    "ansible/playbook.yaml": "- hosts: all\n  tasks:\n    - shell: echo hello\n"
+  }
+}

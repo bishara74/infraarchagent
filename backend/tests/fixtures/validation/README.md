@@ -20,3 +20,10 @@ successfully. Syntax failed init and was still validated to collect its actual
 diagnostic. JSON paths are normalized to `/__RECORDED_ROOT__`; source snippets
 are omitted, preserving diagnostic titles, details, severity and positions.
 Init captures replace temporary roots and mirror paths. No LLM is involved.
+
+Linter captures use Helm v4.3.0+gbec5b06, hadolint 2.15.1, ansible-lint 26.9.0
+and promtool 3.15.0. Reproduce with `PYTHONPATH=backend backend/.venv/bin/python
+backend/tests/fixtures/validation/capture_linters.py`. Each JSON record includes
+the exact command, exit status, source map, and normalized stdout/stderr.
+Ansible captures use the actual Code Climate issue-array format and both
+observed location representations. All commands use the offline runner.

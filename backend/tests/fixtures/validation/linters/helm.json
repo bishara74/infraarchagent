@@ -1,0 +1,16 @@
+{
+  "command": [
+    "helm",
+    "lint",
+    "helm/web",
+    "--skip-schema-validation"
+  ],
+  "exit_code": 1,
+  "stdout": "==> Linting helm/web\n[INFO] Chart.yaml: icon is recommended\n[ERROR] templates/deployment.yaml: a Deployment must contain matchLabels or matchExpressions, and \"web\" does not\n\n",
+  "stderr": "Error: 1 chart(s) linted, 1 chart(s) failed\n",
+  "files": {
+    "helm/web/Chart.yaml": "apiVersion: v2\nname: web\nversion: 1.0.0\n",
+    "helm/web/values.yaml": "replicas: 1\n",
+    "helm/web/templates/deployment.yaml": "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: {{ .Values.replicas }}\n"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "promtool",
+    "check",
+    "config",
+    "monitoring/prometheus/prometheus.yaml"
+  ],
+  "exit_code": 1,
+  "stdout": "Checking monitoring/prometheus/prometheus.yaml\n\n",
+  "stderr": "  FAILED: parsing YAML file monitoring/prometheus/prometheus.yaml: yaml: unmarshal errors:\n  line 3: field invalid_option not found in type config.ScrapeConfig\n",
+  "files": {
+    "monitoring/prometheus/prometheus.yaml": "scrape_configs:\n  - job_name: web\n    invalid_option: true\n"
+  }
+}

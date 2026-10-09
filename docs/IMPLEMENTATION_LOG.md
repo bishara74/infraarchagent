@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 6 — Optional local linter adapters and recordings
+
+**Summary:** Add pluggable target discovery, offline commands, safe parsers and real recordings for Helm, hadolint, ansible-lint and promtool, with validated locations and optional-skip semantics. Add the 60-second tool timeout setting and isolate Ansible configuration.
+
+**Requirements addressed:** FR-V-04, NFR-01.
+
+**Files:** .env.example, README.md, backend/app/core/config.py, backend/app/scanners/runner.py, backend/app/validation/linters.py, backend/tests/fixtures/validation/README.md, backend/tests/fixtures/validation/capture_linters.py, backend/tests/fixtures/validation/linters/ansible-lint.json, backend/tests/fixtures/validation/linters/hadolint.json, backend/tests/fixtures/validation/linters/helm.json, backend/tests/fixtures/validation/linters/promtool.json, backend/tests/unit/test_validation_linters.py, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-35 records exact installed versions, Code Climate severity/location mappings and no-raw-output reporting. Missing executables skip not_installed; crashes/timeouts/unusable output skip tool_error. Unsafe file-reading inputs and dynamic Ansible lookups are refused before launch. No installation/download occurred.
+
+**Tests:** make lint passed (Ruff/format, mypy 87 app files). Combined linter/tool/descendant-timeout regression: 51 passed in 7.42 s, 0 skipped, including four actual clean linter executions. Initial focused linter set: 34 passed before canary/unsafe-input cases were added.
+
+**Known gaps / follow-ups:** Engine concurrency, stage deadlines, persistence, retry and orchestrator success tests follow in sections 7–8.
+
+---
+
 ## 2026-10-09 — Phase 6 section 5 — Static naming consistency warnings
 
 **Summary:** Collect named entities across Terraform, Kubernetes, Helm, Ansible, Nginx and Prometheus; normalize names, apply token boundaries and documented suffixes, and warn on unknown or absent expected application entities.

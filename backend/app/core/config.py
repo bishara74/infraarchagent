@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     max_remediation_iterations: int = Field(default=3, ge=1)
     security_deadline_seconds: float = Field(default=240.0, gt=0)
     scanner_timeout_seconds: float = Field(default=120.0, gt=0)
+    validator_tool_timeout_seconds: float = Field(default=60.0, gt=0)
     fix_attempt_timeout_seconds: float = Field(default=90.0, gt=0)
     fix_max_output_tokens: int = Field(default=16000, ge=1)
     security_max_parallel_fixes: int = Field(default=4, ge=1)

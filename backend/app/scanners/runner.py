@@ -47,6 +47,18 @@ def scanner_environment(workdir: Path, tool: str) -> dict[str, str]:
     env.update({"NO_PROXY": "", "no_proxy": ""})
     if tool == "checkov":
         env["CHECKOV_PARALLELIZATION_TYPE"] = "none"
+    if tool == "ansible-lint":
+        env.update(
+            {
+                "ANSIBLE_HOME": str(workdir / ".ansible"),
+                "ANSIBLE_LOCAL_TEMP": str(workdir / ".ansible/tmp"),
+                "ANSIBLE_COLLECTIONS_PATH": str(workdir / ".ansible/collections"),
+                "ANSIBLE_ROLES_PATH": str(workdir / "ansible/roles"),
+                "ANSIBLE_LINT_SKIP_SCHEMA_UPDATE": "1",
+                "ANSIBLE_GALAXY_SERVER_LIST": "",
+                "PYTHONNOUSERSITE": "1",
+            }
+        )
     if tool == "terraform":
         env.update(
             {

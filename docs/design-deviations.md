@@ -611,6 +611,22 @@ expectation is invented. Literal Helm release names are collected from
 releases. Missing expected entities warn. These limits remain static because
 the plan has no deployment-role metadata (OQ-10).
 
+Optional linters run through the shared process runner in temporary copies,
+with a 60-second per-tool timeout. Helm v4.3.0+gbec5b06 disables schema
+validation/downloads; hadolint is 2.15.1; promtool is 3.15.0; ansible-lint is
+26.9.0 (ansible-core 2.21.5, ansible-compat 26.9.0), with `--offline` and schema
+refresh disabled. Terraform is 1.16.4. Actual captures are committed with
+commands and fixture sources. Installed ansible-lint JSON is Code Climate:
+blocker/critical/major/error fail, minor/info/warning/note warn; both actual
+line-location forms are supported. Hadolint errors fail while warning/info/style
+warn; Helm ERROR fails and WARNING/INFO warn; promtool configuration/rule errors
+fail. Messages omit raw output and source text, retaining safe locations.
+Missing executables skip as `not_installed`; crashes, timeouts, malformed output
+and unsafe file inputs skip as `tool_error`. Optional skips do not cause error.
+Ansible file lookups/dynamic external inputs and file-reading references that
+escape temporary package copies are refused before launching optional tools.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -270,3 +270,9 @@ Health responses report validator availability/versions and mirror presence.
 Built-in validation uses the existing installed Python-HCL2 8.1.4, Lark 1.3.1
 and PyYAML 6.0.3; regex 2026.9.29 is locked as a required transitive dependency.
 Parser diagnostics contain safe messages and package-relative locations.
+
+Optional validation tools are Helm, hadolint, ansible-lint and promtool. The
+author's reproducible installer is `tools/install_validators.sh`; Phase 6 used
+the installed tools without invoking it. `VALIDATOR_TOOL_TIMEOUT_SECONDS`
+defaults to 60. Missing tools and tool failures are reported as optional skips.
+Helm schema downloading and Ansible dependency/schema downloading are disabled.
