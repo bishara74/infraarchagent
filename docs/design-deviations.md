@@ -553,8 +553,21 @@ sampled in deterministic order, with full pre-sampling counts and omitted
 counts. Every file-linked failure remains in `failed_checks_for_remediation`;
 fileless failures remain in the main report. The report records whether
 Terraform was required and any stage abort, so persisted outcomes can be
-validated against the same rule. Tool availability and analysis tiers follow
-in subsequent sections.
+validated against the same rule. The offline mirror contains AWS 5.100.0 and 6.68.0, random 3.9.1,
+Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null 3.3.2 for linux_amd64.
+The sole authorized provisioning invocation succeeded; its file size is
+391,710,515 bytes (373.56 MiB). Terraform authenticated all seven packages as
+signed by HashiCorp. Archive hashes and offline-derived lock records are in
+`tools/terraform-providers/`. Runtime init uses `-backend=false -input=false
+-plugin-dir=<mirror>`, permitting module installation only for recursively
+verified local sources. Missing mirror, unavailable provider version, remote
+module, missing executable and tool errors remain distinct skips. Full
+provider-schema diagnostics are separate from the Phase 5b syntax filter;
+malformed init still triggers validate to collect real syntax diagnostics.
+Diagnostic summaries are allowlisted; source snippets and details are excluded
+from reports. Validator availability/version and mirror presence are exposed
+in healthy and degraded health responses. Analysis tiers follow in subsequent
+sections.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

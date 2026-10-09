@@ -31,6 +31,8 @@ async def health(
                 "database": "unavailable",
                 "llm_configured": configured,
                 "scanners": request.app.state.scanners,
+                "validators": request.app.state.validators,
+                "provider_mirror_present": request.app.state.provider_mirror_present,
             },
         )
     return JSONResponse(
@@ -39,5 +41,7 @@ async def health(
             "database": "ok",
             "llm_configured": configured,
             "scanners": request.app.state.scanners,
+            "validators": request.app.state.validators,
+            "provider_mirror_present": request.app.state.provider_mirror_present,
         }
     )

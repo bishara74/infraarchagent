@@ -22,6 +22,14 @@ async def test_health_real_database_and_unreachable_override(
         assert response.json()["status"] == "ok"
         assert response.json()["database"] == "ok"
         assert response.json()["llm_configured"] is False
+        assert set(response.json()["validators"]) == {
+            "terraform",
+            "helm",
+            "hadolint",
+            "ansible-lint",
+            "promtool",
+        }
+        assert isinstance(response.json()["provider_mirror_present"], bool)
         assert set(response.json()["scanners"]) == {"checkov", "trivy", "terraform"}
 
         configured = settings.model_copy(update={"llm_api_key": SecretStr("test-only")})
@@ -37,6 +45,14 @@ async def test_health_real_database_and_unreachable_override(
             assert response.status_code == 503
             assert response.json()["status"] == "degraded"
             assert response.json()["database"] == "unavailable"
+            assert set(response.json()["validators"]) == {
+                "terraform",
+                "helm",
+                "hadolint",
+                "ansible-lint",
+                "promtool",
+            }
+            assert isinstance(response.json()["provider_mirror_present"], bool)
             assert response.json()["llm_configured"] is True
             assert set(response.json()["scanners"]) == {"checkov", "trivy", "terraform"}
         finally:

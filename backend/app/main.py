@@ -22,6 +22,7 @@ from app.pipeline.runner import PipelineRunner
 from app.pipeline.stages import UnavailableValidationStage
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.runner import scanner_versions
+from app.validation.tools import mirror_present, validator_versions
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +98,8 @@ def create_app(
     app.state.settings = configured
     app.state.session_factory = session_factory
     app.state.scanners = scanner_info
+    app.state.validators = validator_versions()
+    app.state.provider_mirror_present = mirror_present()
     app.add_exception_handler(Exception, internal_error_handler)
     app.include_router(health_router)
     app.include_router(pipeline_router)

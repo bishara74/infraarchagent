@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 2 — Offline provider mirror and Terraform validation
+
+**Summary:** Extend the shared subprocess runner with explicit commands and safe version probes; provision exact pinned providers once; capture real schema diagnostics; add offline initialization, module preflight, diagnostic parsing and health metadata.
+
+**Requirements addressed:** FR-V-01, FR-V-03, FR-V-04, NFR-01.
+
+**Files:** .gitignore, Makefile, README.md, backend/app/api/health.py, backend/app/main.py, backend/app/scanners/runner.py, backend/app/validation/__init__.py, backend/app/validation/terraform.py, backend/app/validation/tools.py, backend/scripts/mirror_providers.py, backend/tests/fixtures/validation/README.md, backend/tests/fixtures/validation/capture_terraform.py, backend/tests/fixtures/validation/terraform/invalid_argument.init.txt, backend/tests/fixtures/validation/terraform/invalid_argument.json, backend/tests/fixtures/validation/terraform/invalid_argument.main.tf, backend/tests/fixtures/validation/terraform/invalid_resource.init.txt, backend/tests/fixtures/validation/terraform/invalid_resource.json, backend/tests/fixtures/validation/terraform/invalid_resource.main.tf, backend/tests/fixtures/validation/terraform/providers.tf, backend/tests/fixtures/validation/terraform/syntax.init.txt, backend/tests/fixtures/validation/terraform/syntax.json, backend/tests/fixtures/validation/terraform/syntax.main.tf, backend/tests/fixtures/validation/terraform/valid.init.txt, backend/tests/fixtures/validation/terraform/valid.json, backend/tests/fixtures/validation/terraform/valid.main.tf, backend/tests/integration/test_health.py, backend/tests/unit/test_mirror_providers.py, backend/tests/unit/test_terraform_parser.py, backend/tests/unit/test_validation_terraform.py, backend/tests/unit/test_validation_tools.py, docs/design-deviations.md, tools/terraform-providers/.terraform.lock.hcl, tools/terraform-providers/README.md, tools/terraform-providers/aws5/.terraform.lock.hcl, tools/terraform-providers/aws5/providers.tf, tools/terraform-providers/providers.tf; new files are included in the section commit.
+
+**Decisions:** D-35 records offline initialization and skip semantics. The single make providers invocation succeeded, authenticated all seven packages, and produced a 391,710,515-byte mirror (373.56 MiB), with lock hashes recorded locally. No other install/download occurred. Validate still runs after malformed init; reports omit source snippets and diagnostic details.
+
+**Tests:** make lint passed (Ruff/format, mypy 82 app files); explicit mirror-script Ruff passed. Plain make test with dotenv disabled and real PostgreSQL: 582 passed, 0 failed, 0 skipped in 63.00 s. Focused Terraform/health tests: 24 passed, including real mirror validation and network-namespace execution. Existing scanner regression subset: 38 passed, 25 deselected.
+
+**Known gaps / follow-ups:** Reusable shared parsing, structural/reference/naming checks, optional linters and stage wiring follow. D-35 remains in progress.
+
+---
+
 ## 2026-10-09 — Phase 6 section 1 — Validation report contract and outcomes
 
 **Summary:** Add strict immutable validation checks and reports, centralized outcome/status mapping, deterministic ordering and lossless remediation targets with bounded nonfailure sampling.

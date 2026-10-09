@@ -255,3 +255,14 @@ retained even when a retry succeeds.
 Prompt-cache measurement: `LLM_PROMPT_CACHE=off` (default) or `system` marks
 the system content for compatible Anthropic models. Cached input token metrics
 are recorded when reported; cache-aware cost pricing is not implemented.
+
+Terraform provider schemas are provisioned by `make providers` into the ignored
+`.cache/terraform-providers/` mirror. This command needs network access and the
+already installed Terraform; it stops on a failed download. Exact provider pins,
+archive hashes, signature evidence and mirror size are recorded in
+[the provider record](tools/terraform-providers/README.md). Both AWS major
+versions share one mirror; committed lock records come from its local archives.
+Runtime validation initializes temporary copies with `-backend=false`,
+`-input=false` and `-plugin-dir=<mirror>` with black-hole proxies. Local modules
+may be installed after path checks; remote modules are unavailable offline.
+Health responses report validator availability/versions and mirror presence.

@@ -78,17 +78,20 @@ def test_version_probes_have_same_environment_and_terraform_first_line(
 
     def probe(args, **kwargs):
         seen.append(kwargs["env"])
-        return subprocess.CompletedProcess(
-            args,
-            0,
-            "Terraform v1.16.4\non linux_amd64\n"
-            if args[0] == "terraform"
-            else "Version 0.69.3\n",
-            "",
-        )
+
+        class Probe:
+            def communicate(self, timeout):
+                return (
+                    "Terraform v1.16.4\non linux_amd64\n"
+                    if args[0] == "terraform"
+                    else "Version 0.69.3\n",
+                    "",
+                )
+
+        return Probe()
 
     monkeypatch.setattr(runner.shutil, "which", lambda tool: tool)
-    monkeypatch.setattr(subprocess, "run", probe)
+    monkeypatch.setattr(subprocess, "Popen", probe)
     monkeypatch.setenv("LLM_API_KEY", "canary-key")
     scanner_versions.cache_clear()
     try:

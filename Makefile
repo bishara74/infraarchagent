@@ -49,3 +49,7 @@ eval-generators:
 
 eval-security:
 	$(BACKEND) .venv/bin/python scripts/eval_security.py $(EVAL_ARGS)
+
+.PHONY: providers
+providers:
+	$(BACKEND) .venv/bin/python -m scripts.mirror_providers

@@ -4,6 +4,7 @@ import asyncio
 import os
 import shutil
 import signal
+import subprocess
 import time
 from dataclasses import dataclass
 from functools import lru_cache
@@ -11,7 +12,18 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Literal, Protocol
 
-ToolName = Literal["checkov", "trivy", "terraform"]
+ToolName = Literal[
+    "checkov", "trivy", "terraform", "helm", "hadolint", "ansible-lint", "promtool"
+]
+EXECUTABLES = {
+    "checkov",
+    "trivy",
+    "terraform",
+    "helm",
+    "hadolint",
+    "ansible-lint",
+    "promtool",
+}
 TOOLS: tuple[ToolName, ...] = ("checkov", "trivy", "terraform")
 
 
@@ -117,16 +129,46 @@ class ProcessToolRunner:
             ]
         else:
             args = ["terraform", "validate", "-json", "-no-color"]
-        env = scanner_environment(workdir, tool)
         cwd = workdir
         if tool == "terraform":
             cwd = workdir / "terraform"
             cwd.mkdir(exist_ok=True)
+        return await self.run_command(tool, args, workdir, cwd=cwd)
+
+    async def run_command(
+        self,
+        tool: ToolName,
+        args: list[str],
+        workdir: Path,
+        *,
+        cwd: Path | None = None,
+        environment_dir: Path | None = None,
+        allow_provider_download: bool = False,
+    ) -> ToolResult:
+        """Explicit argv without shells, inherited secrets or arbitrary executables."""
+        if tool not in EXECUTABLES or not args or args[0] != tool:
+            raise ToolFailure(tool, "unsafe_command")
+        selected_cwd = (cwd or workdir).resolve()
+        if not selected_cwd.is_relative_to(workdir.resolve()):
+            raise ToolFailure(tool, "unsafe_workdir")
+        env = scanner_environment(environment_dir or workdir, tool)
+        if allow_provider_download:
+            if tool != "terraform" or args[1:3] != ["providers", "mirror"]:
+                raise ToolFailure(tool, "unsafe_network_command")
+            for key in (
+                "HTTP_PROXY",
+                "HTTPS_PROXY",
+                "ALL_PROXY",
+                "http_proxy",
+                "https_proxy",
+                "all_proxy",
+            ):
+                env.pop(key, None)
         started = time.monotonic()
         try:
             process = await asyncio.create_subprocess_exec(
                 *args,
-                cwd=cwd,
+                cwd=selected_cwd,
                 env=env,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
@@ -152,6 +194,49 @@ class ProcessToolRunner:
             process.returncode or 0,
             time.monotonic() - started,
         )
+
+    @staticmethod
+    def probe_version(
+        tool: ToolName, args: list[str] | None = None
+    ) -> dict[str, str | bool | None]:
+        if tool not in EXECUTABLES:
+            raise ToolFailure(tool, "unsafe_command")
+        executable = shutil.which(tool)
+        version: str | None = None
+        if executable is not None:
+            with TemporaryDirectory(prefix="infraarch-version-") as directory:
+                try:
+                    process = subprocess.Popen(
+                        [executable, *(args or ["--version"])],
+                        cwd=directory,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        start_new_session=True,
+                        env=scanner_environment(Path(directory), tool),
+                    )
+                    try:
+                        stdout, _ = process.communicate(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        try:
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        process.communicate(timeout=5)
+                        stdout = ""
+                    lines = stdout.strip().splitlines()
+                    selected = (
+                        lines[0]
+                        if tool
+                        in {"terraform", "helm", "hadolint", "ansible-lint", "promtool"}
+                        else lines[-1]
+                        if lines
+                        else ""
+                    )
+                    version = selected.strip()[:100] or None
+                except (OSError, subprocess.TimeoutExpired, IndexError):
+                    pass
+        return {"available": executable is not None, "version": version}
 
 
 class RecordedToolRunner:
@@ -186,30 +271,5 @@ class RecordedToolRunner:
 
 @lru_cache
 def scanner_versions() -> dict[str, dict[str, str | bool | None]]:
-    """Probe once at startup; version commands receive the same safe environment."""
-    import subprocess
-
-    versions: dict[str, dict[str, str | bool | None]] = {}
-    for tool in TOOLS:
-        executable = shutil.which(tool)
-        version: str | None = None
-        if executable:
-            try:
-                with TemporaryDirectory(prefix="infraarch-version-") as directory:
-                    completed = subprocess.run(
-                        [executable, "--version"],
-                        capture_output=True,
-                        text=True,
-                        timeout=10,
-                        check=False,
-                        env=scanner_environment(Path(directory), tool),
-                    )
-                lines = completed.stdout.strip().splitlines()
-                selected = (
-                    lines[0] if tool == "terraform" else lines[-1] if lines else ""
-                )
-                version = selected.strip()[:100] or None
-            except (OSError, subprocess.TimeoutExpired, IndexError):
-                pass
-        versions[tool] = {"available": executable is not None, "version": version}
-    return versions
+    """Probe once at startup through the shared runner's safe version adapter."""
+    return {tool: ProcessToolRunner.probe_version(tool) for tool in TOOLS}
