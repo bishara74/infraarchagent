@@ -8,9 +8,12 @@ from app.api.schemas import MissingVariant, PackageResult, ResultsResponse, RunR
 from app.core.config import Settings
 from app.core.safety import PublicDataSafety
 from app.db.repositories.results import ResultsRepository
+from app.domain.archive import package_zip, readiness_document
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.plan import DeploymentPlan
 from app.domain.review import package_presentation
+from app.domain.states import is_downloadable
+from app.pipeline.review import ReviewError
 
 
 class ResultsService:
@@ -19,6 +22,44 @@ class ResultsService:
     ) -> None:
         self.sessions = sessions
         self.safety = PublicDataSafety(settings)
+
+    async def download(self, run_id: UUID, variant: Variant) -> tuple[bytes, str]:
+        async with self.sessions() as session:
+            repository = ResultsRepository(session)
+            snapshot = await repository.snapshot(run_id)
+            row = (
+                next(
+                    (item for item in snapshot.packages if item.variant == variant),
+                    None,
+                )
+                if snapshot
+                else None
+            )
+            if row is None or PackageStatus(row.status) == PackageStatus.FAILED:
+                raise ReviewError(404, "not_found", "Package not found.")
+            status = PackageStatus(row.status)
+            if not is_downloadable(status):
+                raise ReviewError(
+                    409, "not_downloadable", "Package does not have a readiness label."
+                )
+            label = await repository.label_event(run_id, variant, status)
+        assert snapshot is not None
+        readiness = readiness_document(
+            run_id=run_id,
+            variant=variant,
+            status=status,
+            model=snapshot.run.model,
+            labelled_at=label.timestamp if label else None,
+            review_action=label.payload.get("review_action") if label else None,
+            feedback=row.review_feedback,
+            security_report=row.security_report,
+            validation_report=row.validation_report,
+        )
+        archive = package_zip(self.safety.value(row.files), self.safety.text(readiness))
+        return (
+            archive,
+            f"infraarch-{str(run_id)[:8]}-{variant.value}-{status.value}.zip",
+        )
 
     async def results(self, run_id: UUID) -> ResultsResponse | None:
         async with self.sessions() as session:

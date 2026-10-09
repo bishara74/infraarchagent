@@ -709,7 +709,7 @@ Python libraries, with no service, credentials or extra executable.
 
 ### D-37 — Explicit review targets and results interpretation (Accepted; Phase 7)
 
-Review retry targets combine remaining blocking findings, file-linked failed validation checks and up to five explicit existing package paths, deduplicated per file. Targetless feedback is refused with feedback_needs_target; targetless retry without feedback uses nothing_to_retry. OQ-09 is resolved by this decision. The results endpoint reads the architect plan from plan_created in the same SELECT as the run and packages. Packages contains only variants that produced files from generated onward; failed generation rows appear only in missing_variants. Review availability requires pending_review and a terminal run; earlier review actions return run_in_progress, preserving automated classification. Review acceptance and retries are implemented in section 2.
+Review retry targets combine remaining blocking findings, file-linked failed validation checks and up to five explicit existing package paths, deduplicated per file. Targetless feedback is refused with feedback_needs_target; targetless retry without feedback uses nothing_to_retry. OQ-09 is resolved by this decision. The results endpoint reads the architect plan from plan_created in the same SELECT as the run and packages. Packages contains only variants that produced files from generated onward; failed generation rows appear only in missing_variants. Review availability requires pending_review and a terminal run; earlier review actions return run_in_progress, preserving automated classification. Review acceptance and retries are implemented in section 2. Download archives use the terminal package transition event time, displayed as “Labelled at”, replacing request-time download time. Fixed metadata and ZIP_DEFLATED level 6 make repeated unchanged downloads byte-identical. Reserved readiness-name collisions use deterministic numbered fallback paths without overwriting package files.
 
 ### D-38 — Failed or interrupted review retries return to review (Accepted)
 
@@ -880,6 +880,7 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+- Download ZIP includes a readiness file, “Labelled at” event timestamp and static-deployability caveat.
 - ERD: new column review_retry_started_at (nullable TIMESTAMPTZ, D-38).
 - Package diagram: guarded review-retry scanning/validating abort arrows to pending_review.
 - Review body: target_files, feedback_needs_target/nothing_to_retry and terminal-run gate.

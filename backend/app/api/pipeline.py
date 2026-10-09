@@ -83,6 +83,35 @@ async def review_package(run_id: str, variant: str, request: Request) -> Respons
     )
 
 
+@router.get(
+    "/{run_id}/download/{variant}",
+    response_class=Response,
+    responses={
+        200: {
+            "content": {
+                "application/zip": {"schema": {"type": "string", "format": "binary"}}
+            }
+        }
+    },
+)
+async def download_package(run_id: str, variant: str, request: Request) -> Response:
+    try:
+        parsed, selected = UUID(run_id), Variant(variant)
+    except ValueError:
+        return failure(400, "invalid_request", "Invalid download request.")
+    try:
+        archive, filename = await ResultsService(
+            request.app.state.session_factory, request.app.state.settings
+        ).download(parsed, selected)
+    except ReviewError as error:
+        return failure(error.status, error.code, error.message)
+    return Response(
+        archive,
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 @router.post("/run", status_code=202)
 async def submit_run(
     request: Request,

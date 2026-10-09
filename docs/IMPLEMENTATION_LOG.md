@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 3 — Download deterministic labelled archives
+
+**Summary:** Add pure ZIP/readiness rendering and persisted-file downloads with event-derived label time/provenance and safe path validation.
+
+**Requirements addressed:** FR-UI-06, FR-S-10, PR-04, NFR-01.
+
+**Files:** backend/app/api/pipeline.py, backend/app/db/repositories/results.py, backend/app/domain/archive.py, backend/app/pipeline/results.py, backend/tests/integration/test_pipeline_download.py, backend/tests/unit/test_archive.py, docs/IMPLEMENTATION_LOG.md, docs/design-deviations.md.
+
+**Decisions:** ZIP_DEFLATED level 6, fixed ZIP metadata, sorted entries; Labelled at replaces download time. D-37 documents deterministic collision fallback; missing events show unavailable.
+
+**Tests:** Archive/download tests: 12 passed, 0 failed, 0 skipped in 8.57s. PR-04 full ASGI response: 0.632408s for 10,000,000 source bytes and 7,580,697 ZIP bytes. make lint passed (174 format files, 97 mypy files).
+
+**Known gaps / follow-ups:** Remaining Phase 7 acceptance/documentation follows. No installs, dotenv reads or real LLM calls; no push.
+
+---
+
 ## 2026-10-10 — Phase 7 section 2 — Add locked review decisions and recoverable retries
 
 **Summary:** Add migration 0003, atomic review acceptance, shared bounded retry tasks, existing SecurityAgent/ValidatorAgent integration and marker-aware SSE/recovery.

@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import AgentEvent, GeneratedPackage, PipelineRun
+from app.domain.enums import PackageStatus, Variant
 from app.events.kinds import EventKind
 
 
@@ -21,6 +22,21 @@ class ResultsSnapshot:
 class ResultsRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def label_event(
+        self, run_id: UUID, variant: Variant, status: PackageStatus
+    ) -> AgentEvent | None:
+        return await self.session.scalar(
+            select(AgentEvent)
+            .where(
+                AgentEvent.run_id == run_id,
+                AgentEvent.payload["kind"].astext == EventKind.PACKAGE_STATUS,
+                AgentEvent.payload["variant"].astext == variant.value,
+                AgentEvent.new_state == status.value,
+            )
+            .order_by(AgentEvent.seq.desc())
+            .limit(1)
+        )
 
     async def snapshot(self, run_id: UUID) -> ResultsSnapshot | None:
         plan = (
