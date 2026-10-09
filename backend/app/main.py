@@ -13,6 +13,7 @@ from app.api.pipeline import router as pipeline_router
 from app.core.config import Settings, get_settings
 from app.core.errors import internal_error_handler
 from app.core.logging import configure_logging
+from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
 from app.domain.enums import RunStatus
@@ -80,6 +81,19 @@ def create_app(
 
                 logging.getLogger(__name__).exception(
                     "recovery failed for run %s", run_id
+                )
+        async with session_factory() as session:
+            review_retries = await PackageRepository(session).list_review_retries()
+        for run_id, variant in review_retries:
+            try:
+                await writer.abort_review_retry(
+                    run_id, variant, reason="review retry interrupted by server restart"
+                )
+            except Exception:
+                logger.exception(
+                    "review retry recovery failed for run %s variant %s",
+                    run_id,
+                    variant,
                 )
         try:
             yield

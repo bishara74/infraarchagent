@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.plan import DeploymentPlan
@@ -62,3 +62,36 @@ class ResultsResponse(StrictResponse):
     plan: DeploymentPlan | None
     packages: list[PackageResult]
     missing_variants: list[MissingVariant]
+
+
+class ReviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    action: Literal["approve", "retry", "reject"]
+    feedback: str | None = None
+    target_files: list[str] = Field(default_factory=list, max_length=5)
+
+    @field_validator("feedback", mode="before")
+    @classmethod
+    def trimmed_feedback(cls, value: object) -> str | None:
+        if not isinstance(value, str):
+            raise ValueError("feedback must be text")
+        trimmed = value.strip()
+        if len(trimmed) > 2000:
+            raise ValueError("feedback exceeds limit")
+        return trimmed or None
+
+    @model_validator(mode="after")
+    def targets_only_for_retry(self) -> "ReviewRequest":
+        if "target_files" in self.model_fields_set and self.action != "retry":
+            raise ValueError("targets require retry")
+        return self
+
+
+class ReviewResponse(StrictResponse):
+    run_id: UUID
+    variant: Variant
+    status: PackageStatus
+
+
+class RetryResponse(ReviewResponse):
+    stream_url: str

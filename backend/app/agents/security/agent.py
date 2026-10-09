@@ -20,6 +20,7 @@ from app.db.repositories.packages import PackageRepository
 from app.domain.enums import AgentName, AgentState, PackageStatus, Severity, Variant
 from app.domain.models import IaCPackage, Violation
 from app.domain.package_layout import package_structure_errors
+from app.domain.review import retry_targets, security_final
 from app.domain.states import remediation_budget_decision
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
@@ -34,6 +35,10 @@ DIRECTIVES = {
     Variant.SECURITY: SecurityGeneratorAgent.optimisation_directive,
 }
 MAX_REPORT_DIFF = 20_000
+
+
+class ReviewRetryScanError(RuntimeError):
+    """Safe review-specific failure after persisting the retry session."""
 
 
 def _finding(item: Violation) -> dict[str, Any]:
@@ -149,10 +154,10 @@ class SecurityAgent:
                     validation_failures=linked,
                 )
 
-        proposals = await asyncio.gather(*(one(path) for path in sorted(targets)))
+        proposals = await asyncio.gather(*(one(path) for path in targets))
         results: list[dict[str, Any]] = []
         current = dict(snapshot)
-        for proposal in proposals:
+        for proposal in sorted(proposals, key=lambda item: item.path):
             accepted = proposal.accepted
             reason = proposal.reason
             if accepted:
@@ -208,31 +213,36 @@ class SecurityAgent:
         package: IaCPackage,
         feedback: str | None,
         validation_failures: Sequence[dict[str, Any]],
+        *,
+        target_files: Sequence[str] = (),
+        start_committed: bool = False,
     ) -> PackageStatus:
         async with self.session_factory() as session:
             row = await PackageRepository(session).get(ctx.run_id, variant)
             if row is None:
                 raise LookupError("package not found")
             prior_report = row.security_report or {}
-        sessions = prior_report.get("sessions") or []
-        prior_final = sessions[-1].get("final", {}) if sessions else {}
+        prior_final = security_final(prior_report)
         findings: list[Violation] = []
         for raw in prior_final.get("remaining_blocking", []):
             try:
                 findings.append(Violation.model_validate(raw))
             except ValueError:
                 continue
-        await ctx.writer.package_transition(
-            ctx.run_id,
-            variant,
-            PackageStatus.REMEDIATING,
-            message="review remediation retry started",
-        )
-        async with self.session_factory() as session:
-            async with session.begin():
-                await PackageRepository(session).reset_iteration_count(
-                    ctx.run_id, variant
-                )
+        if not start_committed:
+            async with self.session_factory() as session:
+                async with session.begin():
+                    previous = await ctx.writer.review_action(
+                        session, ctx.run_id, variant, "retry", feedback
+                    )
+            await ctx.writer.review_event(
+                ctx.run_id,
+                variant,
+                PackageStatus.REMEDIATING,
+                previous,
+                action="retry",
+                reasons=[],
+            )
         await ctx.writer.agent_state(
             ctx.run_id,
             AgentName.SECURITY,
@@ -248,6 +258,7 @@ class SecurityAgent:
             feedback=feedback,
             validation_failures=validation_failures,
             initial_findings=findings,
+            target_files=target_files,
         )
 
     async def _loop(
@@ -260,6 +271,7 @@ class SecurityAgent:
         feedback: str | None = None,
         validation_failures: Sequence[dict[str, Any]] = (),
         initial_findings: Sequence[Violation] = (),
+        target_files: Sequence[str] = (),
     ) -> PackageStatus:
         files = dict(package.files)
         session_start_files = dict(files)
@@ -269,20 +281,32 @@ class SecurityAgent:
         seen: set[frozenset[tuple[str, str, str]]] = set()
         iteration_count = 0
         first_counts: dict[str, int] | None = None
-        last_blocking: list[Violation] = []
+        last_blocking: list[Violation] = list(initial_findings)
         outcome = "error"
         reason: str | None = None
         status = PackageStatus.SCAN_ERROR
 
         if kind == "review_retry":
-            targets: dict[str, list[Violation]] = defaultdict(list)
-            for item in initial_findings:
-                if item.blocking and item.file_path in files:
-                    targets[item.file_path].append(item)
-            for failure in validation_failures:
-                path = failure.get("file_path")
-                if isinstance(path, str) and path in files:
-                    targets.setdefault(path, [])
+            paths = retry_targets(
+                files,
+                {
+                    "final": {
+                        "remaining_blocking": [
+                            _finding(item) for item in initial_findings
+                        ]
+                    }
+                },
+                {"failed_checks_for_remediation": list(validation_failures)},
+                target_files,
+            )
+            targets: dict[str, list[Violation]] = {
+                path: [
+                    item
+                    for item in initial_findings
+                    if item.blocking and item.file_path == path
+                ]
+                for path in paths
+            }
             if targets and budget.remaining() >= 1:
                 files, fixes, diff = await self._fix_pass(
                     ctx,
@@ -341,9 +365,10 @@ class SecurityAgent:
                     else f"{error.tool} scan {error.category}"
                 )
                 status = PackageStatus.SCAN_ERROR
-                await ctx.writer.package_transition(
-                    ctx.run_id, variant, status, message=reason, error=reason
-                )
+                if kind != "review_retry":
+                    await ctx.writer.package_transition(
+                        ctx.run_id, variant, status, message=reason, error=reason
+                    )
                 break
             if first_counts is None:
                 first_counts = {
@@ -498,4 +523,6 @@ class SecurityAgent:
             message=reason or f"security {outcome}",
             variant=variant,
         )
+        if kind == "review_retry" and status == PackageStatus.SCAN_ERROR:
+            raise ReviewRetryScanError(reason or "security scan could not complete")
         return status

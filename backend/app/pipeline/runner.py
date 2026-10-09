@@ -2,11 +2,14 @@
 
 import asyncio
 import logging
-from uuid import UUID
+from collections.abc import Coroutine
+from typing import Any
+from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.agents.factory import AgentFactory
+from app.domain.enums import Variant
 from app.domain.run_config import RunConfig
 from app.pipeline.orchestrator import PipelineOrchestrator
 from app.pipeline.stages import SecurityStage, ValidationStage
@@ -58,17 +61,33 @@ class PipelineRunner:
             security_stage=self.security_stage,
             validation_stage=self.validation_stage,
         )
-        task = asyncio.create_task(orchestrator.run(), name=f"pipeline-{run_id}")
-        self.tasks[run_id] = task
+        self._own(run_id, orchestrator.run(), name=f"pipeline-{run_id}")
+
+    def start_review_retry(
+        self, run_id: UUID, variant: Variant, target_files: list[str]
+    ) -> None:
+        from app.pipeline.review import ReviewService
+
+        self._own(
+            uuid4(),
+            ReviewService(self).run_retry(run_id, variant, target_files),
+            name=f"review-{run_id}-{variant}",
+        )
+
+    def _own(
+        self, task_id: UUID, coroutine: Coroutine[Any, Any, object], *, name: str
+    ) -> None:
+        task = asyncio.create_task(coroutine, name=name)
+        self.tasks[task_id] = task
 
         def finished(done: asyncio.Task[object]) -> None:
-            self.tasks.pop(run_id, None)
+            self.tasks.pop(task_id, None)
             self.release()
             if not done.cancelled():
                 try:
                     done.result()
                 except Exception:
-                    logger.exception("pipeline task escaped guard for run %s", run_id)
+                    logger.exception("pipeline task escaped guard for task %s", task_id)
 
         task.add_done_callback(finished)
 

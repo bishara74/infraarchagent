@@ -87,6 +87,37 @@ def assert_package_transition(current: PackageStatus, target: PackageStatus) -> 
         raise IllegalTransition(current, target)
 
 
+def review_retry_abort_path(
+    current: PackageStatus, *, retry_started: bool
+) -> tuple[PackageStatus, ...]:
+    """Review-only abort arrows; automated transitions remain unchanged (D-38)."""
+    if not retry_started:
+        raise IllegalTransition(current, PackageStatus.PENDING_REVIEW)
+    paths = {
+        PackageStatus.REMEDIATING: (
+            PackageStatus.SCANNING,
+            PackageStatus.PENDING_REVIEW,
+        ),
+        PackageStatus.SCANNING: (PackageStatus.PENDING_REVIEW,),
+        PackageStatus.SCAN_CLEAN: (
+            PackageStatus.VALIDATING,
+            PackageStatus.PENDING_REVIEW,
+        ),
+        PackageStatus.SCAN_EXHAUSTED: (
+            PackageStatus.VALIDATING,
+            PackageStatus.PENDING_REVIEW,
+        ),
+        PackageStatus.VALIDATING: (PackageStatus.PENDING_REVIEW,),
+        PackageStatus.VALID: (PackageStatus.PENDING_REVIEW,),
+        PackageStatus.INVALID: (PackageStatus.PENDING_REVIEW,),
+        PackageStatus.VALIDATION_ERROR: (PackageStatus.PENDING_REVIEW,),
+        PackageStatus.PENDING_REVIEW: (),
+    }
+    if current not in paths:
+        raise IllegalTransition(current, PackageStatus.PENDING_REVIEW)
+    return paths[current]
+
+
 def assert_transition(
     current: RunStatus | PackageStatus, target: RunStatus | PackageStatus
 ) -> None:

@@ -149,3 +149,28 @@ def test_classify_run_all_rules() -> None:
     )
     with pytest.raises(ValueError):
         classify_run(True, {Variant.COST: P.SCANNING})
+
+
+@pytest.mark.req("FR-S-09")
+@pytest.mark.parametrize(
+    "current",
+    [
+        P.REMEDIATING,
+        P.SCANNING,
+        P.VALIDATING,
+        P.SCAN_CLEAN,
+        P.SCAN_EXHAUSTED,
+        P.VALID,
+        P.INVALID,
+        P.VALIDATION_ERROR,
+    ],
+)
+def test_review_abort_is_explicit_and_rejects_automated_context(current):
+    from app.domain.states import review_retry_abort_path
+
+    with pytest.raises(IllegalTransition):
+        review_retry_abort_path(current, retry_started=False)
+    assert review_retry_abort_path(current, retry_started=True)[-1] == P.PENDING_REVIEW
+    if current in {P.SCANNING, P.VALIDATING}:
+        with pytest.raises(IllegalTransition):
+            assert_package_transition(current, P.PENDING_REVIEW)

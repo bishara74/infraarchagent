@@ -11,19 +11,26 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.api.deps import get_broker, get_event_log, get_runner, get_state_writer
-from app.api.schemas import ResultsResponse
+from app.api.schemas import (
+    ResultsResponse,
+    RetryResponse,
+    ReviewRequest,
+    ReviewResponse,
+)
 from app.core.config import Settings
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
-from app.domain.enums import AgentName, RunStatus
+from app.domain.enums import AgentName, RunStatus, Variant
 from app.domain.input_rules import InputRuleError, validate_request_text
 from app.domain.run_config import RunConfig
 from app.events.broker import InMemoryBroker
 from app.events.kinds import EventKind, run_status_payload, to_sse
 from app.events.log import EventLog
+from app.events.publisher import EventRecord
 from app.llm.errors import LLMConfigurationError
 from app.llm.factory import build_adapter
 from app.pipeline.results import ResultsService
+from app.pipeline.review import ReviewError, ReviewService
 from app.pipeline.runner import PipelineRunner
 from app.pipeline.state import PipelineStateWriter
 
@@ -49,6 +56,30 @@ async def get_results(run_id: str, request: Request) -> ResultsResponse | JSONRe
         result
         if result is not None
         else failure(404, "not_found", "Pipeline run not found.")
+    )
+
+
+@router.post(
+    "/{run_id}/packages/{variant}/review",
+    response_model=ReviewResponse | RetryResponse,
+    responses={202: {"model": RetryResponse}},
+)
+async def review_package(run_id: str, variant: str, request: Request) -> Response:
+    try:
+        parsed = UUID(run_id)
+        selected = Variant(variant)
+        body = ReviewRequest.model_validate(await request.json())
+    except (ValueError, UnicodeDecodeError):
+        return failure(400, "invalid_request", "Invalid review request.")
+    try:
+        result = await ReviewService(request.app.state.runner).review(
+            parsed, selected, body
+        )
+    except ReviewError as error:
+        return failure(error.status, error.code, error.message)
+    return JSONResponse(
+        status_code=202 if isinstance(result, RetryResponse) else 200,
+        content=result.model_dump(mode="json"),
     )
 
 
@@ -138,6 +169,7 @@ async def _can_close(
     session_factory: async_sessionmaker[AsyncSession],
     run_id: UUID,
     terminal_event_seen: bool,
+    observed_packages: dict[str, str],
 ) -> bool:
     if not terminal_event_seen:
         return False
@@ -147,7 +179,12 @@ async def _can_close(
     return (
         row is not None
         and RunStatus(row.status) in TERMINAL_RUNS
-        and not any(item.status in ACTIVE_PACKAGE_STATES for item in packages)
+        and not any(
+            item.status in ACTIVE_PACKAGE_STATES
+            or item.review_retry_started_at is not None
+            for item in packages
+        )
+        and all(observed_packages.get(item.variant) == item.status for item in packages)
     )
 
 
@@ -180,25 +217,37 @@ async def stream_run(
     async def events() -> AsyncIterator[str]:
         last_sent = cursor
         terminal_event_seen = False
+        observed_packages: dict[str, str] = {}
+
+        def observe(record: EventRecord) -> None:
+            nonlocal terminal_event_seen
+            if (
+                record.payload.get("kind") == EventKind.RUN_STATUS
+                and record.new_state in TERMINAL_RUNS
+            ):
+                terminal_event_seen = True
+            elif record.payload.get("kind") == EventKind.PACKAGE_STATUS:
+                observed_packages[str(record.payload.get("variant"))] = record.new_state
+
         async with broker.subscribe(parsed_id) as subscription:
+            if cursor is not None:
+                for record in await event_log.list_after(parsed_id, None):
+                    if record.seq <= cursor:
+                        observe(record)
             for record in await event_log.list_after(parsed_id, cursor):
                 if last_sent is not None and record.seq <= last_sent:
                     continue
                 yield to_sse(record)
                 last_sent = record.seq
+                observe(record)
                 if (
                     record.payload.get("kind") == EventKind.RUN_STATUS
                     and record.new_state in TERMINAL_RUNS
                 ):
                     terminal_event_seen = True
-            if cursor is not None and not terminal_event_seen:
-                terminal_event_seen = any(
-                    record.seq <= cursor
-                    and record.payload.get("kind") == EventKind.RUN_STATUS
-                    and record.new_state in TERMINAL_RUNS
-                    for record in await event_log.list_after(parsed_id, None)
-                )
-            if await _can_close(session_factory, parsed_id, terminal_event_seen):
+            if await _can_close(
+                session_factory, parsed_id, terminal_event_seen, observed_packages
+            ):
                 return
             while not subscription.overflowed:
                 try:
@@ -220,7 +269,10 @@ async def stream_run(
                     and record.new_state in TERMINAL_RUNS
                 ):
                     terminal_event_seen = True
-                if await _can_close(session_factory, parsed_id, terminal_event_seen):
+                observe(record)
+                if await _can_close(
+                    session_factory, parsed_id, terminal_event_seen, observed_packages
+                ):
                     return
 
     return StreamingResponse(

@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import GeneratedPackage
 from app.domain.enums import PackageStatus, Variant
 from app.domain.paths import validate_file_map
-from app.domain.states import assert_package_transition
+from app.domain.states import assert_package_transition, review_retry_abort_path
 from app.domain.validation import ValidationReport
 from app.security.diff import package_diff
 
@@ -18,6 +18,67 @@ from app.security.diff import package_diff
 class PackageRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
+
+    async def get_for_update(
+        self, run_id: UUID, variant: Variant
+    ) -> GeneratedPackage | None:
+        return await self.session.scalar(
+            select(GeneratedPackage)
+            .where(
+                GeneratedPackage.run_id == run_id, GeneratedPackage.variant == variant
+            )
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+
+    async def list_review_retries(self) -> list[tuple[UUID, Variant]]:
+        rows = (
+            await self.session.execute(
+                select(GeneratedPackage.run_id, GeneratedPackage.variant).where(
+                    GeneratedPackage.review_retry_started_at.is_not(None)
+                )
+            )
+        ).all()
+        return [(run_id, Variant(variant)) for run_id, variant in rows]
+
+    async def review_action(
+        self, run_id: UUID, variant: Variant, action: str, feedback: str | None
+    ) -> PackageStatus:
+        target = {
+            "approve": PackageStatus.PRODUCTION_READY,
+            "reject": PackageStatus.NOT_PRODUCTION_READY,
+            "retry": PackageStatus.REMEDIATING,
+        }[action]
+        row, previous = await self.transition_status(run_id, variant, target)
+        row.error = None
+        if action in {"retry", "reject"}:
+            row.review_feedback = feedback
+        if action == "retry":
+            row.iteration_count = 0
+            row.review_retry_started_at = datetime.now(UTC)
+        await self.session.flush()
+        return previous
+
+    async def abort_review_retry(
+        self, run_id: UUID, variant: Variant, reason: str
+    ) -> list[tuple[PackageStatus, PackageStatus]]:
+        row = await self.get_for_update(run_id, variant)
+        if row is None:
+            raise LookupError("package not found")
+        previous = PackageStatus(row.status)
+        path = review_retry_abort_path(
+            previous, retry_started=row.review_retry_started_at is not None
+        )
+        changes = []
+        for target in path:
+            # The path itself supplies the narrowly scoped review-only rules.
+            changes.append((previous, target))
+            row.status = target
+            previous = target
+        row.error = reason
+        row.review_retry_started_at = None
+        await self.session.flush()
+        return changes or [(previous, previous)]
 
     async def create(self, run_id: UUID, variant: Variant) -> GeneratedPackage:
         row = GeneratedPackage(
@@ -86,6 +147,12 @@ class PackageRepository:
         previous = PackageStatus(row.status)
         assert_package_transition(previous, target)
         row.status = target
+        if target in {
+            PackageStatus.PENDING_REVIEW,
+            PackageStatus.PRODUCTION_READY,
+            PackageStatus.NOT_PRODUCTION_READY,
+        }:
+            row.review_retry_started_at = None
         if error is not None:
             row.error = error
         await self.session.flush()

@@ -709,7 +709,13 @@ Python libraries, with no service, credentials or extra executable.
 
 ### D-37 — Explicit review targets and results interpretation (Accepted; Phase 7)
 
-Review retry targets combine remaining blocking findings, file-linked failed validation checks and up to five explicit existing package paths, deduplicated per file. Targetless feedback is refused with feedback_needs_target; targetless retry without feedback uses nothing_to_retry. OQ-09 is resolved by this decision. The results endpoint reads the architect plan from plan_created in the same SELECT as the run and packages. Packages contains only variants that produced files from generated onward; failed generation rows appear only in missing_variants. Review availability requires pending_review and a terminal run; earlier review actions return run_in_progress, preserving automated classification. Implementation continues in section 2.
+Review retry targets combine remaining blocking findings, file-linked failed validation checks and up to five explicit existing package paths, deduplicated per file. Targetless feedback is refused with feedback_needs_target; targetless retry without feedback uses nothing_to_retry. OQ-09 is resolved by this decision. The results endpoint reads the architect plan from plan_created in the same SELECT as the run and packages. Packages contains only variants that produced files from generated onward; failed generation rows appear only in missing_variants. Review availability requires pending_review and a terminal run; earlier review actions return run_in_progress, preserving automated classification. Review acceptance and retries are implemented in section 2.
+
+### D-38 — Failed or interrupted review retries return to review (Accepted)
+
+Migration 0003 adds nullable generated_packages.review_retry_started_at TIMESTAMPTZ, with no backfill/default and unchanged table-level app grants. Acceptance row-locks the package and atomically saves pending_review → remediating, feedback, zero consumed iterations and an application UTC timestamp. Settlement clears the timestamp in the status transaction. Startup selects non-NULL timestamps independently of run status and uses the reason “review retry interrupted by server restart”. Events alone cannot identify retries because state/event commits are separate. The marker is never part of security_report.
+
+Review-only abort paths normalize remediating through scanning and add guarded scanning/validating → pending_review arrows. Intermediate scan/validation outcomes also recover; unmarked automated transitions and interrupted-run recovery remain unchanged. Failures preserve persisted files/baselines; scan failure never persists scan_error for review retries. Retries share runner capacity/task ownership. SSE stays open through marked intermediate states and waits for the final package frame. Operator logs retain tracebacks with secret redaction; public errors remain generic.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -860,12 +866,8 @@ only a character offset; response text is never logged. Optional
 the OpenAI-compatible adapter, while Anthropic ignores it. The author must
 measure whether the option improves completion reliability on real runs.
 
-### OQ-09 — Feedback-only retry targeting (Deferred to Phase 7)
-When review feedback arrives with no blocking scanner finding and no
-file-linked failed validation check, Phase 5 has no file to target under its
-one-call-per-file rule. It records a notice and report entry saying feedback
-was not applied, then rescans. Phase 7 should decide whether to add another
-file-targeting rule for feedback-only retries.
+### OQ-09 — Feedback-only retry targeting (Resolved by D-37)
+Explicit existing target_files resolve feedback-only retries; targetless requests are rejected before mutation. See D-37.
 
 ### OQ-10 — Static naming applicability without deployment roles
 The plan does not distinguish application workloads from control-plane and
@@ -878,6 +880,9 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+- ERD: new column review_retry_started_at (nullable TIMESTAMPTZ, D-38).
+- Package diagram: guarded review-retry scanning/validating abort arrows to pending_review.
+- Review body: target_files, feedback_needs_target/nothing_to_retry and terminal-run gate.
 - Revise the artifact-validation table: deterministic built-ins for Kubernetes,
   Nginx, Jenkins and Grafana; keep `promtool`, `hadolint`, `helm lint` and
   `ansible-lint`. Explain why kubectl dry-run, Jenkins pipeline-model-converter,

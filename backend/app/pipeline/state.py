@@ -5,6 +5,7 @@ The separate transactions are the Phase 4 trade-off; startup recovery settles
 nonterminal runs and replay recovers events that were committed but not published.
 """
 
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -26,6 +27,61 @@ class PipelineStateWriter:
     ) -> None:
         self.session_factory = session_factory
         self.event_log = event_log
+
+    async def review_action(
+        self,
+        session: AsyncSession,
+        run_id: UUID,
+        variant: Variant,
+        action: str,
+        feedback: str | None,
+    ) -> PackageStatus:
+        """Caller owns the locked acceptance transaction; event follows commit."""
+        return await PackageRepository(session).review_action(
+            run_id, variant, action, feedback
+        )
+
+    async def review_event(
+        self,
+        run_id: UUID,
+        variant: Variant,
+        target: PackageStatus,
+        previous: PackageStatus,
+        *,
+        action: str,
+        reasons: list[str],
+    ) -> None:
+        payload: dict[str, Any] = {
+            **package_status_payload(variant),
+            "review_action": action,
+            "review_reasons": reasons,
+        }
+        await self.event_log.append(
+            run_id,
+            AgentName.ORCHESTRATOR,
+            target,
+            previous,
+            f"engineer review {action}",
+            payload,
+        )
+
+    async def abort_review_retry(
+        self, run_id: UUID, variant: Variant, *, reason: str
+    ) -> None:
+        async with self.session_factory() as session:
+            async with session.begin():
+                changes = await PackageRepository(session).abort_review_retry(
+                    run_id, variant, reason
+                )
+        for previous, target in changes:
+            await self.event_log.append(
+                run_id,
+                AgentName.ORCHESTRATOR,
+                target,
+                previous,
+                reason,
+                {**package_status_payload(variant), "review_retry_aborted": True},
+            )
 
     async def run_transition(
         self,

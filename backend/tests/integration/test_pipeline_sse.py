@@ -247,3 +247,59 @@ async def test_terminal_run_stream_stays_open_during_package_retry(
             await read_frame()
     finally:
         await stream.aclose()
+
+
+@pytest.mark.req("FR-P-04", "FR-S-09")
+async def test_http_retry_stream_includes_validation_and_final_state(
+    db_engines, monkeypatch
+):
+    from tests.integration.test_pipeline_review import (
+        client_for,
+        install_retry,
+        pending_app,
+        review_url,
+        state,
+    )
+    from tests.integration.test_security_agent import ScriptedScanner
+
+    app, run_id = await pending_app(db_engines[0])
+    gate = asyncio.Event()
+    scanning = asyncio.Event()
+
+    class Scanner(ScriptedScanner):
+        async def scan(self, *args, **kwargs):
+            scanning.set()
+            await gate.wait()
+            return await super().scan(*args, **kwargs)
+
+    install_retry(app, monkeypatch, scanner=Scanner([[]]))
+    async with client_for(app) as client:
+        assert (
+            await client.post(review_url(run_id), json={"action": "retry"})
+        ).status_code == 202
+    await asyncio.wait_for(scanning.wait(), 2)
+    response = await stream_run(
+        str(run_id), request_for(app), app.state.event_log, app.state.broker, None
+    )
+    stream = response.body_iterator
+    frames = []
+    try:
+        # Drain replay while scanning is explicitly held, then release the retry.
+        replay = await app.state.event_log.list_after(run_id, None)
+        for _ in replay:
+            frames.append(await asyncio.wait_for(anext(stream), 2))
+        gate.set()
+        while True:
+            try:
+                frames.append(await asyncio.wait_for(anext(stream), 2))
+            except StopAsyncIteration:
+                break
+    finally:
+        gate.set()
+        await stream.aclose()
+        await asyncio.gather(*app.state.runner.tasks.values())
+    data = "".join(frames)
+    assert '"status": "scan_clean"' in data
+    assert '"status": "validating"' in data and '"status": "production_ready"' in data
+    assert "review fix pass completed" in data
+    assert (await state(app, run_id))[1].status == "production_ready"

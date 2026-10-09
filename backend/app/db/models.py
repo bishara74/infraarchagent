@@ -43,6 +43,9 @@ class GeneratedPackage(Base):
     iteration_count: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     review_feedback: Mapped[str | None] = mapped_column(Text)
+    review_retry_started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
+    )
     error: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False

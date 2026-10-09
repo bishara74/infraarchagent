@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 2 — Add locked review decisions and recoverable retries
+
+**Summary:** Add migration 0003, atomic review acceptance, shared bounded retry tasks, existing SecurityAgent/ValidatorAgent integration and marker-aware SSE/recovery.
+
+**Requirements addressed:** FR-S-08, FR-S-09, FR-S-10, FR-UI-07, FR-P-04, NFR-01, PR-03.
+
+**Files:** README.md, backend/app/agents/security/agent.py, backend/app/api/pipeline.py, backend/app/api/schemas.py, backend/app/db/migrations/versions/0003_review_retry_started_at.py, backend/app/db/models.py, backend/app/db/repositories/packages.py, backend/app/domain/states.py, backend/app/main.py, backend/app/pipeline/review.py, backend/app/pipeline/runner.py, backend/app/pipeline/state.py, backend/tests/integration/test_pipeline_review.py, backend/tests/integration/test_pipeline_sse.py, backend/tests/integration/test_review_recovery.py, backend/tests/unit/test_migration_parity.py, backend/tests/unit/test_pipeline_runner.py, backend/tests/unit/test_states.py, docs/IMPLEMENTATION_LOG.md, docs/design-deviations.md.
+
+**Decisions:** D-37/D-38; marker is the nullable timestamp column, set/cleared with status. Automated failure rules/run recovery unchanged. Scanner failure persists audit evidence before review abort.
+
+**Tests:** Review/agent/validator/SSE subset: 62 passed in 19.22s. State/recovery subset: 29 passed in 17.38s. Runner/full retry stream subset: 5 passed in 6.92s. Migration/privilege subset: 5 passed in 0.97s. All subsets: 0 failed, 0 skipped. make lint passed (171 format files, 96 mypy files).
+
+**Known gaps / follow-ups:** Remaining Phase 7 acceptance/documentation follows. No installs, dotenv reads or real LLM calls; no push.
+
+---
+
 ## 2026-10-10 — Phase 7 section 1 — Expose current results snapshots
 
 **Summary:** Add strict results schemas, ordered package/failure lists, shared derived fields and a single SELECT including the persisted architect plan.

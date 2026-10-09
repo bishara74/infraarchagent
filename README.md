@@ -329,3 +329,8 @@ Verified local versions: Terraform 1.16.4, Helm v4.3.0+gbec5b06, hadolint 2.15.1
 promtool 3.15.0 and ansible-lint 26.9.0. Mirror coverage is AWS 5.100.0/6.68.0,
 random 3.9.1, Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null 3.3.2,
 391,710,515 bytes (373.56 MiB) on linux_amd64.
+
+Phase 7 review retries require migration `0003_review_retry_started_at`; apply
+`make migrate` as the owner before starting the updated backend. The nullable
+timestamp identifies interrupted review work without altering automated run
+recovery or the app role’s existing privileges.
