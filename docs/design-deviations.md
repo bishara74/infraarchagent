@@ -591,7 +591,25 @@ Helm remote dependency URLs warn when not vendored, and absent Values paths warn
 because defaults may be intended. Ansible inventory groups are checked only
 when inventory is present; symbolic host patterns warn, and role references
 must exist. Prometheus rule paths/globs yield one finding per distinct reference.
-Remaining naming rules follow in subsequent sections.
+Naming findings are warnings: FR-V-02 requires flagging, and fuzzy deployment
+semantics must not invalidate packages. Rules lowercase names and equate `-`,
+`_` and `.`, then require an exact normalized match or token-boundary embedding
+of a plan service/storage name. Cross-artifact names may also match after
+removing documented terminal suffixes (`service[s]`, `server[s]`, `svc`,
+`deployment`, `upstream`, `job`). Unknown service-like names warn; Terraform vs
+Ansible mismatch messages identify both files. Resource names and Name,
+Application or Service tags are collected; infrastructure resource types and
+reserved host/exporter groups are excluded from unknown-name warnings.
+
+Applicability is centralized and conservative. Terraform can represent all
+plan services/storage. Kubernetes Deployment/StatefulSet workloads, Nginx
+upstreams and Prometheus jobs/targets represent application compute services;
+cloud control planes and cluster services are excluded. Ansible expectations
+apply to EC2 hosts. Helm charts may aggregate services, so no per-service chart
+expectation is invented. Literal Helm release names are collected from
+`helm_release.name`; symbolic references and `.Release.Name` do not invent
+releases. Missing expected entities warn. These limits remain static because
+the plan has no deployment-role metadata (OQ-10).
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -750,6 +768,14 @@ was not applied, then rescans. Phase 7 should decide whether to add another
 file-targeting rule for feedback-only retries.
 
 ---
+
+### OQ-10 — Static naming applicability without deployment roles
+The plan does not distinguish application workloads from control-plane and
+infrastructure services. Phase 6 uses the centralized conservative rules in
+D-35 without adding schema fields. Their warnings are evidence for review;
+dynamic names, Helm aggregate workloads and workload kinds outside the named
+Deployment/StatefulSet categories are not fully comparable. Any richer role
+metadata or semantic naming inference is a later design decision.
 
 ## Thesis text to update (collected)
 - Explain the safe rejection reason taxonomy, lenient descriptive fix

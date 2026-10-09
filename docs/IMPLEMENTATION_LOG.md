@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 5 — Static naming consistency warnings
+
+**Summary:** Collect named entities across Terraform, Kubernetes, Helm, Ansible, Nginx and Prometheus; normalize names, apply token boundaries and documented suffixes, and warn on unknown or absent expected application entities.
+
+**Requirements addressed:** FR-V-02, FR-V-04.
+
+**Files:** backend/app/validation/naming.py, backend/tests/unit/test_validation_naming.py, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-35 records warning-only naming semantics, conservative artifact applicability and infrastructure exclusions. Literal Helm release names are collected; symbolic release names are not inferred. OQ-10 records the absence of explicit deployment-role metadata without changing the plan schema.
+
+**Tests:** make lint passed (Ruff/format, mypy 86 app files). Naming tests: 13 passed in 1.15 s, including both-file Terraform/Ansible mismatches, token boundaries, workload exclusions, storage and literal-release handling.
+
+**Known gaps / follow-ups:** Static comparison cannot infer dynamic names, all Helm workload identities or deployment roles. Optional linters and pipeline wiring follow.
+
+---
+
 ## 2026-10-09 — Phase 6 section 4 — Cross-file references and module scopes
 
 **Summary:** Add deterministic checks for all specified Terraform, Kubernetes, Helm, Ansible and Prometheus references, including local-module outputs, namespace-scoped resources and safe package-contained paths/globs. Terraform preflight now accepts the shared parser index.
