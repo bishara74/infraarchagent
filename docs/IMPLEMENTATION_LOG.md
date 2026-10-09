@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 7 — Audit final Phase 7 scope and evidence
+
+**Summary:** Complete the final scope audit and record the implementation outcome for all prompt sections 0–7. No further code changes.
+
+**Requirements addressed:** FR-UI-06, FR-UI-07, FR-S-08, FR-S-09, FR-S-10, NFR-01, PR-04.
+
+**Files:** docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Sections 0–4 implement the Helm follow-ups, results, review/recovery, ZIP and authentication; section 5 adds acceptance coverage; section 6 documents the contract and thesis changes; section 7 audits scope. No frontend, accounts/sessions, security-policy, unrelated prompts/checks, retention or run-classification work. No dependency/spec/applied-migration edits. The extra factory/ValidatorAgent/orchestrator/EventLog integration paths beyond the initial inventory only provide the approved persistence redaction; fix-order tests protect existing automated behavior. Deployment plan comes from latest plan_created payload; startup selects review_retry_started_at IS NOT NULL independently of run status. D-36/D-37/D-38 documented, OQ-09 resolved, OQ-01 remains deferred.
+
+**Tests:** Final make test: 971 passed, 0 failed, 0 skipped in 91.96s. Final make lint: Ruff and format passed (175 files); mypy passed (97 source files). Explicit watcher Ruff, format and py_compile passed. Full ASGI PR-04: 0.626244s for 10,000,000 source bytes. git diff --check passed. AST comparisons confirm classify_run, readiness_after_validation and delete_expired unchanged.
+
+**Known gaps / follow-ups:** Phase 9 still needs the curl-based PR-04 measurement; static validation does not prove deployability (D-35). A missing terminal event yields fixed unavailable label time/provenance (D-19). Apply migration 0003 before starting the backend. No installs, dotenv reads, real LLM calls, push or history rewrite occurred. REVISION.txt remains untouched and untracked. Eight section commits complete Phase 7; Phase 8 frontend is the suggested next implementation step.
+
+---
+
 ## 2026-10-10 — Phase 7 section 6 — Document review APIs and thesis updates
 
 **Summary:** Document all endpoint examples, exact results fields, optional header authentication, fetch-based SSE, migration-before-startup, timestamp recovery, deterministic label provenance and compression. Retain make sweep documentation.
