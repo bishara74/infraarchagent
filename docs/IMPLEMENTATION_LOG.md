@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 6 — Document review APIs and thesis updates
+
+**Summary:** Document all endpoint examples, exact results fields, optional header authentication, fetch-based SSE, migration-before-startup, timestamp recovery, deterministic label provenance and compression. Retain make sweep documentation.
+
+**Requirements addressed:** FR-UI-06, FR-UI-07, FR-S-08, FR-S-09, FR-S-10, NFR-01, PR-04.
+
+**Files:** README.md, docs/IMPLEMENTATION_LOG.md, docs/design-deviations.md.
+
+**Decisions:** D-36/D-37/D-38 and OQ-09 resolved. OQ-01 explicitly defers 410, keeping 404. Thesis notes include ERD: new column review_retry_started_at, review targets/422 codes, terminal-run gating, review-only state arrows, X-API-Key and readiness files. Correction to the section 1 generic Files entry: backend/app/api/pipeline.py, backend/app/api/schemas.py, backend/app/core/safety.py, backend/app/db/repositories/results.py, backend/app/domain/review.py, backend/app/pipeline/results.py, backend/tests/integration/test_pipeline_results.py, backend/tests/unit/test_review.py, docs/IMPLEMENTATION_LOG.md and docs/design-deviations.md.
+
+**Tests:** No code changes in this section. Verified documentation against final implementation/OpenAPI tests; final make test was 971 passed, 0 failed, 0 skipped in 91.96s, and make lint passed. Final PR-04: 0.626244s for the full ASGI 10 MB response. git diff --check passed.
+
+**Known gaps / follow-ups:** Remaining Phase 7 acceptance/documentation follows. No installs, dotenv reads or real LLM calls; no push.
+
+---
+
 ## 2026-10-10 — Phase 7 section 5 — Complete Phase 7 acceptance checks
 
 **Summary:** Extend deterministic acceptance coverage for shared variant capacity, shutdown/launch settlement, retry exhaustion, scan automatic retry, canonical redacted reports, strict OpenAPI fields, migration upgrade/downgrade with existing rows and archive collision fallbacks.

@@ -22,7 +22,9 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 6 adds deterministic structure, reference and naming checks, offline
+Phase 7 adds results snapshots, review decisions/retries, deterministic labelled
+ZIP downloads and optional static API-key authentication. Phase 6 provides
+deterministic structure, reference and naming checks, offline
 Terraform provider-schema validation, optional local linters and persisted
 reports. Clean scans plus valid packages reach `production_ready`; all three
 ready packages give run `success`. Invalid or unavailable required validation
@@ -115,6 +117,108 @@ The in-memory event broker requires **one backend process** (OQ-04 in
 [`docs/design-deviations.md`](docs/design-deviations.md)). `make run`
 explicitly starts one Uvicorn worker. Multiple workers would split subscribers
 and publishers across separate brokers.
+
+## Results, review and downloads
+
+Apply `make migrate` as `infraarch_owner` before starting this backend version.
+Migration `0003_review_retry_started_at` adds the nullable retry timestamp;
+existing packages stay unchanged with a NULL marker.
+
+`API_KEY` is optional. When set, every `/api/pipeline` endpoint, including
+submission and SSE, requires `X-API-Key`. Empty/unset allows local access and
+logs one startup warning. `/api/health` stays public. Missing and incorrect
+headers receive the same 401; query-string keys are not accepted. The examples
+below use placeholder values; omit the header when authentication is unset.
+
+```bash
+export RUN_ID="replace-with-run-uuid"
+export API_KEY="replace-with-local-static-key"
+curl -H "X-API-Key: $API_KEY" "http://localhost:8000/api/pipeline/$RUN_ID/results"
+
+curl -X POST -H "X-API-Key: $API_KEY" -H 'Content-Type: application/json' \
+  -d '{"action":"approve"}' \
+  "http://localhost:8000/api/pipeline/$RUN_ID/packages/cost/review"
+
+curl -X POST -H "X-API-Key: $API_KEY" -H 'Content-Type: application/json' \
+  -d '{"action":"retry","feedback":"Repair the reference","target_files":["terraform/main.tf"]}' \
+  "http://localhost:8000/api/pipeline/$RUN_ID/packages/cost/review"
+
+curl -H "X-API-Key: $API_KEY" -OJ \
+  "http://localhost:8000/api/pipeline/$RUN_ID/download/cost"
+```
+
+Results return 200 for current snapshots, including active runs, with one
+SELECT for the run, packages and latest architect `plan_created` payload.
+A missing persisted plan is `null`. The exact field list is:
+
+```text
+run: id, status, input_text, start_time, end_time, provider, model,
+     max_iterations, error_message
+plan: DeploymentPlan | null
+packages[]: variant, status, iteration_count, error, files, original_files,
+            security_report, validation_report, review_feedback,
+            readiness_label, downloadable, review_available, review_reasons,
+            retry_targets
+missing_variants[]: variant, error
+```
+
+Produced variants appear in cost/performance/security order. Generating
+placeholders are excluded; failed generation rows appear only in
+`missing_variants`. Retention absence is not reported as generation failure.
+Baselines and reports remain nullable. OpenAPI at `/docs` describes the strict
+schemas. Malformed IDs return 400 and unknown runs return 404.
+
+Reviews require a terminal run and a `pending_review` package. An active run
+returns 409 `run_in_progress`; other package states return 409
+`not_pending_review`. Approve and reject return 200; approve performs no scan
+or validation, and reject labels the package `not_production_ready`. Feedback
+is trimmed, limited to 2,000 characters, and stored on retry/reject. Unknown
+fields or incorrect types return 400.
+
+Retry returns 202 with `stream_url`. Targets combine remaining blocking
+findings, failed file-linked validation checks and up to five explicit safe,
+existing package paths. Explicit targets are allowed only for retry.
+Targetless requests return 422 `feedback_needs_target` when feedback exists,
+or `nothing_to_retry` otherwise. Full runner capacity returns 429 without
+changing package data. Each retry shares the run capacity and uses the saved
+provider/model/iteration settings plus configured fixer overrides. Clean scan
+and valid validation produce `production_ready`; other outcomes return to
+review. Reviews never reclassify or retime the completed run.
+
+Acceptance saves the UTC `review_retry_started_at` marker in the same
+transaction as the retry state and iteration reset. Settlement clears it with
+the final package state. Startup selects non-NULL markers independently of run
+status, recovering active/intermediate retry stages to review with the reason
+`review retry interrupted by server restart`. Automated run recovery retains
+its existing behavior. Missing usable retry context returns safely to review.
+
+Connect to the returned SSE URL with **fetch-based SSE**, sending `X-API-Key`
+and `Last-Event-ID` when reconnecting. Native `EventSource` does not support
+custom request headers. The stream stays open through retry scanning and
+validation and closes after the final package-state frame. Keep one backend
+process because the broker is in memory.
+
+Downloads require `production_ready` or `not_production_ready`; other states
+return 409 `not_downloadable`. Missing, expired or failed-generation packages
+return 404; OQ-01's proposed 410 remains deferred. The ZIP uses persisted
+remediated files, sorted paths, fixed metadata and DEFLATED compression level
+6. Repeated downloads of unchanged data are byte-identical. The label-bearing
+filename follows `infraarch-<run-prefix>-<variant>-<label>.zip`.
+
+`INFRAARCHAGENT_READINESS.md` records the label, engineer rejection wording,
+feedback, report summaries and the static-deployability caveat. **Labelled at**
+and decision provenance come from the matching final package event. If that
+event is missing, both use fixed unavailable text. Readiness-name collisions
+use `_infraarchagent/READINESS.md`, then the first free numbered
+`READINESS-2.md`, `READINESS-3.md`, etc., without overwriting package files.
+Static validity does not prove deployability, such as an Aurora cluster that
+still lacks required instances.
+
+Unexpected API errors use generic `{error, message}` responses. Operator logs
+keep tracebacks and correlation IDs with both configured keys redacted;
+public/persisted data and archive contents remove credentials and backend
+execution paths. The ASGI PR-04 acceptance measures a seeded 10 MB persisted
+package; the final curl-based download measurement remains Phase 9 work.
 
 Run `make spike` with the default `stub` provider to create a JSON result
 and Markdown summary under `docs/spikes/`. To pass arguments, use for example
@@ -332,8 +436,3 @@ Verified local versions: Terraform 1.16.4, Helm v4.3.0+gbec5b06, hadolint 2.15.1
 promtool 3.15.0 and ansible-lint 26.9.0. Mirror coverage is AWS 5.100.0/6.68.0,
 random 3.9.1, Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null 3.3.2,
 391,710,515 bytes (373.56 MiB) on linux_amd64.
-
-Phase 7 review retries require migration `0003_review_retry_started_at`; apply
-`make migrate` as the owner before starting the updated backend. The nullable
-timestamp identifies interrupted review work without altering automated run
-recovery or the app role’s existing privileges.

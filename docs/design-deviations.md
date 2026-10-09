@@ -726,13 +726,57 @@ remain meaningful. No scanner policy or validation checks change.
 
 ### D-37 — Explicit review targets and results interpretation (Accepted; Phase 7)
 
-Review retry targets combine remaining blocking findings, file-linked failed validation checks and up to five explicit existing package paths, deduplicated per file. Targetless feedback is refused with feedback_needs_target; targetless retry without feedback uses nothing_to_retry. OQ-09 is resolved by this decision. The results endpoint reads the architect plan from plan_created in the same SELECT as the run and packages. Packages contains only variants that produced files from generated onward; failed generation rows appear only in missing_variants. Review availability requires pending_review and a terminal run; earlier review actions return run_in_progress, preserving automated classification. Review acceptance and retries are implemented in section 2. Download archives use the terminal package transition event time, displayed as “Labelled at”, replacing request-time download time. Fixed metadata and ZIP_DEFLATED level 6 make repeated unchanged downloads byte-identical. Reserved readiness-name collisions use deterministic numbered fallback paths without overwriting package files.
+Review retry targets combine remaining blocking findings, file-linked failed
+validation checks and up to five explicit existing package paths. Deduplication
+preserves that category order, with paths sorted within each category. Ordinary
+automated fix calls keep their previous sorted order. Targetless feedback is
+refused with `feedback_needs_target`; a targetless retry without feedback uses
+`nothing_to_retry`. OQ-09 is resolved by this decision.
+
+The results endpoint reads the architect plan from the latest `plan_created`
+payload in the same SELECT as the run and packages; no plan column is added.
+`packages` contains variants that produced files from `generated` onward.
+Failed generation rows appear only in `missing_variants`. A missing retained
+row does not establish a generation failure. Nullable baselines/reports retain
+their persisted contents subject to secret protection. Review availability
+requires `pending_review` and a terminal run; earlier review actions return
+`run_in_progress`, preserving automated classification and timestamps.
+
+Download archives use the terminal package transition event time, displayed as
+**Labelled at**, replacing request-time download time. Decision provenance comes
+from that same event. Missing events under D-19 yield fixed unavailable text.
+Fixed metadata and `ZIP_DEFLATED` level 6 make repeated unchanged downloads
+byte-identical. Readiness-name collisions use the reserved fallback, then the
+first free deterministic numbered path, without overwriting package files.
 
 ### D-38 — Failed or interrupted review retries return to review (Accepted)
 
-Migration 0003 adds nullable generated_packages.review_retry_started_at TIMESTAMPTZ, with no backfill/default and unchanged table-level app grants. Acceptance row-locks the package and atomically saves pending_review → remediating, feedback, zero consumed iterations and an application UTC timestamp. Settlement clears the timestamp in the status transaction. Startup selects non-NULL timestamps independently of run status and uses the reason “review retry interrupted by server restart”. Events alone cannot identify retries because state/event commits are separate. The marker is never part of security_report.
+Migration `0003` adds nullable `generated_packages.review_retry_started_at`
+TIMESTAMPTZ, with no backfill/default and unchanged table-level app grants.
+Acceptance locks the package row and atomically saves `pending_review →
+remediating`, feedback, zero consumed iterations and an application UTC
+timestamp. Settlement clears the timestamp in the status transaction. Startup
+selects non-NULL timestamps independently of run status and uses the reason
+**review retry interrupted by server restart**. Events alone cannot identify
+retries because state/event commits are separate. The marker never enters
+`security_report`.
 
-Review-only abort paths normalize remediating through scanning and add guarded scanning/validating → pending_review arrows. Intermediate scan/validation outcomes also recover; unmarked automated transitions and interrupted-run recovery remain unchanged. Failures preserve persisted files/baselines; scan failure never persists scan_error for review retries. Retries share runner capacity/task ownership. SSE stays open through marked intermediate states and waits for the final package frame. Operator logs retain tracebacks with secret redaction; public errors remain generic.
+Review-only abort paths normalize `remediating` through `scanning` and add
+guarded `scanning`/`validating → pending_review` arrows. Intermediate
+scan/validation outcomes also recover through existing transitions; unmarked
+automated transitions and interrupted-run recovery remain unchanged. Failures
+preserve persisted files, baselines and report evidence; review scanner failure
+never persists `scan_error`. Shutdown attempts bounded settlement; unsuccessful
+cleanup leaves the timestamp for startup. Missing usable plan/context aborts
+safely to review instead of fabricating a plan.
+
+Retries share runner capacity and task ownership, using unique IDs for
+concurrent variants of one run. SSE stays open through marked intermediate
+states and waits for the final package frame, covering the state/event commit
+gap. Operator logs retain tracebacks with both keys redacted; public errors
+remain generic. D-19's separate transactions remain a known limit: a hard crash
+can leave a labelled package without its label event, handled by the archive's
+unavailable provenance/time text.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -831,7 +875,9 @@ example an `agent_events` row with a defined payload such as
 `{"kind": "package_stored", "variant": "cost"}`. Decide in Phase 4 (event
 payload schema) or Phase 7 (download/results endpoints). Phase 4 now records
 `package_generated` with a variant and paths, providing durable evidence.
-Phase 7 still decides and implements the 410 response. Until then, no 410.
+Phase 7 deliberately keeps 404 for absent/expired packages and defers 410.
+Retention absence is not listed as a generation failure in results. A future
+410 contract still needs an explicit durable expiry interpretation.
 
 ### OQ-02 — Terminality of `invalid` and `validation_error` (Resolved)
 Resolved by D-06 (Option C).
@@ -897,6 +943,8 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+- Authentication: X-API-Key header, open-when-unset rule and fetch-based SSE (D-36).
 - Download ZIP includes a readiness file, “Labelled at” event timestamp and static-deployability caveat.
 - ERD: new column review_retry_started_at (nullable TIMESTAMPTZ, D-38).
 - Package diagram: guarded review-retry scanning/validating abort arrows to pending_review.
