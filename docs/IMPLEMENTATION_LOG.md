@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6b item 1 — Resolve Kubernetes references to literal Helm resources
+
+**Summary:** Index literal Helm template identities as resolution targets, with warnings for templated identities/ports and preserved missing-resource failures. Keep Helm templates outside Kubernetes structural/source-reference checks.
+
+**Requirements addressed:** FR-V-01, FR-V-04.
+
+**Files:** backend/app/validation/documents.py, backend/app/validation/references.py, backend/tests/unit/test_validation_references.py, docs/design-deviations.md; docs/IMPLEMENTATION_LOG.md records this item.
+
+**Decisions:** Extend D-35 with safe YAML projection without Go execution; require explicit literal kind/name/namespace for template targets. Dynamic identities warn only for the referenced kind; literal port mismatches fail.
+
+**Tests:** An earlier focused run exposed two incorrect fixture assumptions (91 passed, 2 failed); corrected focused reference/structure/engine tests: 93 passed, 0 failed, 0 skipped in 1.96 s. make lint passed Ruff, formatting and mypy on 89 app files. Regression tests use all three original Sonnet monitoring layouts, remove Grafana to prove genuine failure, and cover templated identities, namespace/port mismatches and other reference families.
+
+**Known gaps / follow-ups:** The original Sonnet performance Ingress uses default namespace while its Grafana Service is literal namespace monitoring: that genuine failure remains. Security templates use dynamic identities and warn. Static projection cannot render Helm includes or compute expressions; optional Helm lint retains that coverage. Final full-suite verification follows item 5.
+
+---
+
 ## 2026-10-09 — Phase 6 section 10 — Finalize Phase 6 documentation and verification
 
 **Summary:** Finalize D-33–D-35, superseded placeholder history, thesis-update notes, setup/settings/tool/mirror/evaluation documentation and measured acceptance evidence.

@@ -26,6 +26,34 @@ def mapping(value: Any) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+HELM_EXPRESSION = "__infraarch_helm_expression__"
+
+
+def helm_template_resources(source: str) -> Iterator[dict[str, Any]]:
+    """Inspect YAML declarations without evaluating Go templates or includes."""
+    # Standalone actions (conditionals, toYaml blocks) are not YAML declarations.
+    projected = re.sub(r"(?m)^[ \t]*{{[^\n]*}}[ \t]*$", "", source)
+    projected = re.sub(r"{{[\s\S]*?}}", HELM_EXPRESSION, projected)
+    for document in re.split(r"(?m)^---[ \t]*(?:#.*)?$", projected):
+        loader = yaml.SafeLoader(document)
+        try:
+            node = loader.get_single_node()
+            if node is not None:
+                positions(node)  # Reject recursive aliases before construction/walks.
+                data = loader.construct_document(node)
+                if isinstance(data, dict):
+                    yield data
+        except (yaml.YAMLError, ValueError, TypeError):
+            # Uninspectable template text is left to Helm's optional linter.
+            continue
+        finally:
+            loader.dispose()
+
+
+def helm_expression(value: Any) -> bool:
+    return isinstance(value, str) and HELM_EXPRESSION in value
+
+
 def normalize_name(name: str) -> str:
     return re.sub(r"[-_.]+", "-", name.lower()).strip("-")
 

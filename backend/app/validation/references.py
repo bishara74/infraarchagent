@@ -6,12 +6,14 @@ from pathlib import PurePosixPath
 from typing import Any
 
 from app.domain.plan import FileType
-from app.domain.validation import ValidationCheck
+from app.domain.validation import CheckStatus, ValidationCheck
 from app.validation.documents import (
     Document,
     PackageDocuments,
     blocks,
     code_text,
+    helm_expression,
+    helm_template_resources,
     mapping,
     walk,
 )
@@ -162,7 +164,34 @@ def kubernetes_references(package: PackageDocuments) -> list[ValidationCheck]:
             ):
                 entries.append((doc, item, data, namespace))
                 index[(namespace, kind, name)] = data
+    dynamic_kinds: set[str] = set()
+    helm_keys: set[tuple[str, str, str]] = set()
+    for doc in package.of_kind(FileType.HELM):
+        if "/templates/" not in doc.path or not doc.path.endswith((".yaml", ".yml")):
+            continue
+        for data in helm_template_resources(doc.source):
+            kind = data.get("kind")
+            metadata = mapping(data.get("metadata"))
+            name = metadata.get("name")
+            namespace = metadata.get("namespace")
+            if not isinstance(kind, str) or helm_expression(kind):
+                continue
+            if helm_expression(name) or helm_expression(namespace):
+                dynamic_kinds.add(kind)
+            elif isinstance(name, str) and isinstance(namespace, str):
+                helm_key = (namespace, kind, name)
+                if helm_key not in index:
+                    index[helm_key] = data
+                    helm_keys.add(helm_key)
     checks = []
+
+    def unresolved_status(exists: bool, kind: str) -> CheckStatus | None:
+        return "warning" if not exists and kind in dynamic_kinds else None
+
+    def target_message(exists: bool, kind: str, ordinary: str) -> str:
+        if unresolved_status(exists, kind):
+            return f"Helm {kind} name or namespace cannot be resolved statically"
+        return ordinary
 
     def pod_labels(data: dict[str, Any]) -> dict[str, Any]:
         spec = mapping(data.get("spec"))
@@ -208,12 +237,18 @@ def kubernetes_references(package: PackageDocuments) -> list[ValidationCheck]:
                         doc,
                         check_id,
                         exists,
-                        f"{target_kind} reference must resolve in its namespace"
+                        target_message(
+                            exists,
+                            target_kind,
+                            f"{target_kind} reference must resolve in its namespace",
+                        )
                         if not warning or exists
                         else "Secret may be supplied outside the package",
                         line=item.positions.get(path, item.line),
                         category="reference",
-                        status="warning" if warning and not exists else None,
+                        status="warning"
+                        if not exists and (warning or target_kind in dynamic_kinds)
+                        else None,
                     )
                 )
             if data.get("kind") == "Ingress" and key in {"backend", "defaultBackend"}:
@@ -235,9 +270,14 @@ def kubernetes_references(package: PackageDocuments) -> list[ValidationCheck]:
                         doc,
                         "k8s.ingress_service",
                         exists,
-                        "Ingress backend Service must exist in its namespace",
+                        target_message(
+                            exists,
+                            "Service",
+                            "Ingress backend Service must exist in its namespace",
+                        ),
                         line=item.positions.get(path, item.line),
                         category="reference",
+                        status=unresolved_status(exists, "Service"),
                     )
                 )
                 if target:
@@ -247,14 +287,24 @@ def kubernetes_references(package: PackageDocuments) -> list[ValidationCheck]:
                         and service_port in (entry.get("name"), entry.get("port"))
                         for entry in ports
                     )
+                    dynamic_port = (
+                        namespace,
+                        "Service",
+                        service_name,
+                    ) in helm_keys and any(
+                        helm_expression(value) for _, value in walk(ports)
+                    )
                     checks.append(
                         finding(
                             doc,
                             "k8s.ingress_port",
                             valid,
-                            "Ingress port must match a Service port",
+                            "Helm Service port cannot be resolved statically"
+                            if not valid and dynamic_port
+                            else "Ingress port must match a Service port",
                             line=item.positions.get(path, item.line),
                             category="reference",
+                            status="warning" if not valid and dynamic_port else None,
                         )
                     )
             if (
@@ -275,9 +325,18 @@ def kubernetes_references(package: PackageDocuments) -> list[ValidationCheck]:
                         doc,
                         "k8s.hpa_target",
                         exists,
-                        "HPA target must identify an existing workload",
+                        target_message(
+                            exists,
+                            kind,
+                            "HPA target must identify an existing workload",
+                        )
+                        if isinstance(kind, str)
+                        else "HPA target must identify an existing workload",
                         line=item.positions.get(path, item.line),
                         category="reference",
+                        status=unresolved_status(exists, kind)
+                        if isinstance(kind, str)
+                        else None,
                     )
                 )
         if data.get("kind") == "Service":
@@ -300,6 +359,9 @@ def kubernetes_references(package: PackageDocuments) -> list[ValidationCheck]:
                         "Service selector must match a workload in its namespace",
                         line=item.positions.get(("spec", "selector"), item.line),
                         category="reference",
+                        status="warning"
+                        if not matches and dynamic_kinds.intersection(WORKLOADS)
+                        else None,
                     )
                 )
     return checks

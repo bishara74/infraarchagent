@@ -595,6 +595,16 @@ outputs are inspected when their source is available. Variable and local
 references in ordinary strings/comments are ignored. Filesystem references
 cannot escape the package. Kubernetes references use exact names and namespaces;
 selectorless Services have no selector to check, and missing Secrets warn.
+Phase 6b extends reference targets to Helm template resources with explicit
+literal kind, name and namespace, without rendering templates or running
+Kubernetes structural checks on them. Unresolved references warn when Helm
+contains that target kind with a templated name or namespace; a genuinely
+missing kind still fails. An Ingress Service can resolve even when its port
+is templated: that port check warns, while literal port mismatches fail.
+The actual original Sonnet variants differ: cost has a literal apps Service;
+performance has a monitoring Service but an Ingress with no namespace (default),
+which remains a genuine failure; security has templated identities and warns.
+
 Helm remote dependency URLs warn when not vendored, and absent Values paths warn
 because defaults may be intended. Ansible inventory groups are checked only
 when inventory is present; symbolic host patterns warn, and role references

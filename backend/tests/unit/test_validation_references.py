@@ -1,9 +1,144 @@
 import json
+from pathlib import Path
 
 import pytest
 
 from app.validation.documents import PackageDocuments
-from app.validation.references import reference_checks
+from app.validation.references import kubernetes_references, reference_checks
+from app.validation.structure import structural_checks
+from tests.unit.test_generators import plan
+
+SONNET_PACKAGES = Path(__file__).resolve().parents[3] / (
+    "docs/evals/phase3-generators-20260930T060923179316Z/packages/"
+    "anthropic_claude-sonnet-5-2cd37409/kubernetes_monitoring"
+)
+
+
+@pytest.mark.req("FR-V-01", "FR-V-04")
+@pytest.mark.parametrize("variant", ["cost", "performance", "security"])
+def test_real_sonnet_helm_grafana_resolves_ingress(variant):
+    folder = SONNET_PACKAGES / variant
+    files = {
+        p.relative_to(folder).as_posix(): p.read_text()
+        for subtree in (folder / "k8s", folder / "helm")
+        for p in subtree.rglob("*.yaml")
+    }
+    package = PackageDocuments.parse(files)
+    found = kubernetes_references(package)
+    service_checks = [c for c in found if c.check_id == "k8s.ingress_service"]
+    expected = {"cost": "passed", "performance": "failed", "security": "warning"}
+    assert service_checks[-1].status == expected[variant]
+    if variant != "performance":
+        assert not [c for c in found if c.status == "failed"]
+    if variant == "cost":
+        assert any(
+            c.check_id == "k8s.ingress_port" and c.status == "warning" for c in found
+        )
+    assert not any(c.file_path.startswith("helm/") for c in found)
+    assert not any(
+        c.check_id.startswith("k8s.") and c.file_path.startswith("helm/")
+        for c in structural_checks(package, plan("kubernetes", "helm"))
+        if c.file_path
+    )
+    files = {
+        path: source for path, source in files.items() if "/templates/" not in path
+    }
+    assert any(
+        c.check_id == "k8s.ingress_service" and c.status == "failed"
+        for c in kubernetes_references(PackageDocuments.parse(files))
+    )
+
+
+def ingress_files():
+    return {
+        "k8s/ingress.yaml": """apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard
+  namespace: apps
+spec:
+  defaultBackend:
+    service:
+      name: grafana
+      port: {number: 3000}
+"""
+    }
+
+
+@pytest.mark.req("FR-V-01")
+@pytest.mark.parametrize("field", ["name", "namespace"])
+def test_helm_templated_identity_warns_for_same_kind_only(field):
+    files = ingress_files()
+    target = manifest("Service", "grafana", spec={"ports": [{"port": 3000}]})
+    target["metadata"]["namespace"] = "apps"
+    target["metadata"][field] = "{{ .Release.Name }}"
+    files["helm/monitoring/templates/service.yaml"] = json.dumps(target)
+    found = kubernetes_references(PackageDocuments.parse(files))
+    assert [(c.check_id, c.status) for c in found] == [
+        ("k8s.ingress_service", "warning")
+    ]
+    target["kind"] = "ConfigMap"
+    files["helm/monitoring/templates/service.yaml"] = json.dumps(target)
+    assert kubernetes_references(PackageDocuments.parse(files))[0].status == "failed"
+
+
+@pytest.mark.req("FR-V-01")
+@pytest.mark.parametrize(
+    "namespace,port,status",
+    [
+        ("apps", 3000, "passed"),
+        ("apps", 8080, "failed"),
+        ("elsewhere", 3000, "failed"),
+        ("apps", "{{ .Values.port }}", "warning"),
+    ],
+)
+def test_helm_literal_service_namespace_and_ports(namespace, port, status):
+    files = ingress_files()
+    files["helm/monitoring/templates/service.yaml"] = (
+        "{{- if .Values.enabled }}\n"
+        + json.dumps(
+            {
+                "kind": "Service",
+                "metadata": {"name": "grafana", "namespace": namespace},
+                "spec": {"ports": [{"port": port}]},
+            }
+        )
+        + "\n{{- end }}\n"
+    )
+    found = kubernetes_references(PackageDocuments.parse(files))
+    assert found[-1].status == status
+
+
+@pytest.mark.req("FR-V-01")
+@pytest.mark.parametrize(
+    "kind,key",
+    [
+        ("ConfigMap", "configMapRef"),
+        ("Secret", "secretRef"),
+        ("PersistentVolumeClaim", "claimName"),
+        ("Deployment", "scaleTargetRef"),
+    ],
+)
+@pytest.mark.parametrize("dynamic", [False, True])
+def test_helm_targets_resolve_other_reference_families(kind, key, dynamic):
+    if key == "scaleTargetRef":
+        consumer = manifest(
+            "HorizontalPodAutoscaler", "web", spec={key: {"kind": kind, "name": "web"}}
+        )
+    elif key == "claimName":
+        consumer = manifest(
+            "Pod", "web", spec={"volumes": [{"persistentVolumeClaim": {key: "web"}}]}
+        )
+    else:
+        consumer = manifest(
+            "Pod", "web", spec={"containers": [{"envFrom": [{key: {"name": "web"}}]}]}
+        )
+    target = manifest(kind, "{{ .Release.Name }}" if dynamic else "web")
+    target["metadata"]["namespace"] = "default"
+    files = k8s([consumer])
+    files["helm/web/templates/target.yaml"] = json.dumps(target)
+    found = kubernetes_references(PackageDocuments.parse(files))
+    assert len(found) == 1 and found[0].status == ("warning" if dynamic else "passed")
 
 
 def checks(files):
