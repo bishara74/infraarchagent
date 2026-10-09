@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 3 — Shared parsing and structural validation
+
+**Summary:** Declare the exact installed parser dependencies and add a shared parsed document index with YAML positions, deterministic HCL line fallback, and built-in checks for every supported artifact type. Implement the approved Nginx resolution rule.
+
+**Requirements addressed:** FR-V-01, FR-V-03, FR-V-04, NFR-01, PR-05.
+
+**Files:** README.md, backend/app/validation/documents.py, backend/app/validation/structure.py, backend/pyproject.toml, backend/requirements.lock, backend/tests/unit/test_llm_base.py, backend/tests/unit/test_validation_structure.py, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-35 records the installed library versions, parser positioning limits, supporting-file distinctions and exact Nginx resolution semantics. No installation or version changes to existing dependencies. Narrow mypy import exceptions cover PyYAML absent stubs rather than installing another package.
+
+**Tests:** make lint passed (Ruff/format, mypy 84 app files). Structural tests: 32 passed. Full plain make test: 613 passed, 1 failed, 0 skipped in 154.26 s; the sole failure was an existing five-microsecond real-clock assumption. Replacing it with the established fake clock preserved exact timeout assertions; focused LLM/structure regression then passed 95 tests in 3.74 s. Full suite will be rerun after integration.
+
+**Known gaps / follow-ups:** Reference/naming checks and real ValidatorAgent wiring still pending. Full-suite post-fix verification deferred to integration/final verification.
+
+---
+
 ## 2026-10-09 — Phase 6 section 2 — Offline provider mirror and Terraform validation
 
 **Summary:** Extend the shared subprocess runner with explicit commands and safe version probes; provision exact pinned providers once; capture real schema diagnostics; add offline initialization, module preflight, diagnostic parsing and health metadata.

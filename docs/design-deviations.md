@@ -566,8 +566,23 @@ provider-schema diagnostics are separate from the Phase 5b syntax filter;
 malformed init still triggers validate to collect real syntax diagnostics.
 Diagnostic summaries are allowlisted; source snippets and details are excluded
 from reports. Validator availability/version and mirror presence are exposed
-in healthy and degraded health responses. Analysis tiers follow in subsequent
-sections.
+in healthy and degraded health responses. Built-ins use the expressly approved PyYAML 6.0.3 and Python-HCL2 8.1.4,
+with explicit Lark 1.3.1 and locked regex 2026.9.29 from the installed environment;
+no installation was performed. YAML positions are retained in a shared index;
+HCL uses deterministic source-line fallback because the installed serializer
+omits line metadata. Helm templates, Ansible role task/support files and
+Prometheus rule files are distinguished from standalone manifests, playbooks
+and scrape configs. Kubernetes identities include namespace, kind and name.
+
+Approved Nginx rule: extract the hostname from `proxy_pass`, removing URI,
+port and quoting syntax. Accept normalized matches to defined upstreams, plan
+services, Kubernetes Services or literal Helm releases in the same package,
+IP addresses, hostnames containing a dot, or `# external-host:` comments.
+Normalization lowercases and equates hyphens, underscores and dots. Variables
+such as `$host` produce warnings. An unresolved bare name fails and its message
+names the file and line. Quoted text and comments cannot invent directives;
+`.Release.Name` does not invent a literal Helm release. Analysis tiers and
+remaining reference/naming rules follow in subsequent sections.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

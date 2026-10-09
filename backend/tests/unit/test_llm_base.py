@@ -119,12 +119,15 @@ async def test_per_call_overrides_and_none_keep_policy_defaults() -> None:
                 timeout=timeout,
             )
 
-    adapter = RecordingAdapter(policy=RetryPolicy(30, 3, 150, 0, 100))
+    clock = FakeClock()
+    adapter = RecordingAdapter(
+        policy=RetryPolicy(30, 3, 150, 0, 100), clock=clock.now, sleep=clock.sleep
+    )
     adapter.calls = []
     await adapter.complete_json("x", attempt_timeout=120, max_output_tokens=32000)
     await adapter.complete_json("x", deadline=5, attempt_timeout=120)
     await adapter.complete_json("x", attempt_timeout=None, max_output_tokens=None)
-    assert adapter.calls == [(32000, 120), (100, pytest.approx(5)), (100, 30)]
+    assert adapter.calls == [(32000, 120), (100, 5), (100, 30)]
 
 
 @pytest.mark.parametrize("override", [0, -1, float("inf"), float("nan")])

@@ -266,3 +266,7 @@ Runtime validation initializes temporary copies with `-backend=false`,
 `-input=false` and `-plugin-dir=<mirror>` with black-hole proxies. Local modules
 may be installed after path checks; remote modules are unavailable offline.
 Health responses report validator availability/versions and mirror presence.
+
+Built-in validation uses the existing installed Python-HCL2 8.1.4, Lark 1.3.1
+and PyYAML 6.0.3; regex 2026.9.29 is locked as a required transitive dependency.
+Parser diagnostics contain safe messages and package-relative locations.
