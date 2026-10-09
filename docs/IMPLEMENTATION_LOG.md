@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6b item 2 — Preserve actionable Terraform diagnostic titles and locations
+
+**Summary:** Reproduce the Sonnet security diagnostic offline; canonicalize the safe Cycle title, preserve ranges for unknown titles and attach unlocated diagnostics to Terraform root files for remediation.
+
+**Requirements addressed:** FR-V-03, FR-V-04, NFR-01.
+
+**Files:** backend/app/validation/terraform.py, backend/tests/fixtures/validation/README.md, backend/tests/fixtures/validation/terraform/sonnet_security_cycle.json, backend/tests/unit/test_validation_terraform.py, docs/design-deviations.md; docs/IMPLEMENTATION_LOG.md records this item.
+
+**Decisions:** D-35 records fallback file/line semantics. Real summary: Cycle followed by aws_security_group.alb, aws_security_group.app and aws_security_group.rds. Init exited 0, validate exited 1: this is a genuine configuration dependency cycle, not our validation setup. The committed recording contains no source excerpt or detail.
+
+**Tests:** Terraform/report tests: 62 passed, 0 failed, 0 skipped in 3.90 s, including mirror-backed and namespace executions. make lint passed Ruff, formatting and mypy on 89 app files. Range-with-unknown-title and range-less fallback tests prove every available diagnostic becomes a safe remediation target.
+
+**Known gaps / follow-ups:** Global diagnostics have no actual source line; fallback line 1 is a remediation anchor. The original invalid source package is preserved. Updated twelve-package evaluation follows item 5.
+
+---
+
 ## 2026-10-09 — Phase 6b item 1 — Resolve Kubernetes references to literal Helm resources
 
 **Summary:** Index literal Helm template identities as resolution targets, with warnings for templated identities/ports and preserved missing-resource failures. Keep Helm templates outside Kubernetes structural/source-reference checks.

@@ -571,7 +571,13 @@ module, missing executable and tool errors remain distinct skips. Full
 provider-schema diagnostics are separate from the Phase 5b syntax filter;
 malformed init still triggers validate to collect real syntax diagnostics.
 Diagnostic summaries are allowlisted; source snippets and details are excluded
-from reports. Validator availability/version and mirror presence are exposed
+from reports. Phase 6b recognizes the safe title `Cycle`, stripping Terraform
+cycle graph listings. Unknown titles retain reported file/range positions.
+Unlocated Terraform diagnostics attach to main.tf (otherwise the first root
+.tf file, then other Terraform files), with fallback line 1 as a remediation
+anchor rather than a claimed source range. The original Sonnet three-tier
+security package genuinely has a cycle among the alb/app/rds security groups;
+offline init succeeded and real validate reported it without a range. Validator availability/version and mirror presence are exposed
 in healthy and degraded health responses.
 
 Built-ins use the expressly approved PyYAML 6.0.3 and Python-HCL2 8.1.4,

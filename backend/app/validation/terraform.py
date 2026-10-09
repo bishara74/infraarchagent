@@ -15,6 +15,7 @@ from app.validation.documents import PackageDocuments, walk
 from app.validation.tools import DEFAULT_MIRROR, mirror_present
 
 SAFE_TITLES = {
+    "Cycle",
     "Invalid resource type",
     "Unsupported argument",
     "Invalid expression",
@@ -87,10 +88,40 @@ def terraform_diagnostics(
             path = validate_relative_path(candidate.as_posix())
             if path not in files:
                 raise ValueError("unknown Terraform diagnostic file")
-        start = location.get("start", {}).get("line") if path else None
-        end = location.get("end", {}).get("line") if path else None
+        if path is not None:
+            start = location.get("start", {}).get("line")
+            end = location.get("end", {}).get("line")
+        else:
+            # Global diagnostics (e.g. dependency cycles) still need retry targets.
+            candidates = sorted(
+                path
+                for path in files
+                if path.startswith("terraform/") and path.endswith(".tf")
+            )
+            roots = [
+                path for path in candidates if Path(path).parent == Path("terraform")
+            ]
+            path = (
+                "terraform/main.tf"
+                if "terraform/main.tf" in files
+                else next(iter(roots or candidates), None)
+            )
+            if path is None:
+                path = next(
+                    (
+                        path
+                        for path in sorted(files)
+                        if path.startswith("terraform/") and path.endswith(".tf.json")
+                    ),
+                    None,
+                )
+            start = 1 if path else None
+            end = None
         # Summaries are diagnostic titles, without the offending source expression.
         title = diagnostic.get("summary")
+        if isinstance(title, str) and title.startswith("Cycle:"):
+            # The remainder is a graph listing, not a stable diagnostic title.
+            title = "Cycle"
         if not isinstance(title, str) or title not in SAFE_TITLES:
             title = "Terraform configuration diagnostic"
         checks.append(

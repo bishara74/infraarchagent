@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from app.domain.validation import ValidationReport
 from app.scanners.runner import (
     ProcessToolRunner,
     ToolFailure,
@@ -90,11 +91,53 @@ def test_diagnostic_rejects_external_paths_and_omits_source_details():
         json.dumps(data), Path("/__RECORDED_ROOT__"), {"terraform/main.tf"}
     )[0]
     assert "canary" not in check.model_dump_json()
+    assert check.file_path == "terraform/main.tf" and check.line_start == 2
+    assert check.message == "Terraform configuration diagnostic"
     data["diagnostics"][0]["range"]["filename"] = "/tmp/canary-key.tf"
     with pytest.raises(ValueError):
         terraform_diagnostics(
             json.dumps(data), Path("/__RECORDED_ROOT__"), {"terraform/main.tf"}
         )
+
+
+@pytest.mark.req("FR-V-03", "FR-V-04", "NFR-01")
+@pytest.mark.parametrize(
+    "files,expected",
+    [
+        ({"terraform/main.tf", "terraform/aaa.tf"}, "terraform/main.tf"),
+        ({"terraform/z.tf", "terraform/a.tf"}, "terraform/a.tf"),
+        ({"terraform/main.tf.json"}, "terraform/main.tf.json"),
+    ],
+)
+@pytest.mark.parametrize("summary", [None, "canary-key"])
+def test_unlocated_unknown_diagnostic_keeps_remediation_target(
+    files, expected, summary
+):
+    raw = json.dumps(
+        {"valid": False, "diagnostics": [{"severity": "error", "summary": summary}]}
+    )
+    report = ValidationReport.build(
+        terraform_diagnostics(raw, Path("/__RECORDED_ROOT__"), files),
+        terraform_required=True,
+    )
+    assert report.summary.result == "invalid"
+    (failure,) = report.failed_checks_for_remediation
+    assert failure.file_path == expected and failure.line_start == 1
+    assert failure.message == "Terraform configuration diagnostic"
+    assert "canary-key" not in report.model_dump_json()
+
+
+@pytest.mark.req("FR-V-03", "FR-V-04")
+def test_real_sonnet_security_cycle_recording_is_safe_and_remediable():
+    raw = (FIXTURES / "sonnet_security_cycle.json").read_text()
+    report = ValidationReport.build(
+        terraform_diagnostics(raw, Path("/__RECORDED_ROOT__"), {"terraform/main.tf"}),
+        terraform_required=True,
+    )
+    (failure,) = report.failed_checks_for_remediation
+    assert failure.message == "Cycle"
+    assert failure.file_path == "terraform/main.tf" and failure.line_start == 1
+    assert "aws_security_group" not in report.model_dump_json()
 
 
 @pytest.mark.req("FR-V-03")

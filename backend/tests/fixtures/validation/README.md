@@ -27,3 +27,18 @@ backend/tests/fixtures/validation/capture_linters.py`. Each JSON record includes
 the exact command, exit status, source map, and normalized stdout/stderr.
 Ansible captures use the actual Code Climate issue-array format and both
 observed location representations. All commands use the offline runner.
+
+Phase 6b `terraform/sonnet_security_cycle.json` captures the original Sonnet
+three-tier/security package using Terraform 1.16.4 and the existing mirror
+(AWS 5.100.0, random 3.9.1). The package was copied to temporary storage and
+initialized with the same offline flags above (exit 0); validate exited 1.
+Only format/result counts and diagnostic severity/summary/range are retained;
+no source snippets or diagnostic detail are captured. The actual summary is
+`Cycle:` followed by `aws_security_group.alb`, `aws_security_group.app` and
+`aws_security_group.rds`, without a range. The report canonicalizes the title
+to `Cycle` and attaches it to `terraform/main.tf:1` for remediation.
+
+Source: `docs/evals/phase3-generators-20260930T060923179316Z/packages/`
+`anthropic_claude-sonnet-5-2cd37409/three_tier/security/`. The reciprocal inline
+security-group rules are a genuine configuration dependency cycle. This is
+not a provider initialization failure; validation setup was unchanged.
