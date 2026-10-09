@@ -102,6 +102,7 @@ def test_central_outcome_precedence(required, status, failure, expected):
         }[expected]
     )
     assert ValidationReport.model_validate_json(report.model_dump_json()) == report
+    assert ValidationReport.model_validate(report.model_dump(mode="json")) == report
 
 
 @pytest.mark.req("FR-V-04")
@@ -182,3 +183,18 @@ def test_rejects_inconsistent_or_unsafe_report(updates):
     report = ValidationReport.build([], terraform_required=False)
     with pytest.raises(ValidationError):
         ValidationReport.model_validate({**report.model_dump(), **updates})
+
+
+@pytest.mark.req("FR-V-03")
+def test_builtin_check_cannot_impersonate_required_terraform():
+    fake = ValidationCheck(
+        check_id="terraform.validate",
+        category="structure",
+        tool="builtin",
+        status="passed",
+        message="Fake schema result",
+    )
+    assert (
+        ValidationReport.build([fake], terraform_required=True).summary.result
+        == "error"
+    )

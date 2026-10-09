@@ -116,3 +116,28 @@ def test_security_fix_model_override_and_run_fallback_reach_adapter() -> None:
     assert fallback_adapter.model == "run-model"
     assert fallback_adapter.reasoning_effort == "low"
     assert fallback.fixing_model == "run-model"
+
+
+@pytest.mark.req("FR-V-05", "NFR-01")
+def test_validator_factory_needs_sessions_but_no_llm(monkeypatch):
+    from app.agents import factory as module
+    from app.agents.validator import ValidatorAgent
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("validator must not build an LLM adapter")
+
+    monkeypatch.setattr(module, "build_adapter", forbidden)
+    configured = settings(
+        llm_provider=LLMProvider.OPENAI,
+        validator_tool_timeout_seconds=7,
+        validator_max_parallel_tools=2,
+        validation_deadline_seconds=42,
+    )
+    with pytest.raises(RuntimeError, match="session"):
+        AgentFactory(configured).create_validator_agent()
+    agent = AgentFactory(
+        configured, session_factory=async_sessionmaker()
+    ).create_validator_agent()
+    assert isinstance(agent, ValidatorAgent)
+    assert agent.engine.max_parallel_tools == 2 and agent.engine.deadline_seconds == 42
+    assert agent.engine.runner.timeout_seconds == 7

@@ -11,6 +11,7 @@ from app.db.models import GeneratedPackage
 from app.domain.enums import PackageStatus, Variant
 from app.domain.paths import validate_file_map
 from app.domain.states import assert_package_transition
+from app.domain.validation import ValidationReport
 from app.security.diff import package_diff
 
 
@@ -164,6 +165,26 @@ class PackageRepository:
             "final": session_report["final"],
             "omitted_session_count": omitted,
         }
+        await self.session.flush()
+        return row
+
+    async def save_validation_results(
+        self, run_id: UUID, variant: Variant, report: ValidationReport
+    ) -> GeneratedPackage:
+        validated = ValidationReport.model_validate_json(report.model_dump_json())
+        row = await self.session.scalar(
+            select(GeneratedPackage)
+            .where(
+                GeneratedPackage.run_id == run_id, GeneratedPackage.variant == variant
+            )
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if row is None:
+            raise LookupError("package not found")
+        if PackageStatus(row.status) != PackageStatus.VALIDATING:
+            raise ValueError("validation report requires a validating package")
+        row.validation_report = validated.model_dump(mode="json")
         await self.session.flush()
         return row
 

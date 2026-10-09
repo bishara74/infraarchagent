@@ -19,7 +19,6 @@ from app.domain.enums import RunStatus
 from app.events.broker import InMemoryBroker
 from app.events.log import EventLog
 from app.pipeline.runner import PipelineRunner
-from app.pipeline.stages import UnavailableValidationStage
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.runner import scanner_versions
 from app.validation.tools import mirror_present, validator_versions
@@ -56,7 +55,7 @@ def create_app(
         session_factory=session_factory,
         writer=writer,
         security_stage=None,
-        validation_stage=UnavailableValidationStage(),
+        validation_stage=factory.create_validator_agent(),
     )
 
     @asynccontextmanager

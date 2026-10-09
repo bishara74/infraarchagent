@@ -22,10 +22,11 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 5 adds local Checkov and Trivy scanning, bounded per-file remediation,
-versioned security reports, and cumulative diffs. Validation arrives in
-Phase 6; until then scanned packages pass through `validation_error` to
-`pending_review`, so stub pipeline runs end `partial_success`. See
+Phase 6 adds deterministic structure, reference and naming checks, offline
+Terraform provider-schema validation, optional local linters and persisted
+reports. Clean scans plus valid packages reach `production_ready`; all three
+ready packages give run `success`. Invalid or unavailable required validation
+reaches `pending_review` through the existing Option C rules. See
 [`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
 [`docs/design-deviations.md`](docs/design-deviations.md) for where the
 implementation differs from the thesis design.
@@ -102,9 +103,10 @@ Optional `CONFIG_PROVIDER`, `CONFIG_MODEL`, and `API_URL` select a request
 configuration and API root. With `LLM_PROVIDER=stub`, the API uses a
 pipeline-only deterministic demo; the Phase 1 spike and Phase 2–3 evaluation
 stubs are unchanged. The demo packages are scanned by the installed tools;
-validation is still unavailable, so they reach `pending_review` and the run
-ends `partial_success`. A missing or repeatedly failing scanner places its
-package in `scan_error`.
+validation uses the real engine. With clean scans, installed Terraform and the
+provider mirror, all three can reach `production_ready` and the run can end
+`success`. A missing or repeatedly failing scanner places its package in
+`scan_error`; unavailable required Terraform validation requires review.
 
 The in-memory event broker requires **one backend process** (OQ-04 in
 [`docs/design-deviations.md`](docs/design-deviations.md)). `make run`
@@ -276,3 +278,10 @@ author's reproducible installer is `tools/install_validators.sh`; Phase 6 used
 the installed tools without invoking it. `VALIDATOR_TOOL_TIMEOUT_SECONDS`
 defaults to 60. Missing tools and tool failures are reported as optional skips.
 Helm schema downloading and Ansible dependency/schema downloading are disabled.
+
+`VALIDATOR_MAX_PARALLEL_TOOLS` defaults to 3 (allowed range 1–3 per package),
+and `VALIDATION_DEADLINE_SECONDS` defaults to 120. The complete report is saved
+before outcome events. Deadline/internal aborts produce `validation_error`;
+ordinary failures produce `invalid`. Naming findings and optional tool skips
+remain visible for review. The reusable `app.validation.engine.validate` API
+requires no database or LLM adapter.

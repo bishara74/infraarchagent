@@ -132,3 +132,18 @@ def test_prompt_cache_configuration() -> None:
     assert _settings(llm_prompt_cache="system").llm_prompt_cache == "system"
     with pytest.raises(ValidationError):
         _settings(llm_prompt_cache="unknown")
+
+
+@pytest.mark.req("FR-V-05")
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("validator_tool_timeout_seconds", 0),
+        ("validator_max_parallel_tools", 0),
+        ("validator_max_parallel_tools", 4),
+        ("validation_deadline_seconds", 0),
+    ],
+)
+def test_validator_settings_enforce_bounds(field, value):
+    with pytest.raises(ValidationError):
+        Settings(**{field: value}, _env_file=None)

@@ -73,7 +73,10 @@ def validation_result(
     if any(check.status == "failed" for check in ordered):
         return "invalid"
     if terraform_required and not any(
-        check.check_id == "terraform.validate" and check.status == "passed"
+        check.check_id == "terraform.validate"
+        and check.tool == "terraform"
+        and check.category == "terraform"
+        and check.status == "passed"
         for check in ordered
     ):
         return "error"
@@ -123,6 +126,12 @@ class ValidationReport(BaseModel):
     failed_checks_for_remediation: tuple[ValidationCheck, ...]
     omitted_counts: dict[CheckStatus, int] = Field(default_factory=dict)
     abort_reason: AbortReason | None = None
+
+    @field_validator("checks", "failed_checks_for_remediation", mode="before")
+    @classmethod
+    def json_arrays(cls, value: object) -> object:
+        # JSONB returns arrays as lists; canonicalize only this representation.
+        return tuple(value) if isinstance(value, list) else value
 
     @field_validator("tool_versions")
     @classmethod

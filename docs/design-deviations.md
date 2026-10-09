@@ -317,6 +317,8 @@ Status values:
   `scan_error` with an explicit unavailable notice. Phase 5 replaces that
   placeholder with Checkov, tfsec, and the remediation loop.
 
+- **Phase 6 clarification:** D-20 describes the historical security placeholder,
+  not validation unavailability; D-26 records that separate placeholder.
 - **Phase 5b update:** Phase 5 scanner names in this history are superseded by D-31.
 
 ### D-21 — Bounded in-process runner (Accepted)
@@ -395,12 +397,14 @@ Status values:
   offline settings. `unshare -Urn` works in the Phase 5b session; namespace tests
   confirm offline execution, while runtime does not enforce kernel isolation.
 
-### D-26 — Reached validation placeholder (Accepted, temporary)
-- **Implementation:** Phase 5's real scan reaches the Phase 6 placeholder.
+### D-26 — Reached validation placeholder (Superseded by D-35 in Phase 6)
+- **History:** Phase 5's real scan reached the Phase 6 placeholder.
   It records `scan_clean|scan_exhausted → validating → validation_error`
   and a stage notice, then the existing readiness rule sends the package to
   `pending_review`. Stub pipeline runs therefore end `partial_success`,
   never `production_ready`, until real validation arrives in Phase 6.
+- **Phase 6 update:** the placeholder is removed. D-35 implements real validation
+  and permits `production_ready` and run `success` under Option C.
 
 ### D-27 — Portable recorded scanner fixtures (Accepted)
 - **Implementation:** recorded Checkov and tfsec JSON uses the fixed
@@ -626,6 +630,19 @@ and unsafe file inputs skip as `tool_error`. Optional skips do not cause error.
 Ansible file lookups/dynamic external inputs and file-reading references that
 escape temporary package copies are refused before launching optional tools.
 
+
+The database-independent engine shares parsed documents, runs at most three
+external commands per package and enforces a 120-second stage deadline. Tool
+cancellation kills process groups before temporary-copy cleanup. A whole-stage
+abort retains completed findings and produces error. Terraform file functions
+also refuse paths outside the copy and uninspectable dynamic file inputs;
+validation never reads the repository's dotenv file. ValidatorAgent implements
+the existing protocol, row-locks and saves the complete validated JSONB report
+in one transaction before the outcome transition, and emits lifecycle events
+and one safe summary notice through EventLog. The app and security evaluator
+use the real agent; the evaluator reloads persisted remediated files. Existing
+Option C and review retry services are unchanged. Validation-only retry tests
+prove feedback/failure delivery, rescan/revalidation and preserved baselines.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

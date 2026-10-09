@@ -8,7 +8,7 @@ from pathlib import Path, PurePosixPath
 from app.domain.plan import FileType
 from app.domain.validation import CheckStatus, ValidationCheck, ValidationTool
 from app.scanners.paths import scanner_path
-from app.scanners.runner import ProcessToolRunner, ToolFailure, ToolResult
+from app.scanners.runner import CommandToolRunner, ToolFailure, ToolResult
 from app.validation.documents import PackageDocuments, mapping, walk
 from app.validation.references import safe_reference
 
@@ -305,7 +305,7 @@ def parse_lint(
 
 
 async def run_linter(
-    target: LinterTarget, root: Path, files: set[str], runner: ProcessToolRunner
+    target: LinterTarget, root: Path, files: set[str], runner: CommandToolRunner
 ) -> list[ValidationCheck]:
     if not target.safe_to_run:
         return [lint_check(target, "skipped", reason="tool_error")]

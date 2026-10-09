@@ -4,18 +4,23 @@ import httpx
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from app.agents.validator import ValidatorAgent
 from app.core.config import get_settings
+from app.db.session import make_session_factory
 from app.domain.enums import LLMProvider
 from app.main import create_app
 from app.scanners.runner import RecordedToolRunner, ToolResult
 from app.scanners.scan import Scanner
+from app.validation.engine import ValidationEngine
 from scripts.run_pipeline import watch_pipeline
+from tests.unit.test_validation_engine import Clean, mirror
 
 
 @pytest.mark.req("FR-P-04")
 async def test_watcher_prints_terminal_summary_offline(
     db_engines: tuple[AsyncEngine, AsyncEngine],
     capsys: pytest.CaptureFixture[str],
+    tmp_path,
 ) -> None:
     engine, _ = db_engines
     settings = get_settings().model_copy(
@@ -34,6 +39,10 @@ async def test_watcher_prints_terminal_summary_offline(
             }
         )
     )
+    app.state.runner.validation_stage = ValidatorAgent(
+        ValidationEngine(Clean(), mirror=mirror(tmp_path), versions={}),
+        make_session_factory(engine),
+    )
     async with app.router.lifespan_context(app):
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
@@ -41,12 +50,12 @@ async def test_watcher_prints_terminal_summary_offline(
             status, packages = await watch_pipeline(
                 "Deploy an AWS web service", client=client, api_url="http://test"
             )
-    assert status == "partial_success"
+    assert status == "success"
     assert packages == {
-        "cost": "pending_review",
-        "performance": "pending_review",
-        "security": "pending_review",
+        "cost": "production_ready",
+        "performance": "production_ready",
+        "security": "production_ready",
     }
     output = capsys.readouterr().out
     assert "Run " in output
-    assert "Final: partial_success" in output
+    assert "Final: success" in output

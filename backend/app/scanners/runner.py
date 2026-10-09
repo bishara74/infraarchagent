@@ -89,6 +89,19 @@ class ToolRunner(Protocol):
     async def run(self, tool: ToolName, workdir: Path) -> ToolResult: ...
 
 
+class CommandToolRunner(Protocol):
+    async def run_command(
+        self,
+        tool: ToolName,
+        args: list[str],
+        workdir: Path,
+        *,
+        cwd: Path | None = None,
+        environment_dir: Path | None = None,
+        allow_provider_download: bool = False,
+    ) -> ToolResult: ...
+
+
 class ProcessToolRunner:
     def __init__(self, timeout_seconds: float = 120) -> None:
         self.timeout_seconds = timeout_seconds
@@ -279,6 +292,18 @@ class RecordedToolRunner:
                 result.duration,
             )
         return result
+
+    async def run_command(
+        self,
+        tool: ToolName,
+        args: list[str],
+        workdir: Path,
+        *,
+        cwd: Path | None = None,
+        environment_dir: Path | None = None,
+        allow_provider_download: bool = False,
+    ) -> ToolResult:
+        return await self.run(tool, workdir)
 
 
 @lru_cache

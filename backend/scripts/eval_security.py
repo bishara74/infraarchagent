@@ -28,7 +28,7 @@ from app.domain.run_config import RunConfig
 from app.domain.states import readiness_after_validation
 from app.events.log import EventLog
 from app.events.publisher import NullPublisher
-from app.pipeline.stages import StageContext, UnavailableValidationStage
+from app.pipeline.stages import StageContext
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.checkov_parser import parse_checkov
 from app.scanners.external_modules import external_module_findings
@@ -223,12 +223,22 @@ async def _remediate(
             ctx, package.variant, package
         )
         if outcome != PackageStatus.SCAN_ERROR:
-            validation = await UnavailableValidationStage().run(
-                ctx, package.variant, package
+            async with sessions() as session:
+                persisted = await PackageRepository(session).get(
+                    run.run_id, package.variant
+                )
+                if persisted is None:
+                    raise LookupError("evaluation package missing")
+                remediated = package.model_copy(update={"files": dict(persisted.files)})
+            validation = await factory.create_validator_agent().run(
+                ctx, package.variant, remediated
             )
             target = readiness_after_validation(outcome, validation)
             await writer.package_transition(
-                run.run_id, package.variant, target, message="evaluation pending review"
+                run.run_id,
+                package.variant,
+                target,
+                message="evaluation readiness classified",
             )
         await writer.run_transition(
             run.run_id,

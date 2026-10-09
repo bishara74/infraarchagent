@@ -1,6 +1,7 @@
 """Offline Terraform initialization and full provider-schema diagnostics."""
 
 import json
+import re
 from pathlib import Path
 
 import hcl2
@@ -9,8 +10,8 @@ from lark.exceptions import LarkError
 
 from app.domain.paths import validate_relative_path
 from app.domain.validation import ValidationCheck
-from app.scanners.runner import ProcessToolRunner, ToolFailure
-from app.validation.documents import PackageDocuments
+from app.scanners.runner import CommandToolRunner, ToolFailure
+from app.validation.documents import PackageDocuments, walk
 from app.validation.tools import DEFAULT_MIRROR, mirror_present
 
 SAFE_TITLES = {
@@ -183,10 +184,61 @@ def module_preflight(
     return None, local
 
 
+def file_input_guard(root: Path, documents: PackageDocuments) -> list[ValidationCheck]:
+    """Terraform file functions must never inspect files outside the copied package."""
+    for doc in documents.documents.values():
+        if not doc.path.startswith("terraform/") or doc.parse_error:
+            continue
+        for _, value in walk(doc.data):
+            if not isinstance(value, str) or not re.search(r"(?<!\$)\$\{", value):
+                continue
+            for function in re.finditer(
+                r"\b(file|filebase64|templatefile|fileset|fileexists)\s*\(\s*", value
+            ):
+                tail = value[function.end() :]
+                literal = re.match(r'"([^"\n]*)"', tail)
+                if literal is None:
+                    return [
+                        ValidationCheck(
+                            check_id="terraform.validate",
+                            category="terraform",
+                            tool="terraform",
+                            status="skipped",
+                            file_path=doc.path,
+                            line_start=doc.line(function.group(1)),
+                            message="Dynamic file input cannot be verified offline",
+                            skip_reason="uninspectable_file_input",
+                        )
+                    ]
+                filename = (
+                    literal.group(1)
+                    .replace("${path.module}", str(root / Path(doc.path).parent))
+                    .replace("${path.root}", str(root / "terraform"))
+                )
+                if "${" in filename or filename.startswith("~"):
+                    return [terraform_skip("uninspectable_file_input")]
+                target = (root / Path(doc.path).parent / filename).resolve()
+                if not target.is_relative_to(root.resolve()) or any(
+                    part.startswith(".env") for part in target.parts
+                ):
+                    return [
+                        ValidationCheck(
+                            check_id="terraform.file_input",
+                            category="reference",
+                            tool="builtin",
+                            status="failed",
+                            file_path=doc.path,
+                            line_start=doc.line(function.group(1)),
+                            message="File input must remain inside the package",
+                        )
+                    ]
+    return []
+
+
 async def validate_terraform(
     root: Path,
     files: set[str],
-    runner: ProcessToolRunner,
+    runner: CommandToolRunner,
     mirror: Path = DEFAULT_MIRROR,
     documents: PackageDocuments | None = None,
 ) -> list[ValidationCheck]:
@@ -205,7 +257,13 @@ async def validate_terraform(
                 message="Terraform configuration is missing",
             )
         ]
-    reason, local = module_preflight(root, files, documents)
+    indexed = documents or PackageDocuments.parse(
+        {path: (root / path).read_text() for path in files}
+    )
+    guarded = file_input_guard(root, indexed)
+    if guarded:
+        return guarded
+    reason, local = module_preflight(root, files, indexed)
     if reason in {"unsafe_local_module", "local_module_missing"}:
         path = next(
             (

@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 7 — ValidatorAgent, durable reports and real pipeline wiring
+
+**Summary:** Add the database-independent validation engine with shared parsing, three-command concurrency bounds, stage deadlines and cancellation cleanup; persist reports through a row-locked repository method before outcome events; replace the placeholder in startup and the security evaluator.
+
+**Requirements addressed:** FR-V-01, FR-V-03, FR-V-04, FR-V-05, FR-S-09, NFR-01.
+
+**Files:** .env.example, README.md, backend/app/agents/factory.py, backend/app/agents/validator.py, backend/app/core/config.py, backend/app/db/repositories/packages.py, backend/app/domain/validation.py, backend/app/main.py, backend/app/pipeline/stages.py, backend/app/scanners/runner.py, backend/app/validation/engine.py, backend/app/validation/linters.py, backend/app/validation/terraform.py, backend/scripts/eval_security.py, backend/tests/integration/test_pipeline_api.py, backend/tests/integration/test_run_pipeline_watcher.py, backend/tests/integration/test_validation_placeholder.py, backend/tests/integration/test_validator_agent.py, backend/tests/unit/test_agent_factory.py, backend/tests/unit/test_config.py, backend/tests/unit/test_validation_engine.py, backend/tests/unit/test_validation_report.py, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-35 records deadlines, cleanup, safe file inputs and persistence ordering; D-26 is superseded and D-20 clarified as historical security unavailability. JSONB arrays canonicalize to immutable report tuples. Existing Option C and remediation service interfaces remain. The evaluator reloads persisted remediated files; unsafe or uninspectable Terraform file functions never launch validation.
+
+**Tests:** make lint passed (Ruff/format, mypy 89 app files); explicit security-evaluator Ruff passed. Plain make test with dotenv disabled and real PostgreSQL: 724 passed, 0 failed, 0 skipped in 69.84 s. Focused integration/factory/report verification: 46 passed. An earlier full run had 720 passed and one obsolete watcher expectation, corrected before the passing run. Stub pipeline reached success with real validation logic; a prior full run also demonstrated success using installed Terraform.
+
+**Known gaps / follow-ups:** Further acceptance/normalizer/descendant tests follow in section 8. Twelve-package evaluation and final documentation remain pending.
+
+---
+
 ## 2026-10-09 — Phase 6 section 6 — Optional local linter adapters and recordings
 
 **Summary:** Add pluggable target discovery, offline commands, safe parsers and real recordings for Helm, hadolint, ansible-lint and promtool, with validated locations and optional-skip semantics. Add the 60-second tool timeout setting and isolate Ansible configuration.
