@@ -64,6 +64,7 @@ def call_record(
         "latency_seconds": round(latency, 6),
         "input_tokens": stats.input_tokens if stats else None,
         "output_tokens": stats.output_tokens if stats else None,
+        "cached_input_tokens": stats.cached_input_tokens if stats else None,
         "stop_reason": safe_reason,
         "json_parsed": parsed,
         "truncated": safe_reason == "max_tokens" or error == "truncated",
@@ -155,6 +156,13 @@ def markdown_summary(metadata: dict[str, Any]) -> str:
             f"parsed {summary['parsed']}/{summary['calls']}; "
             f"max wall {summary['max_seconds']:.3f} s."
         )
+    cached = [
+        call.get("cached_input_tokens")
+        for run in metadata.get("runs", [])
+        for call in run["calls"]
+    ]
+    total = sum(cached) if cached and all(type(v) is int for v in cached) else None
+    rows.append(f"- Cached input tokens: {total}")
     return "\n".join(rows) + "\n"
 
 

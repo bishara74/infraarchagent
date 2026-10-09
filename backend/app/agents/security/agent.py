@@ -181,6 +181,7 @@ class SecurityAgent:
                     "new_files": sorted(proposal.new_files) if accepted else [],
                     "input_tokens": proposal.input_tokens,
                     "output_tokens": proposal.output_tokens,
+                    "cached_input_tokens": proposal.cached_input_tokens,
                 }
             )
         return current, results, package_diff(snapshot, current)

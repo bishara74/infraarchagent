@@ -10,6 +10,7 @@ from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_obje
 from app.llm.errors import (
     LLMPermanentError,
     LLMTransientError,
+    cached_tokens,
     rate_limit_wait,
     status_error,
 )
@@ -74,6 +75,9 @@ class AnthropicAdapter(LLMAdapter):
             input_tokens=message.usage.input_tokens,
             output_tokens=message.usage.output_tokens,
             stop_reason=message.stop_reason,
+            cached_input_tokens=cached_tokens(
+                getattr(message.usage, "cache_read_input_tokens", None)
+            ),
         )
 
     def parse_response(self, response: LLMResponse) -> dict[str, Any]:

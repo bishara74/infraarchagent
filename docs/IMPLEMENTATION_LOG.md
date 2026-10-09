@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 0 — Hybrid model decision and cache measurement
+
+**Summary:** Record D-33/D-34 and add opt-in Anthropic system cache markers plus optional cached-input token metrics through adapters, attempt logs, agents and evaluation reports.
+
+**Requirements addressed:** NFR-01, NFR-03, PR-05.
+
+**Files:** .env.example, README.md, backend/app/agents/architect.py, backend/app/agents/generators/base.py, backend/app/agents/security/agent.py, backend/app/agents/security/fix.py, backend/app/core/config.py, backend/app/llm/anthropic.py, backend/app/llm/base.py, backend/app/llm/errors.py, backend/app/llm/factory.py, backend/app/llm/openai.py, backend/app/pipeline/orchestrator.py, backend/scripts/eval_architect.py, backend/scripts/eval_generators.py, backend/scripts/eval_security.py, backend/scripts/spike_llm_timing.py, backend/tests/unit/test_config.py, backend/tests/unit/test_llm_base.py, backend/tests/unit/test_llm_factory.py, backend/tests/unit/test_llm_providers.py, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** Caching defaults off. Preserve explicit zero and absent metrics as None. Native Anthropic requests remain unchanged. The historical 10/20 rejected-fix baseline is attributed to the author rather than reconstructed.
+
+**Tests:** make lint passed (Ruff and mypy, 78 app source files); explicit Ruff checks and formatting passed for four changed scripts. Plain make test with dotenv disabled and normal PostgreSQL roles: 521 passed, 0 failed, 0 skipped in 79.18 s. Earlier compatibility failures were fixed before the passing run.
+
+**Known gaps / follow-ups:** No paid cache experiment or LLM call. Validator implementation follows in sections 1–10.
+
+---
+
 ## 2026-10-01 — Phase 5b section 5 — Tool provenance and thesis documentation
 
 **Summary:** Documented current scanning, offline/coverage limits, syntax gate,

@@ -88,6 +88,7 @@ async def test_attempt_log_is_parseable_for_every_outcome(
         "latency",
         "input_tokens",
         "output_tokens",
+        "cached_input_tokens",
         "prompt_chars",
         "system_chars",
         "retry_after",
@@ -428,3 +429,17 @@ def test_rate_limit_reset_fallback_and_priority() -> None:
         )[0]
         is None
     )
+
+
+@pytest.mark.req("NFR-01")
+async def test_cached_input_tokens_in_attempt_log(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    import logging
+
+    from app.llm.base import LLMResponse
+
+    adapter = StubAdapter(script=[LLMResponse('{"ok":true}', cached_input_tokens=7)])
+    with caplog.at_level(logging.INFO):
+        await adapter.complete_json("hello")
+    assert "cached_input_tokens=7" in caplog.text

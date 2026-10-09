@@ -376,6 +376,12 @@ async def run_evaluation(
             ]
             input_tokens = sum(fix.get("input_tokens") or 0 for fix in fixes)
             output_tokens = sum(fix.get("output_tokens") or 0 for fix in fixes)
+            cached_values = [fix.get("cached_input_tokens") for fix in fixes]
+            cached_input_tokens = (
+                sum(cached_values)
+                if all(type(v) is int for v in cached_values)
+                else None
+            )
             remaining = report["final"]["remaining_blocking"]
             fixing_model = (
                 report.get("fixing_model")
@@ -414,6 +420,7 @@ async def run_evaluation(
                     "remaining_blocking": remaining,
                     "input_tokens": input_tokens,
                     "output_tokens": output_tokens,
+                    "cached_input_tokens": cached_input_tokens,
                     "estimated_cost": (
                         (input_tokens * input_rate + output_tokens * output_rate)
                         / 1_000_000
@@ -442,6 +449,7 @@ async def run_evaluation(
                     "remaining_blocking": [],
                     "input_tokens": 0,
                     "output_tokens": 0,
+                    "cached_input_tokens": None,
                     "estimated_cost": None,
                 }
             )
@@ -598,7 +606,8 @@ async def run_evaluation(
                 f"{case['fixes_accepted']} / {len(case['fixes_rejected'])}",
                 _count_text(case["fixes_rejected_by_reason"]),
                 case["elapsed_seconds"],
-                f"{case['input_tokens']} / {case['output_tokens']}",
+                f"{case['input_tokens']} / {case['output_tokens']} "
+                f"(cached {case.get('cached_input_tokens')})",
                 f"{case['estimated_cost']:.6f}"
                 if case["estimated_cost"] is not None
                 else "—",

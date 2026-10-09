@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     llm_base_url: str | None = None
     llm_reasoning_effort: ReasoningEffort | None = None
     llm_response_format: ResponseFormat | None = None
+    llm_prompt_cache: Literal["off", "system"] = "off"
     security_fix_provider: LLMProvider | None = None
     security_fix_model: str | None = None
     security_fix_reasoning_effort: ReasoningEffort | None = None

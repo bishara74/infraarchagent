@@ -124,3 +124,11 @@ def test_optional_security_fix_selection_validates_independently() -> None:
     assert blank.security_fix_reasoning_effort is None
     with pytest.raises(ValidationError):
         _settings(security_fix_reasoning_effort="max")
+
+
+@pytest.mark.req("NFR-03")
+def test_prompt_cache_configuration() -> None:
+    assert _settings().llm_prompt_cache == "off"
+    assert _settings(llm_prompt_cache="system").llm_prompt_cache == "system"
+    with pytest.raises(ValidationError):
+        _settings(llm_prompt_cache="unknown")

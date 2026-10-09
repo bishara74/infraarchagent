@@ -94,6 +94,7 @@ class GeneratorRunInfo:
     notes_length: int
     file_count: int
     total_characters: int
+    cached_input_tokens: int | None = None
 
 
 class GeneratorAgent(ABC):
@@ -141,6 +142,7 @@ class GeneratorAgent(ABC):
         llm_attempts: int | None = 0
         input_tokens: int | None = 0
         output_tokens: int | None = 0
+        cached_input_tokens: int | None = 0
         error_counts: list[int] = []
         notes: str | None = None
         file_count = total_characters = 0
@@ -162,19 +164,21 @@ class GeneratorAgent(ABC):
                 except LLMDeadlineExceeded as error:
                     if llm_attempts is not None:
                         llm_attempts += error.attempts
-                    input_tokens = output_tokens = None
+                    input_tokens = output_tokens = cached_input_tokens = None
                     if remaining <= self.llm_adapter.policy.deadline:
                         raise GeneratorDeadlineExceeded(self.variant) from None
                     raise GeneratorLLMFailure(self.variant, "deadline") from None
                 except LLMRetryExhausted as error:
                     if llm_attempts is not None:
                         llm_attempts += error.attempts
-                    input_tokens = output_tokens = None
+                    input_tokens = output_tokens = cached_input_tokens = None
                     raise GeneratorLLMFailure(
                         self.variant, error.last_category
                     ) from None
                 except LLMPermanentError as error:
-                    llm_attempts = input_tokens = output_tokens = None
+                    llm_attempts = input_tokens = output_tokens = (
+                        cached_input_tokens
+                    ) = None
                     raise GeneratorLLMFailure(self.variant, error.category) from None
                 if llm_attempts is not None:
                     llm_attempts += result.attempts
@@ -187,6 +191,12 @@ class GeneratorAgent(ABC):
                 output_tokens = (
                     output_tokens + response.output_tokens
                     if output_tokens is not None and response.output_tokens is not None
+                    else None
+                )
+                cached_input_tokens = (
+                    cached_input_tokens + response.cached_input_tokens
+                    if cached_input_tokens is not None
+                    and response.cached_input_tokens is not None
                     else None
                 )
                 try:
@@ -229,6 +239,7 @@ class GeneratorAgent(ABC):
                 elapsed_seconds=budget.elapsed(),
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
+                cached_input_tokens=cached_input_tokens,
                 prompt_version=GENERATOR_PROMPT_VERSION,
                 structure_error_counts=tuple(error_counts),
                 notes=notes,

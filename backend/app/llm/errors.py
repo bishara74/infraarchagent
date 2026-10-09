@@ -23,6 +23,7 @@ class ResponseStats:
     output_tokens: int | None = None
     stop_reason: str | None = None
     response_characters: int = 0
+    cached_input_tokens: int | None = None
 
 
 class LLMError(Exception):
@@ -138,3 +139,8 @@ def status_error(
             )
         return LLMTransientError("server")
     return LLMPermanentError("request")
+
+
+def cached_tokens(value: object) -> int | None:
+    """Absent or malformed provider metrics are unknown, not zero."""
+    return value if type(value) is int and value >= 0 else None

@@ -52,6 +52,7 @@ def build_adapter(
             chosen_policy,
             key,
             base_url=settings.llm_base_url,
+            prompt_cache=settings.llm_prompt_cache,
             reasoning_effort=chosen_effort,
         )
     return OpenAIAdapter(
@@ -59,6 +60,7 @@ def build_adapter(
         chosen_policy,
         key,
         base_url=settings.llm_base_url,
+        prompt_cache=settings.llm_prompt_cache,
         reasoning_effort=chosen_effort,
         response_format=settings.llm_response_format,
     )

@@ -520,6 +520,28 @@ Evaluation now logs every attempt and preserves recovered timeouts.
 
 ---
 
+### D-33 — Hybrid generation and remediation models (Accepted)
+
+The author selects `anthropic/claude-sonnet-5` with reasoning off for generation,
+and `openai/gpt-oss-120b:nitro` with reasoning low through `SECURITY_FIX_MODEL`
+for fixes. The committed Phase 5b evaluation `20261001T200251953890Z` reduced
+537 blocking findings to 34 (93.7%), with 4/12 packages clean, about 25 seconds
+and one cent per package. Sonnet's two-package evaluation `20261001T215033464167Z`
+reduced 44 to 3, but was about 3–4 times slower and 25 times more expensive.
+After lenient metadata handling it had zero rejected fixes; the previous 10/20
+baseline is author-reported historical evidence. MEDIUM remains blocking.
+
+### D-34 — Optional prompt-cache measurement (Accepted)
+
+`LLM_PROMPT_CACHE=off|system` defaults to off: output tokens dominate measured
+costs. System mode marks one compatible Anthropic system text part with
+`cache_control: {"type": "ephemeral"}` according to
+[OpenRouter documentation](https://openrouter.ai/docs/guides/best-practices/prompt-caching).
+Native Anthropic requests are unchanged. Cache-read tokens are optional metrics
+in responses, attempt logs, reports and evaluations; missing remains unknown,
+explicit zero remains zero. This mechanism supports a later richer-prompt
+experiment; no paid measurement or cache-aware pricing is claimed.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

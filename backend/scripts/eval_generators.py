@@ -150,6 +150,7 @@ async def _run_variant(
         "elapsed_seconds": info.elapsed_seconds if info else None,
         "input_tokens": info.input_tokens if info else None,
         "output_tokens": info.output_tokens if info else None,
+        "cached_input_tokens": info.cached_input_tokens if info else None,
         "file_count": info.file_count if info else None,
         "total_characters": info.total_characters if info else None,
         "prompt_version": info.prompt_version if info else None,
@@ -268,6 +269,10 @@ def _totals(
         )
         input_tokens = sum(row["input_tokens"] or 0 for row in rows)
         output_tokens = sum(row["output_tokens"] or 0 for row in rows)
+        cached_values = [row["cached_input_tokens"] for row in rows]
+        cached_total = (
+            sum(cached_values) if all(type(v) is int for v in cached_values) else None
+        )
         cost = (
             (input_tokens * price_in[model] + output_tokens * price_out[model])
             / 1_000_000
@@ -284,6 +289,7 @@ def _totals(
             "median_seconds": statistics.median(times) if times else None,
             "input_tokens": input_tokens if known_tokens else None,
             "output_tokens": output_tokens if known_tokens else None,
+            "cached_input_tokens": cached_total,
             "total_tokens": input_tokens + output_tokens if known_tokens else None,
             "estimated_cost": cost,
         }
@@ -318,7 +324,8 @@ def _summary(
                 outcome = "PASS" if row["success"] else f"FAIL {row['error_category']}"
                 timing = (
                     f"{row['elapsed_seconds']:.3f}s / "
-                    f"{row['input_tokens']}/{row['output_tokens']}"
+                    f"{row['input_tokens']}/{row['output_tokens']} "
+                    f"(cached {row['cached_input_tokens']})"
                 )
                 cells.extend((outcome, timing))
             lines.append(f"| {variant.value} | " + " | ".join(cells) + " |")

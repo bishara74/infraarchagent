@@ -94,6 +94,7 @@ class PipelineOrchestrator:
                 "elapsed_seconds": info.elapsed_seconds,
                 "input_tokens": info.input_tokens,
                 "output_tokens": info.output_tokens,
+                "cached_input_tokens": info.cached_input_tokens,
                 "prompt_version": info.prompt_version,
             }
             if info

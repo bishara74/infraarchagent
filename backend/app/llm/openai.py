@@ -1,6 +1,6 @@
 """OpenAI Chat Completions implementation of the LLM provider contract."""
 
-from typing import Any
+from typing import Any, Literal
 
 import httpx2
 import openai
@@ -10,6 +10,7 @@ from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_obje
 from app.llm.errors import (
     LLMPermanentError,
     LLMTransientError,
+    cached_tokens,
     rate_limit_wait,
     status_error,
 )
@@ -28,6 +29,7 @@ class OpenAIAdapter(LLMAdapter):
         base_url: str | None = None,
         reasoning_effort: ReasoningEffort | None = None,
         response_format: ResponseFormat | None = None,
+        prompt_cache: Literal["off", "system"] = "off",
     ) -> None:
         super().__init__(
             model,
@@ -35,6 +37,7 @@ class OpenAIAdapter(LLMAdapter):
             reasoning_effort=reasoning_effort,
             response_format=response_format,
         )
+        self.prompt_cache = prompt_cache
         options: dict[str, Any] = {
             "api_key": api_key,
             "max_retries": 0,
@@ -52,9 +55,20 @@ class OpenAIAdapter(LLMAdapter):
         max_output_tokens: int,
         timeout: float,
     ) -> LLMResponse:
-        messages: list[dict[str, str]] = []
+        messages: list[dict[str, Any]] = []
         if system is not None:
-            messages.append({"role": "system", "content": system})
+            content: Any = system
+            if self.prompt_cache == "system" and (
+                self.model.startswith("anthropic/") or self.model.startswith("claude-")
+            ):
+                content = [
+                    {
+                        "type": "text",
+                        "text": system,
+                        "cache_control": {"type": "ephemeral"},
+                    }
+                ]
+            messages.append({"role": "system", "content": content})
         messages.append({"role": "user", "content": prompt})
         params: dict[str, Any] = {
             "model": self.model,
@@ -100,9 +114,14 @@ class OpenAIAdapter(LLMAdapter):
             if isinstance(reported_reasoning, int) and reported_reasoning >= 0
             else None
         )
+        prompt_details = getattr(completion.usage, "prompt_tokens_details", None)
+        cached = cached_tokens(getattr(prompt_details, "cached_tokens", None))
         if not completion.choices:
             return LLMResponse(
-                "", served_by=served_by, reasoning_tokens=reasoning_tokens
+                "",
+                served_by=served_by,
+                reasoning_tokens=reasoning_tokens,
+                cached_input_tokens=cached,
             )
         choice = completion.choices[0]
         return LLMResponse(
@@ -118,6 +137,7 @@ class OpenAIAdapter(LLMAdapter):
             ),
             served_by=served_by,
             reasoning_tokens=reasoning_tokens,
+            cached_input_tokens=cached,
         )
 
     def parse_response(self, response: LLMResponse) -> dict[str, Any]:

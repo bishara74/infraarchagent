@@ -135,6 +135,7 @@ async def test_factory_base_url_reaches_openai_request(
             *,
             base_url: str | None,
             reasoning_effort: ReasoningEffort | None,
+            prompt_cache: str,
         ) -> OpenAIAdapter:
             return real_adapter(
                 model,
@@ -143,6 +144,7 @@ async def test_factory_base_url_reaches_openai_request(
                 http_client=client,
                 base_url=base_url,
                 reasoning_effort=reasoning_effort,
+                prompt_cache=prompt_cache,  # type: ignore[arg-type]
             )
 
         monkeypatch.setattr(factory_module, "OpenAIAdapter", adapter_with_mock)

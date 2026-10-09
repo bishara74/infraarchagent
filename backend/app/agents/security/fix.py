@@ -97,6 +97,7 @@ class FixProposal:
     summaries: tuple[str, ...]
     input_tokens: int | None = None
     output_tokens: int | None = None
+    cached_input_tokens: int | None = None
 
 
 def validate_fix(
@@ -202,4 +203,5 @@ class FixAgent:
             proposal.summaries,
             response.response.input_tokens,
             response.response.output_tokens,
+            response.response.cached_input_tokens,
         )

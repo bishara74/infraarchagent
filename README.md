@@ -251,3 +251,7 @@ role to reset test tables while exercising application code as `infraarch_app`.
 For a quick security evaluation, pass `--packages-limit N` in `EVAL_ARGS`.
 Per-package and scanner-attempt progress goes to stderr; timeout records are
 retained even when a retry succeeds.
+
+Prompt-cache measurement: `LLM_PROMPT_CACHE=off` (default) or `system` marks
+the system content for compatible Anthropic models. Cached input token metrics
+are recorded when reported; cache-aware cost pricing is not implemented.

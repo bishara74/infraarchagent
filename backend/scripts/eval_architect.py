@@ -267,6 +267,7 @@ def _case_json(
                 "elapsed_seconds": info.elapsed_seconds,
                 "input_tokens": info.input_tokens,
                 "output_tokens": info.output_tokens,
+                "cached_input_tokens": info.cached_input_tokens,
                 "prompt_version": info.prompt_version,
             }
             if info is not None
@@ -352,6 +353,7 @@ async def run_evaluation(
                     f"- LLM attempts: {info.total_llm_attempts}",
                     f"- Elapsed seconds: {info.elapsed_seconds:.3f}",
                     f"- Input/output tokens: {info.input_tokens}/{info.output_tokens}",
+                    f"- Cached input tokens: {info.cached_input_tokens}",
                     f"- Prompt version: {info.prompt_version}",
                 ]
             )

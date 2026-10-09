@@ -520,3 +520,55 @@ async def test_reset_hint_obeys_deadline(provider: str) -> None:
         with pytest.raises(LLMDeadlineExceeded):
             await adapter.complete_json("x")
     assert clock.sleeps == []
+
+
+@pytest.mark.req("NFR-01", "NFR-03")
+@pytest.mark.parametrize(
+    "cache,model,marked",
+    [
+        ("off", "anthropic/claude-sonnet-5", False),
+        ("system", "anthropic/claude-sonnet-5", True),
+        ("system", "other", False),
+    ],
+)
+@pytest.mark.parametrize("cached", [None, 0, 12])
+async def test_prompt_cache_marker_and_usage(
+    cache: str, model: str, marked: bool, cached: int | None
+) -> None:
+    requests: list[httpx2.Request] = []
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        requests.append(request)
+        body = success_body("openai")
+        if cached is not None:
+            body["usage"]["prompt_tokens_details"] = {"cached_tokens": cached}
+        return httpx2.Response(200, json=body)
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = OpenAIAdapter(
+            model, POLICY, "placeholder", http_client=client, prompt_cache=cache
+        )  # type: ignore[arg-type]
+        result = await adapter.complete_json("hello", system="shared")
+    content = json.loads(requests[0].content)["messages"][0]["content"]
+    assert content == (
+        [{"type": "text", "text": "shared", "cache_control": {"type": "ephemeral"}}]
+        if marked
+        else "shared"
+    )
+    assert result.response.cached_input_tokens == cached
+    assert result.response.stats().cached_input_tokens == cached
+
+
+@pytest.mark.req("NFR-03")
+@pytest.mark.parametrize("cached", [None, 0, 12])
+async def test_native_anthropic_cached_read_tokens(cached: int | None) -> None:
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        body = success_body("anthropic")
+        if cached is not None:
+            body["usage"]["cache_read_input_tokens"] = cached
+        return httpx2.Response(200, json=body)
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        adapter = AnthropicAdapter("test", POLICY, "placeholder", http_client=client)
+        result = await adapter.complete_json("hello")
+    assert result.response.cached_input_tokens == cached

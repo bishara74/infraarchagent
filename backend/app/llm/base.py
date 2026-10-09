@@ -53,6 +53,7 @@ class LLMResponse:
     stop_reason: str | None = None
     served_by: str | None = None
     reasoning_tokens: int | None = None
+    cached_input_tokens: int | None = None
 
     def stats(self) -> ResponseStats:
         return ResponseStats(
@@ -60,6 +61,7 @@ class LLMResponse:
             self.output_tokens,
             self.stop_reason,
             len(self.text),
+            self.cached_input_tokens,
         )
 
 
@@ -247,6 +249,8 @@ class LLMAdapter(ABC):
                     f"latency={self._clock() - attempt_started:.3f}",
                     f"input_tokens={stats.input_tokens if stats else None}",
                     f"output_tokens={stats.output_tokens if stats else None}",
+                    "cached_input_tokens="
+                    + str(stats.cached_input_tokens if stats else None),
                     f"prompt_chars={len(prompt)}",
                     f"system_chars={len(system) if system else 0}",
                     f"retry_after={retry_after if retry_after is not None else 'none'}",

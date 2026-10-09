@@ -61,6 +61,7 @@ class ArchitectRunInfo:
     prompt_version: str
     validation_error_counts: tuple[int, ...]
     validation_errors_by_attempt: tuple[tuple[str, ...], ...]
+    cached_input_tokens: int | None = None
 
 
 class ArchitectAgent:
@@ -100,6 +101,7 @@ class ArchitectAgent:
         llm_attempts: int | None = 0
         input_tokens: int | None = 0
         output_tokens: int | None = 0
+        cached_input_tokens: int | None = 0
         error_counts: list[int] = []
         error_history: list[tuple[str, ...]] = []
         try:
@@ -120,18 +122,18 @@ class ArchitectAgent:
                 except LLMDeadlineExceeded as error:
                     if llm_attempts is not None:
                         llm_attempts += error.attempts
-                    input_tokens = output_tokens = None
+                    input_tokens = output_tokens = cached_input_tokens = None
                     if remaining <= self.llm_adapter.policy.deadline:
                         raise ArchitectDeadlineExceeded() from None
                     raise ArchitectLLMFailure("deadline") from None
                 except LLMRetryExhausted as error:
                     if llm_attempts is not None:
                         llm_attempts += error.attempts
-                    input_tokens = output_tokens = None
+                    input_tokens = output_tokens = cached_input_tokens = None
                     raise ArchitectLLMFailure(error.last_category) from None
                 except LLMPermanentError as error:
                     llm_attempts = None  # This Phase 1 error has no attempt count.
-                    input_tokens = output_tokens = None
+                    input_tokens = output_tokens = cached_input_tokens = None
                     raise ArchitectLLMFailure(error.category) from None
                 if llm_attempts is not None:
                     llm_attempts += result.attempts
@@ -144,6 +146,12 @@ class ArchitectAgent:
                 output_tokens = (
                     output_tokens + response.output_tokens
                     if output_tokens is not None and response.output_tokens is not None
+                    else None
+                )
+                cached_input_tokens = (
+                    cached_input_tokens + response.cached_input_tokens
+                    if cached_input_tokens is not None
+                    and response.cached_input_tokens is not None
                     else None
                 )
                 errors = plan_validation_errors(result.data)
@@ -161,6 +169,7 @@ class ArchitectAgent:
                 elapsed_seconds=budget.elapsed(),
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
+                cached_input_tokens=cached_input_tokens,
                 prompt_version=ARCHITECT_PROMPT_VERSION,
                 validation_error_counts=tuple(error_counts),
                 validation_errors_by_attempt=tuple(error_history),
