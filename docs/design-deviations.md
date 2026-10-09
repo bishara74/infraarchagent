@@ -542,6 +542,20 @@ in responses, attempt logs, reports and evaluations; missing remains unknown,
 explicit zero remains zero. This mechanism supports a later richer-prompt
 experiment; no paid measurement or cache-aware pricing is claimed.
 
+### D-35 — Deterministic validator and offline tools (Accepted; implementation in progress)
+
+The versioned report centralizes outcome calculation: any ordinary failed check
+makes a package invalid; otherwise a required Terraform check that cannot run
+makes it an error; otherwise it is valid. A whole-stage deadline or internal
+abort produces error even when partial checks contain failures. Required
+Terraform outcomes and every failure are retained. Up to 200 other checks are
+sampled in deterministic order, with full pre-sampling counts and omitted
+counts. Every file-linked failure remains in `failed_checks_for_remediation`;
+fileless failures remain in the main report. The report records whether
+Terraform was required and any stage abort, so persisted outcomes can be
+validated against the same rule. Tool availability and analysis tiers follow
+in subsequent sections.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

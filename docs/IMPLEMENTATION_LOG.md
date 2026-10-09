@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 1 — Validation report contract and outcomes
+
+**Summary:** Add strict immutable validation checks and reports, centralized outcome/status mapping, deterministic ordering and lossless remediation targets with bounded nonfailure sampling.
+
+**Requirements addressed:** FR-V-03, FR-V-04, FR-V-05, NFR-01.
+
+**Files:** docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-35 records outcome precedence and sampling. Reports carry required-Terraform and abort metadata for consistent persisted outcomes. No schema migration or stage wiring yet.
+
+**Tests:** make lint passed: Ruff checks/format and mypy on 79 app files. Plain make test against real PostgreSQL with dotenv disabled: 550 passed, 0 failed, 0 skipped in 62.52 s; 29 new report cases included. Earlier focused report run: 22 passed before seven schema cases were added.
+
+**Known gaps / follow-ups:** Provider validation, analysers, persistence and pipeline wiring follow in sections 2–8.
+
+---
+
 ## 2026-10-09 — Phase 6 section 0 — Hybrid model decision and cache measurement
 
 **Summary:** Record D-33/D-34 and add opt-in Anthropic system cache markers plus optional cached-input token metrics through adapters, attempt logs, agents and evaluation reports.
