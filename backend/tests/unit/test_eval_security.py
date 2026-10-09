@@ -183,8 +183,9 @@ async def test_evaluation_reports_syntax_limited_scan(
 
 
 @pytest.mark.req("FR-S-04", "FR-G-05")
+@pytest.mark.parametrize("cached,total", [([0, 0], 0), ([3, 7], 10), ([None, 7], None)])
 async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, cached, total
 ) -> None:
     folder = tmp_path / "packages" / "generator-model" / "three_tier" / "security"
     (folder / "terraform").mkdir(parents=True)
@@ -227,6 +228,7 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
                                 "reason": None,
                                 "input_tokens": 1000,
                                 "output_tokens": 1000,
+                                "cached_input_tokens": cached[0],
                             }
                         ]
                     },
@@ -238,6 +240,7 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
                                 "reason": "schema:file.content.missing",
                                 "input_tokens": 0,
                                 "output_tokens": 1000,
+                                "cached_input_tokens": cached[1],
                             }
                         ]
                     },
@@ -280,6 +283,7 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
     assert case["fixes_accepted"] == 1
     assert case["fixes_rejected_by_reason"] == {"schema:file.content.missing": 1}
     assert case["estimated_cost"] == pytest.approx(0.008)
+    assert case["cached_input_tokens"] == total
     aggregate = result["fixing_aggregate"]["fixer-model"]
     assert aggregate["total_reduction_percent"] == 50
     assert aggregate["clean_rate"] == 0

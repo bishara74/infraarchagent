@@ -198,7 +198,8 @@ async def test_real_mirror_backed_validation(tmp_path, case):
 
 @pytest.mark.scanners
 @pytest.mark.req("FR-V-03", "NFR-01")
-def test_real_terraform_in_network_namespace(tmp_path):
+@pytest.mark.parametrize("case", ["valid", "invalid_argument"])
+def test_real_terraform_in_network_namespace(tmp_path, case):
     if not shutil.which("terraform") or not mirror_present():
         pytest.skip("Terraform or provider mirror unavailable")
     if (
@@ -206,7 +207,7 @@ def test_real_terraform_in_network_namespace(tmp_path):
         or subprocess.run(["unshare", "-Urn", "true"], capture_output=True).returncode
     ):
         pytest.skip("network namespaces unavailable")
-    write_fixture(tmp_path, "invalid_argument")
+    write_fixture(tmp_path, case)
     script = """import asyncio,sys
 from pathlib import Path
 from app.validation.terraform import validate_terraform
@@ -214,13 +215,14 @@ from app.scanners.runner import ProcessToolRunner
 async def main():
  files={'terraform/main.tf','terraform/providers.tf'}
  checks=await validate_terraform(Path(sys.argv[1]),files,ProcessToolRunner(30))
- assert checks[0].status=='failed' and checks[0].message=='Unsupported argument'
+ assert checks[0].status==('passed' if sys.argv[2]=='valid' else 'failed')
+ if sys.argv[2]!='valid': assert checks[0].message=='Unsupported argument'
 asyncio.run(main())
 """
     env = scanner_environment(tmp_path, "terraform")
     env["PYTHONPATH"] = str(Path(__file__).parents[2])
     completed = subprocess.run(
-        ["unshare", "-Urn", sys.executable, "-c", script, str(tmp_path)],
+        ["unshare", "-Urn", sys.executable, "-c", script, str(tmp_path), case],
         env=env,
         capture_output=True,
         text=True,

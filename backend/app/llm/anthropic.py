@@ -10,7 +10,7 @@ from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_obje
 from app.llm.errors import (
     LLMPermanentError,
     LLMTransientError,
-    cached_tokens,
+    cached_response_tokens,
     rate_limit_wait,
     status_error,
 )
@@ -50,7 +50,11 @@ class AnthropicAdapter(LLMAdapter):
         if system is not None:
             params["system"] = system
         try:
-            message = await self.client.messages.create(**params)
+            raw = await self.client.messages.with_raw_response.create(**params)
+            cached = cached_response_tokens(
+                await raw.json(), "usage", "cache_read_input_tokens"
+            )
+            message = await raw.parse()
         except anthropic.APITimeoutError:
             raise LLMTransientError("timeout") from None
         except anthropic.APIConnectionError:
@@ -75,9 +79,7 @@ class AnthropicAdapter(LLMAdapter):
             input_tokens=message.usage.input_tokens,
             output_tokens=message.usage.output_tokens,
             stop_reason=message.stop_reason,
-            cached_input_tokens=cached_tokens(
-                getattr(message.usage, "cache_read_input_tokens", None)
-            ),
+            cached_input_tokens=cached,
         )
 
     def parse_response(self, response: LLMResponse) -> dict[str, Any]:

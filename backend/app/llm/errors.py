@@ -144,3 +144,13 @@ def status_error(
 def cached_tokens(value: object) -> int | None:
     """Absent or malformed provider metrics are unknown, not zero."""
     return value if type(value) is int and value >= 0 else None
+
+
+def cached_response_tokens(body: object, *path: str) -> int | None:
+    """Inspect wire metrics before SDK integer coercion loses their types."""
+    value = body
+    for key in path:
+        if not isinstance(value, dict):
+            return None
+        value = value.get(key)
+    return cached_tokens(value)

@@ -173,6 +173,40 @@ async def test_internal_abort_preserves_completed_failures(tmp_path, monkeypatch
     assert "canary-key" not in report.model_dump_json()
 
 
+@pytest.mark.req("FR-V-04", "FR-V-05")
+async def test_deadline_retains_completed_tool_failures(tmp_path):
+    finished = asyncio.Event()
+
+    class Partial(Clean):
+        async def run_command(self, tool, args, root, **kwargs):
+            if tool == "hadolint":
+                finished.set()
+                return ToolResult(
+                    '[{"code":"DL3000","level":"error","line":1,"column":1,"file":"docker/Dockerfile","message":"canary-key"}]',
+                    "",
+                    1,
+                    0,
+                )
+            await finished.wait()
+            await asyncio.Event().wait()
+
+    report = await ValidationEngine(
+        Partial(),
+        mirror=mirror(tmp_path),
+        versions={},
+        deadline_seconds=0.2,
+    ).validate(
+        plan("dockerfile"),
+        {
+            "terraform/main.tf": "terraform {}",
+            "docker/Dockerfile": "FROM alpine",
+        },
+    )
+    assert report.abort_reason == "deadline" and report.summary.result == "error"
+    assert any(c.tool == "hadolint" for c in report.failed_checks_for_remediation)
+    assert "canary-key" not in report.model_dump_json()
+
+
 @pytest.mark.req("FR-V-03", "NFR-01")
 @pytest.mark.parametrize(
     ("expression,expected"),

@@ -285,3 +285,30 @@ def test_quoted_nginx_text_does_not_create_targets_or_external_declarations():
         c.check_id == ("nginx.proxy_pass") and c.status == ("failed")
         for c in run({("nginx/site.conf"): source}, ("nginx"))
     )
+
+
+@pytest.mark.req("FR-V-01")
+def test_quoted_text_cannot_define_nginx_upstream():
+    source = (
+        'server { set $value "upstream fake { server 1'
+        '27.0.0.1; }"; proxy_pass http://fake; }'
+    )
+    assert any(
+        c.check_id == ("nginx.proxy_pass") and c.status == ("failed")
+        for c in run({("nginx/site.conf"): source}, ("nginx"))
+    )
+
+
+@pytest.mark.req("FR-V-04")
+def test_ansible_inventory_alias_and_task_metadata():
+    files = {
+        ("ansible/hosts.yaml"): ("all: {children: {web: {}}}"),
+        ("ansible/roles/web/tasks/main.yaml"): (
+            "- name: Missing module\n  args: {foo: bar}\n  listen: event"
+        ),
+    }
+    checks = run(files, "ansible")
+    assert not any(c.check_id == "ansible.playbook" for c in checks)
+    assert any(
+        c.check_id == "ansible.task_module" and c.status == "failed" for c in checks
+    )

@@ -10,7 +10,7 @@ from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_obje
 from app.llm.errors import (
     LLMPermanentError,
     LLMTransientError,
-    cached_tokens,
+    cached_response_tokens,
     rate_limit_wait,
     status_error,
 )
@@ -83,7 +83,14 @@ class OpenAIAdapter(LLMAdapter):
         if self.response_format == "json_object":
             params["response_format"] = {"type": "json_object"}
         try:
-            completion = await self.client.chat.completions.create(**params)
+            raw = await self.client.chat.completions.with_raw_response.create(**params)
+            cached = cached_response_tokens(
+                raw.http_response.json(),
+                "usage",
+                "prompt_tokens_details",
+                "cached_tokens",
+            )
+            completion = raw.parse()
         except openai.APITimeoutError:
             raise LLMTransientError("timeout") from None
         except openai.APIConnectionError:
@@ -114,8 +121,6 @@ class OpenAIAdapter(LLMAdapter):
             if isinstance(reported_reasoning, int) and reported_reasoning >= 0
             else None
         )
-        prompt_details = getattr(completion.usage, "prompt_tokens_details", None)
-        cached = cached_tokens(getattr(prompt_details, "cached_tokens", None))
         if not completion.choices:
             return LLMResponse(
                 "",

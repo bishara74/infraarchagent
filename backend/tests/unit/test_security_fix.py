@@ -8,7 +8,7 @@ from app.agents.prompts.security_fix import user_prompt
 from app.agents.security.fix import FixAgent, validate_fix
 from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
-from app.llm.base import RetryPolicy
+from app.llm.base import LLMResponse, RetryPolicy
 from app.llm.stub import StubAdapter
 from app.pipeline.demo_stub import DEMO_PLAN
 
@@ -22,6 +22,25 @@ def output(content: str, path: str = "terraform/main.tf") -> dict[str, object]:
         "new_files": {},
         "fixes": [{"rule_id": "CKV_AWS_16", "resource": "db", "summary": "Encrypt DB"}],
     }
+
+
+@pytest.mark.req("FR-S-02", "NFR-01")
+@pytest.mark.parametrize("cached", [None, 0, 9])
+async def test_fix_proposal_preserves_cache_metric(cached):
+    adapter = StubAdapter(
+        script=[
+            LLMResponse(json.dumps(output("terraform {}")), cached_input_tokens=cached)
+        ]
+    )
+    proposal = await FixAgent(adapter).propose(
+        path="terraform/main.tf",
+        files=FILES,
+        findings=[],
+        plan=PLAN,
+        directive="Prefer secure resources",
+        remaining=30,
+    )
+    assert proposal.accepted and proposal.cached_input_tokens == cached
 
 
 @pytest.mark.req("FR-S-02")

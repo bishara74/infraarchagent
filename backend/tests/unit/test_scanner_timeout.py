@@ -43,7 +43,20 @@ async def main():
     runner=ProcessToolRunner(1)
     mode=os.environ["TEST_MODE"]
     started=time.monotonic()
-    if mode == "cancel":
+    if mode == "validator":
+        from app.validation.engine import ValidationEngine
+        from app.validation.documents import PackageDocuments
+        from tests.unit.test_generators import plan
+        files={"terraform/main.tf":"terraform {}"}
+        PackageDocuments.parse(files)
+        mirror=parent/"mirror"
+        mirror.mkdir()
+        (mirror/"fake_linux_amd64.zip").touch()
+        report=await ValidationEngine(
+            ProcessToolRunner(30),mirror=mirror,versions={},deadline_seconds=1
+        ).validate(plan(),files)
+        assert report.abort_reason=="deadline"
+    elif mode == "cancel":
         task=asyncio.create_task(runner.run("checkov",parent))
         async with asyncio.timeout(3):
             while not (parent/"pgids").exists(): await asyncio.sleep(.01)
@@ -75,16 +88,16 @@ async def main():
             except ProcessLookupError: break
             assert time.monotonic()<deadline,"process group survived"
             await asyncio.sleep(.01)
-    if mode == "scan":
-        assert not list(parent.glob("infraarch-scan-*")),"temporary directory survived"
+    if mode in {"scan","validator"}:
+        assert not list(parent.glob("infraarch-*-*")),"temporary directory survived"
 asyncio.run(main())
 """
 
 
-@pytest.mark.req("FR-S-01")
-@pytest.mark.parametrize("mode", ["timeout", "cancel", "scan"])
+@pytest.mark.req("FR-S-01", "FR-V-05", "NFR-01")
+@pytest.mark.parametrize("mode", ["timeout", "cancel", "scan", "validator"])
 def test_timeout_kills_forked_stdout_owner(tmp_path: Path, mode: str) -> None:
-    fake = tmp_path / "checkov"
+    fake = tmp_path / ("terraform" if mode == "validator" else "checkov")
     # Observation survives Scanner's directory cleanup, without inheriting an
     # arbitrary environment variable into the fake executable.
     script = SCANNER.replace(

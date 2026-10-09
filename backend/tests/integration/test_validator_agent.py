@@ -1,9 +1,13 @@
 """FR-V-04/05 and FR-S-09: durable reports, events and review retries."""
 
+import asyncio
 import json
+import shutil
+from uuid import UUID
 
+import httpx
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.agents.security.agent import SecurityAgent
 from app.agents.security.fix import FixProposal
@@ -13,18 +17,148 @@ from app.db.models import AgentEvent
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
-from app.domain.enums import AgentName, LLMProvider, PackageStatus, Variant
+from app.domain.enums import AgentName, LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.models import IaCPackage
 from app.domain.states import readiness_after_validation
-from app.domain.validation import ValidationReport
+from app.domain.validation import ValidationCheck, ValidationReport
 from app.events.log import EventLog
 from app.events.publisher import NullPublisher
+from app.main import create_app
 from app.pipeline.stages import StageContext
 from app.pipeline.state import PipelineStateWriter
 from app.validation.engine import ValidationEngine
+from app.validation.tools import mirror_present
+from tests.integration.test_pipeline_api import _empty_scanner
 from tests.integration.test_security_agent import ScriptedScanner
 from tests.unit.test_generators import plan
 from tests.unit.test_validation_engine import Clean, mirror
+
+
+@pytest.mark.scanners
+@pytest.mark.req("FR-V-03", "FR-V-05", "FR-P-03")
+@pytest.mark.parametrize("mixed", [False, True])
+async def test_full_stub_pipeline_with_real_terraform(db_engines, monkeypatch, mixed):
+    if not shutil.which("terraform") or not mirror_present():
+        pytest.skip("Terraform or provider mirror unavailable")
+    engine, _ = db_engines
+    app = create_app(
+        get_settings().model_copy(update={"llm_provider": LLMProvider.STUB}), engine
+    )
+    app.state.runner.factory.scanner = _empty_scanner()
+    if mixed:
+
+        class Generator:
+            last_run = None
+
+            def __init__(self, variant):
+                self.variant = variant
+
+            async def generate(self, plan):
+                return IaCPackage(
+                    variant=self.variant,
+                    files={
+                        "terraform/main.tf": 'locals "bad" { x = 1 }'
+                        if self.variant == Variant.PERFORMANCE
+                        else "terraform {}",
+                    },
+                )
+
+        monkeypatch.setattr(
+            app.state.runner.factory,
+            "create_generators",
+            lambda config: [Generator(v) for v in Variant],
+        )
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.post(
+                "/api/pipeline/run", json={"text": "Deploy an AWS web service"}
+            )
+            assert response.status_code == 202
+            await asyncio.gather(*app.state.runner.tasks.values())
+            run_id = UUID(response.json()["run_id"])
+    async with make_session_factory(engine)() as session:
+        run = await RunRepository(session).get(run_id)
+        rows = await PackageRepository(session).list_for_run(run_id)
+    assert run.status == (RunStatus.PARTIAL_SUCCESS if mixed else RunStatus.SUCCESS)
+    assert sum(row.status == PackageStatus.PRODUCTION_READY for row in rows) == (
+        2 if mixed else 3
+    )
+    assert all(row.validation_report for row in rows)
+    if mixed:
+        assert (
+            next(
+                row for row in rows if row.variant == Variant.PERFORMANCE
+            ).validation_report["summary"]["result"]
+            == "invalid"
+        )
+
+
+@pytest.mark.req("FR-V-04", "FR-P-04")
+async def test_validation_report_save_holds_row_lock(db_engines):
+    engine, _ = db_engines
+    sessions = make_session_factory(engine)
+    ctx, _ = await setup(engine, {"terraform/main.tf": "terraform {}"})
+    await ctx.writer.package_transition(
+        ctx.run_id, Variant.SECURITY, PackageStatus.VALIDATING, message="validate"
+    )
+    valid = ValidationReport.build([], terraform_required=False)
+    invalid = ValidationReport.build(
+        [
+            ValidationCheck(
+                check_id="test.failure",
+                category="structure",
+                tool="builtin",
+                status="failed",
+                message="Safe failure",
+            )
+        ],
+        terraform_required=False,
+    )
+    started = asyncio.Event()
+    pid = None
+
+    async def competing_save():
+        nonlocal pid
+        async with sessions() as session:
+            async with session.begin():
+                pid = await session.scalar(text("select pg_backend_pid()"))
+                started.set()
+                await PackageRepository(session).save_validation_results(
+                    ctx.run_id, Variant.SECURITY, invalid
+                )
+
+    async with sessions() as first:
+        async with first.begin():
+            await PackageRepository(first).save_validation_results(
+                ctx.run_id, Variant.SECURITY, valid
+            )
+            task = asyncio.create_task(competing_save())
+            try:
+                await started.wait()
+                async with asyncio.timeout(3):
+                    while True:
+                        async with sessions() as observer:
+                            wait = await observer.scalar(
+                                text(
+                                    "select wait_event_type from pg_stat_activity "
+                                    "where pid=:pid"
+                                ),
+                                {"pid": pid},
+                            )
+                        if wait == "Lock":
+                            break
+                        await asyncio.sleep(0)
+                assert not task.done()
+            except BaseException:
+                task.cancel()
+                await asyncio.gather(task, return_exceptions=True)
+                raise
+    await task
+    async with sessions() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+    assert row.validation_report["summary"]["result"] == "invalid"
 
 
 async def setup(
@@ -189,7 +323,15 @@ async def test_validation_only_retry_delivers_persisted_failures_then_revalidate
 
         async def propose(self, **kwargs):
             self.calls.append(kwargs)
-            return FixProposal(kwargs["path"], True, None, "FROM alpine:3.20\n", {}, ())
+            return FixProposal(
+                kwargs["path"],
+                True,
+                None,
+                "FROM alpine:3.20\n",
+                {},
+                (),
+                cached_input_tokens=0,
+            )
 
     fixer = Fix()
     security = SecurityAgent(scanner, fixer, sessions, get_settings())
@@ -222,6 +364,12 @@ async def test_validation_only_retry_delivers_persisted_failures_then_revalidate
         remediated = package.model_copy(update={"files": dict(row.files)})
         assert row.original_files == original
         assert len(row.security_report["sessions"]) == 2
+        assert (
+            row.security_report["sessions"][-1]["iterations"][0]["fixes"][0][
+                "cached_input_tokens"
+            ]
+            == 0
+        )
     assert scanner.calls == 2
     assert await validator.run(ctx, Variant.SECURITY, remediated) == PackageStatus.VALID
 

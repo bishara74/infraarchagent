@@ -572,3 +572,20 @@ async def test_native_anthropic_cached_read_tokens(cached: int | None) -> None:
         adapter = AnthropicAdapter("test", POLICY, "placeholder", http_client=client)
         result = await adapter.complete_json("hello")
     assert result.response.cached_input_tokens == cached
+
+
+@pytest.mark.req("NFR-01", "NFR-03")
+@pytest.mark.parametrize("provider", ["openai", "anthropic"])
+@pytest.mark.parametrize("cached", [True, -1, 1.5, "bad", "5"])
+async def test_malformed_cached_token_metrics_stay_unknown(provider, cached):
+    def handler(request):
+        body = success_body(provider)
+        if provider == "openai":
+            body["usage"]["prompt_tokens_details"] = {"cached_tokens": cached}
+        else:
+            body["usage"]["cache_read_input_tokens"] = cached
+        return httpx2.Response(200, json=body)
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        result = await adapter_for(provider, client).complete_json("hello")
+    assert result.response.cached_input_tokens is None

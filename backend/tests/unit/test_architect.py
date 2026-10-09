@@ -67,6 +67,18 @@ class RecordingStub(StubAdapter):
         return await super().complete_json(prompt, system=system, deadline=deadline)
 
 
+@pytest.mark.req("FR-A-01", "NFR-01")
+@pytest.mark.parametrize("cached", [None, 0, 17])
+async def test_architect_cache_metrics_preserve_unknown_and_zero(cached):
+    adapter = StubAdapter(
+        script=[LLMResponse(json.dumps(plan()), cached_input_tokens=cached)]
+    )
+    agent = ArchitectAgent(adapter, deadline_seconds=150)
+    agent.parse_input("build a web app")
+    await agent.generate_plan()
+    assert agent.last_run.cached_input_tokens == cached
+
+
 @pytest.mark.req("FR-A-01", "FR-A-02")
 async def test_valid_first_attempt_and_metrics() -> None:
     adapter = StubAdapter(script=[LLMResponse(json.dumps(plan()), 11, 20)])

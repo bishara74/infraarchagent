@@ -38,6 +38,13 @@ DOCKER_INSTRUCTIONS = {
     "SHELL",
 }
 TASK_META = {
+    "args",
+    "listen",
+    "delegate_facts",
+    "connection",
+    "diff",
+    "async",
+    "poll",
     "name",
     "when",
     "register",
@@ -157,9 +164,10 @@ def nginx_targets(
         text = code_text(
             doc.source, hash_comments=True, mask_strings=False, slash_comments=False
         )
+        masked = code_text(doc.source, hash_comments=True, slash_comments=False)
         resolved.update(
             normalize_name(name)
-            for name in re.findall(r"\bupstream\s+([\w.-]+)\s*\{", text)
+            for name in re.findall(r"\bupstream\s+([\w.-]+)\s*\{", masked)
         )
         resolved.update(
             normalize_name(target_hostname(host))
@@ -444,7 +452,9 @@ def structural_checks(
             if "/roles/" in path:
                 if "/tasks/" in path or "/handlers/" in path:
                     checks.extend(tasks(doc, doc.data))
-            elif "inventory" in PurePosixPath(path).name:
+            elif "inventory" in PurePosixPath(path).name or PurePosixPath(
+                path
+            ).name in {"hosts.yml", "hosts.yaml"}:
                 continue
             elif isinstance(doc.data, dict):
                 # Group vars, host vars and role defaults are supporting mappings.

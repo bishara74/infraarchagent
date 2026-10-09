@@ -68,6 +68,29 @@ def reply(files: dict[str, str], notes: str = "design") -> str:
     return json.dumps({"files": files, "notes": notes})
 
 
+@pytest.mark.req("FR-G-02", "NFR-01")
+@pytest.mark.parametrize(
+    "metrics,total", [([0, 0], 0), ([3, 7], 10), ([None, 7], None)]
+)
+async def test_generator_cache_metrics_include_package_retries(metrics, total):
+    generator = agent(
+        LLMResponse(
+            reply({"terraform/main.tf": "terraform {}"}), cached_input_tokens=metrics[0]
+        ),
+        LLMResponse(
+            reply(
+                {
+                    "terraform/main.tf": "terraform {}",
+                    "docker/Dockerfile": "FROM alpine",
+                }
+            ),
+            cached_input_tokens=metrics[1],
+        ),
+    )
+    await generator.generate(plan("dockerfile"))
+    assert generator.last_run.cached_input_tokens == total
+
+
 @pytest.mark.req("FR-G-01", "FR-G-02")
 async def test_valid_first_package_has_variant_metrics_and_notes() -> None:
     generator = agent(LLMResponse(reply({"terraform/main.tf": "resource {}"}), 5, 9))

@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6 section 8 — Acceptance coverage and recorded-output normalization
+
+**Summary:** Complete real Terraform stub success and mixed outcomes, PostgreSQL row-lock evidence, forked validator deadline cleanup, cache metric propagation and recorded linter normalization.
+
+**Requirements addressed:** FR-V-01, FR-V-02, FR-V-03, FR-V-04, FR-V-05, FR-S-09, NFR-01, FR-P-04.
+
+**Files:** backend/app/llm/anthropic.py, backend/app/llm/errors.py, backend/app/llm/openai.py, backend/app/validation/structure.py, backend/pyproject.toml, backend/scripts/normalize_security_fixture.py, backend/tests/integration/test_validator_agent.py, backend/tests/unit/test_architect.py, backend/tests/unit/test_eval_security.py, backend/tests/unit/test_generators.py, backend/tests/unit/test_llm_providers.py, backend/tests/unit/test_scanner_timeout.py, backend/tests/unit/test_security_fix.py, backend/tests/unit/test_terraform_parser.py, backend/tests/unit/test_validation_engine.py, backend/tests/unit/test_validation_structure.py, backend/tests/unit/test_validation_terraform.py, docs/design-deviations.md; new files are included in the section commit.
+
+**Decisions:** D-34/D-35: inspect wire cache metrics before SDK coercion; extend scanners marker to validators, with explicit prerequisite skips.
+
+**Tests:** Focused acceptance command: 249 passed, 0 failed, 0 skipped in 22.38 s; final report/retry/evaluator checks after cache assertions: 19 passed, 0 failed, 0 skipped in 8.27 s. make lint passed Ruff, format and mypy (89 source files); final explicit Ruff check passed. Both real Terraform stub outcomes were observed: success (three ready) and partial_success (two ready). Network namespace valid/invalid tests and descendant cleanup ran without skips.
+
+**Known gaps / follow-ups:** Evaluation and final full-suite counts follow in sections 9–10.
+
+---
+
 ## 2026-10-09 — Phase 6 section 7 — ValidatorAgent, durable reports and real pipeline wiring
 
 **Summary:** Add the database-independent validation engine with shared parsing, three-command concurrency bounds, stage deadlines and cancellation cleanup; persist reports through a row-locked repository method before outcome events; replace the placeholder in startup and the security evaluator.

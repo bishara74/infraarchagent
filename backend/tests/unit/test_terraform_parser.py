@@ -165,3 +165,25 @@ def test_dedicated_syntax_fixture_findings(state: str) -> None:
     raw = recorded_output("terraform", state)
     findings = parse_terraform(raw, FIXTURES / state, set(files(state)))
     assert findings and all(f.file_path == "terraform/main.tf" for f in findings)
+
+
+@pytest.mark.req("FR-V-04", "NFR-01")
+@pytest.mark.parametrize("tool", ["helm", "hadolint", "ansible-lint", "promtool"])
+def test_validator_recording_normalization(tool, tmp_path):
+    fixtures = Path(__file__).parents[1] / "fixtures/validation/linters"
+    capture = json.loads((fixtures / f"{tool}.json").read_text())
+    raw = (
+        capture["stdout"]
+        if tool != "promtool"
+        else capture["stdout"] + capture["stderr"]
+    ).replace(RECORDED_ROOT, str(tmp_path))
+    normalized = normalize_capture(raw, tmp_path, tool=tool)
+    assert str(tmp_path) not in normalized
+    assert normalized.strip()
+
+
+@pytest.mark.req("FR-V-04")
+def test_empty_validator_json_requires_explicit_format(tmp_path):
+    assert normalize_capture("[]", tmp_path, tool="hadolint").strip() == "[]"
+    with pytest.raises(ValueError):
+        normalize_capture("nonsense", tmp_path, tool="helm")

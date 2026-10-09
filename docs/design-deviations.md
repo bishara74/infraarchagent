@@ -644,6 +644,14 @@ use the real agent; the evaluator reloads persisted remediated files. Existing
 Option C and review retry services are unchanged. Validation-only retry tests
 prove feedback/failure delivery, rescan/revalidation and preserved baselines.
 
+Acceptance evidence uses real mirror-backed Terraform inside network namespaces
+for valid and invalid fixtures, real Terraform in complete stub success/mixed
+runs, PostgreSQL lock observation, and forked-child deadline cleanup. Cache
+metrics are read from raw SDK response JSON before SDK integer coercion;
+boolean/string metrics remain unknown. Fixture normalization supports recorded
+Terraform, Helm, hadolint, ansible-lint and promtool formats. The `scanners`
+marker covers validators and their explicit tool/mirror/namespace prerequisites.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
