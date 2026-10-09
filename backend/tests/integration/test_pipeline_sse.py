@@ -303,3 +303,28 @@ async def test_http_retry_stream_includes_validation_and_final_state(
     assert '"status": "validating"' in data and '"status": "production_ready"' in data
     assert "review fix pass completed" in data
     assert (await state(app, run_id))[1].status == "production_ready"
+
+
+@pytest.mark.req("FR-P-04", "FR-S-09")
+async def test_final_state_commit_does_not_close_before_its_frame(db_engines):
+    from app.api.pipeline import _can_close
+    from tests.integration.test_pipeline_review import pending_app
+
+    app, run_id = await pending_app(db_engines[0])
+    observed = {"cost": "pending_review"}
+    async with app.state.session_factory() as session:
+        async with session.begin():
+            previous = await app.state.writer.review_action(
+                session, run_id, Variant.COST, "approve", None
+            )
+    assert not await _can_close(app.state.session_factory, run_id, True, observed)
+    await app.state.writer.review_event(
+        run_id,
+        Variant.COST,
+        PackageStatus.PRODUCTION_READY,
+        previous,
+        action="approve",
+        reasons=["validation_failed"],
+    )
+    observed["cost"] = "production_ready"
+    assert await _can_close(app.state.session_factory, run_id, True, observed)

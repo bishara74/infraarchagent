@@ -9,7 +9,12 @@ from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.domain.enums import AgentName, AgentState, PackageStatus, Variant
 from app.domain.models import IaCPackage
-from app.domain.validation import ValidationReport, package_validation_status
+from app.domain.validation import (
+    ValidationCheck,
+    ValidationReport,
+    check_order,
+    package_validation_status,
+)
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.validation.engine import ValidationEngine
@@ -43,9 +48,18 @@ class ValidatorAgent:
         )
         report = await self.engine.validate(ctx.plan, package.files)
         if self.safety is not None:
-            report = ValidationReport.model_validate(
-                self.safety.value(report.model_dump(mode="json"))
+            safe = self.safety.value(report.model_dump(mode="json"))
+            checks = sorted(
+                (ValidationCheck.model_validate(item) for item in safe["checks"]),
+                key=check_order,
             )
+            safe["checks"] = tuple(checks)
+            safe["failed_checks_for_remediation"] = tuple(
+                check
+                for check in checks
+                if check.status == "failed" and check.file_path is not None
+            )
+            report = ValidationReport.model_validate(safe)
         async with self.session_factory() as session:
             async with session.begin():
                 await PackageRepository(session).save_validation_results(

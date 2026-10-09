@@ -105,3 +105,63 @@ async def test_results_without_plan_or_packages_is_current_snapshot(db_engines):
     ) as client:
         data = (await client.get(f"/api/pipeline/{run.run_id}/results")).json()
     assert data["plan"] is None and data["packages"] == data["missing_variants"] == []
+
+
+@pytest.mark.req("FR-UI-06", "FR-UI-07", "FR-S-09")
+async def test_results_exact_fields_order_and_strict_openapi(db_engines):
+    from tests.integration.test_pipeline_review import (
+        add_pending_variant,
+        client_for,
+        pending_app,
+    )
+
+    app, run_id = await pending_app(db_engines[0])
+    for variant in (Variant.SECURITY, Variant.PERFORMANCE):
+        await add_pending_variant(app, run_id, variant)
+    async with client_for(app) as client:
+        data = (await client.get(f"/api/pipeline/{run_id}/results")).json()
+        schema = (await client.get("/openapi.json")).json()
+    assert set(data["run"]) == {
+        "id",
+        "status",
+        "input_text",
+        "start_time",
+        "end_time",
+        "provider",
+        "model",
+        "max_iterations",
+        "error_message",
+    }
+    assert data["run"]["id"] == str(run_id)
+    assert data["run"]["start_time"].endswith("Z") and data["run"]["end_time"].endswith(
+        "Z"
+    )
+    assert [row["variant"] for row in data["packages"]] == [
+        "cost",
+        "performance",
+        "security",
+    ]
+    for row in data["packages"]:
+        assert set(row) == {
+            "variant",
+            "status",
+            "iteration_count",
+            "error",
+            "files",
+            "original_files",
+            "security_report",
+            "validation_report",
+            "review_feedback",
+            "readiness_label",
+            "downloadable",
+            "review_available",
+            "review_reasons",
+            "retry_targets",
+        }
+    for name in ("ResultsResponse", "RunResult", "PackageResult", "MissingVariant"):
+        assert schema["components"]["schemas"][name]["additionalProperties"] is False
+    request_schema = schema["paths"][
+        "/api/pipeline/{run_id}/packages/{variant}/review"
+    ]["post"]["requestBody"]["content"]["application/json"]["schema"]
+    assert request_schema["additionalProperties"] is False
+    assert request_schema["properties"]["target_files"]["maxItems"] == 5

@@ -128,6 +128,7 @@ class SecurityAgent:
         *,
         feedback: str | None,
         validation_failures: Sequence[dict[str, Any]],
+        review_target_order: bool = False,
     ) -> tuple[dict[str, str], list[dict[str, Any]], str]:
         snapshot = dict(files)
 
@@ -152,7 +153,8 @@ class SecurityAgent:
                     validation_failures=linked,
                 )
 
-        proposals = await asyncio.gather(*(one(path) for path in targets))
+        paths = targets if review_target_order else sorted(targets)
+        proposals = await asyncio.gather(*(one(path) for path in paths))
         results: list[dict[str, Any]] = []
         current = dict(snapshot)
         for proposal in sorted(proposals, key=lambda item: item.path):
@@ -314,6 +316,7 @@ class SecurityAgent:
                     budget,
                     feedback=feedback,
                     validation_failures=validation_failures,
+                    review_target_order=True,
                 )
                 iteration_count = 1
                 capped, omitted = _capped_diff(diff)

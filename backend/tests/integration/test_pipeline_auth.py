@@ -179,7 +179,15 @@ async def test_reports_and_events_are_sanitized_before_insert(db_engines, monkey
                         status="failed",
                         file_path="terraform/main.tf",
                         message=diagnostic,
-                    )
+                    ),
+                    ValidationCheck(
+                        check_id="reference.test",
+                        category="reference",
+                        tool="builtin",
+                        status="failed",
+                        file_path="terraform/main.tf",
+                        message="aaaa reference",
+                    ),
                 ],
                 terraform_required=False,
             )
@@ -215,3 +223,39 @@ async def test_reports_and_events_are_sanitized_before_insert(db_engines, monkey
                 and str(ROOT) not in value
                 for value in rows
             )
+
+
+@pytest.mark.req("NFR-01", "FR-P-04")
+async def test_correct_header_allows_submission_and_sanitizes_input(
+    db_engines, monkeypatch
+):
+    from app.agents.validator import ValidatorAgent
+    from tests.integration.test_pipeline_review import validation_report
+    from tests.integration.test_security_agent import ScriptedScanner
+
+    app, _ = await authenticated_app(db_engines[0])
+    app.state.runner.factory.scanner = ScriptedScanner([[], [], []])
+
+    class Engine:
+        async def validate(self, plan, files):
+            return validation_report("valid")
+
+    app.state.runner.validation_stage = ValidatorAgent(
+        Engine(), app.state.session_factory, settings=app.state.settings
+    )
+    async with client_for(app) as client:
+        response = await client.post(
+            "/api/pipeline/run",
+            json={"text": f"Deploy AWS web app {API_CANARY} {LLM_CANARY}"},
+            headers={"X-API-Key": API_CANARY},
+        )
+        assert response.status_code == 202
+        await asyncio.gather(*app.state.runner.tasks.values())
+        data = (
+            await client.get(
+                f"/api/pipeline/{response.json()['run_id']}/results",
+                headers={"X-API-Key": API_CANARY},
+            )
+        ).json()
+    assert "[REDACTED]" in data["run"]["input_text"]
+    assert API_CANARY not in str(data) and LLM_CANARY not in str(data)

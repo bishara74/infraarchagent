@@ -112,3 +112,97 @@ async def test_marker_column_timestamp_and_app_update_grant(db_engines):
         assert await PackageRepository(session).list_review_retries() == [
             (run_id, Variant.COST)
         ]
+
+
+@pytest.mark.req("FR-S-09", "NFR-01")
+async def test_migration_preserves_existing_rows_and_downgrade_drops_only_marker(
+    db_engines,
+):
+    import asyncio
+    import subprocess
+    from pathlib import Path
+    from uuid import uuid4
+
+    from app.db.repositories.runs import RunRepository
+    from app.db.session import make_session_factory
+    from app.domain.enums import LLMProvider
+
+    backend = Path(__file__).resolve().parents[2]
+
+    async def migrate(direction, target):
+        result = await asyncio.to_thread(
+            subprocess.run,
+            [
+                str(backend / ".venv/bin/alembic"),
+                "-x",
+                "database=test",
+                direction,
+                target,
+            ],
+            cwd=backend,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0
+
+    engine, _ = db_engines
+    await migrate("downgrade", "0002_original_files")
+    try:
+        async with make_session_factory(engine)() as session:
+            async with session.begin():
+                run = await RunRepository(session).create(
+                    "Deploy AWS app", LLMProvider.STUB, 2
+                )
+                run_id = run.run_id
+                await session.execute(
+                    text(
+                        "INSERT INTO generated_packages "
+                        "(package_id,run_id,variant,files,original_files,"
+                        "iteration_count,status,created_at) "
+                        "VALUES (:package_id,:run_id,'cost',"
+                        'CAST(\'{"main.tf":"keep"}\' AS jsonb), '
+                        'CAST(\'{"main.tf":"baseline"}\' AS jsonb),'
+                        "0,'generating',:created_at)"
+                    ),
+                    {
+                        "package_id": uuid4(),
+                        "run_id": run_id,
+                        "created_at": datetime.now(UTC),
+                    },
+                )
+        await migrate("upgrade", "head")
+        async with engine.connect() as connection:
+            row = (
+                await connection.execute(
+                    text(
+                        "SELECT files,original_files,review_retry_started_at "
+                        "FROM generated_packages WHERE run_id=:run_id"
+                    ),
+                    {"run_id": run_id},
+                )
+            ).one()
+        assert row == ({"main.tf": "keep"}, {"main.tf": "baseline"}, None)
+        await migrate("downgrade", "0002_original_files")
+        async with engine.connect() as connection:
+            row = (
+                await connection.execute(
+                    text(
+                        "SELECT files,original_files FROM generated_packages "
+                        "WHERE run_id=:run_id"
+                    ),
+                    {"run_id": run_id},
+                )
+            ).one()
+            columns = set(
+                await connection.scalars(
+                    text(
+                        "SELECT column_name FROM information_schema.columns "
+                        "WHERE table_name='generated_packages'"
+                    )
+                )
+            )
+        assert row == ({"main.tf": "keep"}, {"main.tf": "baseline"})
+        assert "review_retry_started_at" not in columns and "original_files" in columns
+    finally:
+        await migrate("upgrade", "head")

@@ -2,6 +2,8 @@ import importlib.util
 from pathlib import Path
 from types import ModuleType
 
+import pytest
+
 from app.domain.enums import AgentName, LLMProvider, PackageStatus, RunStatus, Variant
 
 
@@ -29,6 +31,7 @@ def test_migration_check_literals_match_domain_enums() -> None:
         assert set(getattr(migration, name)) == {item.value for item in enum}
 
 
+@pytest.mark.req("FR-S-09", "NFR-01")
 def test_review_retry_migration_adds_nullable_timestamp_only(monkeypatch):
     path = (
         Path(__file__).resolve().parents[2]

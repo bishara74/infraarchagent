@@ -74,3 +74,32 @@ async def test_three_file_fixes_overlap_and_limit_active_calls() -> None:
     assert all(item["accepted"] for item in results)
     assert final["terraform/untouched.tf"] == files["terraform/untouched.tf"]
     assert "untouched.tf" not in diff
+
+
+@pytest.mark.req("FR-S-02", "FR-S-09")
+@pytest.mark.parametrize("review_order", [False, True])
+async def test_review_category_order_keeps_automated_sorted_order(review_order):
+    calls = []
+
+    class Fix:
+        async def propose(self, **kwargs):
+            calls.append(kwargs["path"])
+            return FixProposal(kwargs["path"], False, "no_changes", None, {}, ())
+
+    security = SecurityAgent(
+        None, Fix(), None, get_settings(), semaphore=asyncio.Semaphore(1)
+    )
+    ctx = StageContext(uuid4(), None, DeploymentPlan.model_validate(DEMO_PLAN))
+    files = {"terraform/z.tf": "z", "terraform/a.tf": "a"}
+    _, results, _ = await security._fix_pass(
+        ctx,
+        Variant.COST,
+        files,
+        {path: [] for path in files},
+        AgentBudget(30),
+        feedback=None,
+        validation_failures=[],
+        review_target_order=review_order,
+    )
+    assert calls == (list(files) if review_order else sorted(files))
+    assert [result["file"] for result in results] == sorted(files)

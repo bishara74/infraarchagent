@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7 section 5 — Complete Phase 7 acceptance checks
+
+**Summary:** Extend deterministic acceptance coverage for shared variant capacity, shutdown/launch settlement, retry exhaustion, scan automatic retry, canonical redacted reports, strict OpenAPI fields, migration upgrade/downgrade with existing rows and archive collision fallbacks.
+
+**Requirements addressed:** FR-S-02, FR-S-08, FR-S-09, FR-S-10, FR-UI-06, FR-UI-07, FR-P-04, NFR-01, PR-03, PR-04.
+
+**Files:** backend/app/agents/security/agent.py, backend/app/agents/validator.py, backend/app/api/pipeline.py, backend/tests/integration/test_pipeline_auth.py, backend/tests/integration/test_pipeline_results.py, backend/tests/integration/test_pipeline_review.py, backend/tests/integration/test_pipeline_sse.py, backend/tests/integration/test_review_recovery.py, backend/tests/unit/test_archive.py, backend/tests/unit/test_migration_parity.py, backend/tests/unit/test_security_concurrency.py, docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Preserve ordinary automated sorted fix calls while review starts use category order. Sanitize reports before persistence, then restore canonical ordering so redaction cannot cause an otherwise valid report to abort. Migration subprocesses inherit the dotenv-disabled bootstrap and explicit app/owner test URLs; the Phase 6b connection guard remains unchanged. Prior full runs passed 967 and 968 tests before the last coverage additions.
+
+**Tests:** Final dotenv-disabled make test: 971 passed, 0 failed, 0 skipped in 91.96s. make lint: Ruff/format passed (175 files); mypy passed (97 source files). Explicit watcher Ruff, format and py_compile passed. Focused final edge checks: 20 passed in 13.73s; ordering/retry checks: 7 passed in 6.64s. Final PR-04 full ASGI response: 0.626244s for 10,000,000 persisted source bytes (JUnit property 0.6262435829994502), excluding fixture preparation. Verification used PYTHONPATH=/tmp/phase6b-test-bootstrap:$PWD/backend and JUnit reporting; no dotenv loading.
+
+**Known gaps / follow-ups:** Remaining Phase 7 acceptance/documentation follows. No installs, dotenv reads or real LLM calls; no push.
+
+---
+
 ## 2026-10-10 — Phase 7 section 4 — Protect pipeline endpoints and public data
 
 **Summary:** Add optional shared API-key authentication, dual-key redaction, safe errors and authenticated watcher requests. Sanitize event/report/file persistence and output without changing traceback rendering or validation checks.

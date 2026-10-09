@@ -21,6 +21,14 @@ from app.domain.archive import package_zip
             },
             "_infraarchagent/READINESS-2.md",
         ),
+        (
+            {
+                "INFRAARCHAGENT_READINESS.md": "original",
+                "_infraarchagent/readiness.md": "second",
+                "_infraarchagent/readiness-2.md": "third",
+            },
+            "_infraarchagent/READINESS-3.md",
+        ),
     ],
 )
 def test_sorted_deflated_fixed_metadata_and_collision_preservation(

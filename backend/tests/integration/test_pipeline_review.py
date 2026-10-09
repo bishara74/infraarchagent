@@ -456,3 +456,248 @@ async def test_bad_body_is_400(db_engines, body):
         assert (
             await client.post(review_url(uuid4()), json={"action": "approve"})
         ).status_code == 404
+
+
+@pytest.mark.req("FR-S-10")
+@pytest.mark.parametrize(
+    "feedback,expected", [("  " + "x" * 2000 + "  ", "x" * 2000), (" \n ", None)]
+)
+async def test_feedback_boundary_is_measured_after_trimming(
+    db_engines, feedback, expected
+):
+    app, run_id = await pending_app(db_engines[0])
+    async with client_for(app) as client:
+        response = await client.post(
+            review_url(run_id), json={"action": "reject", "feedback": feedback}
+        )
+    assert response.status_code == 200
+    assert (await state(app, run_id))[1].review_feedback == expected
+
+
+@pytest.mark.req("FR-S-09")
+async def test_shutdown_settles_retry_and_releases_capacity(db_engines, monkeypatch):
+    app, run_id = await pending_app(db_engines[0])
+    entered = asyncio.Event()
+
+    class Waiting(ScriptedScanner):
+        async def scan(self, *args, **kwargs):
+            entered.set()
+            await asyncio.Event().wait()
+
+    install_retry(app, monkeypatch, scanner=Waiting([]))
+    before, baseline = await state(app, run_id)
+    async with client_for(app) as client:
+        assert (
+            await client.post(review_url(run_id), json={"action": "retry"})
+        ).status_code == 202
+    await asyncio.wait_for(entered.wait(), 2)
+    await app.state.runner.shutdown()
+    run, row = await state(app, run_id)
+    assert row.status == "pending_review" and row.review_retry_started_at is None
+    assert row.error == "review retry interrupted by server shutdown"
+    assert row.original_files == baseline.original_files
+    assert (run.status, run.end_time) == (before.status, before.end_time)
+    assert app.state.runner._reserved == 0 and app.state.runner.tasks == {}
+
+
+@pytest.mark.req("FR-S-09")
+async def test_launch_failure_returns_to_review_without_reservation_leak(
+    db_engines, monkeypatch
+):
+    from app.api.schemas import ReviewRequest
+    from app.pipeline.review import ReviewService
+
+    app, run_id = await pending_app(db_engines[0])
+
+    def fail(*args):
+        raise RuntimeError("private launch detail")
+
+    monkeypatch.setattr(app.state.runner, "start_review_retry", fail)
+    with pytest.raises(RuntimeError, match="private launch detail"):
+        await ReviewService(app.state.runner).review(
+            run_id, Variant.COST, ReviewRequest(action="retry")
+        )
+    _, row = await state(app, run_id)
+    assert row.status == "pending_review" and row.review_retry_started_at is None
+    assert row.error == "review retry aborted: launch failed"
+    assert app.state.runner._reserved == 0
+
+
+@pytest.mark.req("FR-S-09")
+async def test_retry_report_saves_keep_marker_and_exhaustion_returns_review(
+    db_engines, monkeypatch
+):
+    app, run_id = await pending_app(db_engines[0], blocking=True)
+    scripts = [finding("CKV_1")]
+    adapter = StubAdapter(
+        script=[
+            json.dumps(
+                {
+                    "file": {
+                        "path": "terraform/main.tf",
+                        "content": "terraform {}\n# fixed\n",
+                    },
+                    "new_files": {},
+                    "fixes": [],
+                }
+            )
+        ]
+        * 2
+    )
+    install_retry(
+        app, monkeypatch, scanner=ScriptedScanner([scripts] * 2), adapter=adapter
+    )
+    validate = app.state.runner.validation_stage.run
+
+    async def observed_validate(*args):
+        _, row = await state(app, run_id)
+        assert (
+            row.review_retry_started_at is not None and row.status == "scan_exhausted"
+        )
+        assert row.security_report["sessions"][-1]["kind"] == "review_retry"
+        assert "review_retry_started_at" not in row.security_report
+        return await validate(*args)
+
+    monkeypatch.setattr(app.state.runner.validation_stage, "run", observed_validate)
+    async with client_for(app) as client:
+        assert (
+            await client.post(review_url(run_id), json={"action": "retry"})
+        ).status_code == 202
+    await asyncio.gather(*app.state.runner.tasks.values())
+    _, row = await state(app, run_id)
+    assert row.status == "pending_review" and row.review_retry_started_at is None
+    assert (
+        row.iteration_count == 2
+        and row.validation_report["summary"]["result"] == "valid"
+    )
+    assert row.security_report["final"]["outcome"] == "exhausted"
+
+
+async def add_pending_variant(app, run_id, variant):
+    async with app.state.session_factory() as session:
+        async with session.begin():
+            repository = PackageRepository(session)
+            await repository.create(run_id, variant)
+            await repository.save_files(
+                run_id, variant, {"terraform/main.tf": "terraform {}\n"}
+            )
+    for target in (
+        PackageStatus.GENERATED,
+        PackageStatus.SCANNING,
+        PackageStatus.SCAN_CLEAN,
+        PackageStatus.VALIDATING,
+    ):
+        await app.state.writer.package_transition(
+            run_id, variant, target, message="fixture"
+        )
+    async with app.state.session_factory() as session:
+        async with session.begin():
+            await PackageRepository(session).save_validation_results(
+                run_id, variant, validation_report()
+            )
+    for target in (PackageStatus.INVALID, PackageStatus.PENDING_REVIEW):
+        await app.state.writer.package_transition(
+            run_id, variant, target, message="fixture"
+        )
+
+
+@pytest.mark.req("FR-S-09", "PR-03")
+async def test_different_variants_share_capacity_and_have_unique_tasks(
+    db_engines, monkeypatch
+):
+    app, run_id = await pending_app(db_engines[0])
+    for variant in (Variant.PERFORMANCE, Variant.SECURITY):
+        await add_pending_variant(app, run_id, variant)
+    app.state.runner.capacity = 2
+    gate = asyncio.Event()
+    barrier = asyncio.Barrier(3)
+
+    class Waiting(ScriptedScanner):
+        async def scan(self, *args, **kwargs):
+            await barrier.wait()
+            await gate.wait()
+            return await super().scan(*args, **kwargs)
+
+    adapter = StubAdapter(
+        script=[
+            json.dumps(
+                {
+                    "file": {
+                        "path": "terraform/main.tf",
+                        "content": "terraform {}\n# fixed\n",
+                    },
+                    "new_files": {},
+                    "fixes": [],
+                }
+            )
+        ]
+        * 2
+    )
+    install_retry(app, monkeypatch, scanner=Waiting([[], []]), adapter=adapter)
+    try:
+        async with client_for(app) as client:
+            responses = await asyncio.gather(
+                *(
+                    client.post(review_url(run_id, variant), json={"action": "retry"})
+                    for variant in ("cost", "performance")
+                )
+            )
+            assert [response.status_code for response in responses] == [202, 202]
+            await asyncio.wait_for(barrier.wait(), 2)
+            assert (
+                len(app.state.runner.tasks) == 2
+                and run_id not in app.state.runner.tasks
+            )
+            events = await app.state.event_log.list_after(run_id, None)
+            response = await client.post(
+                review_url(run_id, "security"), json={"action": "retry"}
+            )
+            assert response.status_code == 429
+            assert len(await app.state.event_log.list_after(run_id, None)) == len(
+                events
+            )
+            async with app.state.session_factory() as session:
+                row = await PackageRepository(session).get(run_id, Variant.SECURITY)
+            assert (
+                row.status == "pending_review" and row.review_retry_started_at is None
+            )
+    finally:
+        gate.set()
+        await asyncio.gather(*app.state.runner.tasks.values())
+    assert app.state.runner._reserved == 0
+
+
+@pytest.mark.req("FR-S-09", "FR-S-05")
+async def test_scanner_automatic_retry_failure_preserves_evidence(
+    db_engines, monkeypatch
+):
+    from app.scanners.runner import RecordedToolRunner, ToolResult
+    from app.scanners.scan import Scanner
+
+    app, run_id = await pending_app(db_engines[0], blocking=True)
+    runner = RecordedToolRunner(
+        {
+            "checkov": [ToolFailure("checkov", "timeout")] * 2,
+            "trivy": [ToolResult('{"Results":[]}', "", 0, 0)] * 2,
+            "terraform": [ToolResult('{"diagnostics":[]}', "", 0, 0)] * 2,
+        }
+    )
+    install_retry(app, monkeypatch, scanner=Scanner(runner))
+    _, before = await state(app, run_id)
+    async with client_for(app) as client:
+        assert (
+            await client.post(review_url(run_id), json={"action": "retry"})
+        ).status_code == 202
+    await asyncio.gather(*app.state.runner.tasks.values())
+    _, row = await state(app, run_id)
+    assert row.status == "pending_review" and row.review_retry_started_at is None
+    assert (
+        runner.calls.count("checkov")
+        == runner.calls.count("trivy")
+        == runner.calls.count("terraform")
+        == 2
+    )
+    assert row.original_files == before.original_files
+    assert len(row.security_report["sessions"]) == 2
+    assert row.security_report["final"]["remaining_blocking"]
+    assert row.validation_report == before.validation_report

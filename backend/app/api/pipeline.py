@@ -70,6 +70,14 @@ async def get_results(run_id: str, request: Request) -> ResultsResponse | JSONRe
     "/{run_id}/packages/{variant}/review",
     response_model=ReviewResponse | RetryResponse,
     responses={202: {"model": RetryResponse}},
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "application/json": {"schema": ReviewRequest.model_json_schema()}
+            },
+        }
+    },
 )
 async def review_package(run_id: str, variant: str, request: Request) -> Response:
     try:
