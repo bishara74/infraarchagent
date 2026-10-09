@@ -292,9 +292,14 @@ with the local offline engine, without database access or LLM calls. Optional
 `EVAL_ARGS='--package <package-directory> --mirror <mirror-directory>'` narrows
 the inputs or selects an existing mirror. JSON/Markdown reports record results,
 category failures, warnings, skip reasons, durations, tool versions and source
-hashes under `docs/evals/phase6-validation-<UTC timestamp>/`. The measured run
-was **2 valid, 10 invalid, 0 error**; both known gpt-oss syntax failures were
-confirmed from Terraform output. [Per-package results](docs/evals/phase6-validation-20261009T175917789637Z/summary.md).
+hashes under `docs/evals/phase6-validation-<UTC timestamp>/`. The Phase 6b rerun
+measured **4 valid, 8 invalid, 0 error**, compared with the retained Phase 6
+report's **2 valid, 10 invalid, 0 error**. Both known gpt-oss syntax failures
+remain confirmed. [Current per-package results](docs/evals/phase6-validation-20261009T211526321570Z/summary.md)
+and [previous/current comparison](docs/evals/phase6-validation-20261009T211526321570Z/comparison.md).
+Sonnet monitoring cost/security now pass; performance retains a genuine Service
+namespace mismatch. Sonnet three-tier security reports the safe Terraform title
+`Cycle`, with a root-file remediation anchor when Terraform supplies no range.
 An Aurora cluster without instances remains a semantic gap requiring review.
 
 Validation settings are read with the existing application settings:

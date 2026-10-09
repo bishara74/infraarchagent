@@ -577,8 +577,9 @@ Unlocated Terraform diagnostics attach to main.tf (otherwise the first root
 .tf file, then other Terraform files), with fallback line 1 as a remediation
 anchor rather than a claimed source range. The original Sonnet three-tier
 security package genuinely has a cycle among the alb/app/rds security groups;
-offline init succeeded and real validate reported it without a range. Validator availability/version and mirror presence are exposed
-in healthy and degraded health responses.
+offline init succeeded and real validate reported it without a range. Validator
+availability/version and mirror presence are exposed in healthy and degraded
+health responses.
 
 Built-ins use the expressly approved PyYAML 6.0.3 and Python-HCL2 8.1.4,
 with explicit Lark 1.3.1 and locked regex 2026.9.29 from the installed environment;
@@ -586,9 +587,10 @@ no installation was performed. YAML positions are retained in a shared index;
 HCL reference locations are retained from the original parse tree before
 serialization, without parsing twice; other HCL analysers retain deterministic
 source-line fallback. Undeclared references emit one finding per file and
-identifier, naming the reference and its first actual occurrence. Helm templates, Ansible role task/support files and
-Prometheus rule files are distinguished from standalone manifests, playbooks
-and scrape configs. Kubernetes identities include namespace, kind and name.
+identifier, naming the reference and its first actual occurrence. Helm templates,
+Ansible role task/support files and Prometheus rule files are distinguished
+from standalone manifests, playbooks and scrape configs. Kubernetes identities
+include namespace, kind and name.
 
 Approved Nginx rule: extract the hostname from `proxy_pass`, removing URI,
 port and quoting syntax. Accept normalized matches to defined upstreams, plan
@@ -680,9 +682,16 @@ boolean/string metrics remain unknown. Fixture normalization supports recorded
 Terraform, Helm, hadolint, ansible-lint and promtool formats. The `scanners`
 marker covers validators and their explicit tool/mirror/namespace prerequisites.
 
-The offline evaluation of the twelve original Phase 3 packages measured
-2 valid, 10 invalid and 0 error. Both known gpt-oss syntax failures were
-confirmed from real Terraform diagnostics. Source hashes remained unchanged.
+The original offline evaluation of the twelve Phase 3 packages measured
+2 valid, 10 invalid and 0 error. The Phase 6b rerun measured 4 valid, 8 invalid
+and 0 error; the previous report is retained alongside a new timestamped report
+and per-package comparison. Sonnet monitoring cost/security became valid;
+performance retains the genuine namespace mismatch described above. Sonnet
+three-tier security remains invalid with the safe title Cycle, anchored to
+terraform/alb.tf:1 because this package has no main.tf and Terraform supplied
+no range. Both known gpt-oss syntax failures remained confirmed from real
+Terraform diagnostics. All twelve source hashes and tool versions matched
+between runs. No additional ambiguity or spec deviation was introduced.
 The Aurora cluster without instances remains an undetected semantic deployment
 gap: validation is static and does not prove that infrastructure will deploy.
 

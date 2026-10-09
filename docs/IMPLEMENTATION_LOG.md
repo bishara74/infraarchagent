@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6b item 5 — Refresh offline validation evaluation and final verification
+
+**Summary:** Run make eval-validation on the twelve original packages, retain the previous report, commit a new timestamped JSON/Markdown report with a per-package comparison, and update README and D-35 with measured results.
+
+**Requirements addressed:** FR-V-01, FR-V-03, FR-V-04, FR-V-05, NFR-01.
+
+**Files:** README.md, docs/design-deviations.md, docs/evals/phase6-validation-20261009T211526321570Z/comparison.md, docs/evals/phase6-validation-20261009T211526321570Z/results.json, docs/evals/phase6-validation-20261009T211526321570Z/summary.md; docs/IMPLEMENTATION_LOG.md records this item.
+
+**Decisions:** The new report is docs/evals/phase6-validation-20261009T211526321570Z. All twelve source hashes and tool versions match the old report. No downloads, installs, dotenv reads, database access or LLM calls occurred during evaluation. Sonnet monitoring performance retains a genuine default-versus-monitoring namespace mismatch. The Sonnet three-tier security diagnostic is Cycle, a genuine security-group dependency cycle; without a range it is anchored to terraform/alb.tf:1 (the package has no main.tf). No additional spec deviation or open question was introduced.
+
+**Tests:** make eval-validation succeeded: 4 valid, 8 invalid, 0 error, versus 2 valid, 10 invalid, 0 error previously. All gpt-oss packages remain invalid; Sonnet monitoring cost/security and three-tier cost/performance are valid. Both known syntax failures remain confirmed. gpt-oss three-tier cost reference failures fell from 19 duplicates to one local.common_tags finding at main.tf:18. Final make test: 802 passed, 0 failed, 0 skipped in 85.14s. The initial full run had 801 passed and 1 failed because the temporary bootstrap overwrote the retention CLI subprocess test URL; corrected the bootstrap to preserve explicit child overrides, then verified retention separately (1 passed in 1.80s) and reran the full suite. make lint passed Ruff/format (159 app/test files) and mypy (89 app files); explicit Ruff checks for all backend scripts passed. Real-Terraform stub pipeline success and mixed partial_success tests passed. Existing mirror remains 391,710,515 bytes (373.56 MiB), with unchanged provider versions.
+
+**Known gaps / follow-ups:** An additional optional script formatting check flagged pre-existing formatting in backend/scripts/run_pipeline.py; the file was left outside these review fixes. Static validation still does not detect the documented Aurora-without-instances gap. No push; untracked REVISION.txt and the old evaluation remain untouched.
+
+---
+
 ## 2026-10-09 — Phase 6b item 4 — Deduplicate and locate Terraform references
 
 **Summary:** Retain Terraform reference positions from the shared HCL parse tree and JSON interpolation values, emit one finding per file and identifier, and include the reference in declaration/output messages.
