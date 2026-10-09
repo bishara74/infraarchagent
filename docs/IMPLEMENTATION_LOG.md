@@ -27,6 +27,22 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-09 — Phase 6b item 3 — Isolate security evaluator integration writes to the test database
+
+**Summary:** Map app and migration settings to test URLs in the evaluator test; assert both role URLs at its engine boundary and reject any integration non-test DBAPI connection via a shared fixture.
+
+**Requirements addressed:** NFR-01, FR-S-09, FR-V-05.
+
+**Files:** backend/tests/database_safety.py, backend/tests/integration/conftest.py, backend/tests/integration/test_validator_agent.py, backend/tests/unit/test_database_isolation.py, docs/design-deviations.md; docs/IMPLEMENTATION_LOG.md records this item.
+
+**Decisions:** D-35 records explicit test URL mapping and preconnection guard. Safety assertions never print credentials. Verification bootstrap disables dotenv and uses distinct unavailable dev and real test URLs, including migration subprocesses; the normal test roles/grants are unchanged.
+
+**Tests:** Isolation/ValidatorAgent tests against real PostgreSQL: 18 passed, 0 failed, 0 skipped in 11.12 s. Unit tests reject each unsafe app/migration/test URL; integration guard proves a forbidden database cannot reach DBAPI connect. make lint passed Ruff/format (159 app/test files) and mypy (89 app files).
+
+**Known gaps / follow-ups:** The guard is test-only and does not change application connection behavior. Final full-suite verification follows item 5.
+
+---
+
 ## 2026-10-09 — Phase 6b item 2 — Preserve actionable Terraform diagnostic titles and locations
 
 **Summary:** Reproduce the Sonnet security diagnostic offline; canonicalize the safe Cycle title, preserve ranges for unknown titles and attach unlocated diagnostics to Terraform root files for remediation.

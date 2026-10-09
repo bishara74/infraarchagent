@@ -16,7 +16,7 @@ from app.core.config import get_settings
 from app.db.models import AgentEvent
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
-from app.db.session import make_session_factory
+from app.db.session import make_app_engine, make_session_factory
 from app.domain.enums import AgentName, LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.models import IaCPackage
 from app.domain.states import readiness_after_validation
@@ -28,6 +28,10 @@ from app.pipeline.stages import StageContext
 from app.pipeline.state import PipelineStateWriter
 from app.validation.engine import ValidationEngine
 from app.validation.tools import mirror_present
+from tests.database_safety import (
+    assert_test_database_settings,
+    isolated_database_settings,
+)
 from tests.integration.test_pipeline_api import _empty_scanner
 from tests.integration.test_security_agent import ScriptedScanner
 from tests.unit.test_generators import plan
@@ -413,6 +417,16 @@ async def test_security_evaluator_validates_persisted_remediated_files(
     from scripts import eval_security
 
     engine, _ = db_engines
+    settings = isolated_database_settings(get_settings())
+    assert_test_database_settings(settings)
+    # Guard the actual evaluator boundary, not just the fixture's own engine.
+    evaluator_engine = eval_security.make_app_engine
+
+    def test_engine(config):
+        assert_test_database_settings(config)
+        return evaluator_engine(config)
+
+    monkeypatch.setattr(eval_security, "make_app_engine", test_engine)
     modified = {"terraform/main.tf": "terraform {}\n# persisted remediation"}
     observed = []
 
@@ -465,5 +479,25 @@ async def test_security_evaluator_validates_persisted_remediated_files(
     package = IaCPackage(
         variant=Variant.SECURITY, files={"terraform/main.tf": "terraform {}"}
     )
-    await eval_security._remediate(get_settings(), None, folder, package, 3)
+    await eval_security._remediate(settings, None, folder, package, 3)
     assert observed == [modified]
+
+
+@pytest.mark.req("NFR-01")
+async def test_shared_guard_rejects_non_test_connection_before_dbapi():
+    from pydantic import SecretStr
+
+    settings = get_settings().model_copy(
+        update={
+            "database_url": SecretStr(
+                "postgresql+asyncpg://infraarch_app@127.0.0.1:1/infraarch_dev_forbidden"
+            ),
+        }
+    )
+    engine = make_app_engine(settings)
+    try:
+        with pytest.raises(pytest.fail.Exception, match="only to the test database"):
+            async with engine.connect():
+                raise AssertionError("Forbidden connection was established")
+    finally:
+        await engine.dispose()

@@ -663,6 +663,12 @@ and one safe summary notice through EventLog. The app and security evaluator
 use the real agent; the evaluator reloads persisted remediated files. Existing
 Option C and review retry services are unchanged. Validation-only retry tests
 prove feedback/failure delivery, rescan/revalidation and preserved baselines.
+Phase 6b fixes the evaluator regression test to map both application and
+migration URLs to the test database explicitly. A shared integration fixture
+rejects non-test database connections before the DBAPI connects, including
+connections attempted through settings-derived engines. Boundary assertions
+check both roles without exposing credentials; verification uses distinct
+development and test URLs so accidental dev connections cannot be hidden.
 
 Acceptance evidence uses real mirror-backed Terraform inside network namespaces
 for valid and invalid fixtures, real Terraform in complete stub success/mixed
