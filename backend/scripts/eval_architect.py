@@ -298,8 +298,8 @@ async def run_evaluation(
 ) -> Path:
     if pause_seconds < 0:
         raise ValueError("pause_seconds must be nonnegative")
-    if provider is LLMProvider.STUB and model is None:
-        model = "stub"
+    resolved = RunConfig(provider=provider, model=model).resolve(settings)
+    provider, model = resolved.provider, resolved.model
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     output = output_root / f"phase2-architect-{provider.value}-{timestamp}"
     output.mkdir(parents=True, exist_ok=False)
@@ -307,7 +307,7 @@ async def run_evaluation(
         "# Phase 2 ArchitectAgent evaluation",
         "",
         f"Provider: `{provider.value}`",
-        f"Model: `{model or settings.llm_model or 'stub'}`",
+        f"Model: `{model}`",
         "",
     ]
     for index, (name, description, fixture) in enumerate(CASES):

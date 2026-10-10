@@ -25,8 +25,10 @@ DEMO_PLAN = {
 
 
 class PipelineDemoStub(StubAdapter):
-    def __init__(self, variant: Variant | None, policy: RetryPolicy) -> None:
-        super().__init__("stub", policy)
+    def __init__(
+        self, variant: Variant | None, policy: RetryPolicy, *, model: str = "stub"
+    ) -> None:
+        super().__init__(model, policy)
         self.variant = variant
 
     async def send_prompt(

@@ -29,7 +29,7 @@ from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.domain.enums import AgentName, RunStatus, Variant
 from app.domain.input_rules import InputRuleError, validate_request_text
-from app.domain.run_config import RunConfig
+from app.domain.run_config import RunConfig, RunConfigError
 from app.events.broker import InMemoryBroker
 from app.events.kinds import EventKind, run_status_payload, to_sse
 from app.events.log import EventLog
@@ -156,6 +156,8 @@ async def submit_run(
         settings: Settings = request.app.state.settings
         resolved = config.resolve(settings)
         build_adapter(settings, provider=resolved.provider, model=resolved.model)
+    except RunConfigError as error:
+        return failure(400, "invalid_request", error.message)
     except (ValidationError, ValueError, LLMConfigurationError) as error:
         message = (
             str(error)
@@ -176,10 +178,7 @@ async def submit_run(
                     text,
                     resolved.provider,
                     resolved.max_iterations,
-                    model=PublicDataSafety(settings).value(
-                        resolved.model
-                        or ("stub" if resolved.provider.value == "stub" else None)
-                    ),
+                    model=PublicDataSafety(settings).value(resolved.model),
                 )
                 run_id = row.run_id
         await event_log.append(

@@ -2,6 +2,7 @@
 
 from app.core.config import ConfigurationError, ReasoningEffort, Settings
 from app.domain.enums import LLMProvider
+from app.domain.run_config import RunConfig, RunConfigError
 from app.llm.anthropic import AnthropicAdapter
 from app.llm.base import LLMAdapter, RetryPolicy
 from app.llm.errors import LLMConfigurationError
@@ -21,16 +22,21 @@ def build_adapter(
         selected = LLMProvider(provider or settings.llm_provider)
     except ValueError:
         raise LLMConfigurationError("Unknown LLM_PROVIDER") from None
+    try:
+        resolved = RunConfig(provider=selected, model=model).resolve(settings)
+    except RunConfigError as error:
+        raise LLMConfigurationError(str(error)) from None
     chosen_policy = policy or RetryPolicy.from_settings(settings)
     chosen_effort = reasoning_effort or settings.llm_reasoning_effort
     if selected is LLMProvider.STUB:
+        assert resolved.model is not None
         return StubAdapter(
-            model or settings.llm_model or "stub",
+            resolved.model,
             chosen_policy,
             reasoning_effort=chosen_effort,
             response_format=settings.llm_response_format,
         )
-    chosen_model = model or settings.llm_model
+    chosen_model = resolved.model
     if not chosen_model:
         raise LLMConfigurationError("LLM_MODEL is required for a real LLM adapter")
     try:

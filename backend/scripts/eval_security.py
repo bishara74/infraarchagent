@@ -393,12 +393,7 @@ async def run_evaluation(
                 else None
             )
             remaining = report["final"]["remaining_blocking"]
-            fixing_model = (
-                report.get("fixing_model")
-                or settings.security_fix_model
-                or settings.llm_model
-                or "stub"
-            )
+            fixing_model = report.get("fixing_model")
             input_rate = (price_in or {}).get(fixing_model)
             output_rate = (price_out or {}).get(fixing_model)
             rejected = [fix for fix in fixes if not fix["accepted"]]

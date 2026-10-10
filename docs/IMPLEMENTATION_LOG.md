@@ -27,6 +27,72 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-10 — Phase 7b — Correct provider-scoped model provenance
+
+**Summary:** Centralize model selection in RunConfig.resolve so a stub provider
+override records `stub`, while a different real provider requires an explicit
+model. Scope deployment fixer overrides to the configured provider, and force
+stub runs to use a stub fixer with model `stub` without building network adapters.
+
+**Requirements addressed:** FR-I-04, FR-S-02, FR-UI-06, NFR-01.
+
+**Files:** backend/app/domain/run_config.py, backend/app/llm/factory.py,
+backend/app/agents/factory.py, backend/app/api/pipeline.py,
+backend/app/pipeline/demo_stub.py, backend/scripts/eval_architect.py,
+backend/scripts/eval_generators.py, backend/scripts/eval_security.py,
+backend/tests/unit/test_run_config.py, backend/tests/unit/test_llm_factory.py,
+backend/tests/unit/test_agent_factory.py,
+backend/tests/unit/test_eval_architect.py,
+backend/tests/unit/test_eval_generators.py,
+backend/tests/unit/test_eval_security.py,
+backend/tests/integration/test_pipeline_api.py, README.md,
+docs/design-deviations.md, docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Extend D-33 to document provider-scoped fixer settings and the
+FR-I-04 exception to inheriting model defaults across providers. Keep normal
+and same-provider inheritance, including explicit model selections. Resolve
+the unconfigured stub default once in the domain; the API and adapter factory
+consume that resolution. Preserve the resolved generation model when wrapping
+adapters with the pipeline demo stub. Fixing metadata comes from the actual
+fixer adapter; security evaluations use reported metadata and leave a missing
+historical fixing model unknown instead of guessing from current settings.
+Results and ZIP readiness already consume the persisted run model and require
+no fallback. No migration or historical-row rewrite.
+
+**Tests:** `make test`: 997 passed, 3 failed, 0 skipped in 532.46s. All 29 new
+Phase 7b regressions and the NFR-01 secret canary tests passed. Added provider/default/explicit-model
+resolution coverage, exact 400/no-row rejection, adapter spies forbidding
+network construction for stub runs, hybrid and non-configured-provider fixer
+regressions, full stub row/results/report/readiness checks, and evaluation
+provenance checks. Initial focused run: 78 passed, 1 failed, 0 skipped; the
+existing PR-03 wall-clock concurrency assertion exceeded its threshold.
+Focused security evaluation and unchanged PR-03 rerun: 10 passed, 0 failed,
+0 skipped in 45.67s. After correcting a mypy annotation, `make lint` passed
+Ruff/format (175 files) and mypy (97 source files); the three edited evaluation
+scripts also passed explicit Ruff/format checks.
+The full-suite failures are unchanged timing assertions:
+`test_three_runs_overlap_and_keep_events_isolated` (6.374948s parallel versus
+3.821117s solo, exceeding 1.5x),
+`test_ten_megabyte_package_download_under_two_seconds` (2.963147s), and
+`test_timeout_kills_forked_stdout_owner[validator]` (the harness's elapsed-time
+assertion, after the validation deadline result passed). An isolated extraction
+of the pre-change HEAD, using the same existing dependencies and test database,
+ran those three tests: 2 passed, 1 failed, 0 skipped in 64.35s; PR-04 also
+failed there at 3.967157s. The PR-03 and validator cases fluctuate between runs.
+No unrelated timing thresholds or scanner/validator behavior were changed.
+
+**Known gaps / follow-ups:** Runs stored before this fix, submitted with a
+provider override, may carry the configured deployment model name; they are
+intentionally not rewritten. Manual paid-model behavior was not exercised.
+The full test suite is not green in this environment due to the three timing
+assertions above; investigate performance separately from this provenance fix.
+No installs, dotenv reads, real LLM calls, push, or frontend changes. Tests use
+the existing dotenv-disabled bootstrap and an isolated PostgreSQL 16 container
+from the already available image. Untracked REVISION.txt and the existing ZIP
+remain untouched. Re-run the manual demo with a new stub submission.
+
+---
+
 ## 2026-10-10 — Phase 7 section 7 — Audit final Phase 7 scope and evidence
 
 **Summary:** Complete the final scope audit and record the implementation outcome for all prompt sections 0–7. No further code changes.

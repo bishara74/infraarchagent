@@ -105,6 +105,12 @@ The watcher submits the request, prints SSE progress, reconnects with
 Optional `CONFIG_PROVIDER`, `CONFIG_MODEL`, and `API_URL` select a request
 configuration and API root. The watcher takes `API_KEY` from its process
 environment and sends `X-API-Key`; it does not read dotenv or print the key.
+Omitting the provider or selecting the configured `LLM_PROVIDER` inherits
+`LLM_MODEL`. Selecting a different real provider requires `CONFIG_MODEL`
+(HTTP 400 `invalid_request` otherwise). A stub override without a model
+resolves to `stub`, and every stub run uses a stub fixer with model `stub`
+regardless of `SECURITY_FIX_*`. Fixer overrides apply to runs using the
+configured provider.
 With `LLM_PROVIDER=stub`, the API uses a
 pipeline-only deterministic demo; the Phase 1 spike and Phase 2–3 evaluation
 stubs are unchanged. The demo packages are scanned by the installed tools;
@@ -311,9 +317,9 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
 | `LLM_RESPONSE_FORMAT` | `json_object` sends OpenAI-compatible JSON mode; Anthropic ignores it | Unset |
-| `SECURITY_FIX_PROVIDER` | Optional provider for SecurityAgent fix calls; otherwise the run provider | Unset |
-| `SECURITY_FIX_MODEL` | Optional model for SecurityAgent fix calls; otherwise the run model | Unset |
-| `SECURITY_FIX_REASONING_EFFORT` | Optional fix-only reasoning control; otherwise `LLM_REASONING_EFFORT` | Unset |
+| `SECURITY_FIX_PROVIDER` | Optional fixer provider for runs using configured `LLM_PROVIDER`; stub runs always use the stub fixer | Unset |
+| `SECURITY_FIX_MODEL` | Optional fixer model for runs using configured `LLM_PROVIDER`; otherwise the run model, with `stub` for stub fixers | Unset |
+| `SECURITY_FIX_REASONING_EFFORT` | Optional fix-only reasoning control for runs using configured `LLM_PROVIDER`; ignored for stub runs, otherwise falls back to `LLM_REASONING_EFFORT` | Unset |
 | `BROKER_QUEUE_SIZE` | Maximum queued events per SSE subscriber | `1000` |
 | `MAX_CONCURRENT_RUNS` | Maximum active or reserved pipeline runs | `5` |
 | `SSE_KEEPALIVE_SECONDS` | Idle interval before an SSE keep-alive comment | `15` |

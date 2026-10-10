@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from app.agents.factory import AgentFactory
 from app.core.config import Settings
 from app.domain.enums import LLMProvider, Variant
-from app.domain.run_config import RunConfig
+from app.domain.run_config import RunConfig, RunConfigError
 from app.llm.errors import LLMConfigurationError
 from app.llm.stub import StubAdapter
 
@@ -56,7 +56,7 @@ def test_overrides_reach_adapter() -> None:
 
 @pytest.mark.req("FR-I-04")
 def test_missing_real_provider_configuration_surfaces() -> None:
-    with pytest.raises(LLMConfigurationError, match="LLM_MODEL"):
+    with pytest.raises(RunConfigError, match="model is required when overriding"):
         AgentFactory(settings()).create_architect(
             RunConfig(provider=LLMProvider.OPENAI)
         )
@@ -94,6 +94,7 @@ def test_generator_factory_order_settings_and_run_overrides() -> None:
 def test_security_fix_model_override_and_run_fallback_reach_adapter() -> None:
     overridden = AgentFactory(
         settings(
+            llm_provider="openai",
             security_fix_provider="stub",
             security_fix_model="fixer-model",
             security_fix_reasoning_effort="off",
@@ -113,9 +114,87 @@ def test_security_fix_model_override_and_run_fallback_reach_adapter() -> None:
         session_factory=async_sessionmaker(),
     ).create_security_agent(RunConfig(provider=LLMProvider.STUB, model="run-model"))
     fallback_adapter = fallback.fix_agent.adapter
-    assert fallback_adapter.model == "run-model"
+    assert fallback_adapter.model == "stub"
     assert fallback_adapter.reasoning_effort == "low"
-    assert fallback.fixing_model == "run-model"
+    assert fallback.fixing_model == "stub"
+
+
+@pytest.mark.req("FR-I-04", "FR-S-02", "NFR-01")
+@pytest.mark.parametrize("configured_provider", ["openai", "stub"])
+@pytest.mark.parametrize("run_model", [None, "fixture-model"])
+def test_stub_fixer_ignores_deployment_overrides_and_builds_no_network_adapter(
+    monkeypatch, configured_provider, run_model
+):
+    from app.agents import factory as module
+
+    original = module.build_adapter
+    built = []
+
+    def stub_only(settings, **kwargs):
+        assert kwargs["provider"] == LLMProvider.STUB
+        assert kwargs["model"] == "stub"
+        assert kwargs["reasoning_effort"] is None
+        adapter = original(settings, **kwargs)
+        built.append(adapter)
+        return adapter
+
+    monkeypatch.setattr(module, "build_adapter", stub_only)
+    agent = AgentFactory(
+        settings(
+            llm_provider=configured_provider,
+            llm_model="deployment-model",
+            security_fix_provider="anthropic",
+            security_fix_model="paid-fixer-model",
+            security_fix_reasoning_effort="high",
+            llm_reasoning_effort="low",
+        ),
+        session_factory=async_sessionmaker(),
+    ).create_security_agent(RunConfig(provider=LLMProvider.STUB, model=run_model))
+    assert len(built) == 1 and isinstance(built[0], StubAdapter)
+    assert agent.fixing_provider == "stub" and agent.fixing_model == "stub"
+    assert agent.fixing_reasoning_effort == "low"
+
+
+@pytest.mark.req("FR-I-04", "FR-S-02")
+@pytest.mark.parametrize("run_provider", ["openai", "anthropic"])
+def test_real_fixer_overrides_are_scoped_to_configured_provider(
+    monkeypatch, run_provider
+):
+    from app.agents import factory as module
+
+    calls = []
+
+    def recorded_adapter(settings, **kwargs):
+        calls.append(kwargs)
+        adapter = StubAdapter(
+            kwargs["model"], reasoning_effort=kwargs["reasoning_effort"]
+        )
+        adapter.provider = kwargs["provider"].value
+        return adapter
+
+    monkeypatch.setattr(module, "build_adapter", recorded_adapter)
+    agent = AgentFactory(
+        settings(
+            llm_provider="openai",
+            llm_model="deployment-model",
+            security_fix_provider="anthropic",
+            security_fix_model="hybrid-fixer",
+            security_fix_reasoning_effort="high",
+        ),
+        session_factory=async_sessionmaker(),
+    ).create_security_agent(RunConfig(provider=run_provider, model="run-model"))
+    expected_model = "hybrid-fixer" if run_provider == "openai" else "run-model"
+    expected_effort = "high" if run_provider == "openai" else None
+    assert calls == [
+        {
+            "provider": LLMProvider.ANTHROPIC,
+            "model": expected_model,
+            "reasoning_effort": expected_effort,
+        }
+    ]
+    assert agent.fixing_provider == "anthropic"
+    assert agent.fixing_model == expected_model
+    assert agent.fixing_reasoning_effort == expected_effort
 
 
 @pytest.mark.req("FR-V-05", "NFR-01")

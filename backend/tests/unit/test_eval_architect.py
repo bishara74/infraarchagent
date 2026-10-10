@@ -160,7 +160,10 @@ async def test_llm_failure_category_is_reported_without_response(
 
     monkeypatch.setattr(eval_architect, "_agent", failed_agent)
     output = await run_evaluation(
-        settings(), provider=LLMProvider.OPENAI, output_root=tmp_path
+        settings(),
+        provider=LLMProvider.OPENAI,
+        model="fixture-model",
+        output_root=tmp_path,
     )
     report = json.loads((output / "three_tier.json").read_text(encoding="utf-8"))
     summary = (output / "summary.md").read_text(encoding="utf-8")
@@ -168,6 +171,30 @@ async def test_llm_failure_category_is_reported_without_response(
     assert report["error_category"] == "llm_failure"
     assert report["llm_category"] == "request"
     assert "LLM category: `request`" in summary
+
+
+@pytest.mark.req("FR-I-04", "NFR-01")
+@pytest.mark.parametrize(
+    "configured_provider,expected_model",
+    [(LLMProvider.OPENAI, "stub"), (LLMProvider.STUB, "deployment-model")],
+)
+async def test_evaluation_summary_uses_resolved_stub_model(
+    tmp_path, monkeypatch, configured_provider, expected_model
+):
+    from app.llm import factory as llm_factory
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("stub evaluation must not build a network adapter")
+
+    monkeypatch.setattr(llm_factory, "OpenAIAdapter", forbidden)
+    monkeypatch.setattr(llm_factory, "AnthropicAdapter", forbidden)
+    configured = settings().model_copy(
+        update={"llm_provider": configured_provider, "llm_model": "deployment-model"}
+    )
+    output = await run_evaluation(
+        configured, provider=LLMProvider.STUB, output_root=tmp_path
+    )
+    assert f"Model: `{expected_model}`" in (output / "summary.md").read_text()
 
 
 @pytest.mark.req("FR-A-04", "NFR-01")

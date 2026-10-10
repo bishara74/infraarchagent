@@ -51,7 +51,7 @@ class AgentFactory:
             model=resolved.model,
         )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
-            adapter = PipelineDemoStub(None, adapter.policy)
+            adapter = PipelineDemoStub(None, adapter.policy, model=adapter.model)
         return ArchitectAgent(
             adapter,
             deadline_seconds=self.settings.agent_deadline_seconds,
@@ -76,7 +76,7 @@ class AgentFactory:
             self.settings, provider=resolved.provider, model=resolved.model
         )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
-            adapter = PipelineDemoStub(variant, adapter.policy)
+            adapter = PipelineDemoStub(variant, adapter.policy, model=adapter.model)
         return classes[Variant(variant)](
             adapter,
             deadline_seconds=self.settings.generator_deadline_seconds,
@@ -97,16 +97,24 @@ class AgentFactory:
         if self.session_factory is None:
             raise RuntimeError("security agent requires a database session factory")
         resolved = run_config.resolve(self.settings)
-        provider = self.settings.security_fix_provider or resolved.provider
-        model = self.settings.security_fix_model or resolved.model
+        provider, model = resolved.provider, resolved.model
+        reasoning_effort = None
+        if provider == LLMProvider.STUB:
+            model = "stub"
+        elif provider == self.settings.llm_provider:
+            provider = self.settings.security_fix_provider or provider
+            model = self.settings.security_fix_model or model
+            reasoning_effort = self.settings.security_fix_reasoning_effort
         adapter = build_adapter(
             self.settings,
             provider=provider,
             model=model,
-            reasoning_effort=self.settings.security_fix_reasoning_effort,
+            reasoning_effort=reasoning_effort,
         )
         if self.pipeline_demo_stub and provider == LLMProvider.STUB:
-            adapter = PipelineDemoStub(Variant.SECURITY, adapter.policy)
+            adapter = PipelineDemoStub(
+                Variant.SECURITY, adapter.policy, model=adapter.model
+            )
         return SecurityAgent(
             self.scanner,
             FixAgent(

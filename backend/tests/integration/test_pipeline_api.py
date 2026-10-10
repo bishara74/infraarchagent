@@ -2,7 +2,9 @@
 
 import asyncio
 import time
+from io import BytesIO
 from uuid import UUID
+from zipfile import ZipFile
 
 import httpx
 import pytest
@@ -258,6 +260,170 @@ async def test_missing_real_provider_key_is_400_without_persistence(
     assert response.status_code == 400
     assert response.json()["error"] == "invalid_request"
     async with make_session_factory(engine)() as session:
+        assert await session.scalar(select(func.count()).select_from(PipelineRun)) == 0
+
+
+@pytest.mark.req("FR-I-04", "FR-UI-06", "FR-S-02", "NFR-01")
+@pytest.mark.parametrize(
+    "configured_provider,config,expected_model",
+    [
+        (LLMProvider.OPENAI, {"provider": "stub"}, "stub"),
+        (LLMProvider.STUB, {}, "deployment-model"),
+        (LLMProvider.STUB, {"provider": "stub"}, "deployment-model"),
+        (
+            LLMProvider.OPENAI,
+            {"provider": "stub", "model": "fixture-model"},
+            "fixture-model",
+        ),
+    ],
+)
+async def test_stub_run_provenance_in_rows_results_reports_and_readiness(
+    db_engines, tmp_path, monkeypatch, configured_provider, config, expected_model
+):
+    from app.llm import factory as llm_factory
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("a stub run must never build a network adapter")
+
+    monkeypatch.setattr(llm_factory, "OpenAIAdapter", forbidden)
+    monkeypatch.setattr(llm_factory, "AnthropicAdapter", forbidden)
+    engine, _ = db_engines
+    settings = get_settings().model_copy(
+        update={
+            "llm_provider": configured_provider,
+            "llm_model": "deployment-model",
+            "security_fix_provider": LLMProvider.ANTHROPIC,
+            "security_fix_model": "paid-fixer-model",
+            "security_fix_reasoning_effort": "high",
+        }
+    )
+    app = create_app(settings, engine)
+    app.state.runner.factory.scanner = _empty_scanner()
+    app.state.runner.validation_stage = ValidatorAgent(
+        ValidationEngine(Clean(), mirror=mirror(tmp_path), versions={}),
+        make_session_factory(engine),
+    )
+    body = {"text": "Deploy an AWS web service"}
+    if config:
+        body["config"] = config
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.post("/api/pipeline/run", json=body)
+            assert response.status_code == 202
+            run_id = UUID(response.json()["run_id"])
+            await asyncio.gather(*app.state.runner.tasks.values())
+            async with app.state.session_factory() as session:
+                run = await RunRepository(session).get(run_id)
+            assert run is not None and run.model == expected_model
+            assert run.llm_provider == LLMProvider.STUB
+            assert run.status == RunStatus.SUCCESS
+            results = await client.get(f"/api/pipeline/{run_id}/results")
+            assert results.status_code == 200
+            data = results.json()
+            assert data["run"]["model"] == expected_model
+            for package in data["packages"]:
+                report = package["security_report"]
+                assert report["fixing_provider"] == "stub"
+                assert report["fixing_model"] == "stub"
+                assert all(
+                    item["fixing_model"] == "stub" for item in report["sessions"]
+                )
+                download = await client.get(
+                    f"/api/pipeline/{run_id}/download/{package['variant']}"
+                )
+                assert download.status_code == 200
+                with ZipFile(BytesIO(download.content)) as archive:
+                    readiness = archive.read("INFRAARCHAGENT_READINESS.md").decode()
+                assert f"Model: {expected_model}\n" in readiness
+            events = await app.state.event_log.list_after(run_id, None)
+            assert "paid-fixer-model" not in str(events)
+            if expected_model == "stub":
+                assert "deployment-model" not in str(events)
+    factory = app.state.runner.factory
+    from app.domain.run_config import RunConfig
+
+    run_config = RunConfig.model_validate(config)
+    assert factory.create_architect(run_config).llm_adapter.model == expected_model
+    assert all(
+        agent.llm_adapter.model == expected_model
+        for agent in factory.create_generators(run_config)
+    )
+
+
+@pytest.mark.req("FR-I-04", "NFR-01")
+@pytest.mark.parametrize("config", [None, {"provider": "openai"}])
+async def test_api_inherits_configured_provider_and_model(
+    db_engines, monkeypatch, config
+):
+    from pydantic import SecretStr
+
+    app = create_app(
+        get_settings().model_copy(
+            update={
+                "llm_provider": LLMProvider.OPENAI,
+                "llm_model": "deployment-model",
+                "llm_api_key": SecretStr("phase7b-CANARY"),
+            }
+        ),
+        db_engines[0],
+    )
+    # Submission validates and persists, but never runs the real-provider pipeline.
+    monkeypatch.setattr(app.state.runner, "start", lambda *args: None)
+    body = {"text": "Deploy an AWS web service"}
+    if config is not None:
+        body["config"] = config
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.post("/api/pipeline/run", json=body)
+        assert response.status_code == 202
+        run_id = UUID(response.json()["run_id"])
+        results = await client.get(f"/api/pipeline/{run_id}/results")
+    async with app.state.session_factory() as session:
+        run = await RunRepository(session).get(run_id)
+    assert run is not None
+    assert (run.llm_provider, run.model) == ("openai", "deployment-model")
+    assert results.json()["run"]["model"] == "deployment-model"
+    app.state.runner.release()
+
+
+@pytest.mark.req("FR-I-04", "NFR-01")
+@pytest.mark.parametrize("provider", ["openai", "anthropic"])
+async def test_api_different_real_provider_without_model_is_400(
+    db_engines, monkeypatch, provider
+):
+    from app.api import pipeline
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError(
+            "invalid configuration must be rejected before building adapters"
+        )
+
+    monkeypatch.setattr(pipeline, "build_adapter", forbidden)
+    app = create_app(
+        get_settings().model_copy(
+            update={"llm_provider": LLMProvider.STUB, "llm_model": "deployment-model"}
+        ),
+        db_engines[0],
+    )
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.post(
+            "/api/pipeline/run",
+            json={
+                "text": "Deploy an AWS web service",
+                "config": {"provider": provider},
+            },
+        )
+    assert response.status_code == 400
+    assert response.json() == {
+        "error": "invalid_request",
+        "message": "model is required when overriding the provider",
+    }
+    async with app.state.session_factory() as session:
         assert await session.scalar(select(func.count()).select_from(PipelineRun)) == 0
 
 

@@ -172,7 +172,7 @@ async def run_evaluation(
 ) -> Path:
     if mode not in {"parallel", "sequential"} or pause_seconds < 0:
         raise ValueError("invalid evaluation mode or pause")
-    selected_models = models or [settings.llm_model or "stub"]
+    selected_models = models or [RunConfig().resolve(settings).model]
     selected_plans = plans or list(PLAN_NAMES)
     if any(name not in PLAN_NAMES for name in selected_plans):
         raise ValueError("unknown plan name")
@@ -393,11 +393,9 @@ def main() -> None:
     settings = _offline_settings() if args.no_env_file else get_settings()
     configure_logging(settings.model_copy(update={"log_level": "INFO"}))
     selected_models = (
-        [value.strip() for value in args.models.split(",")]
-        if args.models
-        else [settings.llm_model or "stub"]
+        [value.strip() for value in args.models.split(",")] if args.models else None
     )
-    if not selected_models or any(not value for value in selected_models):
+    if selected_models is not None and any(not value for value in selected_models):
         parser.error("--models requires model names")
     output = asyncio.run(
         run_evaluation(

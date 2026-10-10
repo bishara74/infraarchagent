@@ -75,11 +75,24 @@ async def test_stub_needs_neither_key_nor_model() -> None:
 @pytest.mark.req("FR-I-04")
 def test_real_provider_requires_key_and_model() -> None:
     with pytest.raises(LLMConfigurationError, match="LLM_MODEL"):
-        build_adapter(settings(), provider="anthropic")
+        build_adapter(settings(llm_provider="anthropic"))
+    with pytest.raises(
+        LLMConfigurationError, match="model is required when overriding"
+    ):
+        build_adapter(settings(llm_model="deployment-model"), provider="anthropic")
     with pytest.raises(LLMConfigurationError, match="LLM_API_KEY"):
         build_adapter(settings(), provider="openai", model="test")
     with pytest.raises(LLMConfigurationError, match="LLM_PROVIDER"):
         build_adapter(settings(), provider="unknown")
+
+
+@pytest.mark.req("FR-I-04", "NFR-01")
+def test_adapter_provider_override_uses_shared_model_resolution():
+    adapter = build_adapter(
+        settings(llm_provider="openai", llm_model="deployment-model"), provider="stub"
+    )
+    assert isinstance(adapter, StubAdapter)
+    assert adapter.model == "stub"
 
 
 @pytest.mark.req("FR-I-04", "NFR-03")

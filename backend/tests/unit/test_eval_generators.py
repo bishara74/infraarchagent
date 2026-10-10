@@ -80,3 +80,13 @@ def test_price_argument_validation() -> None:
     for invalid in ("a", "=1", "a=-1", "a=nan", "a=inf"):
         with pytest.raises(ValueError):
             _prices(invalid)
+
+
+@pytest.mark.req("FR-I-04", "FR-G-01")
+async def test_default_evaluation_model_comes_from_run_resolution(tmp_path):
+    output = await run_evaluation(
+        settings(), plans=["three_tier"], output_root=tmp_path
+    )
+    data = json.loads((output / "results.json").read_text())
+    assert {case["model"] for case in data["cases"]} == {"stub"}
+    assert set(data["totals"]) == {"stub"}

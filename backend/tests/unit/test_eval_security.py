@@ -305,6 +305,55 @@ async def test_remediation_summary_uses_report_reason_and_fixing_model_price(
     assert unpriced["cases"][0]["estimated_cost"] is None
 
 
+@pytest.mark.req("FR-I-04", "FR-S-04", "NFR-01")
+@pytest.mark.parametrize("reported_model", ["stub", None])
+async def test_evaluation_uses_reported_fixer_model_without_deployment_fallback(
+    tmp_path, monkeypatch, reported_model
+):
+    folder = tmp_path / "packages" / "generator-model" / "three_tier" / "security"
+    folder.mkdir(parents=True)
+    (folder / "main.tf").write_text("terraform {}\n")
+    runner = RecordedToolRunner(
+        {
+            "checkov": [
+                ToolResult('{"passed":0,"failed":0,"resource_count":0}', "", 0, 0)
+            ],
+            "terraform": [ToolResult('{"diagnostics":[]}', "", 0, 0)],
+            "trivy": [ToolResult('{"Results":[]}', "", 0, 0)],
+        }
+    )
+
+    async def reported_remediation(*args):
+        report = {
+            "iterations": [],
+            "final": {"outcome": "clean", "remaining_blocking": []},
+        }
+        if reported_model is not None:
+            report["fixing_model"] = reported_model
+        return report, ""
+
+    monkeypatch.setattr(eval_security, "ProcessToolRunner", lambda _: runner)
+    monkeypatch.setattr(eval_security, "_remediate", reported_remediation)
+    configured = Settings.model_construct(
+        llm_model="deployment-model", security_fix_model="paid-fixer-model"
+    )
+    output = await eval_security.run_evaluation(
+        configured,
+        packages=[folder],
+        remediate=True,
+        price_in={"stub": 0, "paid-fixer-model": 1},
+        price_out={"stub": 0, "paid-fixer-model": 1},
+        output_root=tmp_path,
+    )
+    result = json.loads((output / "results.json").read_text())
+    case = result["cases"][0]
+    assert case["fixing_model"] == reported_model
+    assert case["estimated_cost"] == (0 if reported_model == "stub" else None)
+    assert set(result["fixing_aggregate"]) == (
+        {"stub"} if reported_model == "stub" else set()
+    )
+
+
 @pytest.mark.req("FR-S-01", "FR-S-04")
 async def test_progress_retains_recovered_timeout_and_limits_packages(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]

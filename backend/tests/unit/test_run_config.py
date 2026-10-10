@@ -3,7 +3,7 @@ from pydantic import ValidationError
 
 from app.core.config import Settings
 from app.domain.enums import LLMProvider
-from app.domain.run_config import RunConfig
+from app.domain.run_config import RunConfig, RunConfigError
 
 
 def settings() -> Settings:
@@ -42,3 +42,46 @@ def test_defaults_and_overrides() -> None:
 def test_invalid_limit_is_rejected() -> None:
     with pytest.raises(ValidationError):
         RunConfig(max_iterations=0)
+
+
+@pytest.mark.req("FR-I-04")
+@pytest.mark.parametrize(
+    "config,expected_provider,expected_model",
+    [
+        ({}, LLMProvider.OPENAI, "deployment-model"),
+        ({"provider": "openai"}, LLMProvider.OPENAI, "deployment-model"),
+        ({"provider": "stub"}, LLMProvider.STUB, "stub"),
+        ({"provider": "stub", "model": "fixture"}, LLMProvider.STUB, "fixture"),
+        (
+            {"provider": "anthropic", "model": "alternate"},
+            LLMProvider.ANTHROPIC,
+            "alternate",
+        ),
+        ({"model": "alternate"}, LLMProvider.OPENAI, "alternate"),
+    ],
+)
+def test_model_resolution_is_scoped_to_provider(
+    config, expected_provider, expected_model
+):
+    configured = settings().model_copy(
+        update={"llm_provider": LLMProvider.OPENAI, "llm_model": "deployment-model"}
+    )
+    resolved = RunConfig.model_validate(config).resolve(configured)
+    assert (resolved.provider, resolved.model) == (expected_provider, expected_model)
+
+
+@pytest.mark.req("FR-I-04")
+@pytest.mark.parametrize("provider", [LLMProvider.OPENAI, LLMProvider.ANTHROPIC])
+def test_different_real_provider_requires_explicit_model(provider):
+    with pytest.raises(
+        RunConfigError, match="^model is required when overriding the provider$"
+    ):
+        RunConfig(provider=provider).resolve(settings())
+
+
+@pytest.mark.req("FR-I-04")
+def test_unconfigured_stub_model_is_resolved_in_domain():
+    assert (
+        RunConfig().resolve(settings().model_copy(update={"llm_model": None})).model
+        == "stub"
+    )

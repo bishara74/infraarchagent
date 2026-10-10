@@ -535,6 +535,16 @@ reduced 44 to 3, but was about 3–4 times slower and 25 times more expensive.
 After lenient metadata handling it had zero rejected fixes; the previous 10/20
 baseline is author-reported historical evidence. MEDIUM remains blocking.
 
+Phase 7b scopes `SECURITY_FIX_PROVIDER`, `SECURITY_FIX_MODEL` and
+`SECURITY_FIX_REASONING_EFFORT` to runs whose resolved provider equals the
+configured `LLM_PROVIDER`. Stub runs always use a stub fixer with model `stub`,
+even when the deployment itself uses the stub provider. This preserves the
+hybrid setup while preventing provider overrides from selecting paid fixers.
+For FR-I-04, a different provider no longer inherits the deployment's model:
+an omitted model resolves to `stub` for a stub override; a real-provider
+override must explicitly supply a model or submission returns 400
+`invalid_request`. Unchanged providers continue to inherit `LLM_MODEL`.
+
 ### D-34 — Optional prompt-cache measurement (Accepted)
 
 `LLM_PROMPT_CACHE=off|system` defaults to off: output tokens dominate measured
