@@ -78,7 +78,10 @@ One accent (orange). Status colours are semantic only, never decoration.
 - `--surface`, 1px `--border`, radius 8px, padding 12px 16px.
 - Left: status icon; then agent name (14/600) and one-line message
   (14/400 muted); right: badge and elapsed time (tabular).
-- The Generators card expands to three variant sub-rows.
+- The Generators card expands to three horizontal variant status blocks on the
+  desktop grid, as in the mockup; each keeps a text badge and event sequence.
+- Elapsed stage activity is the union of real timestamp intervals across variants
+  and retries; concurrent activity counts once and review gaps add no time.
 
 ### Variant column (screen 3)
 - `--surface`, 1px `--border`; selected: 2px `--accent` border.
@@ -94,7 +97,8 @@ One accent (orange). Status colours are semantic only, never decoration.
 
 ### Live log (screen 2)
 - `--bg-code`, mono 12px, timestamp muted, level tag coloured, auto-scroll
-  that pauses when the user scrolls up.
+  that pauses when the user scrolls up. The visible viewport is
+  `clamp(144px, 16vh, 240px)` so stages and the log fit at 1440×900.
 
 ## Decisions
 

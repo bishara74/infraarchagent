@@ -1,11 +1,9 @@
 import { defineConfig } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { assertTestDatabases } from './e2e/support/testDatabase';
 const root=fileURLToPath(new URL('..',import.meta.url));
-const database=process.env.TEST_DATABASE_URL;
-const owner=process.env.TEST_MIGRATION_DATABASE_URL;
-if(!database||!owner) throw new Error('Export TEST_DATABASE_URL and TEST_MIGRATION_DATABASE_URL for the test database; E2E never loads dotenv.');
-if(!database.includes('/infraarch_test')||!owner.includes('/infraarch_test')) throw new Error('E2E requires infraarch_test database URLs.');
+const [database,owner]=assertTestDatabases(process.env.TEST_DATABASE_URL,process.env.TEST_MIGRATION_DATABASE_URL);
 const perf=process.argv.some((value,index)=>value==='--grep'&&process.argv[index+1]?.includes('@perf')||value.startsWith('--grep=')&&value.includes('@perf'));
 export default defineConfig({
  testDir:'./e2e', timeout:180000, expect:{timeout:90000}, fullyParallel:false, workers:1, retries:0,

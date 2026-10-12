@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator
 from typing import Annotated
 from uuid import UUID
 
+import anyio
 from fastapi import APIRouter, Depends, Header, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from pydantic import ValidationError
@@ -220,9 +221,12 @@ async def _can_close(
 ) -> bool:
     if not terminal_event_seen:
         return False
-    async with session_factory() as session:
-        row = await RunRepository(session).get(run_id)
-        packages = await PackageRepository(session).list_for_run(run_id)
+    # StreamingResponse disconnects use level-triggered cancellation. Finish
+    # the owned read and return its connection before honoring that cancellation.
+    with anyio.CancelScope(shield=True):
+        async with session_factory() as session:
+            row = await RunRepository(session).get(run_id)
+            packages = await PackageRepository(session).list_for_run(run_id)
     return (
         row is not None
         and RunStatus(row.status) in TERMINAL_RUNS
@@ -233,6 +237,15 @@ async def _can_close(
         )
         and all(observed_packages.get(item.variant) == item.status for item in packages)
     )
+
+
+async def _replay_records(
+    event_log: EventLog, run_id: UUID, cursor: int | None
+) -> list[EventRecord]:
+    # Includes list_after's session cleanup, but never a yield or live wait.
+    with anyio.CancelScope(shield=True):
+        records = await event_log.list_after(run_id, cursor)
+    return records
 
 
 @router.get("/{run_id}/stream")
@@ -279,10 +292,10 @@ async def stream_run(
 
         async with broker.subscribe(parsed_id) as subscription:
             if cursor is not None:
-                for record in await event_log.list_after(parsed_id, None):
+                for record in await _replay_records(event_log, parsed_id, None):
                     if record.seq <= cursor:
                         observe(record)
-            for record in await event_log.list_after(parsed_id, cursor):
+            for record in await _replay_records(event_log, parsed_id, cursor):
                 if last_sent is not None and record.seq <= last_sent:
                     continue
                 yield safety.text(to_sse(record))

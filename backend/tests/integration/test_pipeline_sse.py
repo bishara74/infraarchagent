@@ -328,3 +328,181 @@ async def test_final_state_commit_does_not_close_before_its_frame(db_engines):
     )
     observed["cost"] = "production_ready"
     assert await _can_close(app.state.session_factory, run_id, True, observed)
+
+
+@pytest.mark.req("FR-P-04", "PR-02")
+@pytest.mark.parametrize("read_point", ["replay", "resume", "close"])
+async def test_cancelled_stream_finishes_database_read_and_cleanup(
+    db_engines, monkeypatch, tmp_path, read_point
+):
+    """Disconnect at an explicit checkpoint while a real pooled read is owned."""
+    import anyio
+    from sqlalchemy.ext.asyncio import AsyncSession
+
+    from app.agents.validator import ValidatorAgent
+    from app.validation.engine import ValidationEngine
+    from tests.integration.test_pipeline_api import _empty_scanner
+    from tests.integration.test_pipeline_review import client_for
+    from tests.unit.test_validation_engine import Clean, mirror
+
+    engine, _ = db_engines
+    app = create_app(
+        get_settings().model_copy(update={"pipeline_demo_scenario": "clean"}), engine
+    )
+    sessions = app.state.session_factory
+    async with sessions() as session, session.begin():
+        row = await RunRepository(session).create(
+            "Deploy AWS web service", LLMProvider.STUB, 3
+        )
+        run_id = row.run_id
+    event = await app.state.event_log.append(
+        run_id,
+        AgentName.ORCHESTRATOR,
+        RunStatus.CREATED,
+        payload=run_status_payload(),
+    )
+    if read_point == "close":
+        await app.state.writer.run_transition(
+            run_id, RunStatus.FAILED, message="stopped"
+        )
+    response = await stream_run(
+        str(run_id),
+        request_for(app),
+        app.state.event_log,
+        app.state.broker,
+        str(event.seq) if read_point == "resume" else None,
+    )
+    assert isinstance(response, StreamingResponse)
+    stream = response.body_iterator
+    if read_point == "close":
+        await anext(stream)
+        await anext(stream)
+
+    entered, release, finished = anyio.Event(), anyio.Event(), anyio.Event()
+    original_execute = AsyncSession.execute
+    armed = True
+    completed = False
+    cancelled = False
+    holder = []
+
+    async def blocked_execute(session, *args, **kwargs):
+        nonlocal armed, completed, cancelled
+        result = await original_execute(session, *args, **kwargs)
+        if armed:
+            armed = False
+            entered.set()
+            try:
+                await release.wait()
+                completed = True
+            except anyio.get_cancelled_exc_class():
+                cancelled = True
+                raise
+        return result
+
+    async def consume():
+        try:
+            with anyio.CancelScope() as scope:
+                holder.append(scope)
+                try:
+                    async for _ in stream:
+                        await anyio.lowlevel.checkpoint()
+                finally:
+                    await stream.aclose()
+        finally:
+            finished.set()
+
+    # Scope matches StreamingResponse's level-triggered AnyIO disconnect.
+    with monkeypatch.context() as patch:
+        patch.setattr(AsyncSession, "execute", blocked_execute)
+        async with anyio.create_task_group() as group:
+            group.start_soon(consume)
+            with anyio.fail_after(2):
+                await entered.wait()
+            holder[0].cancel()
+            release.set()
+            with anyio.fail_after(1):
+                await finished.wait()
+    assert completed and not cancelled, "disconnect interrupted an owned database read"
+    assert run_id not in app.state.broker._subscribers
+    assert engine.sync_engine.pool.checkedout() == 0
+
+    # Same engine/pool, real orchestrator/agents/persistence, offline tool adapters.
+    app.state.runner.factory.scanner = _empty_scanner()
+    app.state.runner.validation_stage = ValidatorAgent(
+        ValidationEngine(Clean(), mirror=mirror(tmp_path), versions={}), sessions
+    )
+    async with app.router.lifespan_context(app), client_for(app) as client:
+        accepted = await client.post(
+            "/api/pipeline/run",
+            json={"text": "Deploy an AWS web service", "config": {"provider": "stub"}},
+        )
+        assert accepted.status_code == 202
+        await asyncio.gather(*app.state.runner.tasks.values())
+        result = await client.get(f"/api/pipeline/{accepted.json()['run_id']}/results")
+        assert result.status_code == 200
+        body = result.json()
+        assert body["run"]["status"] == "success"
+        assert len(body["packages"]) == 3
+        assert all(item["status"] == "production_ready" for item in body["packages"])
+
+
+@pytest.mark.req("FR-P-04", "PR-02")
+@pytest.mark.parametrize("after_keepalive", [False, True])
+async def test_cancelled_stream_does_not_shield_live_or_keepalive_wait(
+    db_engines, monkeypatch, after_keepalive
+):
+    import anyio
+
+    engine, _ = db_engines
+    app = create_app(
+        get_settings().model_copy(update={"sse_keepalive_seconds": 60}), engine
+    )
+    async with app.state.session_factory() as session, session.begin():
+        row = await RunRepository(session).create(
+            "Deploy AWS web service", LLMProvider.STUB, 3
+        )
+        run_id = row.run_id
+    response = await stream_run(
+        str(run_id), request_for(app), app.state.event_log, app.state.broker, None
+    )
+    assert isinstance(response, StreamingResponse)
+    stream = response.body_iterator
+    if after_keepalive:
+
+        async def expire_first_wait(awaitable, *, timeout):
+            assert timeout == 60
+            awaitable.close()
+            raise TimeoutError
+
+        with monkeypatch.context() as patch:
+            patch.setattr(asyncio, "wait_for", expire_first_wait)
+            assert await anext(stream) == ": keepalive\n\n"
+    waiting, finished = anyio.Event(), anyio.Event()
+    original_get = asyncio.Queue.get
+    holder = []
+
+    async def observe_wait(queue):
+        waiting.set()
+        return await original_get(queue)
+
+    async def consume():
+        try:
+            with anyio.CancelScope() as scope:
+                holder.append(scope)
+                try:
+                    await anext(stream)
+                finally:
+                    await stream.aclose()
+        finally:
+            finished.set()
+
+    monkeypatch.setattr(asyncio.Queue, "get", observe_wait)
+    async with anyio.create_task_group() as group:
+        group.start_soon(consume)
+        with anyio.fail_after(2):
+            await waiting.wait()
+        holder[0].cancel()
+        # A deadlock watchdog, not a PR latency measurement.
+        with anyio.fail_after(0.5):
+            await finished.wait()
+    assert run_id not in app.state.broker._subscribers

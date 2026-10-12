@@ -27,6 +27,62 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8 section 7 — Verify thesis layouts and repair SSE disconnect cleanup
+
+**Summary:** Compare all four real screens with the mockup PDFs through global
+playwright-cli; save final 1440×900 and 1024px evidence. Fix layout/timing details,
+shared stream ownership and accepted-retry presentation. Repair a backend bug
+found by Phase 8 browser reload under an explicitly approved scope exception.
+
+**Requirements addressed:** FR-UI-01..07, FR-P-04, UC-08, PR-02, NFR-01.
+
+**Files:** frontend/src/components/{StageCard,LiveLog,FileTree,ReportPanel,ReviewPanel};
+screens/{ProgressScreen,ComparisonScreen,PackageScreen}; hooks/useRunStream;
+lib/{runReducer,runStreamStore,fileTree} and tests; screen/review tests;
+styles/global.css, index.html, public/favicon.svg; playwright.config.ts,
+e2e/support/testDatabase.ts and its unit tests; backend/app/api/pipeline.py,
+backend/tests/integration/test_pipeline_sse.py; .interface-design/system.md;
+docs/evals/phase8-ui-20261012T204423Z/, docs/design-deviations.md and this log.
+
+**Decisions:** D-40 records the backend cause and author-approved exception.
+StreamingResponse's level-triggered disconnect cancellation interrupted database
+reads/session cleanup, allowing a closed asyncpg connection to reach another
+pipeline borrower. Shield only replay/close-check reads and cleanup, never yields
+or live/keep-alive waits. A resource-lease microtask transfers frontend stream
+ownership across navigation/StrictMode without delaying accepted event commits;
+an accepted-retry latch prevents stale snapshots restoring review controls.
+Directory rows derive only from returned paths. Generator states follow the
+horizontal mockup layout; compact log fits the full viewport. Stage activity
+uses the union of timestamp intervals, excluding review gaps and concurrent
+double counting. Reuse Intl.DateTimeFormat; fix singular fix-count copy. E2E
+accepts the exact test database and ordinary app/owner roles, never URL substrings.
+
+**Tests:** Required red run on unchanged backend: 3 cancellation tests failed,
+2 cancellation-bound tests passed (12.37s). With the fix: all 10 SSE tests passed
+(14.83s); strengthened 60-second keep-alive watchdog suite: 10 passed (31.13s).
+Every canceled-read case verifies no checked-out connection and a complete
+successful three-package stub pipeline on the same pool. make test: 1057 passed,
+0 failed, 0 skipped, 6 deselected (196.01s). make test-perf: 6 passed, 0 failed,
+0 skipped, 1057 deselected (30.38s). Initial concurrent-load perf attempt had
+5 passed/1 PR-04 timing failure (2.412591s > 2s); isolated reruns passed without
+weakening thresholds. Final make lint passes Ruff/format (180 files), mypy
+(98 sources), ESLint and both strict TS projects; frontend build passes.
+Vitest: 82 passed, 0 failed, 0 skipped in 13 files (13.59s). Default Playwright:
+6 passed (2.4m); final @perf: 1 passed (28.6s), 32 live samples, max 663ms,
+median 165.5ms. Earlier PR-02 max/median: 1134/275.5ms failed; 949/305ms and
+726/242.5ms passed. No latency threshold changed. Earlier active-reload attempts
+failed from the diagnosed backend bug; final reload and full flow pass.
+Manual repair preserves baseline/run history; downloaded ZIP content and readiness
+document verified. All four 1024px layouts checked; built FastAPI SPA renders
+under CSP with 0 console errors/warnings. Screenshots use real stub/API data.
+
+**Known gaps / follow-ups:** Final performance measurements remain Phase 9.
+Section 8 documentation and section 9 documentation-only audit follow. No new
+endpoint, migration or dependency; no further install, dotenv read, real model
+call, spec edit, push or change to untracked REVISION.txt.
+
+
+
 
 ## 2026-10-12 — Phase 8 section 6 — Add acceptance checks and dotenv-disabled verification
 

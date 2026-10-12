@@ -15,7 +15,7 @@ import {setActiveRun} from '../lib/sessionState';
 const state=vi.hoisted(()=>({current:{} as Record<string,unknown>}));
 vi.mock('../hooks/useRunStream',()=>({useRunStream:()=>state.current}));
 vi.mock('../hooks/useRunResults',()=>({useRunResults:()=>state.current}));
-function snapshot(value:ResultsResponse|null=pending as ResultsResponse,error:unknown=null){state.current={results:value,error,events:[],model:value?applySnapshot(initialModel(),value):initialModel(),state:'closed',reconnect:vi.fn(),refresh:vi.fn(async()=>value)};}
+function snapshot(value:ResultsResponse|null=pending as ResultsResponse,error:unknown=null){state.current={results:value,error,events:[],model:value?applySnapshot(initialModel(),value):initialModel(),state:'closed',pendingRetries:[],reconnect:vi.fn(),reopenRetry:vi.fn(),refresh:vi.fn(async()=>value)};}
 function show(component:React.ReactNode,path='/runs/run'){return render(<MemoryRouter initialEntries={[path]}><Routes><Route path="/" element={component}/><Route path="/runs/:runId" element={component}/><Route path="/runs/:runId/compare" element={component}/><Route path="/runs/:runId/packages/:variant" element={component}/></Routes></MemoryRouter>);}
 afterEach(()=>{sessionStorage.clear();});
 it.each([ProgressScreen,ComparisonScreen,PackageScreen])('screen loading and safe errors',Component=>{snapshot(null);const root=show(<Component/>,'/runs/run/packages/security');expect(screen.getByRole('status')).toHaveTextContent('Loading');root.unmount();snapshot(null,new ApiError(404,'run_not_found','Run not found.'));show(<Component/>);expect(screen.getByRole('alert')).toHaveTextContent('Run not found.');});

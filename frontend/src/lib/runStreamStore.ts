@@ -1,13 +1,13 @@
 import { flushSync } from 'react-dom';
 import { api } from '../api/client';
-import { streamRun, type StreamState } from '../api/sse';
-import type { ResultsResponse } from '../api/types';
+import { isSettled, streamRun, type StreamState } from '../api/sse';
+import type { ResultsResponse, Variant } from '../api/types';
 import { applySnapshot, initialModel, reduceEvent } from './runReducer';
 
 function createStore(runId: string) {
-  let value = { model: initialModel(), results: null as ResultsResponse | null, state: 'connecting' as StreamState, error: null as unknown };
+  let value = { model: initialModel(), results: null as ResultsResponse | null, state: 'connecting' as StreamState, error: null as unknown, pendingRetries: [] as Variant[] };
   let controller: AbortController | null = null;
-  let generation = 0; let users = 0; let refreshRevision = 0;
+  let generation = 0; let users = 0; let refreshRevision = 0; let lease = 0;
   const listeners = new Set<() => void>();
   const update = (change: Partial<typeof value>) => { value = { ...value, ...change }; listeners.forEach(listener => listener()); };
   const store = {
@@ -24,12 +24,33 @@ function createStore(runId: string) {
       update({ error: null });
       void streamRun({ runId, signal: controller.signal, cursor: value.model.events.at(-1)?.seq,
         event: event => { if (current === generation) flushSync(() => update({ model: reduceEvent(value.model, event) })); },
-        snapshot: result => { if (current === generation) { ++refreshRevision; update({ results: result, model: applySnapshot(value.model, result) }); } },
+        snapshot: result => { if (current === generation) { ++refreshRevision; update({ results: result, model: applySnapshot(value.model, result), pendingRetries: isSettled(result) ? [] : value.pendingRetries }); } },
         state: (state, error = null) => { if (current === generation) update({ state, error }); },
       });
     },
-    acquire() { if (users++ === 0) { store.start(); const current = generation; void store.refresh().catch(error => { if (current === generation) update({ error }); }); } },
-    release() { if (--users === 0) { ++generation; controller?.abort(); controller = null; } },
+    reopenRetry(variant: Variant) {
+      update({ pendingRetries: [...new Set([...value.pendingRetries, variant])] });
+      store.start();
+    },
+    acquire() {
+      if (users++ !== 0) return;
+      const currentLease = ++lease;
+      // Route replacement and StrictMode cleanup/setup transfer ownership in
+      // the same turn. Do not issue requests for a discarded mount.
+      queueMicrotask(() => {
+        if (!users || currentLease !== lease || controller) return;
+        store.start(); const current = generation;
+        void store.refresh().catch(error => { if (current === generation) update({ error }); });
+      });
+    },
+    release() {
+      if (--users !== 0) return;
+      const currentLease = ++lease;
+      queueMicrotask(() => {
+        if (users || currentLease !== lease) return;
+        ++generation; controller?.abort(); controller = null;
+      });
+    },
   };
   return store;
 }

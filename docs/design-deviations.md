@@ -809,7 +809,7 @@ badges for fixes require matching recorded finding evidence; validation-only fix
 may have empty rule_ids and are explicitly labelled as such. Validation check IDs
 appear in the separate report tab, without becoming security annotations.
 
-### D-40 — Frontend stack, delivery and stream settlement (Accepted; setup and client implemented)
+### D-40 — Frontend stack, delivery and stream settlement (Accepted; implemented)
 
 Phase 8 uses React 19.3, Vite 8, TypeScript 6.0 in strict mode and plain CSS
 with the fixed thesis tokens and system fonts. It supersedes AGENTS.md's
@@ -833,7 +833,7 @@ title and theme-colour metadata match the design system. color-scheme: dark
 is in external CSS instead of the phase prompt's inline style attribute,
 because the approved self-only style CSP will reject inline styles.
 
-The approved remaining delivery design is a fetch/ReadableStream SSE client,
+The implemented delivery uses a fetch/ReadableStream SSE client,
 an API key stored only in sessionStorage and sent via X-API-Key, and optional
 FastAPI SPA serving from frontend/dist, with API responses unaffected.
 The API client, session state, parser, reducer and shared stream store are
@@ -859,6 +859,28 @@ including migrations and isolated scanner subprocesses; Vite uses envDir=false.
 E2E starts fresh stub/review servers, because health cannot verify defaults of an
 existing server without changing the API. Every submitted E2E run explicitly
 requests stub. Browser/system prerequisites are installed only by the author.
+
+
+Phase 8 browser reload exposed an existing backend SSE cleanup bug: Starlette's
+level-triggered AnyIO disconnect cancellation can interrupt a PostgreSQL read
+and its async session cleanup, returning a connection before asyncpg terminates
+it. An unrelated pipeline borrowing that pooled connection then fails. The
+author approved a narrow additional backend scope exception: shield only the
+SSE replay reads and terminal/package close-check reads, including their session
+cleanup, in api/pipeline.py. Yields, live-event waits and keep-alive waits remain
+cancellable. No endpoint, schema, migration or dependency changes. The
+synchronized PostgreSQL regression failed first at all three read points on the
+unchanged code (3 failed, 2 cancellation-bound tests passed), then all 10 SSE
+tests passed with the fix. Each canceled-read case also runs a complete stub
+pipeline on the same engine/pool and requires three production-ready packages;
+idle/live cancellation must finish within a 0.5-second deadlock watchdog.
+
+The shared frontend store transfers ownership across synchronous navigation and
+React StrictMode through a single resource-lease microtask; accepted events still
+commit immediately. An accepted retry keeps a client operation latch until a
+settled EOF snapshot, preventing stale results from restoring review controls.
+This latch is client state, not another results field. Reusing the live log's
+Intl.DateTimeFormat avoids repeated formatter allocation during those commits.
 
 ### D-41 — Deterministic validation-review demo (Accepted)
 
