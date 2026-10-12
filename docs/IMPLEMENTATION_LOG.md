@@ -27,6 +27,41 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8 section 9 — Audit completed scope and protected files
+
+**Summary:** Finish the documentation-only audit of sections 0–9, approved backend
+exceptions, dependency/manifest checkpoint, commit order and actual verification.
+Phase 8 is complete; no later-phase runtime work is included.
+
+**Requirements addressed:** FR-UI-01..07, FR-P-04, UC-08, PR-02, NFR-01; scope audit.
+
+**Files:** docs/evals/phase8-ui-20261012T204423Z/scope-audit.md;
+docs/IMPLEMENTATION_LOG.md. Documentation only.
+
+**Decisions:** Read-only diffs/AST checks show unchanged pipeline API route
+signatures, database/models/repositories/applied migrations, domain state rules
+and docs/spec. The only results-schema delta is required retry_in_progress.
+All 22 manifest pins match installed lock entries and the publish-date record;
+lock unchanged since section 1. REVISION.txt remains untracked and untouched.
+The approved cancellation fix is confined to read/cleanup shields, with required
+red/green, short-bound cancellation and same-pool full-pipeline evidence (D-40).
+No accounts/history/mobile/i18n/UI library/framework/fonts/new pipeline endpoint,
+extra install, dotenv read, real LLM call, push or history rewrite. No new open
+question. Section commits/logs follow 0 → 1 → 5 → 2 → 3 → 4 → 6 → 7 → 8 → 9.
+
+**Tests:** Documentation only; no rerun of unchanged code. Latest actual results:
+make lint/build passed; pytest 1057 default passed, 6 perf deselected; perf 6
+passed, 1057 deselected; Vitest 82 passed; default E2E 6 passed; final @perf 1
+passed. PR-02 saved 32 live samples: max 663ms, median 165.5ms. Cancellation suite
+10 passed after original 3 failures/2 passes. Read-only dependency/lock/route/
+protected-file audits and git diff --check pass. Visual evidence links all four
+real screens and 1024px checks. Earlier failures remain documented.
+
+**Known gaps / follow-ups:** Phase 9 final performance measurements are out of
+scope. Collected thesis wording awaits author edits; docs/spec remains unchanged.
+
+
+
 ## 2026-10-13 — Phase 8 section 8 — Document the completed frontend and thesis updates
 
 **Summary:** Update project status/setup and the exact results field list; collect
