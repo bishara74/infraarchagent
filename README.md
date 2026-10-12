@@ -36,8 +36,9 @@ implementation differs from the thesis design.
 ## Local setup
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
-port 5432. To run live scanning or `make eval-security`, put Checkov 3.3.21,
-Trivy v0.69.3 and Terraform v1.16.4 on PATH. Install Checkov with the exact
+port 5432. Frontend commands and `make lint` also require Node.js ≥22.22.2
+(development uses Node 24 LTS). To run live scanning or `make eval-security`,
+put Checkov 3.3.21, Trivy v0.69.3 and Terraform v1.16.4 on PATH. Install Checkov with the exact
 pin `pipx install "checkov==3.3.21"`. Active scans use all three tools; health
 reports `scanners.checkov`, `scanners.trivy`, and `scanners.terraform`.
 Trivy renders Helm charts without the `helm` binary. Recorded tests
@@ -77,7 +78,8 @@ scanner timeout/cancellation kills the whole process group and bounds pipe clean
 1. Copy `.env.example` to `.env`. Replace the three placeholder passwords and
    make the passwords in the four database URLs match their roles. `.env` is
    ignored by Git.
-2. Run `make up`, `make install`, and `make migrate` from the repository root.
+2. Run `make up`, `make install`, `make frontend-install`, and `make migrate`
+   from the repository root.
    `make install` uses `backend/requirements.lock` as pip constraints to pin
    the runtime and dev dependencies recorded for Phase 1.
 3. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
@@ -94,6 +96,48 @@ scanner timeout/cancellation kills the whole process group and bounds pipe clean
 deletes generated package rows older than the configured retention period;
 `cd backend && .venv/bin/python -m app.cli sweep-packages --dry-run` reports
 the count without deleting. The CLI also accepts `--days N`.
+
+## Frontend setup
+
+The frontend uses React 19.3, Vite 8, TypeScript 6.0 in strict mode and plain
+CSS. Use Node.js ≥22.22.2; development uses Node 24 LTS (24.21.0) and npm
+11.19.0. Exact dependencies are pinned in `frontend/package.json` and the
+committed `frontend/package-lock.json`. Runtime packages are limited to React,
+React DOM, React Router and jsdiff. Fonts and styles are local.
+
+```text
+make frontend-install
+make frontend-dev
+make frontend-build
+make frontend-test
+make lint
+```
+
+`frontend-install` uses `npm ci --ignore-scripts` for reproducible subsequent
+setup. The initial approved install was performed once with
+`npm install --save-exact --ignore-scripts`; do not enable installation scripts
+to work around a dependency failure. No browser is downloaded by these commands.
+
+The dev server runs at `http://127.0.0.1:5173` and proxies `/api` to the backend
+at `http://127.0.0.1:8000`, preserving one browser origin without CORS.
+Vite does not load dotenv files. Start the backend separately with `make run`
+when working with the API. `frontend-build` type-checks the app and tooling and
+writes `frontend/dist`; `frontend-test` runs Vitest once. `make lint` checks both
+backend and frontend, including ESLint and TypeScript `--noEmit`.
+
+Phase 8 section 1 provides the minimal app shell and tooling. The four pipeline
+screens, API/SSE client, FastAPI build serving and E2E configuration are still
+pending in their subsequent sections. `make test-e2e` is reserved for those
+Playwright tests. After installing dependencies, the author installs Chromium:
+
+```bash
+cd frontend
+npx playwright install chromium
+```
+
+This uses the pinned local Playwright package. Agents must not download browsers
+or use `npx` to fetch tools. Manual visual checks use the existing global
+`playwright-cli` directly.
 
 ## Running a pipeline
 

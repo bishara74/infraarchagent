@@ -793,6 +793,46 @@ remain generic. D-19's separate transactions remain a known limit: a hard crash
 can leave a labelled package without its label event, handled by the archive's
 unavailable provenance/time text.
 
+### D-40 — Frontend stack, delivery and stream settlement (Accepted; setup implemented)
+
+Phase 8 uses React 19.3, Vite 8, TypeScript 6.0 in strict mode and plain CSS
+with the fixed thesis tokens and system fonts. It supersedes AGENTS.md's
+React 18/Tailwind stack line. Node ≥22.22.2 is the package engine requirement;
+development uses Node 24 LTS (24.21.0). The specification's Node 18 minimum
+needs updating. Exact direct pins and the resolved graph are committed in
+frontend/package.json and frontend/package-lock.json. Releases were checked
+against the 14-day cutoff before approval. TypeScript 6.0.3 is an approved
+compatibility exception because typescript-eslint does not support TypeScript 7.
+
+The author approved two dev-package allowlist additions: @types/node 24.19.0
+for typed tooling/E2E code, and @testing-library/dom 10.4.2 for Testing Library's
+required peer. jsdiff 9.0.0 supplies declarations, so @types/diff is omitted.
+The one initial npm install used --save-exact --ignore-scripts; subsequent
+setup uses npm ci --ignore-scripts. No installation script or browser download
+was enabled to make the toolchain work.
+
+The development server proxies /api to localhost:8000. Vite's envDir is false
+so development, build and Vitest do not load dotenv files. The HTML language,
+title and theme-colour metadata match the design system. color-scheme: dark
+is in external CSS instead of the phase prompt's inline style attribute,
+because the approved self-only style CSP will reject inline styles.
+
+The approved remaining delivery design is a fetch/ReadableStream SSE client,
+an API key stored only in sessionStorage and sent via X-API-Key, and optional
+FastAPI SPA serving from frontend/dist, with API responses unaffected.
+These features are not implemented by section 1.
+
+The sole approved results-schema addition is a required retry_in_progress
+boolean on each package, derived from review_retry_started_at IS NOT NULL,
+without exposing that timestamp or changing the database schema. Section 2
+will implement it alongside types and fixtures. At EOF, the client fetches
+results once and considers the stream settled only when the run is terminal,
+no package is scanning/remediating/validating and no retry_in_progress is true.
+This covers D-38's marked intermediate states. An active EOF resumes with
+Last-Event-ID and backoff; five EOF reconnect attempts without a new event are
+allowed before pausing with a manual Reconnect notice. Normal settled EOF
+does not reconnect; retry 202 explicitly reopens the stream.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -959,6 +999,13 @@ metadata or semantic naming inference is a later design decision.
 
 ## Thesis text to update (collected)
 
+- Frontend build requirement: "Node.js 22.22 or later (developed on Node 24 LTS)";
+  operational package minimum is 22.22.2. Appendix A should list React 19.3.0,
+  Vite 8.3.1, TypeScript 6.0.3 and the exact package.json/package-lock.json pins,
+  with plain CSS replacing the standing React 18/Tailwind description (D-40).
+- Document the derived results retry_in_progress boolean, EOF snapshot
+  settlement rule and five-attempt EOF reconnect cap (D-40; section 2 pending).
+- Explain the external-CSS dark colour scheme under self-only style CSP (D-40).
 - Authentication: X-API-Key header, open-when-unset rule and fetch-based SSE (D-36).
 - Download ZIP includes a readiness file, “Labelled at” event timestamp and static-deployability caveat.
 - ERD: new column review_retry_started_at (nullable TIMESTAMPTZ, D-38).

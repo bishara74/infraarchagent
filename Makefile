@@ -1,8 +1,10 @@
 PYTHON := python3
 VENV := backend/.venv
 BACKEND := cd backend &&
+FRONTEND := cd frontend &&
 
 .PHONY: up down install migrate migrate-test run run-pipeline test test-perf lint sweep spike eval-architect eval-generators eval-security eval-validation
+.PHONY: frontend-install frontend-dev frontend-build frontend-test test-e2e
 
 up:
 	docker compose up -d --wait
@@ -37,6 +39,22 @@ lint:
 	$(BACKEND) .venv/bin/ruff check app tests
 	$(BACKEND) .venv/bin/ruff format --check app tests
 	$(BACKEND) .venv/bin/mypy app
+	$(FRONTEND) npm run lint
+
+frontend-install:
+	$(FRONTEND) npm ci --ignore-scripts
+
+frontend-dev:
+	$(FRONTEND) npm run dev
+
+frontend-build:
+	$(FRONTEND) npm run build
+
+frontend-test:
+	$(FRONTEND) npm test
+
+test-e2e:
+	$(FRONTEND) npm run test:e2e
 
 sweep:
 	$(BACKEND) .venv/bin/python -m app.cli sweep-packages

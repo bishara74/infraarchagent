@@ -27,6 +27,71 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-12 — Phase 8 section 1 — Install and scaffold the pinned frontend
+
+**Summary:** After explicit manifest confirmation, perform the one approved
+npm install and commit its lockfile. Add the minimal React shell, strict
+TypeScript projects, flat ESLint, Vitest, Vite API proxy, fixed design tokens
+and root Make targets. Update the standing stack line and setup documentation.
+
+**Requirements addressed:** NFR-01; otherwise infrastructure preparing the
+Phase 8 UI, with no pipeline screen behavior claimed yet.
+
+**Files:** added frontend/package.json, frontend/package-lock.json,
+frontend/index.html, frontend/vite.config.ts, frontend/tsconfig.json,
+frontend/tsconfig.node.json, frontend/eslint.config.mjs,
+frontend/src/main.tsx, frontend/src/App.tsx, frontend/src/App.test.tsx,
+frontend/src/styles/tokens.css, frontend/src/styles/global.css,
+frontend/src/test/setup.ts and frontend/src/test/tooling.test.ts;
+removed frontend/.gitkeep; changed AGENTS.md, .gitignore, Makefile, README.md,
+docs/design-deviations.md and docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** D-40 records the approved stack, Node requirement, TypeScript
+compatibility exception, two additional dev dependencies and the remaining
+delivery/stream contract. No new open question. Use Node 24.21.0 LTS and npm
+11.19.0, with package engines >=22.22.2. Keep the heading-only shell honest;
+pipeline screens remain section 3. Vite envDir=false disables dotenv loading;
+the /api proxy uses loopback port 8000. Keep color-scheme: dark in external CSS
+to support section 4's self-only CSP. Copy all existing colour/token values
+and system fonts. Subsequent installs use npm ci --ignore-scripts. The planned
+retry_in_progress schema addition is recorded in D-40 but deferred to section 2.
+
+**Installed exact versions:** runtime react 19.3.0, react-dom 19.3.0,
+react-router 8.4.0, diff 9.0.0. Development @eslint/js 10.0.1,
+@playwright/test 1.63.0, @testing-library/dom 10.4.2,
+@testing-library/jest-dom 7.0.1, @testing-library/react 16.3.3,
+@testing-library/user-event 14.6.7, @types/node 24.19.0, @types/react 19.3.0,
+@types/react-dom 19.3.0, @vitejs/plugin-react 6.1.1, eslint 10.11.0,
+eslint-plugin-react-hooks 7.1.1, globals 17.12.0, jsdom 30.1.1,
+typescript 6.0.3, typescript-eslint 8.71.0, vite 8.3.1, vitest 5.0.2.
+All 22 direct versions match the confirmed manifest and lockfile. diff ships
+types; @types/diff was not installed. The transitive graph is locked separately.
+
+**Tests:** The single npm install --save-exact --ignore-scripts added 241
+packages and audited 242, reporting zero vulnerabilities. No installation
+script was enabled to repair tooling. npm ls --depth=0 confirms every pin;
+the local Vite and Playwright executables report 8.3.1 and 1.63.0.
+make frontend-test: 3 passed, 0 failed, 0 skipped across 2 files in 8.37s.
+Tests prove the app landmark/title, keyboard-reachable skip link, and real
+local dev-server proxy preservation of path, query, method, API-key header
+and request body. make frontend-build passed, including both strict tsc
+projects, transforming 17 modules with Vite in 1.36s. make lint passed backend
+Ruff/format (175 files), mypy (97 source files), frontend ESLint and both tsc
+checks. make test: 1015 passed, 0 failed, 0 skipped, 6 deselected in 239.51s.
+Backend tests use the existing temporary dotenv-disabled bootstrap, isolated
+PostgreSQL 16.14 from the existing image and normal roles/migrations/grants.
+Make target dry-runs and git diff --check passed. Performance tests were not
+rerun: section 0 recorded 6 passed. No Playwright browser/E2E test was run.
+
+**Known gaps / follow-ups:** No .env read, real LLM call, push or browser
+download. The author installs Chromium using the pinned local Playwright
+before the later browser/E2E sections. API/SSE, pipeline screens, FastAPI
+serving, E2E configuration, PR-02 timings and visual screenshots remain
+pending. Next in the approved order is section 5, the deterministic review
+scenario. Untracked REVISION.txt remains untouched.
+
+---
+
 ## 2026-10-12 — Phase 8 section 0 — Normalize stub provenance and separate timing checks
 
 **Summary:** Resolve model `stub` for every stub provider, including configured

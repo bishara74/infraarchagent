@@ -13,8 +13,8 @@ scans them with Checkov and tfsec, remediates violations through an LLM loop,
 validates them, and shows everything in a React UI with live progress over SSE.
 
 Stack: Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0 (async) + asyncpg,
-Alembic, PostgreSQL 16, pytest + pytest-asyncio + httpx. Frontend (later
-phases): React 18 + TypeScript + Vite + Tailwind.
+Alembic, PostgreSQL 16, pytest + pytest-asyncio + httpx. Frontend: React 19.3,
+Vite 8, TypeScript 6.0, plain CSS, Node ≥22.22.2 (developed on Node 24 LTS).
 
 ## 2. Source of truth
 
