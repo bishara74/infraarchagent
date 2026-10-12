@@ -176,7 +176,7 @@ async def test_llm_failure_category_is_reported_without_response(
 @pytest.mark.req("FR-I-04", "NFR-01")
 @pytest.mark.parametrize(
     "configured_provider,expected_model",
-    [(LLMProvider.OPENAI, "stub"), (LLMProvider.STUB, "deployment-model")],
+    [(LLMProvider.OPENAI, "stub"), (LLMProvider.STUB, "stub")],
 )
 async def test_evaluation_summary_uses_resolved_stub_model(
     tmp_path, monkeypatch, configured_provider, expected_model

@@ -74,7 +74,8 @@ async def main():
                 await runner.run("checkov",parent)
         except ToolFailure as e: assert e.category == "timeout"
         else: raise AssertionError("timeout not raised")
-    assert time.monotonic()-started < 8
+    if os.environ["TEST_PERFORMANCE"] == "1":
+        assert time.monotonic()-started < 8
     # Scanner mode stores its PID file in its temporary HOME before removal;
     # the executable also writes to a dedicated observation directory.
     pgids=[int(x) for x in (parent/"observed").read_text().splitlines()]
@@ -94,9 +95,9 @@ asyncio.run(main())
 """
 
 
-@pytest.mark.req("FR-S-01", "FR-V-05", "NFR-01")
-@pytest.mark.parametrize("mode", ["timeout", "cancel", "scan", "validator"])
-def test_timeout_kills_forked_stdout_owner(tmp_path: Path, mode: str) -> None:
+def _check_process_cleanup(
+    tmp_path: Path, mode: str, *, performance: bool = False
+) -> None:
     fake = tmp_path / ("terraform" if mode == "validator" else "checkov")
     # Observation survives Scanner's directory cleanup, without inheriting an
     # arbitrary environment variable into the fake executable.
@@ -113,6 +114,7 @@ def test_timeout_kills_forked_stdout_owner(tmp_path: Path, mode: str) -> None:
     env = {
         "PATH": f"{tmp_path}:/usr/bin:/bin",
         "TEST_MODE": mode,
+        "TEST_PERFORMANCE": "1" if performance else "0",
         "TMPDIR": str(tmp_path),
         "PYTHONPATH": str(Path(__file__).resolve().parents[2]),
     }
@@ -123,7 +125,7 @@ def test_timeout_kills_forked_stdout_owner(tmp_path: Path, mode: str) -> None:
             env=env,
             capture_output=True,
             text=True,
-            timeout=12,
+            timeout=30,
         )
         assert completed.returncode == 0, completed.stderr
     finally:
@@ -133,3 +135,18 @@ def test_timeout_kills_forked_stdout_owner(tmp_path: Path, mode: str) -> None:
                     os.killpg(int(value), signal.SIGKILL)
                 except ProcessLookupError:
                     pass
+
+
+@pytest.mark.req("FR-S-01", "FR-V-05", "NFR-01")
+@pytest.mark.parametrize("mode", ["timeout", "cancel", "scan", "validator"])
+def test_timeout_kills_forked_stdout_owner(tmp_path: Path, mode: str) -> None:
+    _check_process_cleanup(tmp_path, mode)
+
+
+@pytest.mark.perf
+@pytest.mark.req("FR-S-01", "FR-V-05", "NFR-01")
+@pytest.mark.parametrize("mode", ["timeout", "cancel", "scan", "validator"])
+def test_process_cleanup_finishes_under_eight_seconds(
+    tmp_path: Path, mode: str
+) -> None:
+    _check_process_cleanup(tmp_path, mode, performance=True)

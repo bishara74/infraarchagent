@@ -47,11 +47,32 @@ async def test_factory_builds_stub_agent_and_script_can_be_loaded_afterward() ->
 
 
 @pytest.mark.req("FR-I-04")
-def test_overrides_reach_adapter() -> None:
+def test_stub_model_override_is_normalized() -> None:
     agent = AgentFactory(settings(llm_model="default")).create_architect(
         RunConfig(provider=LLMProvider.STUB, model="override", max_iterations=5)
     )
-    assert agent.llm_adapter.model == "override"
+    assert agent.llm_adapter.model == "stub"
+
+
+@pytest.mark.req("FR-I-04", "FR-G-01")
+@pytest.mark.parametrize("provider", [LLMProvider.OPENAI, LLMProvider.ANTHROPIC])
+def test_real_model_override_reaches_architect_and_generators(monkeypatch, provider):
+    from app.agents import factory as module
+
+    calls = []
+
+    def recorded_adapter(settings, **kwargs):
+        calls.append(kwargs)
+        return StubAdapter(kwargs["model"])
+
+    monkeypatch.setattr(module, "build_adapter", recorded_adapter)
+    factory = AgentFactory(settings())
+    config = RunConfig(provider=provider, model="override")
+    architect = factory.create_architect(config)
+    generators = factory.create_generators(config)
+    assert calls == [{"provider": provider, "model": "override"}] * 4
+    assert architect.llm_adapter.model == "override"
+    assert all(agent.llm_adapter.model == "override" for agent in generators)
 
 
 @pytest.mark.req("FR-I-04")
@@ -81,7 +102,7 @@ def test_generator_factory_order_settings_and_run_overrides() -> None:
     assert [agent.variant for agent in agents] == list(Variant)
     assert len({id(agent.llm_adapter) for agent in agents}) == 3
     for agent in agents:
-        assert agent.llm_adapter.model == "override"
+        assert agent.llm_adapter.model == "stub"
         assert agent.deadline_seconds == 90
         assert agent.attempt_timeout == 75
         assert agent.max_output_tokens == 12345
@@ -104,10 +125,10 @@ def test_security_fix_model_override_and_run_fallback_reach_adapter() -> None:
     ).create_security_agent(RunConfig(provider=LLMProvider.OPENAI, model="run-model"))
     override_adapter = overridden.fix_agent.adapter
     assert isinstance(override_adapter, StubAdapter)
-    assert override_adapter.model == "fixer-model"
+    assert override_adapter.model == "stub"
     assert override_adapter.reasoning_effort == "off"
     assert overridden.fixing_provider == "stub"
-    assert overridden.fixing_model == "fixer-model"
+    assert overridden.fixing_model == "stub"
 
     fallback = AgentFactory(
         settings(llm_reasoning_effort="low"),

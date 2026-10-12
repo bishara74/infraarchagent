@@ -268,12 +268,12 @@ async def test_missing_real_provider_key_is_400_without_persistence(
     "configured_provider,config,expected_model",
     [
         (LLMProvider.OPENAI, {"provider": "stub"}, "stub"),
-        (LLMProvider.STUB, {}, "deployment-model"),
-        (LLMProvider.STUB, {"provider": "stub"}, "deployment-model"),
+        (LLMProvider.STUB, {}, "stub"),
+        (LLMProvider.STUB, {"provider": "stub"}, "stub"),
         (
             LLMProvider.OPENAI,
             {"provider": "stub", "model": "fixture-model"},
-            "fixture-model",
+            "stub",
         ),
     ],
 )
@@ -427,8 +427,78 @@ async def test_api_different_real_provider_without_model_is_400(
         assert await session.scalar(select(func.count()).select_from(PipelineRun)) == 0
 
 
-@pytest.mark.req("PR-03")
+@pytest.mark.req("PR-03", "FR-P-04")
 async def test_three_runs_overlap_and_keep_events_isolated(
+    db_engines: tuple[AsyncEngine, AsyncEngine],
+    tmp_path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    engine, _ = db_engines
+    app = create_app(
+        get_settings().model_copy(update={"llm_provider": LLMProvider.STUB}), engine
+    )
+    app.state.runner.factory.scanner = _empty_scanner(9)
+    app.state.runner.validation_stage = ValidatorAgent(
+        ValidationEngine(Clean(), mirror=mirror(tmp_path), versions={}),
+        make_session_factory(engine),
+    )
+    original = PipelineDemoStub.send_prompt
+    architects: set[int] = set()
+    all_started = asyncio.Event()
+    release = asyncio.Event()
+
+    async def blocked(self: PipelineDemoStub, *args: object, **kwargs: object):
+        if self.variant is None:
+            architects.add(id(self))
+            if len(architects) == 3:
+                all_started.set()
+            await release.wait()
+        return await original(self, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(PipelineDemoStub, "send_prompt", blocked)
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            try:
+                responses = await asyncio.gather(
+                    *(
+                        client.post(
+                            "/api/pipeline/run",
+                            json={
+                                "text": f"Deploy AWS web service number {index}",
+                                "config": {"provider": "stub"},
+                            },
+                        )
+                        for index in range(3)
+                    )
+                )
+                assert all(item.status_code == 202 for item in responses)
+                async with asyncio.timeout(30):
+                    await all_started.wait()
+                ids = {UUID(item.json()["run_id"]) for item in responses}
+                assert len(ids) == 3 and len(architects) == 3
+                async with app.state.session_factory() as session:
+                    for run_id in ids:
+                        row = await RunRepository(session).get(run_id)
+                        assert row is not None and row.status == RunStatus.RUNNING
+                assert len(app.state.runner.tasks) == 3
+            finally:
+                release.set()
+            async with asyncio.timeout(30):
+                await asyncio.gather(*app.state.runner.tasks.values())
+            for run_id in ids:
+                events = await app.state.event_log.list_after(run_id, None)
+                assert events and all(item.run_id == run_id for item in events)
+                assert events[-1].new_state == RunStatus.SUCCESS
+                assert [item.seq for item in events] == sorted(
+                    {item.seq for item in events}
+                )
+
+
+@pytest.mark.perf
+@pytest.mark.req("PR-03")
+async def test_three_runs_finish_within_fifty_percent_of_solo_time(
     db_engines: tuple[AsyncEngine, AsyncEngine],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

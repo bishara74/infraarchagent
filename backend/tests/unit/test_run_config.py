@@ -23,7 +23,7 @@ def settings() -> Settings:
 def test_defaults_and_overrides() -> None:
     default = RunConfig().resolve(settings())
     assert default.provider is LLMProvider.STUB
-    assert default.model == "default-model"
+    assert default.model == "stub"
     assert default.max_iterations == 3
     override = RunConfig(
         provider=LLMProvider.OPENAI, model="alternate", max_iterations=5
@@ -51,7 +51,7 @@ def test_invalid_limit_is_rejected() -> None:
         ({}, LLMProvider.OPENAI, "deployment-model"),
         ({"provider": "openai"}, LLMProvider.OPENAI, "deployment-model"),
         ({"provider": "stub"}, LLMProvider.STUB, "stub"),
-        ({"provider": "stub", "model": "fixture"}, LLMProvider.STUB, "fixture"),
+        ({"provider": "stub", "model": "fixture"}, LLMProvider.STUB, "stub"),
         (
             {"provider": "anthropic", "model": "alternate"},
             LLMProvider.ANTHROPIC,
@@ -85,3 +85,14 @@ def test_unconfigured_stub_model_is_resolved_in_domain():
         RunConfig().resolve(settings().model_copy(update={"llm_model": None})).model
         == "stub"
     )
+
+
+@pytest.mark.req("FR-I-04", "NFR-01")
+@pytest.mark.parametrize("configured_provider", list(LLMProvider))
+@pytest.mark.parametrize("model", [None, "deployment-model", "fixture-model"])
+def test_stub_model_always_resolves_to_stub(configured_provider, model):
+    configured = settings().model_copy(
+        update={"llm_provider": configured_provider, "llm_model": "paid-model"}
+    )
+    resolved = RunConfig(provider=LLMProvider.STUB, model=model).resolve(configured)
+    assert resolved.model == "stub"

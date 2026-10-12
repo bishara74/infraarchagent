@@ -115,10 +115,7 @@ async def test_download_missing_label_event_has_stable_unavailable_time(db_engin
         )
 
 
-@pytest.mark.req("PR-04", "FR-UI-06")
-async def test_ten_megabyte_package_download_under_two_seconds(
-    db_engines, record_property
-):
+async def _ten_megabyte_download(db_engines):
     app, run_id = await pending_app(db_engines[0])
     rng = random.Random(704)
     files = {
@@ -139,8 +136,27 @@ async def test_ten_megabyte_package_download_under_two_seconds(
     assert (
         response.status_code == 200 and 7_000_000 < len(response.content) < 10_000_000
     )
-    record_property("pr04_seconds", elapsed)
-    print(f"PR-04: {elapsed:.6f}s; {len(response.content)} archive bytes")
-    assert elapsed < 2
     with ZipFile(BytesIO(response.content)) as archive:
-        assert sum(info.file_size for info in archive.infolist()) >= 10_000_000
+        assert set(archive.namelist()) == {*files, "INFRAARCHAGENT_READINESS.md"}
+        for path, content in files.items():
+            assert archive.read(path).decode() == content
+        assert archive.read("INFRAARCHAGENT_READINESS.md").startswith(
+            b"# PRODUCTION READY"
+        )
+    return elapsed, len(response.content)
+
+
+@pytest.mark.req("FR-UI-06")
+async def test_ten_megabyte_package_download_contains_every_file(db_engines):
+    await _ten_megabyte_download(db_engines)
+
+
+@pytest.mark.perf
+@pytest.mark.req("PR-04", "FR-UI-06")
+async def test_ten_megabyte_package_download_under_two_seconds(
+    db_engines, record_property
+):
+    elapsed, archive_bytes = await _ten_megabyte_download(db_engines)
+    record_property("pr04_seconds", elapsed)
+    print(f"PR-04: {elapsed:.6f}s; {archive_bytes} archive bytes")
+    assert elapsed < 2

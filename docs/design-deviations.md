@@ -543,7 +543,12 @@ hybrid setup while preventing provider overrides from selecting paid fixers.
 For FR-I-04, a different provider no longer inherits the deployment's model:
 an omitted model resolves to `stub` for a stub override; a real-provider
 override must explicitly supply a model or submission returns 400
-`invalid_request`. Unchanged providers continue to inherit `LLM_MODEL`.
+`invalid_request`. Unchanged real providers continue to inherit `LLM_MODEL`.
+Phase 8 section 0 makes model `stub` unconditional whenever the resolved
+provider is stub, including a configured stub default with a real `LLM_MODEL`
+and an explicit request model. The same domain resolution reaches adapters,
+agents, persisted runs, evaluation summaries and archives. Historical rows
+are not rewritten.
 
 ### D-34 — Optional prompt-cache measurement (Accepted)
 

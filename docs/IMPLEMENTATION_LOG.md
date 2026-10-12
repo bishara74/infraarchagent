@@ -27,6 +27,59 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-12 — Phase 8 section 0 — Normalize stub provenance and separate timing checks
+
+**Summary:** Resolve model `stub` for every stub provider, including configured
+and explicit real model names. Separate the existing wall-clock assertions
+into a `perf` suite while keeping structural concurrency, download and process
+cleanup coverage in the default suite.
+
+**Requirements addressed:** FR-I-04, FR-G-01, FR-P-04, FR-UI-06, FR-S-01,
+FR-S-02, FR-V-05, NFR-01, PR-03, PR-04.
+
+**Files:** changed Makefile, README.md, backend/pyproject.toml,
+backend/app/domain/run_config.py,
+backend/tests/unit/test_run_config.py,
+backend/tests/unit/test_llm_factory.py,
+backend/tests/unit/test_agent_factory.py,
+backend/tests/unit/test_eval_architect.py,
+backend/tests/unit/test_scanner_timeout.py,
+backend/tests/integration/test_pipeline_api.py,
+backend/tests/integration/test_pipeline_download.py,
+docs/design-deviations.md and docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Extend D-33; historical rows remain unchanged and real-provider
+model overrides still reach the agents. Both generated and fixing stub adapters
+use the centralized domain resolution. `make test` excludes `perf` and
+`make test-perf` selects it. Three blocked Architect calls prove overlap before
+an explicit release, without sleeps or relative timing. The default 10 MB ZIP
+test checks every generated name and file content plus readiness metadata.
+Scanner/validator structural tests retain deadlines, descendant termination
+and temporary-directory cleanup; only the eight-second performance assertion
+moves to `perf`. The outer deadlock watchdog is 30 seconds. Timing thresholds
+are unchanged; final measurements remain Phase 9 work on a quiet machine.
+
+**Tests:** Focused default checks: 90 passed, 0 failed, 0 skipped, 6 deselected
+in 43.54s, before adding two real-provider override spy cases. Final `make test`:
+1015 passed, 0 failed, 0 skipped, 6 deselected in 201.36s. `make test-perf`:
+6 passed, 0 failed, 0 skipped, 1015 deselected in 29.21s; one existing
+`record_property` warning from requesting xunit2 JUnit output. `make lint`:
+Ruff check and format passed (175 files); mypy passed (97 source files).
+`git diff --check` passed. Verification used the existing temporary
+dotenv-disabled bootstrap and an isolated PostgreSQL 16.14 container from the
+already available postgres:16 image, with the ordinary initialization script,
+migrations, roles and grants. No dependency installation was performed.
+
+**Known gaps / follow-ups:** Paid-model behavior was not exercised. No `.env`
+read, real LLM call, push, migration edit or historical-row rewrite. No new open
+question. Section 1 next writes only the approved pinned package.json and pauses
+for the author's explicit confirmation before installation or further setup.
+The results `retry_in_progress` field belongs to section 2; the AGENTS.md stack
+update belongs to the remainder of section 1. Frontend checks, PR-02 measurement
+and visual screenshots have not started. Untracked REVISION.txt remains untouched.
+
+---
+
 ## 2026-10-10 — Phase 7b — Correct provider-scoped model provenance
 
 **Summary:** Centralize model selection in RunConfig.resolve so a stub provider

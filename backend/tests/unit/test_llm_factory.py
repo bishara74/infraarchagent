@@ -95,6 +95,24 @@ def test_adapter_provider_override_uses_shared_model_resolution():
     assert adapter.model == "stub"
 
 
+@pytest.mark.req("FR-I-04", "NFR-01")
+@pytest.mark.parametrize("provider", ["stub", "openai"])
+@pytest.mark.parametrize("model", [None, "fixture-model"])
+def test_stub_adapter_ignores_all_model_names(monkeypatch, provider, model):
+    def forbidden(*args, **kwargs):
+        raise AssertionError("stub configuration must not build a network adapter")
+
+    monkeypatch.setattr(factory_module, "AnthropicAdapter", forbidden)
+    monkeypatch.setattr(factory_module, "OpenAIAdapter", forbidden)
+    adapter = build_adapter(
+        settings(llm_provider=provider, llm_model="paid-model"),
+        provider="stub",
+        model=model,
+    )
+    assert isinstance(adapter, StubAdapter)
+    assert adapter.model == "stub"
+
+
 @pytest.mark.req("FR-I-04", "NFR-03")
 @pytest.mark.parametrize(
     "base_url,expected_url",

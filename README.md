@@ -81,7 +81,11 @@ scanner timeout/cancellation kills the whole process group and bounds pipe clean
    `make install` uses `backend/requirements.lock` as pip constraints to pin
    the runtime and dev dependencies recorded for Phase 1.
 3. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
-   using the owner role; code under test connects as the app role.
+   using the owner role; code under test connects as the app role. The default
+   suite excludes wall-clock performance assertions. `make test-perf` runs
+   only those assertions; final timing measurements are Phase 9 work on a
+   quiet machine. Structural overlap, archive contents and process cleanup
+   remain covered by `make test`.
 4. Run `make run`, then open `http://127.0.0.1:8000/api/health`. A healthy
    database returns HTTP 200 even when `LLM_API_KEY` or a scanner is absent;
    the response reports scanner availability and versions.
@@ -105,12 +109,13 @@ The watcher submits the request, prints SSE progress, reconnects with
 Optional `CONFIG_PROVIDER`, `CONFIG_MODEL`, and `API_URL` select a request
 configuration and API root. The watcher takes `API_KEY` from its process
 environment and sends `X-API-Key`; it does not read dotenv or print the key.
-Omitting the provider or selecting the configured `LLM_PROVIDER` inherits
-`LLM_MODEL`. Selecting a different real provider requires `CONFIG_MODEL`
-(HTTP 400 `invalid_request` otherwise). A stub override without a model
-resolves to `stub`, and every stub run uses a stub fixer with model `stub`
-regardless of `SECURITY_FIX_*`. Fixer overrides apply to runs using the
-configured provider.
+For a real provider, omitting the provider or selecting the configured
+`LLM_PROVIDER` inherits `LLM_MODEL`. Selecting a different real provider
+requires `CONFIG_MODEL` (HTTP 400 `invalid_request` otherwise). Every stub run
+records model `stub`, including when the deployment sets a real `LLM_MODEL`
+or a request explicitly supplies a different model name. Stub fixers also
+use model `stub`, regardless of `SECURITY_FIX_*`. Fixer overrides apply to
+real runs using the configured provider.
 With `LLM_PROVIDER=stub`, the API uses a
 pipeline-only deterministic demo; the Phase 1 spike and Phase 2–3 evaluation
 stubs are unchanged. The demo packages are scanned by the installed tools;

@@ -37,16 +37,14 @@ class RunConfig(BaseModel):
     def resolve(self, settings: "Settings") -> ResolvedRunConfig:
         provider = self.provider if self.provider is not None else settings.llm_provider
         model: str | None
-        if self.model is not None:
+        if provider == LLMProvider.STUB:
+            model = "stub"
+        elif self.model is not None:
             model = self.model
         elif provider == settings.llm_provider:
             model = settings.llm_model
-        elif provider == LLMProvider.STUB:
-            model = "stub"
         else:
             raise RunConfigError()
-        if model is None and provider == LLMProvider.STUB:
-            model = "stub"
         return ResolvedRunConfig(
             provider=provider,
             model=model,

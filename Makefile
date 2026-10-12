@@ -2,7 +2,7 @@ PYTHON := python3
 VENV := backend/.venv
 BACKEND := cd backend &&
 
-.PHONY: up down install migrate migrate-test run run-pipeline test lint sweep spike eval-architect eval-generators eval-security eval-validation
+.PHONY: up down install migrate migrate-test run run-pipeline test test-perf lint sweep spike eval-architect eval-generators eval-security eval-validation
 
 up:
 	docker compose up -d --wait
@@ -28,7 +28,10 @@ run-pipeline:
 	$(BACKEND) .venv/bin/python scripts/run_pipeline.py
 
 test: migrate-test
-	$(BACKEND) .venv/bin/pytest -q
+	$(BACKEND) .venv/bin/pytest -q -m "not perf"
+
+test-perf: migrate-test
+	$(BACKEND) .venv/bin/pytest -q -m perf
 
 lint:
 	$(BACKEND) .venv/bin/ruff check app tests
