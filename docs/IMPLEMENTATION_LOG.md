@@ -28,6 +28,41 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 ---
 
 
+## 2026-10-12 — Phase 8 section 3 — Build four thesis screens and review controls
+
+**Summary:** Implement input, progress, comparison and package routes with native
+controls and the fixed design tokens. Add URL-backed variant/file selection,
+windowed logs/diffs/file lists, report tabs, authenticated recovery and review.
+
+**Requirements addressed:** FR-UI-01..07, FR-P-04, PR-02, UC-08, NFR-01.
+
+**Files:** frontend/src/screens/, components/, constants/; src/lib/diff.ts,
+reportView.ts, reviewReasons.ts and presentation.test.ts; App.tsx/App.test.tsx,
+src/styles/global.css, src/test/setup.ts; docs/design-deviations.md and this log.
+
+**Decisions:** D-39 documents real blocking counts and evidence-linked annotation.
+Validation-only fixes do not invent security rule IDs. sessionStorage guards
+submissions across reload, real code-point counting matches backend limits, empty
+config fields are omitted and incomplete input reaches server validation. Retry
+202 explicitly reopens the stream. Native dialog confirms rejection; report tabs
+support arrows/Home/End, controls have names and untrusted content is text.
+
+**Tests:** Frontend lint and build passed; Vitest 62 passed, 0 failed, 0 skipped.
+make lint passed Ruff/format (176 files), mypy (97 sources) and frontend checks.
+Most recent make test: 1032 passed, 6 deselected (section 2, backend unchanged).
+Tests cover loading/errors/empty results, active submission/reload guard, config,
+missing variants, file selections, safe rendering, report status distinction,
+review/download exclusivity, five-file picker, in-flight exclusion and API-key
+reentry. Initial run had 57 passing tests, one focus failure and one Node setup
+failure, corrected before the passing suite.
+
+**Known gaps / follow-ups:** CLI browser launch was attempted with the author's
+Chromium 1.63.0; it cannot launch because libnspr4/libnss3/libnssutil3/libsmime3/
+libasound are missing in this environment, verified outside the sandbox as well.
+The author was asked to install system prerequisites; no package/browser/install
+scripts were run. Visual and E2E checks remain for sections 6–7. Serving follows.
+
+
 ## 2026-10-12 — Phase 8 section 2 — Implement results contract and resumable streaming
 
 **Summary:** Add the sole approved results field retry_in_progress, derived directly

@@ -794,6 +794,21 @@ remain generic. D-19's separate transactions remain a known limit: a hard crash
 can leave a labelled package without its label event, handled by the archive's
 unavailable provenance/time text.
 
+### D-39 — Security counts replace the mockup score (Accepted; implemented)
+
+Comparison renders first automated blocking findings → current remaining blocking
+findings, accepted fixes in retained sessions and final outcome. Initial counts
+come from sessions[automated].iterations[0].scan.blocking, including MEDIUM under
+the actual blocking policy. HIGH/CRITICAL summary fields are not blocking totals.
+Omitted initial session history or missing evidence is labelled unavailable;
+retained fix counts do not imply omitted history was empty. No composite score,
+cost estimates, invented deployment traits or model timings are shown.
+
+Diff annotations use only rule_ids of fixes linked to that exact file. Severity
+badges for fixes require matching recorded finding evidence; validation-only fixes
+may have empty rule_ids and are explicitly labelled as such. Validation check IDs
+appear in the separate report tab, without becoming security annotations.
+
 ### D-40 — Frontend stack, delivery and stream settlement (Accepted; setup and client implemented)
 
 Phase 8 uses React 19.3, Vite 8, TypeScript 6.0 in strict mode and plain CSS

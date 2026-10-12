@@ -1,0 +1,16 @@
+import { expect,it } from 'vitest';
+import pending from '../test/fixtures/pending-results.json';
+import repaired from '../test/fixtures/repaired-results.json';
+import type {PackageResult} from '../api/types';
+import { unifiedDiff } from './diff';
+import {securityView,fileRules,validationView} from './reportView';
+import {reviewReason} from './reviewReasons';
+import {inputLength} from '../constants/inputRules';
+import {examples} from '../constants/examples';
+it('FR-UI-04 contextual diff lines and markers',()=>{const diff=unifiedDiff('a\nb\nc\n','a\nx\nc\n');expect(diff.changed).toBe(true);expect(diff.rows.find(row=>row.kind==='remove')).toMatchObject({content:'b',oldLine:2,newLine:null});expect(diff.rows.find(row=>row.kind==='add')).toMatchObject({content:'x',newLine:2,oldLine:null});expect(diff.rows[0]?.kind).toBe('hunk');});
+it('missing and unchanged baselines are explicit',()=>{expect(unifiedDiff(undefined,'a\n').baseline).toBe(false);expect(unifiedDiff('a\n','a\n').changed).toBe(false);});
+it('D-39 counts automated blocking evidence, including MEDIUM, and qualifies omitted history',()=>{const report={sessions:[{kind:'automated',iterations:[{scan:{blocking:[{severity:'MEDIUM'}]},fixes:[]}]}],final:{remaining_blocking:[],outcome:'clean'},omitted_session_count:0};expect(securityView(report).initial).toBe(1);expect(securityView({...report,omitted_session_count:1}).initial).toBeNull();expect(securityView(null).initial).toBeNull();});
+it('preserves history without inventing rule annotations for validation fixes',()=>{const item=repaired.packages[2] as PackageResult;expect(securityView(item.security_report).applied).toBe(1);expect(fileRules(item,'terraform/main.tf')).toEqual([]);expect(validationView(pending.packages[2]!.validation_report).checks.some(check=>check.check_id==='terraform.local_ref')).toBe(true);});
+it('annotations only use fixes linked to the requested file',()=>{const item={...pending.packages[2],security_report:{sessions:[{iterations:[{fixes:[{file:'a',rule_ids:['CKV_1']},{file:'b',rule_ids:['CKV_2']}]}]}]}} as PackageResult;expect(fileRules(item,'a')).toEqual(['CKV_1']);});
+it.each(['validation_failed','validation_error','unresolved_security_findings','retry_aborted'] as const)('review reason %s uses honest copy',reason=>expect(reviewReason(reason).length).toBeGreaterThan(10));
+it('FR-UI-01 trimmed Unicode code points and bounded real examples',()=>{expect(inputLength('  é😀界  ')).toBe(3);expect(examples).toHaveLength(3);expect(examples.every(example=>inputLength(example.text)>=10&&inputLength(example.text)<=2000)).toBe(true);});

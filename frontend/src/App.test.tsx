@@ -5,11 +5,11 @@ import { describe, expect, it } from 'vitest';
 import App from './App';
 
 describe('application shell', () => {
-  it('renders the application name in the main landmark', () => {
+  it('renders the input screen in the main landmark', () => {
     render(<App />);
 
     expect(screen.getByRole('main')).toContainElement(
-      screen.getByRole('heading', { name: 'InfraArchAgent', level: 1 }),
+      screen.getByRole('heading', { name: 'Generate infrastructure', level: 1 }),
     );
   });
 
