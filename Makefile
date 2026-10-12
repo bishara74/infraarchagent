@@ -29,6 +29,20 @@ run-pipeline: export PIPELINE_TEXT = $(TEXT)
 run-pipeline:
 	$(BACKEND) .venv/bin/python scripts/run_pipeline.py
 
+test test-perf migrate-test: export PYTHONPATH := $(abspath backend/tests/bootstrap):$(abspath backend):$(PYTHONPATH)
+
+test test-perf: export LLM_PROVIDER := stub
+test test-perf: export LLM_MODEL :=
+test test-perf: export LLM_API_KEY :=
+test test-perf: export API_KEY :=
+test test-perf: export LLM_REASONING_EFFORT :=
+test test-perf: export LLM_RESPONSE_FORMAT :=
+test test-perf: export LLM_PROMPT_CACHE := off
+test test-perf: export LLM_BASE_URL :=
+test test-perf: export SECURITY_FIX_PROVIDER :=
+test test-perf: export SECURITY_FIX_MODEL :=
+test test-perf: export SECURITY_FIX_REASONING_EFFORT :=
+
 test: migrate-test
 	$(BACKEND) .venv/bin/pytest -q -m "not perf"
 

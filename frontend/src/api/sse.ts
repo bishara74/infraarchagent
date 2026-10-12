@@ -71,7 +71,7 @@ export async function streamRun(options: StreamOptions) {
     try {
       options.state(backoff ? 'reconnecting' : 'connecting');
       const response = await client.openStream(options.runId, options.signal, cursor);
-      if (!response.body) throw new Error('No event stream.');
+      if (!response.body || response.headers.get('Content-Type')?.split(';')[0]?.trim() !== 'text/event-stream') { protocolError=true; throw new Error('Invalid event stream.'); }
       options.state('live');
       const reader = response.body.getReader(); const decoder = new TextDecoder();
       const cancel = () => { void reader.cancel().catch(() => undefined); };

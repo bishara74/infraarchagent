@@ -146,14 +146,22 @@ def test_evaluator_imports_no_database_settings_or_llm(tmp_path):
         [
             sys.executable,
             ("-c"),
-            (
-                "import sys; from scripts import eval_validati"
-                "on; assert not any(n.startswith(('app.db', 'a"
-                "pp.llm', 'app.core.config')) for n in sys.mod"
-                "ules)"
-            ),
+            """
+import builtins, sys
+original = builtins.__import__
+def guarded(name, *args, **kwargs):
+    assert not name.startswith(('app.db', 'app.llm', 'app.core.config'))
+    return original(name, *args, **kwargs)
+builtins.__import__ = guarded
+from scripts import eval_validation
+assert not any(n.startswith(('app.db', 'app.llm')) for n in sys.modules)
+""",
         ],
-        env={"PATH": os.defpath, "PYTHONPATH": str(backend), "HOME": str(tmp_path)},
+        env={
+            "PATH": os.defpath,
+            "PYTHONPATH": f"{backend / 'tests/bootstrap'}:{backend}",
+            "HOME": str(tmp_path),
+        },
         capture_output=True,
         text=True,
         timeout=10,

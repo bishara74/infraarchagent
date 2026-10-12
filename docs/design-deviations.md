@@ -853,7 +853,12 @@ no package is scanning/remediating/validating and no retry_in_progress is true.
 This covers D-38's marked intermediate states. An active EOF resumes with
 Last-Event-ID and backoff; five EOF reconnect attempts without a new event are
 allowed before pausing with a manual Reconnect notice. Normal settled EOF
-does not reconnect; retry 202 explicitly reopens the stream.
+does not reconnect; retry 202 explicitly reopens the stream. Verification uses a
+Python sitecustomize bootstrap to disable dotenv before settings instantiate,
+including migrations and isolated scanner subprocesses; Vite uses envDir=false.
+E2E starts fresh stub/review servers, because health cannot verify defaults of an
+existing server without changing the API. Every submitted E2E run explicitly
+requests stub. Browser/system prerequisites are installed only by the author.
 
 ### D-41 — Deterministic validation-review demo (Accepted)
 

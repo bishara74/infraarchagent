@@ -7,16 +7,16 @@ import { applySnapshot, initialModel, reduceEvent } from './runReducer';
 function createStore(runId: string) {
   let value = { model: initialModel(), results: null as ResultsResponse | null, state: 'connecting' as StreamState, error: null as unknown };
   let controller: AbortController | null = null;
-  let generation = 0; let users = 0;
+  let generation = 0; let users = 0; let refreshRevision = 0;
   const listeners = new Set<() => void>();
   const update = (change: Partial<typeof value>) => { value = { ...value, ...change }; listeners.forEach(listener => listener()); };
   const store = {
     getSnapshot: () => value,
     subscribe(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; },
     async refresh() {
-      const current = generation;
+      const current = generation; const revision=++refreshRevision; const cursor=value.model.events.at(-1)?.seq;
       const result = await api.getResults(runId, controller?.signal);
-      if (current === generation) update({ results: result, model: applySnapshot(value.model, result), error: null });
+      if (current === generation && revision===refreshRevision && cursor===value.model.events.at(-1)?.seq) update({ results: result, model: applySnapshot(value.model, result), error: null });
       return result;
     },
     start() {
@@ -24,7 +24,7 @@ function createStore(runId: string) {
       update({ error: null });
       void streamRun({ runId, signal: controller.signal, cursor: value.model.events.at(-1)?.seq,
         event: event => { if (current === generation) flushSync(() => update({ model: reduceEvent(value.model, event) })); },
-        snapshot: result => { if (current === generation) update({ results: result, model: applySnapshot(value.model, result) }); },
+        snapshot: result => { if (current === generation) { ++refreshRevision; update({ results: result, model: applySnapshot(value.model, result) }); } },
         state: (state, error = null) => { if (current === generation) update({ state, error }); },
       });
     },

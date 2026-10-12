@@ -28,6 +28,55 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 ---
 
 
+## 2026-10-12 — Phase 8 section 6 — Add acceptance checks and dotenv-disabled verification
+
+**Summary:** Add real-backend Playwright flows for retry/approve/reject, complete
+labelled ZIP content, reload/submission guard, key reentry and keyboard review.
+Add the separately selected PR-02 observer and permanent Python verification
+bootstrap. Harden protocol validation, snapshot ordering and long-text display.
+
+**Requirements addressed:** FR-UI-01..07, FR-P-04, UC-08, NFR-01, PR-02.
+
+**Files:** frontend/playwright.config.ts; frontend/e2e/*.spec.ts and
+support/flow.ts/prerequisites.ts; src/api/sse.ts/contract tests;
+src/lib/runStreamStore.ts and reducer/presentation tests; App.tsx;
+components/{RunNotice,LiveLog,StageCard,StatusBadge,WindowedRows.test,review.test};
+styles/global.css; backend/tests/bootstrap/sitecustomize.py and its unit test;
+unit scanner/validator/evaluator subprocess tests; Makefile, README.md,
+docs/design-deviations.md and this log.
+
+**Decisions:** Every E2E submission explicitly requests stub. Fresh servers have
+stub/review defaults and a test-only API key, with one backend process/worker.
+Reuse is disabled because existing health data cannot verify provider/scenario
+configuration. Real scanner/Terraform/provider-mirror requirements are checked,
+not weakened. Python dotenv is disabled before settings instantiate, including
+migration and isolated subprocesses. Explicit test URLs supply omitted ordinary
+URLs; Make test targets force stub/empty-key defaults while canary tests retain
+in-process overrides. PR-02 reconstructs every sequence mutation in a callback
+using subsequent oldValue records, excludes historical reload replay, and writes
+max/median/samples to test-results/pr02.json. No API polling or event batching.
+
+**Tests:** Vitest 69 passed, 0 failed, 0 skipped in 14.56s. make lint passed Ruff,
+format (180 files), mypy (98 sources), ESLint and strict TypeScript projects;
+frontend build passed. Playwright discovery: 6 default, 1 @perf, selected correctly.
+Actual default E2E: 6 failed at browser launch; @perf: 1 failed at browser launch.
+Both commands started the configured backend/Vite and passed tool/mirror/DB
+prerequisites, but no browser test body ran: installed Chromium is missing
+libnspr4/libnss3/libnssutil3/libsmime3/libasound. No latency samples were produced.
+Final make test: 1052 passed, 0 failed, 0 skipped, 6 deselected in 279.90s.
+make test-perf: 6 passed, 0 failed, 0 skipped, 1052 deselected in 31.40s. Initial bootstrap
+regression: 1051 passed, 1 failed, 6 deselected in 307.09s, due solely to the old
+module-cache assertion; evaluator import guard and bootstrap focused checks then
+passed (2 tests), and explicit-test-URL bootstrap check passed (1 test). One
+component typing loop exceeded the default 5s test timeout under concurrent load;
+replace it with direct input for its request-body assertion, then 69 tests pass.
+
+**Known gaps / follow-ups:** Browser E2E, PR-02 latencies, manual flow and screenshots
+remain unverified until the author supplies Chromium system libraries. No browser
+or package installation, dotenv read, real LLM call, push or migration. Section 7
+visual work and subsequent documentation/audit completion remain pending.
+
+
 ## 2026-10-12 — Phase 8 section 4 — Serve optional frontend build from FastAPI
 
 **Summary:** Mount local assets and register the SPA fallback after existing routes.

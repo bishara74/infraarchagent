@@ -116,7 +116,10 @@ def _check_process_cleanup(
         "TEST_MODE": mode,
         "TEST_PERFORMANCE": "1" if performance else "0",
         "TMPDIR": str(tmp_path),
-        "PYTHONPATH": str(Path(__file__).resolve().parents[2]),
+        "PYTHONPATH": (
+            f"{Path(__file__).resolve().parents[2] / 'tests/bootstrap'}:"
+            f"{Path(__file__).resolve().parents[2]}"
+        ),
     }
     try:
         completed = subprocess.run(

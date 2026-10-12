@@ -263,7 +263,9 @@ async def main():
 asyncio.run(main())
 """
     env = scanner_environment(tmp_path, "terraform")
-    env["PYTHONPATH"] = str(Path(__file__).parents[2])
+    env["PYTHONPATH"] = (
+        f"{Path(__file__).parents[2] / 'tests/bootstrap'}:{Path(__file__).parents[2]}"
+    )
     completed = subprocess.run(
         ["unshare", "-Urn", sys.executable, "-c", script, str(tmp_path), case],
         env=env,

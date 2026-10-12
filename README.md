@@ -130,16 +130,42 @@ review/download. After `make frontend-build`, `make run` also serves the UI at
 `http://127.0.0.1:8000`, including direct screen reloads. Without a build it
 remains API-only. `/api` routes never fall back to the UI. UI responses receive
 a self-only CSP, nosniff and no-referrer headers; API/docs responses are unchanged.
-E2E configuration follows in section 6. After installing dependencies, the author installs Chromium:
+`make test-e2e` starts a single backend with stub/review defaults and Vite,
+using one Chromium worker and a test-only API key. It deliberately does not reuse
+existing servers: health cannot verify their provider/scenario defaults. After installing dependencies, the author installs Chromium:
 
 ```bash
 cd frontend
 npx playwright install chromium
+npx playwright install-deps chromium
 ```
 
 This uses the pinned local Playwright package. Agents must not download browsers
 or use `npx` to fetch tools. Manual visual checks use the existing global
 `playwright-cli` directly.
+
+Verification never loads dotenv. Export `TEST_DATABASE_URL` (app role) and
+`TEST_MIGRATION_DATABASE_URL` (owner role), both pointing to `infraarch_test`,
+from your test setup before running `make test`, `make test-perf` or E2E.
+The Python test bootstrap supplies omitted ordinary database URLs from these
+explicit test URLs. `make test` and `make test-perf` force empty credentials and
+stub defaults; canary tests still set their own fake values inside the process.
+Alembic and verification subprocesses inherit the dotenv-disabled bootstrap.
+Normal operator `make run` retains its existing settings behavior.
+
+```text
+make test-e2e
+cd frontend
+npm run test:e2e -- --grep @perf
+```
+
+Default E2E excludes `@perf`. PR-02 writes live server-timestamp-to-badge-mutation
+samples, maximum and median to `frontend/test-results/pr02.json`. This is
+Phase 8 development evidence; final performance measurement remains Phase 9.
+Real scanner and Terraform/mirror prerequisites remain required. Fixture capture
+is explicit: with a local dotenv-disabled stub/review backend using an unset API
+key, run `node frontend/e2e/support/recordFixtures.ts` from the repository root.
+It rewrites the recorded pending/repaired responses and streams for contract tests.
 
 ## Running a pipeline
 
