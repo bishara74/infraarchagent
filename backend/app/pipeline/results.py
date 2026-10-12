@@ -88,6 +88,7 @@ class ResultsService:
                         variant=Variant(item.variant),
                         status=status,
                         iteration_count=item.iteration_count,
+                        retry_in_progress=item.review_retry_started_at is not None,
                         **self.safety.value(
                             {
                                 "error": item.error,

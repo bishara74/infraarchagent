@@ -155,6 +155,7 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
             "readiness_label",
             "downloadable",
             "review_available",
+            "retry_in_progress",
             "review_reasons",
             "retry_targets",
         }
@@ -165,3 +166,53 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
     ]["post"]["requestBody"]["content"]["application/json"]["schema"]
     assert request_schema["additionalProperties"] is False
     assert request_schema["properties"]["target_files"]["maxItems"] == 5
+    assert (
+        "retry_in_progress"
+        in schema["components"]["schemas"]["PackageResult"]["required"]
+    )
+    assert all(row["retry_in_progress"] is False for row in data["packages"])
+
+
+@pytest.mark.req("FR-UI-07", "FR-P-04", "FR-S-09")
+@pytest.mark.parametrize("settlement", ["success", "abort", "restart"])
+async def test_results_retry_marker_covers_intermediate_states_and_settlement(
+    db_engines, settlement
+):
+    from tests.integration.test_pipeline_review import client_for, pending_app
+
+    app, run_id = await pending_app(db_engines[0])
+    async with app.state.session_factory() as session:
+        async with session.begin():
+            await app.state.writer.review_action(
+                session, run_id, Variant.COST, "retry", None
+            )
+    async with client_for(app) as client:
+        for target in (
+            PackageStatus.SCANNING,
+            PackageStatus.SCAN_CLEAN,
+            PackageStatus.VALIDATING,
+            PackageStatus.INVALID,
+        ):
+            await app.state.writer.package_transition(
+                run_id, Variant.COST, target, message="retry test"
+            )
+            row = (await client.get(f"/api/pipeline/{run_id}/results")).json()[
+                "packages"
+            ][0]
+            assert row["retry_in_progress"] is True
+            assert "review_retry_started_at" not in row
+        if settlement == "success":
+            await app.state.writer.package_transition(
+                run_id, Variant.COST, PackageStatus.PENDING_REVIEW, message="retry test"
+            )
+        elif settlement == "abort":
+            await app.state.writer.abort_review_retry(
+                run_id, Variant.COST, reason="review retry failed"
+            )
+        else:
+            async with app.router.lifespan_context(app):
+                pass
+        row = (await client.get(f"/api/pipeline/{run_id}/results")).json()["packages"][
+            0
+        ]
+        assert row["retry_in_progress"] is False

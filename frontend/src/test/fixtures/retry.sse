@@ -1,0 +1,53 @@
+id: 66
+event: package_status
+data: {"seq": 66, "kind": "package_status", "agent": "orchestrator", "status": "remediating", "previous_status": "pending_review", "message": "engineer review retry", "variant": "security", "timestamp": "2026-10-12T18:50:55.463980+00:00", "payload": {"kind": "package_status", "variant": "security", "review_action": "retry", "review_reasons": ["validation_failed"]}}
+
+id: 67
+event: agent_state
+data: {"seq": 67, "kind": "agent_state", "agent": "security", "status": "running", "previous_status": null, "message": "review remediation retry started", "variant": "security", "timestamp": "2026-10-12T18:50:55.490134+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 68
+event: stage_notice
+data: {"seq": 68, "kind": "stage_notice", "agent": "security", "status": "remediating", "previous_status": null, "message": "review fix pass completed", "variant": "security", "timestamp": "2026-10-12T18:50:55.506899+00:00", "payload": {"kind": "stage_notice", "variant": "security", "notice": "review fix pass completed", "iteration": 0, "blocking_by_severity": {}, "advisory_count": 0, "fixes_accepted": 1, "fixes_rejected": 0}}
+
+id: 69
+event: package_status
+data: {"seq": 69, "kind": "package_status", "agent": "orchestrator", "status": "scanning", "previous_status": "remediating", "message": "review retry scanning", "variant": "security", "timestamp": "2026-10-12T18:50:55.530017+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 70
+event: stage_notice
+data: {"seq": 70, "kind": "stage_notice", "agent": "security", "status": "scanning", "previous_status": null, "message": "security scan complete", "variant": "security", "timestamp": "2026-10-12T18:51:04.047383+00:00", "payload": {"kind": "stage_notice", "variant": "security", "notice": "security scan complete", "iteration": 1, "blocking_by_severity": {}, "advisory_count": 0, "fixes_accepted": 0, "fixes_rejected": 0}}
+
+id: 71
+event: package_status
+data: {"seq": 71, "kind": "package_status", "agent": "orchestrator", "status": "scan_clean", "previous_status": "scanning", "message": "no blocking security findings", "variant": "security", "timestamp": "2026-10-12T18:51:04.066543+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 72
+event: agent_state
+data: {"seq": 72, "kind": "agent_state", "agent": "security", "status": "completed", "previous_status": "running", "message": "security clean", "variant": "security", "timestamp": "2026-10-12T18:51:04.086730+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 73
+event: agent_state
+data: {"seq": 73, "kind": "agent_state", "agent": "validator", "status": "running", "previous_status": null, "message": "validation started", "variant": "security", "timestamp": "2026-10-12T18:51:04.101484+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 74
+event: package_status
+data: {"seq": 74, "kind": "package_status", "agent": "orchestrator", "status": "validating", "previous_status": "scan_clean", "message": "validation started", "variant": "security", "timestamp": "2026-10-12T18:51:04.236571+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 75
+event: stage_notice
+data: {"seq": 75, "kind": "stage_notice", "agent": "validator", "status": "validating", "previous_status": null, "message": "validation summary", "variant": "security", "timestamp": "2026-10-12T18:51:04.393418+00:00", "payload": {"kind": "stage_notice", "variant": "security", "notice": "validation summary", "passed": 2, "failed": 0, "warnings": 1, "skipped": 0, "result": "valid", "duration_seconds": 0.292}}
+
+id: 76
+event: package_status
+data: {"seq": 76, "kind": "package_status", "agent": "orchestrator", "status": "valid", "previous_status": "validating", "message": "validation valid", "variant": "security", "timestamp": "2026-10-12T18:51:04.414057+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 77
+event: agent_state
+data: {"seq": 77, "kind": "agent_state", "agent": "validator", "status": "completed", "previous_status": "running", "message": "validation valid", "variant": "security", "timestamp": "2026-10-12T18:51:04.422014+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 78
+event: package_status
+data: {"seq": 78, "kind": "package_status", "agent": "orchestrator", "status": "production_ready", "previous_status": "valid", "message": "review retry package production_ready", "variant": "security", "timestamp": "2026-10-12T18:51:04.445135+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+

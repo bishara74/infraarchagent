@@ -1,0 +1,217 @@
+id: 12
+event: run_status
+data: {"seq": 12, "kind": "run_status", "agent": "orchestrator", "status": "created", "previous_status": null, "message": "pipeline accepted", "variant": null, "timestamp": "2026-10-12T18:50:37.524518+00:00", "payload": {"kind": "run_status"}}
+
+id: 13
+event: run_status
+data: {"seq": 13, "kind": "run_status", "agent": "orchestrator", "status": "running", "previous_status": "created", "message": "pipeline started", "variant": null, "timestamp": "2026-10-12T18:50:37.607780+00:00", "payload": {"kind": "run_status"}}
+
+id: 14
+event: agent_state
+data: {"seq": 14, "kind": "agent_state", "agent": "architect", "status": "running", "previous_status": null, "message": "architect started", "variant": null, "timestamp": "2026-10-12T18:50:37.639726+00:00", "payload": {"kind": "agent_state", "variant": null}}
+
+id: 15
+event: agent_state
+data: {"seq": 15, "kind": "agent_state", "agent": "architect", "status": "completed", "previous_status": "running", "message": "architect completed", "variant": null, "timestamp": "2026-10-12T18:50:37.678586+00:00", "payload": {"kind": "agent_state", "variant": null}}
+
+id: 16
+event: plan_created
+data: {"seq": 16, "kind": "plan_created", "agent": "architect", "status": "completed", "previous_status": null, "message": "deployment plan created", "variant": null, "timestamp": "2026-10-12T18:50:37.696009+00:00", "payload": {"kind": "plan_created", "plan": {"cloud_provider": "aws", "services": [{"name": "web", "aws_service": "EC2", "purpose": "Host a demo web service"}], "dependencies": [], "network": {"public_services": ["web"], "private_services": [], "ingress": ["HTTPS 443"], "notes": "Demo only"}, "storage": [], "file_types": ["terraform"], "ambiguities": []}}}
+
+id: 17
+event: package_status
+data: {"seq": 17, "kind": "package_status", "agent": "orchestrator", "status": "generating", "previous_status": null, "message": "package generation queued", "variant": "cost", "timestamp": "2026-10-12T18:50:37.746605+00:00", "payload": {"kind": "package_status", "variant": "cost"}}
+
+id: 18
+event: package_status
+data: {"seq": 18, "kind": "package_status", "agent": "orchestrator", "status": "generating", "previous_status": null, "message": "package generation queued", "variant": "performance", "timestamp": "2026-10-12T18:50:37.759889+00:00", "payload": {"kind": "package_status", "variant": "performance"}}
+
+id: 19
+event: package_status
+data: {"seq": 19, "kind": "package_status", "agent": "orchestrator", "status": "generating", "previous_status": null, "message": "package generation queued", "variant": "security", "timestamp": "2026-10-12T18:50:37.791744+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 20
+event: agent_state
+data: {"seq": 20, "kind": "agent_state", "agent": "generator_cost", "status": "running", "previous_status": null, "message": "generator started", "variant": "cost", "timestamp": "2026-10-12T18:50:37.814801+00:00", "payload": {"kind": "agent_state", "variant": "cost"}}
+
+id: 21
+event: agent_state
+data: {"seq": 21, "kind": "agent_state", "agent": "generator_performance", "status": "running", "previous_status": null, "message": "generator started", "variant": "performance", "timestamp": "2026-10-12T18:50:37.818262+00:00", "payload": {"kind": "agent_state", "variant": "performance"}}
+
+id: 22
+event: agent_state
+data: {"seq": 22, "kind": "agent_state", "agent": "generator_security", "status": "running", "previous_status": null, "message": "generator started", "variant": "security", "timestamp": "2026-10-12T18:50:37.818383+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 23
+event: package_status
+data: {"seq": 23, "kind": "package_status", "agent": "orchestrator", "status": "generated", "previous_status": "generating", "message": "package generated", "variant": "cost", "timestamp": "2026-10-12T18:50:37.914632+00:00", "payload": {"kind": "package_status", "variant": "cost"}}
+
+id: 24
+event: package_status
+data: {"seq": 24, "kind": "package_status", "agent": "orchestrator", "status": "generated", "previous_status": "generating", "message": "package generated", "variant": "performance", "timestamp": "2026-10-12T18:50:37.927170+00:00", "payload": {"kind": "package_status", "variant": "performance"}}
+
+id: 25
+event: package_generated
+data: {"seq": 25, "kind": "package_generated", "agent": "generator_cost", "status": "generated", "previous_status": null, "message": "package files stored", "variant": "cost", "timestamp": "2026-10-12T18:50:37.939505+00:00", "payload": {"kind": "package_generated", "variant": "cost", "file_count": 1, "total_chars": 62, "paths": ["terraform/main.tf"], "notes": "Deterministic demo package", "metrics": {"attempts": 1, "llm_attempts": 1, "elapsed_seconds": 0.000878396000189241, "input_tokens": 10, "output_tokens": 10, "cached_input_tokens": null, "prompt_version": "3"}}}
+
+id: 26
+event: package_status
+data: {"seq": 26, "kind": "package_status", "agent": "orchestrator", "status": "generated", "previous_status": "generating", "message": "package generated", "variant": "security", "timestamp": "2026-10-12T18:50:37.961888+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 27
+event: package_generated
+data: {"seq": 27, "kind": "package_generated", "agent": "generator_performance", "status": "generated", "previous_status": null, "message": "package files stored", "variant": "performance", "timestamp": "2026-10-12T18:50:37.971408+00:00", "payload": {"kind": "package_generated", "variant": "performance", "file_count": 1, "total_chars": 69, "paths": ["terraform/main.tf"], "notes": "Deterministic demo package", "metrics": {"attempts": 1, "llm_attempts": 1, "elapsed_seconds": 0.0007919039999251254, "input_tokens": 10, "output_tokens": 10, "cached_input_tokens": null, "prompt_version": "3"}}}
+
+id: 28
+event: agent_state
+data: {"seq": 28, "kind": "agent_state", "agent": "generator_cost", "status": "completed", "previous_status": "running", "message": "generator completed", "variant": "cost", "timestamp": "2026-10-12T18:50:38.014623+00:00", "payload": {"kind": "agent_state", "variant": "cost"}}
+
+id: 29
+event: package_generated
+data: {"seq": 29, "kind": "package_generated", "agent": "generator_security", "status": "generated", "previous_status": null, "message": "package files stored", "variant": "security", "timestamp": "2026-10-12T18:50:38.027001+00:00", "payload": {"kind": "package_generated", "variant": "security", "file_count": 1, "total_chars": 119, "paths": ["terraform/main.tf"], "notes": "Deterministic demo package", "metrics": {"attempts": 1, "llm_attempts": 1, "elapsed_seconds": 0.000801603000581963, "input_tokens": 10, "output_tokens": 10, "cached_input_tokens": null, "prompt_version": "3"}}}
+
+id: 30
+event: agent_state
+data: {"seq": 30, "kind": "agent_state", "agent": "generator_performance", "status": "completed", "previous_status": "running", "message": "generator completed", "variant": "performance", "timestamp": "2026-10-12T18:50:38.039472+00:00", "payload": {"kind": "agent_state", "variant": "performance"}}
+
+id: 31
+event: agent_state
+data: {"seq": 31, "kind": "agent_state", "agent": "generator_security", "status": "completed", "previous_status": "running", "message": "generator completed", "variant": "security", "timestamp": "2026-10-12T18:50:38.062414+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 32
+event: agent_state
+data: {"seq": 32, "kind": "agent_state", "agent": "security", "status": "running", "previous_status": null, "message": "security scan started", "variant": "cost", "timestamp": "2026-10-12T18:50:38.088514+00:00", "payload": {"kind": "agent_state", "variant": "cost"}}
+
+id: 33
+event: agent_state
+data: {"seq": 33, "kind": "agent_state", "agent": "security", "status": "running", "previous_status": null, "message": "security scan started", "variant": "performance", "timestamp": "2026-10-12T18:50:38.089764+00:00", "payload": {"kind": "agent_state", "variant": "performance"}}
+
+id: 34
+event: agent_state
+data: {"seq": 34, "kind": "agent_state", "agent": "security", "status": "running", "previous_status": null, "message": "security scan started", "variant": "security", "timestamp": "2026-10-12T18:50:38.090029+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 35
+event: package_status
+data: {"seq": 35, "kind": "package_status", "agent": "orchestrator", "status": "scanning", "previous_status": "generated", "message": "security scan started", "variant": "cost", "timestamp": "2026-10-12T18:50:38.128241+00:00", "payload": {"kind": "package_status", "variant": "cost"}}
+
+id: 36
+event: package_status
+data: {"seq": 36, "kind": "package_status", "agent": "orchestrator", "status": "scanning", "previous_status": "generated", "message": "security scan started", "variant": "performance", "timestamp": "2026-10-12T18:50:38.158268+00:00", "payload": {"kind": "package_status", "variant": "performance"}}
+
+id: 37
+event: package_status
+data: {"seq": 37, "kind": "package_status", "agent": "orchestrator", "status": "scanning", "previous_status": "generated", "message": "security scan started", "variant": "security", "timestamp": "2026-10-12T18:50:38.257596+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 38
+event: stage_notice
+data: {"seq": 38, "kind": "stage_notice", "agent": "security", "status": "scanning", "previous_status": null, "message": "security scan complete", "variant": "performance", "timestamp": "2026-10-12T18:50:53.162383+00:00", "payload": {"kind": "stage_notice", "variant": "performance", "notice": "security scan complete", "iteration": 0, "blocking_by_severity": {}, "advisory_count": 0, "fixes_accepted": 0, "fixes_rejected": 0}}
+
+id: 39
+event: package_status
+data: {"seq": 39, "kind": "package_status", "agent": "orchestrator", "status": "scan_clean", "previous_status": "scanning", "message": "no blocking security findings", "variant": "performance", "timestamp": "2026-10-12T18:50:53.189613+00:00", "payload": {"kind": "package_status", "variant": "performance"}}
+
+id: 40
+event: agent_state
+data: {"seq": 40, "kind": "agent_state", "agent": "security", "status": "completed", "previous_status": "running", "message": "security clean", "variant": "performance", "timestamp": "2026-10-12T18:50:53.225218+00:00", "payload": {"kind": "agent_state", "variant": "performance"}}
+
+id: 41
+event: agent_state
+data: {"seq": 41, "kind": "agent_state", "agent": "validator", "status": "running", "previous_status": null, "message": "validation started", "variant": "performance", "timestamp": "2026-10-12T18:50:53.249885+00:00", "payload": {"kind": "agent_state", "variant": "performance"}}
+
+id: 42
+event: package_status
+data: {"seq": 42, "kind": "package_status", "agent": "orchestrator", "status": "validating", "previous_status": "scan_clean", "message": "validation started", "variant": "performance", "timestamp": "2026-10-12T18:50:53.276200+00:00", "payload": {"kind": "package_status", "variant": "performance"}}
+
+id: 43
+event: stage_notice
+data: {"seq": 43, "kind": "stage_notice", "agent": "validator", "status": "validating", "previous_status": null, "message": "validation summary", "variant": "performance", "timestamp": "2026-10-12T18:50:53.805884+00:00", "payload": {"kind": "stage_notice", "variant": "performance", "notice": "validation summary", "passed": 1, "failed": 0, "warnings": 1, "skipped": 0, "result": "valid", "duration_seconds": 0.556}}
+
+id: 44
+event: package_status
+data: {"seq": 44, "kind": "package_status", "agent": "orchestrator", "status": "valid", "previous_status": "validating", "message": "validation valid", "variant": "performance", "timestamp": "2026-10-12T18:50:53.827532+00:00", "payload": {"kind": "package_status", "variant": "performance"}}
+
+id: 45
+event: agent_state
+data: {"seq": 45, "kind": "agent_state", "agent": "validator", "status": "completed", "previous_status": "running", "message": "validation valid", "variant": "performance", "timestamp": "2026-10-12T18:50:53.839045+00:00", "payload": {"kind": "agent_state", "variant": "performance"}}
+
+id: 46
+event: package_status
+data: {"seq": 46, "kind": "package_status", "agent": "orchestrator", "status": "production_ready", "previous_status": "valid", "message": "package production_ready", "variant": "performance", "timestamp": "2026-10-12T18:50:53.860620+00:00", "payload": {"kind": "package_status", "variant": "performance"}}
+
+id: 47
+event: stage_notice
+data: {"seq": 47, "kind": "stage_notice", "agent": "security", "status": "scanning", "previous_status": null, "message": "security scan complete", "variant": "cost", "timestamp": "2026-10-12T18:50:54.409868+00:00", "payload": {"kind": "stage_notice", "variant": "cost", "notice": "security scan complete", "iteration": 0, "blocking_by_severity": {}, "advisory_count": 0, "fixes_accepted": 0, "fixes_rejected": 0}}
+
+id: 48
+event: package_status
+data: {"seq": 48, "kind": "package_status", "agent": "orchestrator", "status": "scan_clean", "previous_status": "scanning", "message": "no blocking security findings", "variant": "cost", "timestamp": "2026-10-12T18:50:54.430750+00:00", "payload": {"kind": "package_status", "variant": "cost"}}
+
+id: 49
+event: agent_state
+data: {"seq": 49, "kind": "agent_state", "agent": "security", "status": "completed", "previous_status": "running", "message": "security clean", "variant": "cost", "timestamp": "2026-10-12T18:50:54.449210+00:00", "payload": {"kind": "agent_state", "variant": "cost"}}
+
+id: 50
+event: agent_state
+data: {"seq": 50, "kind": "agent_state", "agent": "validator", "status": "running", "previous_status": null, "message": "validation started", "variant": "cost", "timestamp": "2026-10-12T18:50:54.464459+00:00", "payload": {"kind": "agent_state", "variant": "cost"}}
+
+id: 51
+event: package_status
+data: {"seq": 51, "kind": "package_status", "agent": "orchestrator", "status": "validating", "previous_status": "scan_clean", "message": "validation started", "variant": "cost", "timestamp": "2026-10-12T18:50:54.485596+00:00", "payload": {"kind": "package_status", "variant": "cost"}}
+
+id: 52
+event: stage_notice
+data: {"seq": 52, "kind": "stage_notice", "agent": "validator", "status": "validating", "previous_status": null, "message": "validation summary", "variant": "cost", "timestamp": "2026-10-12T18:50:54.808737+00:00", "payload": {"kind": "stage_notice", "variant": "cost", "notice": "validation summary", "passed": 1, "failed": 0, "warnings": 1, "skipped": 0, "result": "valid", "duration_seconds": 0.344}}
+
+id: 53
+event: package_status
+data: {"seq": 53, "kind": "package_status", "agent": "orchestrator", "status": "valid", "previous_status": "validating", "message": "validation valid", "variant": "cost", "timestamp": "2026-10-12T18:50:54.833001+00:00", "payload": {"kind": "package_status", "variant": "cost"}}
+
+id: 54
+event: agent_state
+data: {"seq": 54, "kind": "agent_state", "agent": "validator", "status": "completed", "previous_status": "running", "message": "validation valid", "variant": "cost", "timestamp": "2026-10-12T18:50:54.845332+00:00", "payload": {"kind": "agent_state", "variant": "cost"}}
+
+id: 55
+event: package_status
+data: {"seq": 55, "kind": "package_status", "agent": "orchestrator", "status": "production_ready", "previous_status": "valid", "message": "package production_ready", "variant": "cost", "timestamp": "2026-10-12T18:50:54.870340+00:00", "payload": {"kind": "package_status", "variant": "cost"}}
+
+id: 56
+event: stage_notice
+data: {"seq": 56, "kind": "stage_notice", "agent": "security", "status": "scanning", "previous_status": null, "message": "security scan complete", "variant": "security", "timestamp": "2026-10-12T18:50:55.083198+00:00", "payload": {"kind": "stage_notice", "variant": "security", "notice": "security scan complete", "iteration": 0, "blocking_by_severity": {}, "advisory_count": 0, "fixes_accepted": 0, "fixes_rejected": 0}}
+
+id: 57
+event: package_status
+data: {"seq": 57, "kind": "package_status", "agent": "orchestrator", "status": "scan_clean", "previous_status": "scanning", "message": "no blocking security findings", "variant": "security", "timestamp": "2026-10-12T18:50:55.101311+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 58
+event: agent_state
+data: {"seq": 58, "kind": "agent_state", "agent": "security", "status": "completed", "previous_status": "running", "message": "security clean", "variant": "security", "timestamp": "2026-10-12T18:50:55.118678+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 59
+event: agent_state
+data: {"seq": 59, "kind": "agent_state", "agent": "validator", "status": "running", "previous_status": null, "message": "validation started", "variant": "security", "timestamp": "2026-10-12T18:50:55.131299+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 60
+event: package_status
+data: {"seq": 60, "kind": "package_status", "agent": "orchestrator", "status": "validating", "previous_status": "scan_clean", "message": "validation started", "variant": "security", "timestamp": "2026-10-12T18:50:55.149893+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 61
+event: stage_notice
+data: {"seq": 61, "kind": "stage_notice", "agent": "validator", "status": "validating", "previous_status": null, "message": "validation summary", "variant": "security", "timestamp": "2026-10-12T18:50:55.323714+00:00", "payload": {"kind": "stage_notice", "variant": "security", "notice": "validation summary", "passed": 0, "failed": 2, "warnings": 1, "skipped": 0, "result": "invalid", "duration_seconds": 0.192}}
+
+id: 62
+event: package_status
+data: {"seq": 62, "kind": "package_status", "agent": "orchestrator", "status": "invalid", "previous_status": "validating", "message": "validation invalid", "variant": "security", "timestamp": "2026-10-12T18:50:55.342800+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 63
+event: agent_state
+data: {"seq": 63, "kind": "agent_state", "agent": "validator", "status": "completed", "previous_status": "running", "message": "validation invalid", "variant": "security", "timestamp": "2026-10-12T18:50:55.349210+00:00", "payload": {"kind": "agent_state", "variant": "security"}}
+
+id: 64
+event: package_status
+data: {"seq": 64, "kind": "package_status", "agent": "orchestrator", "status": "pending_review", "previous_status": "invalid", "message": "package pending_review", "variant": "security", "timestamp": "2026-10-12T18:50:55.364297+00:00", "payload": {"kind": "package_status", "variant": "security"}}
+
+id: 65
+event: run_status
+data: {"seq": 65, "kind": "run_status", "agent": "orchestrator", "status": "partial_success", "previous_status": "running", "message": "pipeline partial_success", "variant": null, "timestamp": "2026-10-12T18:50:55.391280+00:00", "payload": {"kind": "run_status"}}
+
+

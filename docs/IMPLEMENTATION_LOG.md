@@ -27,6 +27,40 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+
+## 2026-10-12 — Phase 8 section 2 — Implement results contract and resumable streaming
+
+**Summary:** Add the sole approved results field retry_in_progress, derived directly
+from the persisted retry marker. Implement typed authenticated API access, safe
+errors and downloads, UTF-8 SSE framing, immediate reducer updates, shared streams,
+resume/backoff, EOF snapshot settlement and disposal guards.
+
+**Requirements addressed:** FR-P-04, FR-UI-02, FR-UI-07, PR-02, NFR-01.
+
+**Files:** backend/app/api/schemas.py, backend/app/pipeline/results.py,
+backend/tests/integration/test_pipeline_results.py and test_pipeline_demo_scenario.py;
+frontend/src/api/, src/hooks/, src/lib/, src/test/fixtures/;
+frontend/e2e/support/recordFixtures.ts; docs/design-deviations.md and this log.
+
+**Decisions:** D-40 implements the required boolean without a migration or timestamp
+exposure; D-36 marks fetch SSE implemented. Record actual stub/review responses
+and SSE using installed offline scanners and Terraform, including pending/repaired
+history. Normal EOF closes only after the exact approved snapshot predicate. Five
+EOF reconnect attempts without a unique event precede manual recovery; failed
+snapshots cannot settle. Resume advances only after accepted events. Disposed
+stores abort readers/waits and ignore stale snapshots.
+
+**Tests:** make lint passed Ruff/format (176 files), mypy (97 sources), ESLint and
+both strict TypeScript projects. make frontend-test: 36 passed, 0 failed, 0 skipped
+in 8.06s. make test: 1032 passed, 0 failed, 0 skipped, 6 deselected in
+259.63s. Coverage
+includes framing/chunk boundaries, marker-only activity, duplicates/gaps, resume,
+EOF cap/reset, errors, cancellation, shared consumers, stale runs, every recorded
+event kind, contract fields, header auth/401, review bodies and Blob cleanup.
+
+**Known gaps / follow-ups:** Screens, serving and browser acceptance follow in
+sections 3, 4 and 6. No additional installation, dotenv read or real LLM call.
+
 ## 2026-10-12 — Phase 8 section 5 — Add deterministic validation-review scenario
 
 **Summary:** Add clean/review pipeline demo selection, security-only built-in

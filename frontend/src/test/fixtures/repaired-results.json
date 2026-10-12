@@ -1,0 +1,508 @@
+{
+  "run": {
+    "id": "3f7fc2f6-8ad1-4051-b0c5-2805c81ee4a7",
+    "status": "partial_success",
+    "input_text": "Create a secure AWS web service with Terraform.",
+    "start_time": "2026-10-12T18:50:37.490444Z",
+    "end_time": "2026-10-12T18:50:55.383838Z",
+    "provider": "stub",
+    "model": "stub",
+    "max_iterations": 3,
+    "error_message": null
+  },
+  "plan": {
+    "cloud_provider": "aws",
+    "services": [
+      {
+        "name": "web",
+        "aws_service": "EC2",
+        "purpose": "Host a demo web service"
+      }
+    ],
+    "dependencies": [],
+    "network": {
+      "public_services": [
+        "web"
+      ],
+      "private_services": [],
+      "ingress": [
+        "HTTPS 443"
+      ],
+      "notes": "Demo only"
+    },
+    "storage": [],
+    "file_types": [
+      "terraform"
+    ],
+    "ambiguities": []
+  },
+  "packages": [
+    {
+      "variant": "cost",
+      "status": "production_ready",
+      "iteration_count": 0,
+      "error": null,
+      "files": {
+        "terraform/main.tf": "terraform { required_version = \">= 1.0\" }\n# Demo cost variant\n"
+      },
+      "original_files": {
+        "terraform/main.tf": "terraform { required_version = \">= 1.0\" }\n# Demo cost variant\n"
+      },
+      "security_report": {
+        "final": {
+          "reason": null,
+          "outcome": "clean",
+          "remaining_blocking": [],
+          "first_scan_trivy_high_or_critical": 0,
+          "first_scan_checkov_high_or_critical": 0,
+          "first_scan_combined_high_or_critical": 0,
+          "first_scan_terraform_high_or_critical": 0
+        },
+        "tools": {
+          "trivy": "Version: 0.69.3",
+          "checkov": "3.3.21",
+          "terraform": "Terraform v1.16.4"
+        },
+        "sessions": [
+          {
+            "diff": "",
+            "kind": "automated",
+            "final": {
+              "reason": null,
+              "outcome": "clean",
+              "remaining_blocking": [],
+              "first_scan_trivy_high_or_critical": 0,
+              "first_scan_checkov_high_or_critical": 0,
+              "first_scan_combined_high_or_critical": 0,
+              "first_scan_terraform_high_or_critical": 0
+            },
+            "fix_passes": 0,
+            "iterations": [
+              {
+                "diff": "",
+                "scan": {
+                  "blocking": [],
+                  "tool_status": {
+                    "trivy": "ok",
+                    "checkov": "ok",
+                    "terraform": "ok"
+                  },
+                  "advisory_count": 0,
+                  "syntax_limited": false,
+                  "advisory_sample": [],
+                  "counts_by_severity": {},
+                  "advisory_omitted_count": 0,
+                  "terraform_findings_may_be_incomplete": false
+                },
+                "fixes": [],
+                "index": 0,
+                "diff_omitted_chars": 0
+              }
+            ],
+            "started_at": "2026-10-12T18:50:38.165207+00:00",
+            "fixing_model": "stub",
+            "fixing_provider": "stub",
+            "feedback_present": false,
+            "diff_omitted_chars": 0,
+            "fixing_reasoning_effort": null
+          }
+        ],
+        "fixing_model": "stub",
+        "policy_version": "2",
+        "prompt_version": "1",
+        "fixing_provider": "stub",
+        "omitted_session_count": 0,
+        "fixing_reasoning_effort": null
+      },
+      "validation_report": {
+        "checks": [
+          {
+            "tool": "builtin",
+            "status": "warning",
+            "message": "Expected plan entity 'web' absent from terraform names",
+            "category": "naming",
+            "check_id": "naming.missing_service",
+            "line_end": null,
+            "file_path": "terraform/main.tf",
+            "line_start": 1,
+            "skip_reason": null
+          },
+          {
+            "tool": "terraform",
+            "status": "passed",
+            "message": "Terraform provider-schema validation passed",
+            "category": "terraform",
+            "check_id": "terraform.validate",
+            "line_end": null,
+            "file_path": null,
+            "line_start": null,
+            "skip_reason": null
+          }
+        ],
+        "summary": {
+          "failed": 0,
+          "passed": 1,
+          "result": "valid",
+          "skipped": 0,
+          "warnings": 1
+        },
+        "abort_reason": null,
+        "tool_versions": {
+          "helm": "v4.3.0+gbec5b06",
+          "hadolint": "Haskell Dockerfile Linter 2.15.1",
+          "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+          "terraform": "Terraform v1.16.4",
+          "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1"
+        },
+        "omitted_counts": {},
+        "report_version": 1,
+        "terraform_required": true,
+        "failed_checks_for_remediation": []
+      },
+      "review_feedback": null,
+      "readiness_label": "production_ready",
+      "downloadable": true,
+      "review_available": false,
+      "retry_in_progress": false,
+      "review_reasons": [],
+      "retry_targets": []
+    },
+    {
+      "variant": "performance",
+      "status": "production_ready",
+      "iteration_count": 0,
+      "error": null,
+      "files": {
+        "terraform/main.tf": "terraform { required_version = \">= 1.0\" }\n# Demo performance variant\n"
+      },
+      "original_files": {
+        "terraform/main.tf": "terraform { required_version = \">= 1.0\" }\n# Demo performance variant\n"
+      },
+      "security_report": {
+        "final": {
+          "reason": null,
+          "outcome": "clean",
+          "remaining_blocking": [],
+          "first_scan_trivy_high_or_critical": 0,
+          "first_scan_checkov_high_or_critical": 0,
+          "first_scan_combined_high_or_critical": 0,
+          "first_scan_terraform_high_or_critical": 0
+        },
+        "tools": {
+          "trivy": "Version: 0.69.3",
+          "checkov": "3.3.21",
+          "terraform": "Terraform v1.16.4"
+        },
+        "sessions": [
+          {
+            "diff": "",
+            "kind": "automated",
+            "final": {
+              "reason": null,
+              "outcome": "clean",
+              "remaining_blocking": [],
+              "first_scan_trivy_high_or_critical": 0,
+              "first_scan_checkov_high_or_critical": 0,
+              "first_scan_combined_high_or_critical": 0,
+              "first_scan_terraform_high_or_critical": 0
+            },
+            "fix_passes": 0,
+            "iterations": [
+              {
+                "diff": "",
+                "scan": {
+                  "blocking": [],
+                  "tool_status": {
+                    "trivy": "ok",
+                    "checkov": "ok",
+                    "terraform": "ok"
+                  },
+                  "advisory_count": 0,
+                  "syntax_limited": false,
+                  "advisory_sample": [],
+                  "counts_by_severity": {},
+                  "advisory_omitted_count": 0,
+                  "terraform_findings_may_be_incomplete": false
+                },
+                "fixes": [],
+                "index": 0,
+                "diff_omitted_chars": 0
+              }
+            ],
+            "started_at": "2026-10-12T18:50:38.262457+00:00",
+            "fixing_model": "stub",
+            "fixing_provider": "stub",
+            "feedback_present": false,
+            "diff_omitted_chars": 0,
+            "fixing_reasoning_effort": null
+          }
+        ],
+        "fixing_model": "stub",
+        "policy_version": "2",
+        "prompt_version": "1",
+        "fixing_provider": "stub",
+        "omitted_session_count": 0,
+        "fixing_reasoning_effort": null
+      },
+      "validation_report": {
+        "checks": [
+          {
+            "tool": "builtin",
+            "status": "warning",
+            "message": "Expected plan entity 'web' absent from terraform names",
+            "category": "naming",
+            "check_id": "naming.missing_service",
+            "line_end": null,
+            "file_path": "terraform/main.tf",
+            "line_start": 1,
+            "skip_reason": null
+          },
+          {
+            "tool": "terraform",
+            "status": "passed",
+            "message": "Terraform provider-schema validation passed",
+            "category": "terraform",
+            "check_id": "terraform.validate",
+            "line_end": null,
+            "file_path": null,
+            "line_start": null,
+            "skip_reason": null
+          }
+        ],
+        "summary": {
+          "failed": 0,
+          "passed": 1,
+          "result": "valid",
+          "skipped": 0,
+          "warnings": 1
+        },
+        "abort_reason": null,
+        "tool_versions": {
+          "helm": "v4.3.0+gbec5b06",
+          "hadolint": "Haskell Dockerfile Linter 2.15.1",
+          "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+          "terraform": "Terraform v1.16.4",
+          "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1"
+        },
+        "omitted_counts": {},
+        "report_version": 1,
+        "terraform_required": true,
+        "failed_checks_for_remediation": []
+      },
+      "review_feedback": null,
+      "readiness_label": "production_ready",
+      "downloadable": true,
+      "review_available": false,
+      "retry_in_progress": false,
+      "review_reasons": [],
+      "retry_targets": []
+    },
+    {
+      "variant": "security",
+      "status": "production_ready",
+      "iteration_count": 1,
+      "error": null,
+      "files": {
+        "terraform/main.tf": "terraform { required_version = \">= 1.0\" }\n# Demo security variant\noutput \"review_demo\" {\n  value = local.review_demo\n}\nlocals {\n  review_demo = \"fixed\"\n}\n"
+      },
+      "original_files": {
+        "terraform/main.tf": "terraform { required_version = \">= 1.0\" }\n# Demo security variant\noutput \"review_demo\" {\n  value = local.review_demo\n}\n"
+      },
+      "security_report": {
+        "final": {
+          "reason": null,
+          "outcome": "clean",
+          "remaining_blocking": [],
+          "first_scan_trivy_high_or_critical": 0,
+          "first_scan_checkov_high_or_critical": 0,
+          "first_scan_combined_high_or_critical": 0,
+          "first_scan_terraform_high_or_critical": 0
+        },
+        "tools": {
+          "trivy": "Version: 0.69.3",
+          "checkov": "3.3.21",
+          "terraform": "Terraform v1.16.4"
+        },
+        "sessions": [
+          {
+            "diff": "",
+            "kind": "automated",
+            "final": {
+              "reason": null,
+              "outcome": "clean",
+              "remaining_blocking": [],
+              "first_scan_trivy_high_or_critical": 0,
+              "first_scan_checkov_high_or_critical": 0,
+              "first_scan_combined_high_or_critical": 0,
+              "first_scan_terraform_high_or_critical": 0
+            },
+            "fix_passes": 0,
+            "iterations": [
+              {
+                "diff": "",
+                "scan": {
+                  "blocking": [],
+                  "tool_status": {
+                    "trivy": "ok",
+                    "checkov": "ok",
+                    "terraform": "ok"
+                  },
+                  "advisory_count": 0,
+                  "syntax_limited": false,
+                  "advisory_sample": [],
+                  "counts_by_severity": {},
+                  "advisory_omitted_count": 0,
+                  "terraform_findings_may_be_incomplete": false
+                },
+                "fixes": [],
+                "index": 0,
+                "diff_omitted_chars": 0
+              }
+            ],
+            "started_at": "2026-10-12T18:50:38.364406+00:00",
+            "fixing_model": "stub",
+            "fixing_provider": "stub",
+            "feedback_present": false,
+            "diff_omitted_chars": 0,
+            "fixing_reasoning_effort": null
+          },
+          {
+            "diff": "--- a/terraform/main.tf\n+++ b/terraform/main.tf\n@@ -3,3 +3,6 @@\n output \"review_demo\" {\n   value = local.review_demo\n }\n+locals {\n+  review_demo = \"fixed\"\n+}\n",
+            "kind": "review_retry",
+            "final": {
+              "reason": null,
+              "outcome": "clean",
+              "remaining_blocking": [],
+              "first_scan_trivy_high_or_critical": 0,
+              "first_scan_checkov_high_or_critical": 0,
+              "first_scan_combined_high_or_critical": 0,
+              "first_scan_terraform_high_or_critical": 0
+            },
+            "fix_passes": 1,
+            "iterations": [
+              {
+                "diff": "--- a/terraform/main.tf\n+++ b/terraform/main.tf\n@@ -3,3 +3,6 @@\n output \"review_demo\" {\n   value = local.review_demo\n }\n+locals {\n+  review_demo = \"fixed\"\n+}\n",
+                "scan": {
+                  "blocking": []
+                },
+                "fixes": [
+                  {
+                    "file": "terraform/main.tf",
+                    "reason": null,
+                    "accepted": true,
+                    "rule_ids": [],
+                    "new_files": [],
+                    "summaries": [
+                      "Declare the missing demo local."
+                    ],
+                    "input_tokens": 10,
+                    "output_tokens": 10,
+                    "cached_input_tokens": null
+                  }
+                ],
+                "index": 0,
+                "diff_omitted_chars": 0
+              },
+              {
+                "diff": "",
+                "scan": {
+                  "blocking": [],
+                  "tool_status": {
+                    "trivy": "ok",
+                    "checkov": "ok",
+                    "terraform": "ok"
+                  },
+                  "advisory_count": 0,
+                  "syntax_limited": false,
+                  "advisory_sample": [],
+                  "counts_by_severity": {},
+                  "advisory_omitted_count": 0,
+                  "terraform_findings_may_be_incomplete": false
+                },
+                "fixes": [],
+                "index": 1,
+                "diff_omitted_chars": 0
+              }
+            ],
+            "started_at": "2026-10-12T18:50:55.504754+00:00",
+            "fixing_model": "stub",
+            "fixing_provider": "stub",
+            "feedback_present": true,
+            "diff_omitted_chars": 0,
+            "fixing_reasoning_effort": null
+          }
+        ],
+        "fixing_model": "stub",
+        "policy_version": "2",
+        "prompt_version": "1",
+        "fixing_provider": "stub",
+        "omitted_session_count": 0,
+        "fixing_reasoning_effort": null
+      },
+      "validation_report": {
+        "checks": [
+          {
+            "tool": "builtin",
+            "status": "warning",
+            "message": "Expected plan entity 'web' absent from terraform names",
+            "category": "naming",
+            "check_id": "naming.missing_service",
+            "line_end": null,
+            "file_path": "terraform/main.tf",
+            "line_start": 1,
+            "skip_reason": null
+          },
+          {
+            "tool": "builtin",
+            "status": "passed",
+            "message": "local.review_demo is declared",
+            "category": "reference",
+            "check_id": "terraform.local_ref",
+            "line_end": null,
+            "file_path": "terraform/main.tf",
+            "line_start": 4,
+            "skip_reason": null
+          },
+          {
+            "tool": "terraform",
+            "status": "passed",
+            "message": "Terraform provider-schema validation passed",
+            "category": "terraform",
+            "check_id": "terraform.validate",
+            "line_end": null,
+            "file_path": null,
+            "line_start": null,
+            "skip_reason": null
+          }
+        ],
+        "summary": {
+          "failed": 0,
+          "passed": 2,
+          "result": "valid",
+          "skipped": 0,
+          "warnings": 1
+        },
+        "abort_reason": null,
+        "tool_versions": {
+          "helm": "v4.3.0+gbec5b06",
+          "hadolint": "Haskell Dockerfile Linter 2.15.1",
+          "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+          "terraform": "Terraform v1.16.4",
+          "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1"
+        },
+        "omitted_counts": {},
+        "report_version": 1,
+        "terraform_required": true,
+        "failed_checks_for_remediation": []
+      },
+      "review_feedback": "Declare the missing review_demo local.",
+      "readiness_label": "production_ready",
+      "downloadable": true,
+      "review_available": false,
+      "retry_in_progress": false,
+      "review_reasons": [],
+      "retry_targets": []
+    }
+  ],
+  "missing_variants": []
+}

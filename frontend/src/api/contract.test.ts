@@ -1,0 +1,5 @@
+import { expect, it } from 'vitest';
+import pending from '../test/fixtures/pending-results.json';
+import repaired from '../test/fixtures/repaired-results.json';
+import type { ResultsResponse } from './types';
+it.each([pending,repaired])('required recorded contract fields',value=>{const results=value as ResultsResponse; for(const field of ['id','status','input_text','start_time','end_time','provider','model','max_iterations','error_message']) expect(results.run).toHaveProperty(field); expect(results).toHaveProperty('plan'); expect(results).toHaveProperty('missing_variants'); for(const item of results.packages){for(const field of ['variant','status','iteration_count','error','files','original_files','security_report','validation_report','review_feedback','readiness_label','downloadable','review_available','retry_in_progress','review_reasons','retry_targets']) expect(item).toHaveProperty(field); expect(typeof item.retry_in_progress).toBe('boolean'); expect(item).not.toHaveProperty('review_retry_started_at');}});

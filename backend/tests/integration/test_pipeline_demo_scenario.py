@@ -55,6 +55,7 @@ async def test_review_demo_retries_to_ready_and_preserves_audit(db_engines, tmp_
         assert after["packages"][:2] == before["packages"][:2]
         fixed = after["packages"][2]
         assert fixed["status"] == "production_ready"
+        assert fixed["retry_in_progress"] is False
         assert fixed["original_files"] == package["original_files"]
         assert fixed["validation_report"]["summary"]["result"] == "valid"
         assert fixed["security_report"]["sessions"][-1]["kind"] == "review_retry"

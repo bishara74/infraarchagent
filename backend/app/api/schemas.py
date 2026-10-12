@@ -41,6 +41,7 @@ class PackageResult(StrictResponse):
     readiness_label: Literal["production_ready", "not_production_ready"] | None
     downloadable: bool
     review_available: bool
+    retry_in_progress: bool
     review_reasons: list[
         Literal[
             "unresolved_security_findings",
