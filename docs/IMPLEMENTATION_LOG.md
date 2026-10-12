@@ -27,6 +27,39 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8 section 8 — Document the completed frontend and thesis updates
+
+**Summary:** Update project status/setup and the exact results field list; collect
+thesis changes for counts, annotation sources, validation tabs, Node/stack versions
+and PR-02 methodology. Preserve all approved direct pins and UTC publish dates
+alongside the completed visual/test evidence.
+
+**Requirements addressed:** FR-UI-01..07, FR-P-04, UC-08, PR-02, NFR-01.
+
+**Files:** README.md; docs/design-deviations.md; docs/IMPLEMENTATION_LOG.md;
+docs/evals/phase8-ui-20261012T204423Z/dependency-pins.md.
+
+**Decisions:** D-39/D-40/D-41 describe implemented behavior; D-36 explicitly marks
+the Phase 8 fetch client implemented, and D-33 already records unconditional stub
+models. D-40 retains the sole results-schema addition and approved cancellation
+scope exception. Node thesis wording is “Node.js 22.22 or later (developed on Node
+24 LTS)”; operational minimum stays 22.22.2. Comparison counts and file-linked
+annotations use retained evidence, never invented scores/rules. PR-02 uses live
+UTC-event-to-DOM sequence correlation, including multiple observer mutations,
+with historical replay excluded. docs/spec remains unchanged.
+
+**Tests:** Documentation cross-checked against package.json/package-lock.json,
+results schema, test commands and saved PR-02 JSON. No runtime change since section
+7: make lint/build passed; Vitest 82 passed; pytest default 1057 passed (6 perf
+deselected), perf 6 passed (1057 deselected); Playwright default 6 passed, final
+perf 1 passed; 32 PR-02 samples, max 663ms and median 165.5ms. No tests rerun solely
+for prose. git diff --check passes.
+
+**Known gaps / follow-ups:** Section 9 scope audit follows. Thesis sources are
+collected for author edits, not modified. Final performance evaluation is Phase 9.
+
+
+
 ## 2026-10-13 — Phase 8 section 7 — Verify thesis layouts and repair SSE disconnect cleanup
 
 **Summary:** Compare all four real screens with the mockup PDFs through global

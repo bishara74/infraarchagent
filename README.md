@@ -22,8 +22,12 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 7 adds results snapshots, review decisions/retries, deterministic labelled
-ZIP downloads and optional static API-key authentication. Phase 6 provides
+Phase 8 completes the four desktop screens: input, live progress, comparison,
+and package diff/review/download. The shared fetch-based SSE client resumes
+interruptions and distinguishes a settled close from an active retry. FastAPI
+serves the optional production build from the same origin. Phase 7 provides
+results snapshots, review decisions/retries, deterministic labelled ZIP downloads
+and optional static API-key authentication. Phase 6 provides
 deterministic structure, reference and naming checks, offline
 Terraform provider-schema validation, optional local linters and persisted
 reports. Clean scans plus valid packages reach `production_ready`; all three
@@ -82,7 +86,9 @@ scanner timeout/cancellation kills the whole process group and bounds pipe clean
    from the repository root.
    `make install` uses `backend/requirements.lock` as pip constraints to pin
    the runtime and dev dependencies recorded for Phase 1.
-3. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
+3. Export `TEST_DATABASE_URL` and `TEST_MIGRATION_DATABASE_URL` from your test
+   setup, using `infraarch_test` and the ordinary app/owner roles. Verification
+   does not read `.env`. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
    using the owner role; code under test connects as the app role. The default
    suite excludes wall-clock performance assertions. `make test-perf` runs
    only those assertions; final timing measurements are Phase 9 work on a
@@ -132,7 +138,8 @@ remains API-only. `/api` routes never fall back to the UI. UI responses receive
 a self-only CSP, nosniff and no-referrer headers; API/docs responses are unchanged.
 `make test-e2e` starts a single backend with stub/review defaults and Vite,
 using one Chromium worker and a test-only API key. It deliberately does not reuse
-existing servers: health cannot verify their provider/scenario defaults. After installing dependencies, the author installs Chromium:
+existing servers: health cannot verify their provider/scenario defaults.
+After installing dependencies, the author installs Chromium:
 
 ```bash
 cd frontend
@@ -150,6 +157,7 @@ from your test setup before running `make test`, `make test-perf` or E2E.
 The Python test bootstrap supplies omitted ordinary database URLs from these
 explicit test URLs. `make test` and `make test-perf` force empty credentials and
 stub defaults; canary tests still set their own fake values inside the process.
+E2E validates the exact database name and app/owner roles before starting servers.
 Alembic and verification subprocesses inherit the dotenv-disabled bootstrap.
 Normal operator `make run` retains its existing settings behavior.
 
@@ -166,6 +174,29 @@ Real scanner and Terraform/mirror prerequisites remain required. Fixture capture
 is explicit: with a local dotenv-disabled stub/review backend using an unset API
 key, run `node frontend/e2e/support/recordFixtures.ts` from the repository root.
 It rewrites the recorded pending/repaired responses and streams for contract tests.
+
+
+The API key and active run ID live only in `sessionStorage`. A 401 clears the key
+and offers re-entry on the current route. Variant and file selections live in
+the URL. Generated code and report messages render as text; downloads use the
+header-authenticated API and a revoked Blob URL.
+
+At stream EOF the client fetches results once. It closes normally only when the
+run is terminal, no package is scanning/remediating/validating, and every package
+has `retry_in_progress=false`. Otherwise it reconnects from the last accepted
+sequence; after five EOF reconnect attempts without a new event it shows
+“Live updates paused, Reconnect”. A retry 202 reopens a closed stream. Stage
+activity uses real timestamp intervals, counting overlapping variants once and
+excluding idle review time; elapsed timers do not poll the API.
+
+The completed [Phase 8 UI evidence](docs/evals/phase8-ui-20261012T204423Z/README.md)
+contains mockup comparisons, real screenshots at 1440×900 and 1024px, cancellation
+regressions, and the saved PR-02 samples. Final checks: backend 1057 default and
+6 perf tests passed; frontend 82 unit/component tests passed; browser 6 default
+and 1 perf tests passed; lint and production build passed. The final PR-02 run
+had 32 live samples, max 663ms and median 165.5ms. Exact installed versions and
+approved publish dates are in the [dependency record](docs/evals/phase8-ui-20261012T204423Z/dependency-pins.md).
+These are Phase 8 development checks; final performance evaluation is Phase 9.
 
 ## Running a pipeline
 
@@ -253,15 +284,18 @@ run: id, status, input_text, start_time, end_time, provider, model,
 plan: DeploymentPlan | null
 packages[]: variant, status, iteration_count, error, files, original_files,
             security_report, validation_report, review_feedback,
-            readiness_label, downloadable, review_available, review_reasons,
-            retry_targets
+            readiness_label, downloadable, review_available, retry_in_progress,
+            review_reasons, retry_targets
 missing_variants[]: variant, error
 ```
 
 Produced variants appear in cost/performance/security order. Generating
 placeholders are excluded; failed generation rows appear only in
 `missing_variants`. Retention absence is not reported as generation failure.
-Baselines and reports remain nullable. OpenAPI at `/docs` describes the strict
+Baselines and reports remain nullable. Required `retry_in_progress` is derived
+solely from the persisted retry marker being present; status alone does not
+establish whether a retry is active. The marker timestamp is not exposed.
+OpenAPI at `/docs` describes the strict
 schemas. Malformed IDs return 400 and unknown runs return 404.
 
 Reviews require a terminal run and a `pending_review` package. An active run

@@ -722,14 +722,14 @@ out of scope for this offline phase. Helm, hadolint, ansible-lint and promtool
 remain optional local linters. Built-ins need only the approved installed
 Python libraries, with no service, credentials or extra executable.
 
-### D-36 — Optional API key and fetch-based SSE (Accepted; Phase 7)
+### D-36 — Optional API key and fetch-based SSE (Accepted; Phase 7 auth and Phase 8 client implemented)
 
 One pipeline-router dependency checks the static API_KEY SecretStr against the
 X-API-Key header with hmac.compare_digest over UTF-8 bytes. Empty/unset means
 open access with one startup warning; health remains public. Missing and wrong
 headers receive identical generic 401 responses. Query-string authentication is
-not supported. Phase 8 implements useRunStream over fetch/ReadableStream so it sends
-this header; native EventSource cannot send custom headers. Keys are held in
+not supported. Phase 8 implements useRunStream over fetch/ReadableStream so it
+sends this header; native EventSource cannot send custom headers. Keys are held in
 sessionStorage and cleared on 401, with route-local re-entry.
 
 Operator logs retain existing traceback rendering and absolute paths, while
@@ -801,7 +801,8 @@ findings, accepted fixes in retained sessions and final outcome. Initial counts
 come from sessions[automated].iterations[0].scan.blocking, including MEDIUM under
 the actual blocking policy. HIGH/CRITICAL summary fields are not blocking totals.
 Omitted initial session history or missing evidence is labelled unavailable;
-retained fix counts do not imply omitted history was empty. No composite score,
+retained fix counts do not imply omitted history was empty. Accepted validation-only
+review fixes remain part of that retained fix count. No composite score,
 cost estimates, invented deployment traits or model timings are shown.
 
 Diff annotations use only rule_ids of fixes linked to that exact file. Severity
@@ -817,7 +818,9 @@ React 18/Tailwind stack line. Node ≥22.22.2 is the package engine requirement;
 development uses Node 24 LTS (24.21.0). The specification's Node 18 minimum
 needs updating. Exact direct pins and the resolved graph are committed in
 frontend/package.json and frontend/package-lock.json. Releases were checked
-against the 14-day cutoff before approval. TypeScript 6.0.3 is an approved
+against the 14-day cutoff at 2026-10-12 17:35:16 UTC before approval.
+The [dependency record](evals/phase8-ui-20261012T204423Z/dependency-pins.md) retains
+all 22 exact versions and their approved UTC publish dates. TypeScript 6.0.3 is an approved
 compatibility exception because typescript-eslint does not support TypeScript 7.
 
 The author approved two dev-package allowlist additions: @types/node 24.19.0
@@ -837,7 +840,8 @@ The implemented delivery uses a fetch/ReadableStream SSE client,
 an API key stored only in sessionStorage and sent via X-API-Key, and optional
 FastAPI SPA serving from frontend/dist, with API responses unaffected.
 The API client, session state, parser, reducer and shared stream store are
-implemented in section 2; section 4 implements optional SPA serving after existing API routes. Static
+implemented in section 2; section 4 implements optional SPA serving after
+existing API routes. Static
 assets and SPA responses have self-only CSP, nosniff and no-referrer headers;
 API/docs responses remain unchanged. Missing dist requires no build in tests.
 An internal dist-path override keeps synthetic error-route tests independent of
@@ -860,7 +864,6 @@ E2E starts fresh stub/review servers, because health cannot verify defaults of a
 existing server without changing the API. Every submitted E2E run explicitly
 requests stub. Browser/system prerequisites are installed only by the author.
 
-
 Phase 8 browser reload exposed an existing backend SSE cleanup bug: Starlette's
 level-triggered AnyIO disconnect cancellation can interrupt a PostgreSQL read
 and its async session cleanup, returning a connection before asyncpg terminates
@@ -881,8 +884,13 @@ commit immediately. An accepted retry keeps a client operation latch until a
 settled EOF snapshot, preventing stale results from restoring review controls.
 This latch is client state, not another results field. Reusing the live log's
 Intl.DateTimeFormat avoids repeated formatter allocation during those commits.
+Elapsed stage activity is computed from the union of actual event timestamp
+intervals across variants/retries, excluding review gaps and counting concurrent
+activity once. Duration timers update text only, without API polling or batching.
+All four screens and real-backend acceptance checks are implemented; screenshot
+comparisons and PR-02 development evidence are retained under docs/evals/.
 
-### D-41 — Deterministic validation-review demo (Accepted)
+### D-41 — Deterministic validation-review demo (Accepted; implemented)
 
 PIPELINE_DEMO_SCENARIO=clean|review defaults to clean and only affects opt-in
 pipeline stubs whose run provider resolves to stub. A real-provider default
@@ -1066,6 +1074,25 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+
+- Figure “Comparison panel”: replace the composite security score with first
+  automated blocking findings → remaining blocking findings, accepted fixes in
+  retained sessions and outcome (D-39). Include MEDIUM under the actual policy;
+  unavailable/omitted history must not be treated as zero.
+- Screen 4 diff annotations use only security rule IDs linked to the exact file
+  by retained fix records, never every finding's IDs. Validation-only fixes may
+  have no security rule IDs; their check IDs stay in the report tab (D-39).
+- Screen 4 has accessible “Security fixes” and “Validation report” tabs, including
+  passed/failed/warning/skipped labels and file/line links (FR-UI-05).
+- PR-02 development method: correlate each badge data-seq mutation with the
+  persisted event's UTC timestamp; use MutationObserver oldValue records to
+  reconstruct multiple changes within one callback. Require observed live
+  transitions for every stage; exclude historical replay; retain samples/max/
+  median. Latest development result: 32 samples, max 663ms, median 165.5ms.
+  These are Phase 8 checks; final measurements remain Phase 9.
+- Stage durations use the union of active timestamp intervals across variants
+  and retries, excluding idle review gaps; elapsed timers never poll the API.
 
 - Frontend build requirement: "Node.js 22.22 or later (developed on Node 24 LTS)";
   operational package minimum is 22.22.2. Appendix A should list React 19.3.0,
