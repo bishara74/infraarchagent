@@ -833,6 +833,25 @@ Last-Event-ID and backoff; five EOF reconnect attempts without a new event are
 allowed before pausing with a manual Reconnect notice. Normal settled EOF
 does not reconnect; retry 202 explicitly reopens the stream.
 
+### D-41 — Deterministic validation-review demo (Accepted)
+
+PIPELINE_DEMO_SCENARIO=clean|review defaults to clean and only affects opt-in
+pipeline stubs whose run provider resolves to stub. A real-provider default
+with review logs a startup warning; a real run's stub fixer remains ordinary.
+Existing spike/evaluation stubs retain their scripted behavior.
+
+Only the security variant appends an output referencing local.review_demo,
+without declaring it. Valid HCL avoids security syntax remediation; the
+built-in terraform.local_ref check fails at terraform/main.tf:4. The existing
+validation/readiness rules produce invalid then pending_review. A dedicated
+fixer stub consumes the trusted requested path and nonce-delimited failed
+validation targets, returns the real FixOutput shape and adds the missing
+local. Feedback cannot redirect the demo fix to another file. Retry uses the
+existing audit, rescan and revalidation paths, preserving original_files and
+the run's frozen partial_success. Clean variants remain unchanged. This is a
+test/demo aid, not deployable infrastructure; installed offline scanning and
+Terraform prerequisites remain necessary for complete readiness settlement.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

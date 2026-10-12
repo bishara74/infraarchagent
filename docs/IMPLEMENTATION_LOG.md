@@ -27,6 +27,43 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-12 — Phase 8 section 5 — Add deterministic validation-review scenario
+
+**Summary:** Add clean/review pipeline demo selection, security-only built-in
+validation failure and a dedicated fixer returning the real FixOutput shape.
+Review retry follows existing persistence, scan and validation paths.
+
+**Requirements addressed:** FR-I-04, FR-V-01, FR-S-08, FR-S-09, FR-UI-07, NFR-01.
+
+**Files:** backend/app/core/config.py, backend/app/pipeline/demo_stub.py,
+backend/app/agents/factory.py, backend/app/main.py, .env.example,
+backend/tests/unit/test_config.py, backend/tests/unit/test_pipeline_demo_stub.py,
+backend/tests/integration/test_pipeline_demo_scenario.py, README.md,
+docs/design-deviations.md and docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** D-41 records terraform.local_ref at terraform/main.tf:4 and
+nonce-delimited fix targeting. Ordinary evaluation/spike stubs and clean demo
+files remain unchanged. Real runs, including real runs with a stub fixer, ignore
+the scenario. Startup warns for a real default provider. No state-rule, scanner
+policy, schema, dependency or migration change. Failure detection needs only
+built-ins; complete readiness retains existing offline-tool prerequisites.
+
+**Tests:** make test: 1029 passed, 0 failed, 0 skipped, 6 deselected in 242.70s.
+make lint passed Ruff/format (176 files), mypy (97 sources) and frontend lint.
+make frontend-test: 3 passed, 0 failed, 0 skipped in 6.36s. Initial focused
+checks: 52 passed, 3 failed due to a test-only missing RetryPolicy constructor
+configuration; corrected before the passing full suite. Integration proves
+retry readiness, unchanged other variants/run, preserved baselines and audit
+sessions; unit tests cover both scenarios, all variants, failure-linked repairs,
+feedback isolation, settings validation and non-stub isolation. Test database
+uses the existing dotenv-disabled bootstrap and normal PostgreSQL roles/grants.
+
+**Known gaps / follow-ups:** Real-tool/demo browser verification follows with
+contract fixture capture and E2E. No dotenv read, real LLM call, install, push or
+browser download. No new open question. Section 2 is next.
+
+---
+
 ## 2026-10-12 — Phase 8 section 1 — Install and scaffold the pinned frontend
 
 **Summary:** After explicit manifest confirmation, perform the one approved

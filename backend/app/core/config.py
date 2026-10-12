@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     test_database_url: SecretStr
     test_migration_database_url: SecretStr
     llm_provider: LLMProvider = LLMProvider.STUB
+    pipeline_demo_scenario: Literal["clean", "review"] = "clean"
     llm_model: str | None = None
     llm_api_key: SecretStr | None = None
     api_key: SecretStr | None = None

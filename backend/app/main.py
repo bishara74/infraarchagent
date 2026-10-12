@@ -21,7 +21,7 @@ from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
-from app.domain.enums import RunStatus
+from app.domain.enums import LLMProvider, RunStatus
 from app.events.broker import InMemoryBroker
 from app.events.log import EventLog
 from app.pipeline.runner import PipelineRunner
@@ -67,6 +67,11 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.engine = app_engine
+        if (
+            configured.pipeline_demo_scenario == "review"
+            and configured.llm_provider != LLMProvider.STUB
+        ):
+            logger.warning("PIPELINE_DEMO_SCENARIO=review is ignored for non-stub runs")
         if configured.api_key is None:
             logger.warning(
                 "API_KEY is unset; pipeline API is open for local development"

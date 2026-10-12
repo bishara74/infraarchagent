@@ -4,6 +4,14 @@ from pydantic import ValidationError
 from app.core.config import ConfigurationError, Settings, require_llm_key
 
 
+@pytest.mark.req("NFR-01")
+def test_pipeline_demo_scenario_defaults_and_validation():
+    assert _settings().pipeline_demo_scenario == "clean"
+    assert _settings(pipeline_demo_scenario="review").pipeline_demo_scenario == "review"
+    with pytest.raises(ValidationError):
+        _settings(pipeline_demo_scenario="unknown")
+
+
 def _settings(**overrides: object) -> Settings:
     values: dict[str, object] = {
         "database_url": "postgresql+asyncpg://app:secret@localhost/db",

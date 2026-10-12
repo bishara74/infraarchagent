@@ -16,7 +16,7 @@ from app.core.config import Settings
 from app.domain.enums import LLMProvider, Variant
 from app.domain.run_config import RunConfig
 from app.llm.factory import build_adapter
-from app.pipeline.demo_stub import PipelineDemoStub
+from app.pipeline.demo_stub import PipelineDemoFixStub, PipelineDemoStub
 from app.scanners.runner import ProcessToolRunner
 from app.scanners.scan import Scanner
 from app.validation.engine import ValidationEngine
@@ -76,7 +76,12 @@ class AgentFactory:
             self.settings, provider=resolved.provider, model=resolved.model
         )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
-            adapter = PipelineDemoStub(variant, adapter.policy, model=adapter.model)
+            adapter = PipelineDemoStub(
+                variant,
+                adapter.policy,
+                model=adapter.model,
+                scenario=self.settings.pipeline_demo_scenario,
+            )
         return classes[Variant(variant)](
             adapter,
             deadline_seconds=self.settings.generator_deadline_seconds,
@@ -111,9 +116,10 @@ class AgentFactory:
             model=model,
             reasoning_effort=reasoning_effort,
         )
-        if self.pipeline_demo_stub and provider == LLMProvider.STUB:
-            adapter = PipelineDemoStub(
-                Variant.SECURITY, adapter.policy, model=adapter.model
+        if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
+            adapter = PipelineDemoFixStub(
+                adapter.policy,
+                scenario=self.settings.pipeline_demo_scenario,
             )
         return SecurityAgent(
             self.scanner,

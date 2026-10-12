@@ -168,6 +168,19 @@ provider mirror, all three can reach `production_ready` and the run can end
 `success`. A missing or repeatedly failing scanner places its package in
 `scan_error`; unavailable required Terraform validation requires review.
 
+For tests/demos only, set `PIPELINE_DEMO_SCENARIO=review` with a stub run.
+The security variant contains a deterministic undeclared local in
+`terraform/main.tf`, caught by the built-in `terraform.local_ref` check at
+line 4. Cost and performance stay clean. Security enters `pending_review`;
+retrying with feedback lets the demo fixer declare the local and reach
+`production_ready`. The run's historical `partial_success` remains unchanged.
+The default `clean` scenario preserves existing packages. Real-provider runs
+ignore the scenario, including when their fixer is stub; startup warns when
+`review` is configured with a non-stub default provider. The intentional
+failure needs no external validator, but full demo settlement still requires
+the installed scanners, Terraform and provider mirror. No cloud resources
+or model services are called by the demo.
+
 The in-memory event broker requires **one backend process** (OQ-04 in
 [`docs/design-deviations.md`](docs/design-deviations.md)). `make run`
 explicitly starts one Uvicorn worker. Multiple workers would split subscribers
@@ -360,6 +373,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `TEST_DATABASE_URL` | App-role URL for `infraarch_test` | Required |
 | `TEST_MIGRATION_DATABASE_URL` | Owner-role URL for `infraarch_test` | Required |
 | `LLM_PROVIDER` | `anthropic`, `openai`, or `stub` | `stub` |
+| `PIPELINE_DEMO_SCENARIO` | Test/demo-only `clean` or `review`; only affects resolved stub runs | `clean` |
 | `LLM_MODEL` | Model name, required for a real adapter | Unset |
 | `LLM_API_KEY` | Real-adapter credential | Unset |
 | `API_KEY` | Optional static pipeline API credential, sent as `X-API-Key`; empty leaves local access open | Unset |
