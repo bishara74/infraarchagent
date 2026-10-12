@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import httpx
 import pytest
 from fastapi import Request
@@ -66,8 +68,8 @@ async def test_health_without_llm_key_and_unreachable_database() -> None:
 
 
 @pytest.mark.asyncio
-async def test_unexpected_error_is_client_safe() -> None:
-    app = create_app(_settings())
+async def test_unexpected_error_is_client_safe(tmp_path: Path) -> None:
+    app = create_app(_settings(), frontend_dist=tmp_path / "missing")
 
     def fail(request: Request) -> None:
         raise RuntimeError("private exception detail")

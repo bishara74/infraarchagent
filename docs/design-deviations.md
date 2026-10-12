@@ -837,7 +837,11 @@ The approved remaining delivery design is a fetch/ReadableStream SSE client,
 an API key stored only in sessionStorage and sent via X-API-Key, and optional
 FastAPI SPA serving from frontend/dist, with API responses unaffected.
 The API client, session state, parser, reducer and shared stream store are
-implemented in section 2; optional SPA serving follows in section 4.
+implemented in section 2; section 4 implements optional SPA serving after existing API routes. Static
+assets and SPA responses have self-only CSP, nosniff and no-referrer headers;
+API/docs responses remain unchanged. Missing dist requires no build in tests.
+An internal dist-path override keeps synthetic error-route tests independent of
+a developer build. Missing assets and traversal never fall back to index.html.
 
 The sole approved results-schema addition is a required retry_in_progress
 boolean on each package, derived from review_retry_started_at IS NOT NULL,

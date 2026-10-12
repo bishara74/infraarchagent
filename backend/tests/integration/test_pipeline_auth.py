@@ -24,12 +24,12 @@ API_CANARY = "phase7-api-canary-9bc654"
 LLM_CANARY = "phase7-llm-canary-5abd93"
 
 
-async def authenticated_app(engine):
+async def authenticated_app(engine, frontend_dist=None):
     seeded, run_id = await pending_app(engine)
     settings = seeded.state.settings.model_copy(
         update={"api_key": SecretStr(API_CANARY), "llm_api_key": SecretStr(LLM_CANARY)}
     )
-    return create_app(settings, engine), run_id
+    return create_app(settings, engine, frontend_dist=frontend_dist), run_id
 
 
 @pytest.mark.req("NFR-01", "FR-UI-06", "FR-S-08", "FR-P-04")
@@ -136,8 +136,10 @@ async def test_both_canaries_and_backend_paths_are_absent_from_new_surfaces(
 
 
 @pytest.mark.req("NFR-01")
-async def test_unexpected_error_keeps_redacted_operator_traceback(db_engines, caplog):
-    app, _ = await authenticated_app(db_engines[0])
+async def test_unexpected_error_keeps_redacted_operator_traceback(
+    db_engines, caplog, tmp_path
+):
+    app, _ = await authenticated_app(db_engines[0], frontend_dist=tmp_path / "missing")
 
     def fail():
         raise RuntimeError(f"{API_CANARY} {LLM_CANARY} {ROOT}/backend/private.py")

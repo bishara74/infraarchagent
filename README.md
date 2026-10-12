@@ -125,10 +125,12 @@ when working with the API. `frontend-build` type-checks the app and tooling and
 writes `frontend/dist`; `frontend-test` runs Vitest once. `make lint` checks both
 backend and frontend, including ESLint and TypeScript `--noEmit`.
 
-Phase 8 section 1 provides the minimal app shell and tooling. The four pipeline
-screens, API/SSE client, FastAPI build serving and E2E configuration are still
-pending in their subsequent sections. `make test-e2e` is reserved for those
-Playwright tests. After installing dependencies, the author installs Chromium:
+The four screens support submission, live progress, comparison and package
+review/download. After `make frontend-build`, `make run` also serves the UI at
+`http://127.0.0.1:8000`, including direct screen reloads. Without a build it
+remains API-only. `/api` routes never fall back to the UI. UI responses receive
+a self-only CSP, nosniff and no-referrer headers; API/docs responses are unchanged.
+E2E configuration follows in section 6. After installing dependencies, the author installs Chromium:
 
 ```bash
 cd frontend

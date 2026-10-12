@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 from uuid import UUID
 
 import httpx
@@ -29,10 +30,11 @@ async def test_secret_canary_stays_out_of_http_logs_and_database(
     db_session: AsyncSession,
     canary_key: Settings,
     caplog: pytest.LogCaptureFixture,
+    tmp_path: Path,
 ) -> None:
     app_engine, _ = db_engines
     key = canary_key.require_llm_key()
-    app = create_app(canary_key, app_engine)
+    app = create_app(canary_key, app_engine, frontend_dist=tmp_path / "missing")
     app.dependency_overrides[get_settings] = lambda: canary_key
 
     def fail(request: Request) -> None:

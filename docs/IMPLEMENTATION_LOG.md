@@ -28,6 +28,38 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 ---
 
 
+## 2026-10-12 — Phase 8 section 4 — Serve optional frontend build from FastAPI
+
+**Summary:** Mount local assets and register the SPA fallback after existing routes.
+Missing dist keeps API-only behavior. Apply CSP/nosniff/no-referrer only to UI
+responses, with secure path resolution and missing-asset handling.
+
+**Requirements addressed:** FR-UI-01, FR-UI-03, FR-UI-04, NFR-01.
+
+**Files:** backend/app/api/frontend.py, backend/app/main.py;
+backend/tests/unit/test_frontend_serving.py and test_app.py;
+backend/tests/integration/test_canary.py and test_pipeline_auth.py; README.md, docs/design-deviations.md,
+and this log.
+
+**Decisions:** D-40 records serving and the internal temporary-dist override.
+The fallback declines /api at routing time for every HTTP method, preserving
+unknown API 404 responses. Tests that add synthetic failure routes explicitly
+use absent dist so developer builds cannot intercept their canary assertions.
+
+**Tests:** Serving-focused suite: 19 passed in 1.09s; app/serving initial focused
+suite: 19 passed in 20.35s. make lint passed Ruff/format (178 files), mypy
+(98 sources), ESLint and both TypeScript projects. Frontend unchanged since
+62 passing unit/component tests. Full regression before both synthetic-route overrides: 1046 passed, 2 failed,
+6 deselected in 245.06s. Both failures were SPA interception of synthetic test
+routes, corrected with missing-dist overrides. A focused rerun was started while
+a helper signature edit was incomplete (28 passed, 5 failed); corrected and
+rerun: 33 passed, 0 failed in 19.62s. The next full regression also covers the
+permanent test bootstrap.
+
+**Known gaps / follow-ups:** Browser acceptance still needs the author's system
+libraries. No install, dotenv read, real LLM call, migration or dependency change.
+
+
 ## 2026-10-12 — Phase 8 section 3 — Build four thesis screens and review controls
 
 **Summary:** Implement input, progress, comparison and package routes with native
