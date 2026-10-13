@@ -37,6 +37,8 @@ test-perf: migrate-test
 	$(BACKEND) .venv/bin/python -m scripts.run_verification pytest -q -m perf
 
 lint:
+	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py
+	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py
 	$(BACKEND) .venv/bin/ruff check app tests
 	$(BACKEND) .venv/bin/ruff format --check app tests
 	$(BACKEND) .venv/bin/mypy app
@@ -78,3 +80,7 @@ eval-validation:
 .PHONY: providers
 providers:
 	$(BACKEND) .venv/bin/python -m scripts.mirror_providers
+
+.PHONY: traceability
+traceability:
+	$(BACKEND) .venv/bin/python -m scripts.traceability

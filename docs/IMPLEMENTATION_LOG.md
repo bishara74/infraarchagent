@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 1 — Collect requirement traceability
+
+**Summary:** Collect pytest markers and Vitest/Playwright titles without running
+fixtures, servers or test bodies; report exact thesis TC mappings and gaps.
+
+**Requirements addressed:** none — evaluation infrastructure for all 59 IDs.
+
+**Files:** backend/scripts/{phase9_common,phase9_report,pytest_traceability,
+traceability}.py; docs/traceability-map.json; backend/tests/unit/
+test_phase9_traceability.py; Makefile; this log; generated Phase 9 traceability
+CSV-free JSON/Markdown/environment evidence under docs/evals/.
+
+**Decisions:** Collection-only evidence is not a passing-test claim. TC groups
+are many-to-many and reproduce the thesis matrix exactly. Missing mappings stay
+unassigned. Perf Playwright titles are collected explicitly. No new deviation.
+
+**Tests:** Focused extraction, real inherited/parameter-marker collection,
+report and statistics checks: 8 passed, 0 failed, 0 skipped (0.47s). make lint
+passed Ruff, formatting, mypy (98 app sources), ESLint and both TS projects.
+make traceability passed: 59 IDs, zero invalid annotations/collection failures;
+10 uncovered: NFR-02, NFR-04, PR-01, UC-01 through UC-07. Section 0's final
+focused suite was 204 passed in 2.29s (correcting the earlier time-only entry).
+
+**Known gaps / follow-ups:** Coverage counts describe annotations, not semantic
+coverage; no tests added merely to fill gaps. Section 3 adds benchmark behaviors.
+
+
 ## 2026-10-13 — Phase 9 section 0 — Classify provider failures safely
 
 **Summary:** Add eight provider-error categories, fixed public sentences and
