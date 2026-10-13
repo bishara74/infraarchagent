@@ -131,6 +131,8 @@ Vite does not load dotenv files. Start the backend separately with `make run`
 when working with the API. `frontend-build` type-checks the app and tooling and
 writes `frontend/dist`; `frontend-test` runs Vitest once. `make lint` checks both
 backend and frontend, including ESLint and TypeScript `--noEmit`.
+`make run` uses one worker without automatic reload; restart it after backend
+code changes.
 
 The backend defaults to port 8000. If it is occupied, use `make run PORT=8765`.
 The API/health URL then becomes `http://127.0.0.1:8765/api/health`; a built UI

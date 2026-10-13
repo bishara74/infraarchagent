@@ -9,7 +9,7 @@ task prompt; this file holds the rules that never change.
 InfraArchAgent is the implementation of a BSc thesis. It is a multi-agent
 pipeline that turns a natural-language infrastructure description into three
 Infrastructure-as-Code packages (cost-, performance- and security-optimised),
-scans them with Checkov and tfsec, remediates violations through an LLM loop,
+scans them with Checkov and Trivy, remediates violations through an LLM loop,
 validates them, and shows everything in a React UI with live progress over SSE.
 
 Stack: Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0 (async) + asyncpg,
@@ -126,7 +126,7 @@ A task is not done until these are updated:
 | `make up` / `make down` | start/stop PostgreSQL (docker-compose) |
 | `make install` | create venv and install backend with dev extras |
 | `make migrate` | apply Alembic migrations as the owner role |
-| `make run` | start FastAPI with reload |
+| `make run` | start FastAPI with one worker (PORT defaults to 8000) |
 | `make test` | run the test suite against the test database |
 | `make lint` | ruff check + ruff format --check + mypy on `app/` |
 | `make sweep` | run the 30-day package retention sweep |

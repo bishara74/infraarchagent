@@ -27,6 +27,71 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c item 7 — Correct operator guidance and verify the polish
+
+**Summary:** Correct the standing scanner names and make run's single-worker,
+no-reload behavior. Cross-check current README commands and finish verification
+of all seven polish items, leaving historical evaluation reports intact.
+
+**Requirements addressed:** FR-UI-01..07, FR-P-04, FR-S-09, FR-S-10, NFR-01;
+operator documentation consistency.
+
+**Files:** AGENTS.md; README.md; backend/tests/unit/test_make_commands.py;
+docs/IMPLEMENTATION_LOG.md. A late item 2 acceptance correction also updates
+frontend/src/{components/ReviewPanel.tsx,screens/PackageScreen.tsx,
+screens/screens.test.tsx} and docs/design-deviations.md (D-37).
+
+**Decisions:** AGENTS names Checkov/Trivy and describes one FastAPI worker;
+README explicitly says no automatic reload and documents the custom port/proxy.
+The documentation regression checks actual scanner TOOLS plus operator guidance,
+alongside the exact Make dry-run command. Existing Phase 8 verification counts
+in README are historical evidence, explicitly labelled as such. No spec edit,
+new deviation or open question; D-37/D-40 presentation clarifications are kept.
+
+Final E2E found that approve/reject refreshed results but left the already-closed
+SSE stream closed, so the new origin display lacked the decision event. Resume
+SSE after those accepted actions, without setting the retry-only latch. A screen
+regression and real approve/reject archive/display assertions prove recovery.
+The verified correction is in the working tree; packaging it into item 2 or a
+separate follow-up commit requires the author's choice under AGENTS section 9.
+
+**Tests:** All required commands ran through ordinary Make invocations:
+
+- `make lint`: passed Ruff, format (182 files), mypy (98 sources), ESLint and
+  both strict TypeScript projects, including after the late frontend correction.
+- `make test`: 1088 passed, 0 failed, 0 skipped, 6 perf deselected (112.32s).
+  Backend source did not change after this run.
+- Final `make frontend-test`: 97 passed, 0 failed, 0 skipped in 14 files (6.66s).
+- Initial `make test-e2e`: 4 passed, 2 failed (4.2m), both from missing engineer
+  decision events on screen 4. With accepted-decision SSE recovery: 6 passed,
+  0 failed, 0 skipped (1.2m), including identical UI/ZIP origin assertions.
+- `make frontend-build`: passed (142 modules; final build 241ms).
+- Earlier focused backend archive/history checks and three prompt, expected
+  reconnect mutation failures are recorded in the item entries above.
+
+Manual global playwright-cli verification used installed Chromium, temporary
+cache/profile/output paths and a persistent shell after default cache writes
+failed. No installation was performed. A temporary localhost-only server served
+the four untouched thesis PDFs for actual browser-rendered comparison. The built
+FastAPI UI ran on PORT=8765 with dotenv-disabled stub/review test-role settings.
+Input, progress, comparison and package screens match the fixed layout/tokens;
+real events showed 3 clean and 2 valid / 1 invalid. The manual pending → feedback
+retry → ready flow showed exactly one badge beside Download ZIP, no header badge,
+and the correct automatic-after-engineer-retry origin. Pending/ready screens at
+1440px and 1024px were inspected; no horizontal overflow, no application console
+errors/warnings. Screenshots were temporary inspection artifacts, not fake data
+or committed historical evidence. A manual Chromium ZIP download completed;
+its readiness origin and repaired Terraform content were verified. Temporary
+servers/browser were stopped and repository screenshot artifacts removed.
+Final git diff --check passes.
+
+**Known gaps / follow-ups:** Windows/PowerShell and Firefox execution are not
+available here; custom-port runtime was verified on Linux/Chromium. The UI @perf
+and backend perf suites were outside this prompt. The last SSE correction awaits
+commit-packaging authorization; all code and verification are complete. No
+dotenv opened/printed/copied/modified by the agent, installs, real LLM calls,
+push, later-phase work or changes to pre-existing untracked REVISION.txt.
+
 ## 2026-10-13 — Phase 8c item 6 — Make the operator backend port configurable
 
 **Summary:** Add PORT (default 8000) to make run and a process-environment
