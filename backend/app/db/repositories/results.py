@@ -23,6 +23,23 @@ class ResultsRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    async def review_retry_before(
+        self, run_id: UUID, variant: Variant, label_seq: int
+    ) -> bool:
+        return (
+            await self.session.scalar(
+                select(AgentEvent.seq)
+                .where(
+                    AgentEvent.run_id == run_id,
+                    AgentEvent.seq < label_seq,
+                    AgentEvent.payload["kind"].astext == EventKind.PACKAGE_STATUS,
+                    AgentEvent.payload["variant"].astext == variant.value,
+                    AgentEvent.payload["review_action"].astext == "retry",
+                )
+                .limit(1)
+            )
+        ) is not None
+
     async def label_event(
         self, run_id: UUID, variant: Variant, status: PackageStatus
     ) -> AgentEvent | None:

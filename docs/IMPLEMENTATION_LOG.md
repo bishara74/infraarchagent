@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c item 2 — Retain readiness provenance after review retries
+
+**Summary:** ZIP readiness documents and screen 4 distinguish automatic labels,
+automatic labels after engineer-requested retries, and approve/reject decisions.
+
+**Requirements addressed:** FR-UI-06, FR-UI-07, FR-S-09, FR-S-10.
+
+**Files:** backend/app/domain/archive.py; backend/app/db/repositories/results.py;
+backend/app/pipeline/results.py; backend/tests/unit/test_archive.py;
+backend/tests/integration/test_pipeline_download.py;
+frontend/src/lib/readinessOrigin.ts and readinessOrigin.test.ts;
+frontend/src/screens/PackageScreen.tsx; frontend/src/components/ReviewPanel.tsx
+and review.test.tsx; frontend/e2e/{review-flow.spec.ts,support/flow.ts};
+docs/design-deviations.md (D-37 clarification); docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Select review retries strictly before the label event, scoped to
+run/variant; explicit label decisions win. Missing label events remain unavailable.
+Frontend reads existing SSE history, rendering provenance beside the label in
+the action panel. Reuse current muted typography and panel tokens. No new schema,
+endpoint, database field, spec deviation or open question. E2E asserts identical
+archive/display origin for retry, approve and reject.
+
+**Tests:** Archive/download focused checks: 18 passed, 1 perf deselected; extended
+download history checks: 9 passed, 1 perf deselected. Frontend: 93 passed,
+0 failed, 0 skipped in 14 files; ESLint/strict TypeScript and backend Ruff pass.
+Full suites and real-browser provenance checks follow item 7.
+
+**Known gaps / follow-ups:** D-19's separately committed missing-event limitation
+remains; provenance is derived only from retained event evidence.
+
 ## 2026-10-13 — Phase 8c item 1 — Preserve mixed stage outcomes
 
 **Summary:** SecurityAgent and ValidatorAgent summaries count recorded outcomes

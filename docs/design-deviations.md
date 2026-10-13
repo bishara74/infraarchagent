@@ -760,7 +760,11 @@ requires `pending_review` and a terminal run; earlier review actions return
 
 Download archives use the terminal package transition event time, displayed as
 **Labelled at**, replacing request-time download time. Decision provenance comes
-from that same event. Missing events under D-19 yield fixed unavailable text.
+from that same event and earlier engineer-requested retry events for the same
+variant. Phase 8c distinguishes automatic, automatic after an engineer-requested
+retry, and engineer decision; approve/reject take precedence. Screen 4 derives
+the same text from SSE history without adding API or database fields.
+Missing label events under D-19 yield fixed unavailable text.
 Fixed metadata and `ZIP_DEFLATED` level 6 make repeated unchanged downloads
 byte-identical. Readiness-name collisions use the reserved fallback, then the
 first free deterministic numbered path, without overwriting package files.

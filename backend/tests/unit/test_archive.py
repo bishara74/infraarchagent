@@ -61,3 +61,42 @@ def test_sorted_deflated_fixed_metadata_and_collision_preservation(
 def test_zip_revalidates_persisted_paths(files):
     with pytest.raises(ValueError, match="path"):
         package_zip(files, "Ready")
+
+
+@pytest.mark.req("FR-UI-06", "FR-S-09", "FR-S-10")
+@pytest.mark.parametrize(
+    "action,retried,expected",
+    [
+        (None, False, "automatic (clean scan and valid validation)"),
+        (
+            None,
+            True,
+            "automatic after an engineer-requested retry "
+            "(clean scan and valid validation)",
+        ),
+        ("approve", True, "engineer decision"),
+        ("reject", True, "engineer decision"),
+    ],
+)
+def test_readiness_document_distinguishes_origins(action, retried, expected):
+    from datetime import UTC, datetime
+    from uuid import uuid4
+
+    from app.domain.archive import readiness_document
+    from app.domain.enums import PackageStatus, Variant
+
+    document = readiness_document(
+        run_id=uuid4(),
+        variant=Variant.COST,
+        status=PackageStatus.NOT_PRODUCTION_READY
+        if action == "reject"
+        else PackageStatus.PRODUCTION_READY,
+        model="stub",
+        labelled_at=datetime.now(UTC),
+        review_action=action,
+        feedback=None,
+        security_report=None,
+        validation_report=None,
+        retried=retried,
+    )
+    assert f"Label origin: {expected}\n" in document

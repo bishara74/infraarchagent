@@ -160,3 +160,72 @@ async def test_ten_megabyte_package_download_under_two_seconds(
     record_property("pr04_seconds", elapsed)
     print(f"PR-04: {elapsed:.6f}s; {archive_bytes} archive bytes")
     assert elapsed < 2
+
+
+@pytest.mark.req("FR-UI-06", "FR-S-09")
+async def test_retry_download_origin_uses_committed_review_event(
+    db_engines, monkeypatch
+):
+    import asyncio
+
+    from tests.integration.test_pipeline_review import install_retry
+
+    app, run_id = await pending_app(db_engines[0])
+    install_retry(app, monkeypatch)
+    async with client_for(app) as client:
+        response = await client.post(review_url(run_id), json={"action": "retry"})
+        assert response.status_code == 202
+        await asyncio.gather(*app.state.runner.tasks.values())
+        first = await client.get(f"/api/pipeline/{run_id}/download/cost")
+        second = await client.get(f"/api/pipeline/{run_id}/download/cost")
+    assert first.status_code == 200 and first.content == second.content
+    with ZipFile(BytesIO(first.content)) as archive:
+        text = archive.read("INFRAARCHAGENT_READINESS.md").decode()
+    assert "Label origin: automatic after an engineer-requested retry " in text
+    assert "(clean scan and valid validation)" in text
+
+
+@pytest.mark.req("FR-UI-06", "FR-S-09")
+@pytest.mark.parametrize(
+    "retry_variant,before_label,expected_retry",
+    [
+        (Variant.COST, True, True),
+        (Variant.SECURITY, True, False),
+        (Variant.COST, False, False),
+    ],
+)
+async def test_origin_history_is_variant_scoped_and_precedes_label(
+    db_engines, retry_variant, before_label, expected_retry
+):
+    app, run_id = await pending_app(db_engines[0], result="valid")
+
+    async def record_retry():
+        # State/event transactions are independent (D-19); this fixture isolates
+        # history selection rather than executing another remediation pipeline.
+        await app.state.writer.review_event(
+            run_id,
+            retry_variant,
+            PackageStatus.REMEDIATING,
+            PackageStatus.PENDING_REVIEW,
+            action="retry",
+            reasons=[],
+        )
+
+    if before_label:
+        await record_retry()
+    await app.state.writer.package_transition(
+        run_id, Variant.COST, PackageStatus.PRODUCTION_READY, message="labelled"
+    )
+    if not before_label:
+        await record_retry()
+    async with client_for(app) as client:
+        response = await client.get(f"/api/pipeline/{run_id}/download/cost")
+    assert response.status_code == 200
+    with ZipFile(BytesIO(response.content)) as archive:
+        text = archive.read("INFRAARCHAGENT_READINESS.md").decode()
+    origin = (
+        "automatic after an engineer-requested retry (clean scan and valid validation)"
+        if expected_retry
+        else "automatic (clean scan and valid validation)"
+    )
+    assert f"Label origin: {origin}\n" in text

@@ -23,6 +23,7 @@ def readiness_document(
     feedback: str | None,
     security_report: dict[str, Any] | None,
     validation_report: dict[str, Any] | None,
+    retried: bool = False,
 ) -> str:
     if not is_downloadable(status):
         raise ValueError("package is not downloadable")
@@ -34,6 +35,9 @@ def readiness_document(
     origin = (
         "engineer decision"
         if review_action in {"approve", "reject"}
+        else "automatic after an engineer-requested retry "
+        "(clean scan and valid validation)"
+        if labelled_at and retried
         else "automatic (clean scan and valid validation)"
         if labelled_at
         else "unavailable (transition event not recorded)"

@@ -43,6 +43,11 @@ class ResultsService:
                     409, "not_downloadable", "Package does not have a readiness label."
                 )
             label = await repository.label_event(run_id, variant, status)
+            retried = (
+                await repository.review_retry_before(run_id, variant, label.seq)
+                if label
+                else False
+            )
         assert snapshot is not None
         readiness = readiness_document(
             run_id=run_id,
@@ -54,6 +59,7 @@ class ResultsService:
             feedback=row.review_feedback,
             security_report=row.security_report,
             validation_report=row.validation_report,
+            retried=retried,
         )
         archive = package_zip(self.safety.value(row.files), self.safety.text(readiness))
         return (
