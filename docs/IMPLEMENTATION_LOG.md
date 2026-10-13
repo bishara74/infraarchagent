@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c item 6 — Make the operator backend port configurable
+
+**Summary:** Add PORT (default 8000) to make run and a process-environment
+INFRAARCH_BACKEND_URL override for Vite's API proxy, with its existing default.
+
+**Requirements addressed:** FR-UI-01; local tooling infrastructure.
+
+**Files:** Makefile; frontend/vite.config.ts; frontend/playwright.config.ts;
+frontend/src/test/tooling.test.ts; backend/tests/unit/test_make_commands.py
+(added); README.md; docs/design-deviations.md (D-40); docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Document make run PORT=8765, changed FastAPI UI/API URLs and the
+unchanged Vite browser URL. Include PowerShell proxy configuration. Vite keeps
+envDir=false. E2E pins its existing 8000/5173 defaults so an operator's proxy
+environment cannot route browser acceptance to another application. No new
+dependency, schema, endpoint, spec deviation or open question.
+
+**Tests:** Make dry-run default/override: 2 passed, 0 failed, 0 skipped (0.06s).
+Frontend: 96 passed, 0 failed, 0 skipped in 14 files (4.74s); frontend lint and
+strict TS pass. Proxy integration now exercises the configured environment
+target against an ephemeral real HTTP backend instead of replacing target in
+the test; a separate case proves default 8000 and dotenv-disabled config.
+
+**Known gaps / follow-ups:** Actual custom-port startup and final suites follow
+item 7. Windows itself is unavailable; PowerShell syntax is documented.
+
 ## 2026-10-13 — Phase 8c item 5 — Bound reconnect regression clients
 
 **Summary:** EOF, cursor, sequence replay and network-backoff tests use finite

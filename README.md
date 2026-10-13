@@ -132,6 +132,26 @@ when working with the API. `frontend-build` type-checks the app and tooling and
 writes `frontend/dist`; `frontend-test` runs Vitest once. `make lint` checks both
 backend and frontend, including ESLint and TypeScript `--noEmit`.
 
+The backend defaults to port 8000. If it is occupied, use `make run PORT=8765`.
+The API/health URL then becomes `http://127.0.0.1:8765/api/health`; a built UI
+served by FastAPI is at `http://127.0.0.1:8765`. For Vite development, point its
+proxy at that backend while keeping the browser at `http://127.0.0.1:5173`:
+
+```bash
+INFRAARCH_BACKEND_URL=http://127.0.0.1:8765 make frontend-dev
+```
+
+In PowerShell, set the environment variable before starting Vite:
+
+```powershell
+$env:INFRAARCH_BACKEND_URL = "http://127.0.0.1:8765"
+make frontend-dev
+```
+
+`INFRAARCH_BACKEND_URL` defaults to `http://127.0.0.1:8000` and is read from
+the process environment; Vite still does not load dotenv. E2E continues to use
+backend port 8000 and Vite port 5173.
+
 The four screens support submission, live progress, comparison and package
 review/download. After `make frontend-build`, `make run` also serves the UI at
 `http://127.0.0.1:8000`, including direct screen reloads. Without a build it

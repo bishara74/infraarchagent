@@ -3,9 +3,15 @@ import { createServer as createHttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import { createServer as createViteServer, type ViteDevServer } from 'vite';
-import { expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 
-import config from '../../vite.config';
+afterEach(()=>vi.unstubAllEnvs());
+
+it('defaults the backend proxy to port 8000 without dotenv',async()=>{
+ vi.stubEnv('INFRAARCH_BACKEND_URL',undefined);vi.resetModules();
+ const {default:config}=await import('../../vite.config');
+ expect(config.envDir).toBe(false);expect(config.server?.proxy?.['/api']).toMatchObject({target:'http://127.0.0.1:8000'});
+});
 
 it('serves the local shell and preserves API requests through the dev proxy', async () => {
   const backend = createHttpServer(async (request, response) => {
@@ -30,6 +36,8 @@ it('serves the local shell and preserves API requests through the dev proxy', as
   let server: ViteDevServer | undefined;
 
   try {
+    vi.stubEnv('INFRAARCH_BACKEND_URL',`http://127.0.0.1:${backendPort}`);vi.resetModules();
+    const {default:config}=await import('../../vite.config');
     const apiProxy = config.server?.proxy?.['/api'];
     if (!apiProxy || typeof apiProxy === 'string') {
       throw new Error('The API proxy configuration is missing.');
@@ -41,13 +49,7 @@ it('serves the local shell and preserves API requests through the dev proxy', as
       server: {
         ...config.server,
         port: 0,
-        proxy: {
-          ...config.server?.proxy,
-          '/api': {
-            ...apiProxy,
-            target: `http://127.0.0.1:${backendPort}`,
-          },
-        },
+        proxy: config.server?.proxy,
       },
     });
     await server.listen();

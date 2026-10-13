@@ -11,8 +11,8 @@ export default defineConfig({
  globalSetup:'./e2e/support/prerequisites.ts',
  use:{baseURL:'http://127.0.0.1:5173',browserName:'chromium',viewport:{width:1440,height:900},reducedMotion:'reduce',trace:'retain-on-failure'},
  webServer:[
-  {command:'make migrate-test && make run',cwd:root,url:'http://127.0.0.1:8000/api/health',timeout:120000,reuseExistingServer:false,
+  {command:'make migrate-test && make run PORT=8000',cwd:root,url:'http://127.0.0.1:8000/api/health',timeout:120000,reuseExistingServer:false,
    env:{INFRAARCH_TEST_BOOTSTRAP:'1',PYTHONPATH:[path.join(root,'backend/tests/bootstrap'),path.join(root,'backend')].join(path.delimiter),DATABASE_URL:database,MIGRATION_DATABASE_URL:owner,TEST_DATABASE_URL:database,TEST_MIGRATION_DATABASE_URL:owner,LLM_PROVIDER:'stub',LLM_MODEL:'',LLM_API_KEY:'',LLM_BASE_URL:'',LLM_REASONING_EFFORT:'',SECURITY_FIX_PROVIDER:'stub',SECURITY_FIX_MODEL:'',SECURITY_FIX_REASONING_EFFORT:'',PIPELINE_DEMO_SCENARIO:'review',API_KEY:'phase8-e2e-only'}},
-  {command:'npm run dev',url:'http://127.0.0.1:5173',timeout:60000,reuseExistingServer:false},
+  {command:'npm run dev',env:{INFRAARCH_BACKEND_URL:'http://127.0.0.1:8000'},url:'http://127.0.0.1:5173',timeout:60000,reuseExistingServer:false},
  ],
 });

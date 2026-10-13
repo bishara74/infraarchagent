@@ -834,7 +834,10 @@ The one initial npm install used --save-exact --ignore-scripts; subsequent
 setup uses npm ci --ignore-scripts. No installation script or browser download
 was enabled to make the toolchain work.
 
-The development server proxies /api to localhost:8000. Vite's envDir is false
+The development server proxies /api to localhost:8000 by default. Phase 8c adds
+Make's PORT override for operator startup and INFRAARCH_BACKEND_URL for the
+Vite proxy; E2E explicitly retains backend 8000/Vite 5173 regardless of those
+operator overrides. Vite's envDir is false
 so development, build and Vitest do not load dotenv files. The HTML language,
 title and theme-colour metadata match the design system. color-scheme: dark
 is in external CSS instead of the phase prompt's inline style attribute,
