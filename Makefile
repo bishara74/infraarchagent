@@ -37,8 +37,8 @@ test-perf:
 	$(BACKEND) .venv/bin/python -m scripts.measure_performance backend
 
 lint:
-	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py
-	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py
+	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
 	$(BACKEND) .venv/bin/ruff check app tests
 	$(BACKEND) .venv/bin/ruff format --check app tests
 	$(BACKEND) .venv/bin/mypy app
@@ -96,3 +96,16 @@ benchmark:
 .PHONY: test-ui-perf
 test-ui-perf:
 	$(BACKEND) .venv/bin/python -m scripts.measure_performance ui
+
+BASE_URL ?= http://127.0.0.1:8000
+.PHONY: bench-stub bench-real
+bench-stub: export PHASE9_BASE_URL = $(BASE_URL)
+bench-stub: export PHASE9_MAX_RUNS = $(MAX_RUNS)
+bench-stub:
+	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks stub
+
+bench-real: export PHASE9_BASE_URL = $(BASE_URL)
+bench-real: export PHASE9_MAX_RUNS = $(MAX_RUNS)
+bench-real: export PHASE9_BUDGET = $(BUDGET)
+bench-real:
+	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks real

@@ -8,7 +8,7 @@ import math
 import os
 import statistics
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -488,6 +488,7 @@ class Harness:
             "run_id": None,
             "seconds": None,
             "complete": False,
+            "submitted_at": datetime.now(UTC).isoformat(),
             **extra,
         }
         local = []
@@ -578,6 +579,7 @@ class Harness:
             raise ValueError("Server provider differs from measurement configuration")
         row.update(
             seconds=elapsed,
+            settled_at=datetime.now(UTC).isoformat(),
             complete=True,
             run_status=run["status"],
             provider=provider,
@@ -664,6 +666,8 @@ class Harness:
                 print(
                     "First real run measured cost: "
                     + str(self.advisory["measured_first_run_cost_usd"])
+                    + "; remaining credit: "
+                    + str(self.advisory["remaining_credit_usd"])
                     + "; projected further planned runs: "
                     + str(self.advisory["projected_further_runs"])
                     + "/"
@@ -721,7 +725,13 @@ class Harness:
 
             async def one():
                 await barrier.wait()
-                return await self.observe(prompts()[0], "pr03", role="cohort")
+                return await self.observe(
+                    prompts()[0],
+                    "pr03",
+                    role="cohort",
+                    cost_usd=None,
+                    cost_attribution="not attributed",
+                )
 
             cohort = await asyncio.gather(*(one() for _ in range(3)))
             after = await self.credit() if self.mode == "real" else CreditSnapshot()
@@ -830,7 +840,8 @@ def arguments() -> argparse.ArgumentParser:
 async def configured_harness(
     args, directory: Path, client: httpx.AsyncClient
 ) -> Harness:
-    guard = reader = None
+    guard = BudgetGuard(Decimal(0), args.max_runs) if args.max_runs else None
+    reader = None
     api_key = SecretStr(os.environ["API_KEY"]) if os.environ.get("API_KEY") else None
     if args.mode == "real" and args.command != "pr04":
         from app.core.config import Settings
@@ -845,7 +856,10 @@ async def configured_harness(
         ):
             raise ValueError("Real mode requires a positive --budget-usd reserve")
         guard = BudgetGuard(args.budget_usd, args.max_runs)
-        if urlparse(settings.llm_base_url or "").hostname == "openrouter.ai":
+        if (
+            settings.llm_provider.value == "openai"
+            and urlparse(settings.llm_base_url or "").hostname == "openrouter.ai"
+        ):
             if not settings.llm_api_key:
                 raise ValueError("Real mode needs configured credentials")
             reader = CreditReader(client, settings.llm_base_url, settings.llm_api_key)

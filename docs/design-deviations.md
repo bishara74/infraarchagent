@@ -970,6 +970,11 @@ The cohort needs max(reserve, 2H, 4.5H) remaining credit. Unknown costs/credit s
 unknown and require explicit run bounds; no estimated benchmark measurements.
 
 
+The first settled real run produces a measured-cost/remaining-credit notice and
+an informational simulation of the remaining finite schedule at that first cost.
+The cohort is indivisible, with its 4.5H guard; zero/unknown costs are explicit.
+The actual guard always rechecks fresh credit and measured maximum cost.
+
 PR-04 uses a seeded synthetic archive calibrated just below 10 MB compressed,
 so its stored source is larger than the normal generator size cap. Repository
 path validation and existing state rules remain in force. This rejected synthetic

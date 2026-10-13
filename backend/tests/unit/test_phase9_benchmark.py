@@ -203,3 +203,95 @@ async def test_low_guard_stops_without_request_and_partial_summary(tmp_path):
         await harness.pr01()
     assert not harness.rows and harness.stop_reason
     assert "INCOMPLETE" in (tmp_path / "summary.md").read_text()
+
+
+@pytest.mark.req("PR-03")
+def test_secondary_reference_does_not_change_spec_verdict(tmp_path):
+    harness = Harness(None, output=tmp_path)
+    baseline = {
+        "measurement": "pr03",
+        "run_id": "baseline",
+        "role": "baseline",
+        "seconds": 10,
+        "complete": True,
+        "run_status": "success",
+    }
+    harness.rows = [
+        baseline,
+        *[
+            {
+                "measurement": "pr03",
+                "run_id": str(index),
+                "role": "cohort",
+                "seconds": 14,
+                "complete": True,
+                "run_status": "success",
+                "ratio_to_baseline": 1.4,
+                "ratio_to_pr01_prompt_median": 2.0,
+                "pr01_prompt_median_seconds": 7,
+                "pr01_reference_count": 4,
+            }
+            for index in range(3)
+        ],
+    ]
+    harness.flush()
+    text = (tmp_path / "summary.md").read_text()
+    assert "pr03 threshold: PASS" in text and "secondary" in text
+
+
+@pytest.mark.req("PR-01", "NFR-01")
+async def test_first_cost_advisory_once_and_later_guard_overrides(tmp_path, capsys):
+    from pydantic import SecretStr
+
+    from scripts.phase9_budget import CreditReader
+
+    run_id = str(uuid4())
+    usage = 0
+    posts = 0
+
+    def handler(request):
+        nonlocal usage, posts
+        if request.url.path.endswith("/key"):
+            return httpx.Response(
+                200,
+                json={
+                    "data": {
+                        "usage": usage,
+                        "limit_remaining": 50 - usage,
+                        "label": "budget-canary-key",
+                    }
+                },
+            )
+        if request.method == "POST":
+            posts += 1
+            usage += 2 if posts == 1 else 20
+            assert "config" not in json.loads(request.content)
+            return httpx.Response(202, json={"run_id": run_id})
+        if request.url.path.endswith("/results"):
+            value = snapshot()
+            value["run"].update(provider="openai", model="test-model")
+            return httpx.Response(200, json=value)
+        return httpx.Response(
+            200, text="", headers={"content-type": "text/event-stream"}
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        reader = CreditReader(
+            client, "https://openrouter.ai/api/v1", SecretStr("budget-canary-key")
+        )
+        harness = Harness(
+            client,
+            mode="real",
+            output=tmp_path,
+            guard=BudgetGuard(Decimal(1), 14),
+            credit_reader=reader,
+        )
+        await harness.pr01(10, following=[1, 3])
+    assert posts == 2 and harness.stop_reason
+    assert harness.advisory["measured_first_run_cost_usd"] == 2
+    assert harness.advisory["projected_further_runs"] == 13
+    captured = capsys.readouterr().out
+    assert captured.count("First real run") == 1 and "remaining credit: 48" in captured
+    assert all(
+        "budget-canary-key" not in path.read_text() for path in tmp_path.iterdir()
+    )

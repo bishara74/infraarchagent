@@ -27,6 +27,35 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 6 — Coordinate guarded author benchmarks
+
+**Summary:** Add bench-stub/bench-real orchestration, one shared cost guard,
+per-measurement reports and a once-only first-real-run affordability advisory.
+
+**Requirements addressed:** PR-01, PR-03, PR-04, PR-05, NFR-01.
+
+**Files:** backend/scripts/run_phase9_benchmarks.py; scripts/benchmark.py and
+phase9_common.py; backend/tests/unit/test_phase9_commands.py and
+test_phase9_benchmark.py; Makefile; README.md; docs/design-deviations.md (D-43);
+this log. Shared evidence directories now start with an INCOMPLETE summary.
+
+**Decisions:** Export Make parameters to the process environment rather than
+interpolating credentials/configuration into shell commands. Keep 14 planned
+pipeline runs (10 PR-01, one baseline, one indivisible three-run cohort).
+Projection uses first measured cost and never mutates/overrides the real guard.
+Actual submitted/settled UTC times supplement monotonic durations. Native
+Anthropic does not inherit OpenAI-compatible key-info endpoint configuration.
+
+**Tests:** 29 coordinator/budget/observer tests passed, 0 failed, 0 skipped
+(0.15s), including primary-versus-secondary verdicts, once-only safe advisory,
+and a later measured cost increase overruling the projected count. make lint
+passed Ruff/format, mypy (98 sources), ESLint and strict TS. Earlier frontend
+acceptance remains 100 passed. No author real-mode command was executed.
+
+**Known gaps / follow-ups:** Whole stub rehearsal and full verification follow
+section 8. Real measurements and quiet-machine claims remain author-owned.
+
+
 ## 2026-10-13 — Phase 9 section 5 — Capture quiet-machine timing evidence
 
 **Summary:** Wrap existing backend/frontend timing suites in timestamped Phase 9

@@ -649,3 +649,62 @@ ports 8000/5173 free, installed Chromium/scanners and the offline Terraform mirr
 Keep browser and backend on the same host clock. Close background builds/scans and
 other pipeline runs; record the environment rather than adjusting thresholds.
 Default E2E still excludes `@perf`; default backend tests still exclude `perf`.
+
+## Running the Phase 9 measurements
+
+Use the installed dependencies and tools; these measurement commands perform no
+installs or downloads. Supply settings as process environment variables, without
+copying or printing keys. Export `DATABASE_URL`, `MIGRATION_DATABASE_URL`,
+`TEST_DATABASE_URL` and `TEST_MIGRATION_DATABASE_URL`. Development URLs use database
+`infraarch`, test URLs use `infraarch_test`, with the existing app/owner roles.
+When running Codex verification, also set `INFRAARCH_TEST_BOOTSTRAP=1` and put
+`backend/tests/bootstrap` and `backend` on `PYTHONPATH` so Make migrations and
+verification parents never load dotenv. Normal operator server startup keeps its
+existing configuration behavior.
+
+Start a single backend in a separate terminal; 8765 avoids the browser test ports:
+
+```bash
+make migrate
+LLM_PROVIDER=stub LLM_API_KEY='' API_KEY='' make run PORT=8765
+```
+
+With that backend running, rehearse the entire free procedure:
+
+```bash
+make bench-stub BASE_URL=http://127.0.0.1:8765
+```
+
+This performs 10 rotating-prompt PR-01 runs, one isolated PR-03 baseline plus
+three concurrent runs, then seeds one explicitly synthetic development package
+and downloads its ZIP 10 times. Installed Checkov, Trivy, Terraform and the
+provider mirror are required. Stub measurements establish overhead, not real
+LLM performance. The synthetic package remains rejected; no cleanup deletes its
+retained run/events.
+
+For **author-only real measurements**, restart the backend with the desired
+exported provider/model/base URL and credentials. Use the same exported settings
+for the measurement process. Stop other uses of that key and run on a quiet
+machine. `MAX_CONCURRENT_RUNS` must be at least three. Then:
+
+```bash
+make bench-real BASE_URL=http://127.0.0.1:8765 BUDGET=2
+# For providers with unknown costs/credit, an explicit bound is required:
+make bench-real BASE_URL=http://127.0.0.1:8765 BUDGET=2 MAX_RUNS=14
+```
+
+`BUDGET` is a minimum-credit reserve, not a total-spend cap. After the first settled
+real run, the command prints and records its measured cost, remaining credit and
+projected affordable count of the remaining planned runs at that same cost.
+The projection applies the identical sequential/cohort guard and run cap;
+it never authorizes a launch. Each launch checks fresh credit and updated costs.
+Unknown cost/credit gives an unknown affordability count, not invented numbers.
+
+Reports are under `docs/evals/phase9-bench-stub-*` or `phase9-bench-real-*`:
+parent and per-measurement summaries, environment records, results/agents CSV,
+normalized timing events, and (real mode) `first_real_run_advisory.json`.
+Guard/prerequisite stops return nonzero and retain partial results. The primary
+PR-03 verdict stays ≤1.5× its isolated baseline; exact-prompt PR-01 medians are
+labelled secondary references. Concurrent cost total/3 is an average, with each
+individual cost explicitly not attributed. No key, key identifier, provider error
+body or generated package contents enter these artifacts.

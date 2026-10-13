@@ -105,6 +105,9 @@ def evidence_directory(name: str, output: Path | None = None, **metadata: Any) -
         f"phase9-{name}-{datetime.now(UTC).strftime('%Y%m%dT%H%M%S%fZ')}"
     )
     directory.mkdir(parents=True, exist_ok=False)
+    (directory / "summary.md").write_text(
+        "# Phase 9 evidence\n\nStatus: **INCOMPLETE**\n"
+    )
     write_json(directory / "environment.json", environment(**metadata))
     return directory
 
