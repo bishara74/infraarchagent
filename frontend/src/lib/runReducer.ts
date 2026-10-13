@@ -4,6 +4,7 @@ export interface StageItem {
   status: AgentState; seq: number; message: string | null;
   started: string | null; ended: string | null;
   periods?: { started: string; ended: string | null }[];
+  outcome?: string;
 }
 export interface RunModel {
   runStatus: RunStatus; plan: unknown; stages: Record<string, StageItem>;
@@ -12,12 +13,21 @@ export interface RunModel {
 }
 export const blankStage = (): StageItem => ({ status: 'pending', seq: 0, message: null, started: null, ended: null });
 export const initialModel = (): RunModel => ({ runStatus: 'created', plan: null, stages: {}, packageStatuses: {}, paths: {}, events: [] });
+const stageOutcomes: Record<string, readonly [string, string]> = { scan_clean: ['security', 'clean'], scan_exhausted: ['security', 'exhausted'], scan_error: ['security', 'error'], valid: ['validator', 'valid'], invalid: ['validator', 'invalid'], validation_error: ['validator', 'error'] };
 export function reduceEvent(model: RunModel, event: RunEvent): RunModel {
   if (event.seq <= (model.events.at(-1)?.seq ?? 0)) return model;
   const next = { ...model, events: [...model.events, event] };
   if (event.kind === 'run_status') next.runStatus = event.status as RunStatus;
   if (event.kind === 'plan_created') next.plan = event.payload.plan;
   if (event.kind === 'package_status' && event.variant) next.packageStatuses = { ...model.packageStatuses, [event.variant]: event.status };
+  if (event.kind === 'package_status' && event.variant) {
+    const outcome = Object.hasOwn(stageOutcomes, event.status) ? stageOutcomes[event.status] : undefined;
+    if (outcome) {
+      const [agent, result] = outcome;
+      const key = `${agent}:${event.variant}`;
+      next.stages = { ...model.stages, [key]: { ...(model.stages[key] ?? blankStage()), outcome: result } };
+    }
+  }
   if (event.kind === 'package_generated' && event.variant) next.paths = { ...model.paths, [event.variant]: Array.isArray(event.payload.paths) ? event.payload.paths as string[] : [] };
   if (event.kind === 'agent_state' || event.kind === 'stage_notice') {
     const key = event.agent + (event.variant ? `:${event.variant}` : '');
@@ -30,6 +40,7 @@ export function reduceEvent(model: RunModel, event: RunEvent): RunModel {
     }
     next.stages = { ...model.stages, [key]: {
       ...previous, status, seq: event.seq, message: event.message, periods,
+      outcome: status === 'running' && event.kind === 'agent_state' ? undefined : previous.outcome,
       started: status === 'running' && previous.status !== 'running' ? event.timestamp : previous.started,
       ended: event.kind === 'stage_notice' ? previous.ended : status === 'completed' || status === 'failed' ? event.timestamp : null,
     } };
@@ -49,7 +60,12 @@ export function stageFor(model: RunModel, agent: string): StageItem {
     : items.every(item => item.status === 'completed') ? 'completed' : 'pending';
   const starts = items.flatMap(item => item.started ? [item.started] : []).sort();
   const ends = items.flatMap(item => item.ended ? [item.ended] : []).sort();
-  return { ...latest, status, started: starts[0] ?? null, ended: status === 'running' ? null : ends.at(-1) ?? null,
+  const outcomes = agent === 'security' ? ['clean', 'exhausted', 'error'] : agent === 'validator' ? ['valid', 'invalid', 'error'] : [];
+  const summary = outcomes.flatMap(outcome => {
+    const count = items.filter(item => item.outcome === outcome).length;
+    return count ? [`${count} ${outcome}`] : [];
+  }).join(' · ');
+  return { ...latest, status, message: summary || latest.message, started: starts[0] ?? null, ended: status === 'running' ? null : ends.at(-1) ?? null,
     periods: items.flatMap(item => item.periods ?? (item.started ? [{ started: item.started, ended: item.ended }] : [])) };
 }
 /** Time when at least one variant was active; review gaps and overlaps do not add time. */

@@ -26,3 +26,27 @@ it('FR-UI-02 elapsed time uses timestamps and distinguishes queued from zero dur
  const start='2026-10-12T12:00:00Z';
  expect(stageElapsed({status:'running',seq:1,message:null,started:start,ended:null},Date.parse(start)+1999)).toBe('1s');
 });
+
+it.each([
+ ['validator',['invalid','valid','valid'],'2 valid · 1 invalid'],
+ ['validator',['validation_error','invalid','valid'],'1 valid · 1 invalid · 1 error'],
+ ['security',['scan_exhausted','scan_clean','scan_clean'],'2 clean · 1 exhausted'],
+ ['security',['scan_error','scan_exhausted','scan_clean'],'1 clean · 1 exhausted · 1 error'],
+] as const)('FR-UI-02 %s summary retains mixed outcomes when the last variant succeeds', (agent,outcomes,summary)=>{
+ let model=initialModel();let seq=0;
+ for(const [index,variant] of (['security','cost','performance'] as const).entries()){
+  const event={seq:++seq,kind:'agent_state' as const,agent,variant,status:'running',previous_status:null,message:'Started',timestamp:'2026-10-13T12:00:00Z',payload:{}};
+  model=reduceEvent(model,event);
+  model=reduceEvent(model,{...event,seq:++seq,kind:'package_status',agent:'orchestrator',status:outcomes[index]!,message:'Outcome'});
+  model=reduceEvent(model,{...event,seq:++seq,status:outcomes[index]!.includes('error')?'failed':'completed',message:'Last variant finished'});
+ }
+ expect(stageFor(model,agent).message).toBe(summary);
+ if(agent==='validator'){
+  const event={seq:++seq,kind:'agent_state' as const,agent,variant:'security' as const,status:'running',previous_status:'completed',message:'Retry',timestamp:'2026-10-13T12:00:01Z',payload:{}};
+  model=reduceEvent(model,event);
+  expect(stageFor(model,agent).message).toBe(summary.startsWith('2')?'2 valid':'1 valid · 1 invalid');
+  model=reduceEvent(model,{...event,seq:++seq,kind:'package_status',status:'valid'});
+  model=reduceEvent(model,{...event,seq:seq+1,status:'completed'});
+  expect(stageFor(model,agent).message).toBe(summary.startsWith('2')?'3 valid':'2 valid · 1 invalid');
+ }
+});

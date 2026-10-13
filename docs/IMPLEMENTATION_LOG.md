@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c item 1 — Preserve mixed stage outcomes
+
+**Summary:** SecurityAgent and ValidatorAgent summaries count recorded outcomes
+per variant instead of displaying the last completion's message.
+
+**Requirements addressed:** FR-UI-02, FR-P-04, FR-V-05.
+
+**Files:** frontend/src/lib/runReducer.ts and runReducer.test.ts;
+docs/design-deviations.md (D-40 clarification); docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Use package transition statuses from SSE, retaining outcomes
+across agent notices and clearing a variant's prior result when its next attempt
+starts. Preserve stage badges, sequence correlation and the fixed visual tokens.
+No new deviation or open question; no invented counts or API changes.
+
+**Tests:** Frontend suite: 86 passed, 0 failed, 0 skipped (13 files, 5.13s).
+Four mixed-outcome cases cover invalid/exhausted/error before the last success
+and replacement after retries. Frontend ESLint/strict TypeScript pass after
+correcting a test-only unused final increment. Full Make checks follow item 7.
+
+**Known gaps / follow-ups:** Browser verification follows the remaining polish.
+
 ## 2026-10-13 — Phase 8b — Scope the verification bootstrap to explicit test children
 
 **Summary:** Fix plain-shell `make test` failing before pytest because the Phase 8
