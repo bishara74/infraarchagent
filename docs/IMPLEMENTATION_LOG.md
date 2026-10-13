@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c item 5 — Bound reconnect regression clients
+
+**Summary:** EOF, cursor, sequence replay and network-backoff tests use finite
+response lists, explicit open-count/final-state assertions and two-second bounds.
+
+**Requirements addressed:** FR-P-04, FR-UI-02; verification infrastructure.
+
+**Files:** frontend/src/api/sse.test.ts; docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Exhausting the fake response budget aborts its controller before
+throwing, so streamRun's network-error handler cannot spin forever. Six opens
+must end paused for unchanged EOF; ordered/recovery streams must end closed.
+No production SSE behavior, spec deviation or open question changed.
+
+**Tests:** Frontend lint/strict TS pass; full frontend suite: 95 passed, 0 failed,
+0 skipped in 14 files (4.84s). Three temporary production mutations separately
+removed the EOF cap, seq de-duplication and cursor advance. Each produced the
+explicit six-opens assertion (7 actual calls), with 1 expected failed/18 skipped
+in 975ms, 1.05s and 982ms respectively. Production source was restored in a
+finally path; restored focused SSE suite passes all 19 tests. No worker hang.
+
+**Known gaps / follow-ups:** Full Make checks follow item 7.
+
 ## 2026-10-13 — Phase 8c item 4 — Delay download Blob URL cleanup
 
 **Summary:** Keep the download URL alive for one second after the synthetic
