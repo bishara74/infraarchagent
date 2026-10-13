@@ -933,6 +933,21 @@ the run's frozen partial_success. Clean variants remain unchanged. This is a
 test/demo aid, not deployable infrastructure; installed offline scanning and
 Terraform prerequisites remain necessary for complete readiness settlement.
 
+### D-42 — Built-in offline secret scanner (Accepted)
+
+NFR-01 is checked by a Python standard-library scanner rather than gitleaks:
+Phase 9 forbids new installations/dependencies and must work offline. It scans
+working-tree text plus historical file blobs from all refs and reflogs. Excluded
+paths are filtered before reading/retrieving content; dotenv secrets are never
+opened, and symlinks are never followed. Only exact documented placeholders and
+synthetic canaries are allowlisted; findings contain location/pattern metadata.
+
+Limits: prefix/entropy heuristics are not proof of absence. Encoded/obfuscated
+credentials, binary/archive contents, excluded dotenv/dependency/cache/build
+paths, commit messages and unreachable objects outside refs/reflogs are not
+covered. An unknown key format may escape detection. False positives must be
+reviewed without printing matched values; do not broadly exempt test fixtures.
+
 ### D-43 — Phase 9 safe provider failures and evaluation method (Accepted)
 
 Provider failures use eight fixed categories and public sentences. The author

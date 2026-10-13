@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 2 — Scan working-tree and historical secrets
+
+**Summary:** Add an offline standard-library credential scanner with safe
+location-only findings, exact allowlists and pre-read dotenv/cache exclusions.
+
+**Requirements addressed:** NFR-01.
+
+**Files:** backend/scripts/secret_scan.py; docs/secret-scan-allowlist.json;
+backend/tests/unit/test_phase9_secret_scan.py; Makefile; README.md;
+docs/design-deviations.md (D-42); this log; timestamped clean scan evidence.
+
+**Decisions:** D-42 records heuristic/binary/commit-message/exclusion limits.
+Full refs/reflogs trees detect deleted/renamed keys; blob caching avoids duplicate
+reads. Initial runs found documentation placeholders and an empty-assignment
+newline parsing bug, not operational credentials. Restrict assignment whitespace
+to horizontal space and allowlist the two exact documented README placeholders.
+No matched value was printed. Preserve initial raw trial reports until final audit.
+
+**Tests:** Scanner tests: 8 passed, 0 failed, 0 skipped (0.09s), including earlier
+commits, renames, untracked files, exclusions/symlinks, every pattern and exact
+allowlisting. Final make secret-scan passed: zero findings, zero read/history
+errors. make lint passed Ruff/format, mypy (98 sources), ESLint and both TS projects.
+
+**Known gaps / follow-ups:** An absence of findings is not proof of no secrets;
+D-42 documents excluded/unsupported surfaces. Benchmark tooling follows section 3.
+
+
 ## 2026-10-13 — Phase 9 section 1 — Collect requirement traceability
 
 **Summary:** Collect pytest markers and Vitest/Playwright titles without running

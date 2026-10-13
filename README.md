@@ -597,3 +597,17 @@ Verified local versions: Terraform 1.16.4, Helm v4.3.0+gbec5b06, hadolint 2.15.1
 promtool 3.15.0 and ansible-lint 26.9.0. Mirror coverage is AWS 5.100.0/6.68.0,
 random 3.9.1, Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null 3.3.2,
 391,710,515 bytes (373.56 MiB) on linux_amd64.
+
+## Phase 9 evaluation tools
+
+`make traceability` collects pytest requirement markers and Vitest/Playwright
+names, including performance titles, without running tests. Reports preserve the
+seven thesis TC groups, explicitly list uncovered IDs and do not imply tests pass.
+
+`make secret-scan` checks working-tree text and file history across all refs and
+reflogs. It skips dotenv secrets, dependencies/caches/build output and symlinks;
+only exact documented placeholders/canaries are allowlisted. Findings contain
+locations and pattern names, never matched values. Exit 1 means findings; exit 2
+means the scan was incomplete. See D-42 for heuristic and coverage limitations.
+Both commands write timestamped raw data, environment metadata and summaries
+under `docs/evals/phase9-*`. Neither installs tools or reads `.env`.
