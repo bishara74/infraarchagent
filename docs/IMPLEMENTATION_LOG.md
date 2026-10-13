@@ -27,6 +27,62 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c follow-up to item 2 — Settle approve/reject SSE provenance
+
+**Summary:** Commit the late item 2 correction that resumes the closed SSE stream
+after successful approve/reject decisions, recovering their label-origin events.
+The author explicitly chose a separate follow-up commit; the seven existing
+Phase 8c item commits are preserved without rebase or history rewriting. This
+entry resolves the pending commit-packaging notes in the item 7 entry below.
+
+**Requirements addressed:** FR-UI-07, FR-P-04.
+
+**Files:** frontend/src/components/ReviewPanel.tsx;
+frontend/src/screens/PackageScreen.tsx; frontend/src/screens/screens.test.tsx;
+docs/design-deviations.md (D-37 clarification); docs/IMPLEMENTATION_LOG.md.
+
+**What E2E caught:** Item 2's new archive/display-origin checks failed for both
+approve and reject (initial suite: 4 passed, 2 failed). The automated run was
+terminal and its pending-review stream had already settled closed. Those actions
+refreshed results but did not restart SSE, so Download ZIP became available while
+screen 4 displayed "unavailable (transition event not recorded)" instead of
+"engineer decision". The backend had recorded the event; the browser had never
+replayed it. Retry passed because its existing callback already reopened SSE.
+
+**Why item 2 tests missed it:** readinessOrigin.test.ts supplied complete,
+preloaded recorded event histories; review.test.tsx supplied origin strings as
+props. Screen tests mocked the stream/results hooks and swapped pending/repaired
+snapshots instead of executing an approve/reject action after a real stream
+close. They proved origin selection and presentation with available events,
+but did not prove decision-event delivery through the closed-stream lifecycle.
+
+**Decisions / regression:** Successful approve/reject invokes onDecision, wired
+to the existing stream.reconnect callback, before refreshing results. The store
+resumes using its retained event cursor. Only retries invoke reopenRetry and
+set the retry latch. Parameterized screen regressions start with state=closed,
+exercise Approve and Reject → Confirm reject, assert the exact review request,
+one reconnect, refreshed results and no retry latch. Dialog methods are stubbed
+per instance solely for jsdom; native browser flows remain covered by E2E.
+No endpoint/schema/setup change, new dependency, spec deviation or open question.
+README needs no change for this follow-up.
+
+**Tests:** Removing the decision-reconnect wiring temporarily made both new
+regressions fail with an explicit reconnect-call assertion: 2 expected failures,
+14 skipped (4.02s); source was restored in a finally path. Final ordinary checks:
+make lint passed Ruff/format (182 files), mypy (98 sources), ESLint and both
+strict TS projects; make test: 1088 passed, 0 failed, 0 skipped, 6 perf deselected
+(139.68s); make frontend-test: 98 passed, 0 failed, 0 skipped in 14 files (8.72s).
+The first lint attempt caught an unsupported test-only ByRoleOptions property;
+it was removed before the passing final run. The corrected production code was
+already verified by make test-e2e: 6 passed, 0 failed, 0 skipped (1.2m), including
+both real decision-event origin assertions; it is unchanged since that run.
+E2E was not repeated solely for the added Reject unit-regression case.
+git diff --check passes.
+
+**Known gaps / follow-ups:** No functional work remains after these checks and
+the approved follow-up commit. No dotenv opened/printed/copied/modified, install,
+real LLM call, push or change to pre-existing untracked REVISION.txt.
+
 ## 2026-10-13 — Phase 8c item 7 — Correct operator guidance and verify the polish
 
 **Summary:** Correct the standing scanner names and make run's single-worker,

@@ -43,3 +43,19 @@ it('FR-UI-06/07 screen 4 has one readiness badge beside download and a clear pen
  expect(screen.getByRole('button',{name:'Approve'})).toBeVisible();
  expect(screen.queryByRole('button',{name:'Download ZIP'})).toBeNull();
 });
+
+it.each(['approve','reject'] as const)('FR-UI-07/FR-P-04 %s resumes closed SSE to recover its label-origin event without a retry latch',async action=>{
+ snapshot();expect(state.current.state).toBe('closed');
+ vi.spyOn(api,'review').mockResolvedValue({run_id:'run',variant:'security',status:action==='approve'?'production_ready':'not_production_ready'});
+ show(<PackageScreen/>,'/runs/run/packages/security');
+ if(action==='reject'){
+  // jsdom lacks native dialog methods; keep the real Reject/Confirm UI path.
+  const dialog=document.querySelector('dialog')!;
+  dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
+  await userEvent.click(screen.getByRole('button',{name:'Reject'}));
+  await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));
+ }else await userEvent.click(screen.getByRole('button',{name:'Approve'}));
+ await vi.waitFor(()=>expect(state.current.reconnect).toHaveBeenCalledExactlyOnceWith());
+ expect(api.review).toHaveBeenCalledExactlyOnceWith('run','security',{action});
+ expect(state.current.reopenRetry).not.toHaveBeenCalled();expect(state.current.refresh).toHaveBeenCalled();
+});
