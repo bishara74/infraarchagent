@@ -635,3 +635,17 @@ and records its seed/sizes. It refuses test databases and labels the fixture
 The ZIP is calibrated just below 10 MB; source bytes are larger because compression
 is included. Then run `make benchmark BENCH_ARGS='pr04 --run-id ID --repeat 10'`.
 Timing includes the complete HTTP download, not fixture preparation.
+
+For Phase 9 quiet-machine checks, use `make test-perf` and `make test-ui-perf`.
+The former wraps the existing backend `perf` suite; the latter runs the existing
+Playwright `@perf` test. Export all four database URLs first (test URLs point to
+`infraarch_test`), using the normal app/owner roles. The wrappers disable dotenv,
+clear provider/API credentials and pass only isolated test settings to children.
+They write raw console/JUnit or Playwright JSON, PR-02 samples, environment metadata
+and summaries to `docs/evals/phase9-backend-perf-*` or `phase9-pr02-*`.
+
+Run each timing suite separately on an otherwise idle machine, with backend/Vite
+ports 8000/5173 free, installed Chromium/scanners and the offline Terraform mirror.
+Keep browser and backend on the same host clock. Close background builds/scans and
+other pipeline runs; record the environment rather than adjusting thresholds.
+Default E2E still excludes `@perf`; default backend tests still exclude `perf`.

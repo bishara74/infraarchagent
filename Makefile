@@ -33,12 +33,12 @@ run-pipeline:
 test: migrate-test
 	$(BACKEND) .venv/bin/python -m scripts.run_verification pytest -q -m "not perf"
 
-test-perf: migrate-test
-	$(BACKEND) .venv/bin/python -m scripts.run_verification pytest -q -m perf
+test-perf:
+	$(BACKEND) .venv/bin/python -m scripts.measure_performance backend
 
 lint:
-	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py
-	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py
+	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py
+	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py
 	$(BACKEND) .venv/bin/ruff check app tests
 	$(BACKEND) .venv/bin/ruff format --check app tests
 	$(BACKEND) .venv/bin/mypy app
@@ -92,3 +92,7 @@ secret-scan:
 .PHONY: benchmark
 benchmark:
 	$(BACKEND) .venv/bin/python -m scripts.benchmark $(BENCH_ARGS)
+
+.PHONY: test-ui-perf
+test-ui-perf:
+	$(BACKEND) .venv/bin/python -m scripts.measure_performance ui

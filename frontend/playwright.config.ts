@@ -7,7 +7,7 @@ const [database,owner]=assertTestDatabases(process.env.TEST_DATABASE_URL,process
 const perf=process.argv.some((value,index)=>value==='--grep'&&process.argv[index+1]?.includes('@perf')||value.startsWith('--grep=')&&value.includes('@perf'));
 export default defineConfig({
  testDir:'./e2e', timeout:180000, expect:{timeout:90000}, fullyParallel:false, workers:1, retries:0,
- reporter:'list', outputDir:'test-results', grepInvert:perf?undefined:/@perf/,
+ reporter:'list', outputDir:process.env.INFRAARCH_PHASE9_OUTPUT_DIR?path.join(process.env.INFRAARCH_PHASE9_OUTPUT_DIR,'playwright-artifacts'):'test-results', grepInvert:perf?undefined:/@perf/,
  globalSetup:'./e2e/support/prerequisites.ts',
  use:{baseURL:'http://127.0.0.1:5173',browserName:'chromium',viewport:{width:1440,height:900},reducedMotion:'reduce',trace:'retain-on-failure'},
  webServer:[

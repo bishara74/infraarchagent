@@ -27,6 +27,35 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 5 — Capture quiet-machine timing evidence
+
+**Summary:** Wrap existing backend/frontend timing suites in timestamped Phase 9
+raw reports and preserve live PR-02 samples before threshold assertions.
+
+**Requirements addressed:** PR-02, NFR-01; existing backend perf requirements.
+
+**Files:** backend/scripts/measure_performance.py; backend/tests/unit/
+test_phase9_performance.py; frontend/e2e/{pr02.spec.ts,support/perfEvidence.ts};
+frontend/playwright.config.ts; frontend/src/test/perfEvidence.test.ts;
+Makefile; README.md; this log.
+
+**Decisions:** Keep original timing thresholds/event correlation and default
+perf exclusions. New wrappers use exported settings with no dotenv and isolated
+verification children. make test-perf relies on pytest's existing test-database
+migration fixture rather than a normally dotenv-loading Make prerequisite.
+No UI component/style change or new spec deviation. Frontend skill applied.
+
+**Tests:** Backend wrapper tests: 3 passed, 0 failed, 0 skipped (0.06s).
+Frontend: 100 passed, 0 failed, 0 skipped across 15 files (4.32s); initial run
+had 98 passing original tests and one failing new suite due to filesystem mock
+interop, corrected. make lint passed Ruff/format, mypy (98 sources), ESLint and
+both TS projects. Real browser/timing-wrapper execution follows final acceptance.
+
+**Known gaps / follow-ups:** Quiet-machine status is operator-confirmed, never
+inferred. Existing tool/mirror/browser prerequisites remain; no installation,
+LLM call or dotenv read occurred.
+
+
 ## 2026-10-13 — Phase 9 section 4 — Seed a synthetic download fixture
 
 **Summary:** Seed a reproducible near-10 MB ZIP through normal repositories,
