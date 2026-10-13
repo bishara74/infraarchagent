@@ -64,5 +64,5 @@ export async function saveDownload(id: string, variant: Variant) {
   const link = document.createElement('a');
   try {
     link.href = url; link.download = filename; document.body.append(link); link.click();
-  } finally { link.remove(); URL.revokeObjectURL(url); }
+  } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); link.remove(); }
 }

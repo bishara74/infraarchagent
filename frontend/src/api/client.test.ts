@@ -1,7 +1,7 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import { api, ApiError, createApiClient, errorMessage, saveDownload } from './client';
 import { getApiKey, getActiveRun, setApiKey, setActiveRun } from '../lib/sessionState';
-afterEach(()=>sessionStorage.clear());
+afterEach(()=>{sessionStorage.clear();vi.useRealTimers();});
 it('NFR-01 fresh key headers, resume cursor and request bodies',async()=>{
  const transport=vi.fn<typeof fetch>(async()=>new Response('{}')); let key:string|null='test-only'; const client=createApiClient({key:()=>key,fetch:transport}); await client.openStream('run',new AbortController().signal,7);
  expect(new Headers(transport.mock.calls[0]?.[1]?.headers).get('Last-Event-ID')).toBe('7'); expect(new Headers(transport.mock.calls[0]?.[1]?.headers).get('X-API-Key')).toBe('test-only'); key=null; await client.submitRun('text',{provider:'stub'}); expect(new Headers(transport.mock.calls[1]?.[1]?.headers).has('X-API-Key')).toBe(false); expect(JSON.parse(transport.mock.calls[1]?.[1]?.body as string)).toEqual({text:'text',config:{provider:'stub'}});
@@ -9,4 +9,13 @@ it('NFR-01 fresh key headers, resume cursor and request bodies',async()=>{
 });
 it.each(['run_in_progress','not_pending_review','feedback_needs_target','nothing_to_retry','too_many_runs','not_downloadable'])('maps %s safely',async code=>{const client=createApiClient({fetch:vi.fn(async()=>new Response(JSON.stringify({error:code,message:'Safe response'}),{status:409}))}); await expect(client.getResults('x')).rejects.toMatchObject({status:409,code,message:'Safe response'}); expect(errorMessage(new Error('secret'))).not.toContain('secret');});
 it('401 clears credentials, preserving active run',async()=>{setApiKey('test-only'); setActiveRun('run'); const client=createApiClient({fetch:vi.fn(async()=>new Response('{}',{status:401}))}); await expect(client.getResults('x')).rejects.toBeInstanceOf(ApiError); expect(getApiKey()).toBeNull(); expect(getActiveRun()).toBe('run');});
-it('releases download Blob URLs',async()=>{vi.spyOn(api,'download').mockResolvedValue({blob:new Blob(['zip']),filename:'package.zip'}); Object.defineProperty(URL,'createObjectURL',{value:vi.fn(()=>'blob:test'),configurable:true}); const revoke=vi.fn(); Object.defineProperty(URL,'revokeObjectURL',{value:revoke,configurable:true}); vi.spyOn(HTMLAnchorElement.prototype,'click').mockImplementation(()=>undefined); await saveDownload('r','security'); expect(revoke).toHaveBeenCalledWith('blob:test'); expect(document.querySelector('a[download]')).toBeNull();});
+it.each([false,true])('eventually releases download Blob URLs even when click fails: %s',async fail=>{
+ vi.useFakeTimers();vi.spyOn(api,'download').mockResolvedValue({blob:new Blob(['zip']),filename:'package.zip'});
+ Object.defineProperty(URL,'createObjectURL',{value:vi.fn(()=>'blob:test'),configurable:true});
+ const revoke=vi.fn();Object.defineProperty(URL,'revokeObjectURL',{value:revoke,configurable:true});
+ vi.spyOn(HTMLAnchorElement.prototype,'click').mockImplementation(()=>{if(fail)throw new Error('synthetic click failure');});
+ if(fail)await expect(saveDownload('r','security')).rejects.toThrow('synthetic click failure');else await saveDownload('r','security');
+ expect(revoke).not.toHaveBeenCalled();expect(document.querySelector('a[download]')).toBeNull();
+ await vi.advanceTimersByTimeAsync(999);expect(revoke).not.toHaveBeenCalled();
+ await vi.advanceTimersByTimeAsync(1);expect(revoke).toHaveBeenCalledExactlyOnceWith('blob:test');
+});

@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c item 4 — Delay download Blob URL cleanup
+
+**Summary:** Keep the download URL alive for one second after the synthetic
+anchor click so browsers can start saving the response reliably.
+
+**Requirements addressed:** FR-UI-06.
+
+**Files:** frontend/src/api/client.ts and client.test.ts;
+docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Schedule revocation in the existing finally path before removing
+the temporary link. Both successful and throwing clicks schedule cleanup; the
+link is removed immediately. No dependency, spec deviation or open question.
+
+**Tests:** Frontend: 95 passed, 0 failed, 0 skipped in 14 files; frontend lint
+and strict TypeScript pass. Fake-timer assertions prove no revocation at 999ms
+and exactly one revocation at 1000ms for both click outcomes. Full Make checks
+and real browser download verification follow item 7.
+
+**Known gaps / follow-ups:** Firefox-specific execution is not requested; the
+existing real-browser acceptance suite uses Chromium.
+
 ## 2026-10-13 — Phase 8c item 3 — Show one package readiness badge
 
 **Summary:** Remove the duplicate readiness/status badge from screen 4's header
