@@ -627,3 +627,11 @@ three-run cohort also requires 4.5 × that highest cost. Unknown remaining credi
 or unsupported providers require explicit `--max-runs`. OpenRouter lifetime
 usage deltas measure costs; cohort costs are total/3 averages with individual
 costs not attributed. These safeguards are heuristics, not a guaranteed spend cap.
+
+For a synthetic download fixture, run from `backend/` with exported development
+settings: `.venv/bin/python -m scripts.seed_benchmark_package`. It prints a run ID
+and records its seed/sizes. It refuses test databases and labels the fixture
+`not_production_ready`; its input explicitly says `benchmark synthetic package`.
+The ZIP is calibrated just below 10 MB; source bytes are larger because compression
+is included. Then run `make benchmark BENCH_ARGS='pr04 --run-id ID --repeat 10'`.
+Timing includes the complete HTTP download, not fixture preparation.

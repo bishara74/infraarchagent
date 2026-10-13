@@ -970,6 +970,11 @@ The cohort needs max(reserve, 2H, 4.5H) remaining credit. Unknown costs/credit s
 unknown and require explicit run bounds; no estimated benchmark measurements.
 
 
+PR-04 uses a seeded synthetic archive calibrated just below 10 MB compressed,
+so its stored source is larger than the normal generator size cap. Repository
+path validation and existing state rules remain in force. This rejected synthetic
+run has explicit synthetic notices and no claimed scanner/validator execution.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

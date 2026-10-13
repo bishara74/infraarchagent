@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 4 — Seed a synthetic download fixture
+
+**Summary:** Seed a reproducible near-10 MB ZIP through normal repositories,
+valid state transitions and EventLog; label it rejected and explicitly synthetic.
+
+**Requirements addressed:** PR-04, FR-UI-06, NFR-01.
+
+**Files:** backend/scripts/seed_benchmark_package.py; backend/tests/unit/
+test_phase9_seed_files.py; backend/tests/integration/test_phase9_seed.py;
+Makefile; README.md; docs/design-deviations.md (D-43); this log.
+
+**Decisions:** CLI accepts only the dev infraarch database/app role; injected
+helpers let integration tests use the real test database. Compression calibration
+measures the archive, not source bytes. No scanner, validation engine or LLM runs;
+state events explicitly identify the synthetic fixture. No schema/grant changes.
+
+**Tests:** Final seeding/content/HTTP checks: 3 passed, 0 failed, 0 skipped
+(5.97s). Initial 2 failed/1 passed exposed last-chunk truncation in calibration;
+fixed before the passing run. make lint passed Ruff/format, mypy (98 sources),
+ESLint and strict TS. Small test fixtures prove ZIP sizing/content and label/event
+provenance; the full-size rehearsal follows section 8.
+
+**Known gaps / follow-ups:** Synthetic files are deliberately outside generator
+size limits and are not deployable infrastructure. The dev CLI is exercised by
+bench-stub once; tests write only to the isolated test database.
+
+
 ## 2026-10-13 — Phase 9 section 3 — Measure HTTP settlement and guarded budgets
 
 **Summary:** Add PR-01/03/04 HTTP observation, per-agent/security-iteration timing,
