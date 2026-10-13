@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 7 — Document evaluation and thesis follow-ups
+
+**Summary:** Consolidate the Phase 9 author workflow, D-42/D-43 methods/limits and
+collected thesis-update notes without editing the specification or thesis prose.
+
+**Requirements addressed:** NFR-01, NFR-04, PR-01 through PR-05.
+
+**Files:** docs/design-deviations.md and docs/IMPLEMENTATION_LOG.md. README's
+complete operator instructions were updated alongside sections 2–6.
+
+**Decisions:** Preserve historical evidence and all requirement IDs. Stub results
+are rehearsals, real measurements are author-only, and clean-Ubuntu deployment is
+Phase 10. No new open question: existing OQ-03/OQ-06 remain author measurements.
+
+**Tests:** Documentation checked against implemented CLI/Make targets and tests.
+Most recent make lint passed Ruff/format, mypy (98 app sources), ESLint and both
+TS projects. Most recent focused coordinator/budget/observer suite: 29 passed,
+0 failed, 0 skipped (0.15s); frontend 100 passed in 15 files. Required final full
+suites, traceability/scanning and one stub rehearsal are next, not claimed here.
+
+**Known gaps / follow-ups:** Final audit/evidence and actual counts in section 8.
+No spec, dependency, migration, generator prompt, scanner policy or UI edits.
+
+
 ## 2026-10-13 — Phase 9 section 6 — Coordinate guarded author benchmarks
 
 **Summary:** Add bench-stub/bench-real orchestration, one shared cost guard,

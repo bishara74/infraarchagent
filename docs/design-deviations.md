@@ -1146,6 +1146,22 @@ metadata or semantic naming inference is a later design decision.
 
 ## Thesis text to update (collected)
 
+- Phase 9 / NFR-01: describe the standard-library working-tree/ref/reflog scanner,
+  exact placeholders/canaries, safe location-only findings and D-42 limitations.
+- NFR-04 still names tfsec 1.x: update to the installed/pinned Trivy version (D-31).
+  Clean Ubuntu deployment evidence remains Phase 10, not an inferred Phase 9 pass.
+- PR-03 distinguishes free stub overhead rehearsal from author-run real-provider
+  measurements. Use the isolated identical-prompt baseline for the <=1.5x check;
+  PR-01 exact-prompt medians are secondary references and never change the verdict.
+- Cost method: OpenRouter lifetime key-usage deltas and effective remaining-credit
+  budgets; no token-price estimates. Concurrent cost is a measured cohort total
+  and total/3 average, with individual costs not attributed. Document max(reserve,
+  2H, 4.5H) cohort admission and informational first-cost affordability projection.
+- Phase 9 reports collect annotations and measured samples, not inferred coverage
+  or author final results. PR-01 ends at API-confirmed settlement; PR-02 separately
+  measures live server-event-to-DOM latency. Missing metrics remain unknown.
+
+
 
 - Figure “Comparison panel”: replace the composite security score with first
   automated blocking findings → remaining blocking findings, accepted fixes in
