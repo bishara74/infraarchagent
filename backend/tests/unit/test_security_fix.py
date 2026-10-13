@@ -131,7 +131,7 @@ async def test_invalid_json_has_safe_fix_reason() -> None:
         directive="secure",
         remaining=30,
     )
-    assert proposal.reason == "json_invalid"
+    assert proposal.reason == "The LLM provider returned an unusable response."
     assert "not JSON" not in proposal.reason
 
 

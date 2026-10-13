@@ -19,22 +19,12 @@ from app.domain.models import IaCPackage
 from app.domain.package_layout import package_structure_errors, required_types_missing
 from app.domain.plan import DeploymentPlan, FileType
 from app.llm.base import LLMAdapter
-from app.llm.errors import LLMDeadlineExceeded, LLMPermanentError, LLMRetryExhausted
-
-SAFE_LLM_CATEGORIES = frozenset(
-    {
-        "request",
-        "unexpected",
-        "permanent",
-        "rate_limit",
-        "server",
-        "transient",
-        "invalid_json",
-        "truncated",
-        "timeout",
-        "deadline",
-        "stub_script_exhausted",
-    }
+from app.llm.errors import (
+    LLMDeadlineExceeded,
+    LLMPermanentError,
+    LLMRetryExhausted,
+    failure_message,
+    safe_category,
 )
 
 
@@ -72,13 +62,8 @@ class GeneratorLLMFailure(GeneratorError):
     category = "llm_failure"
 
     def __init__(self, variant: Variant, llm_category: str) -> None:
-        self.llm_category = (
-            llm_category if llm_category in SAFE_LLM_CATEGORIES else "unexpected"
-        )
-        super().__init__(
-            variant,
-            f"{variant.value} generator could not complete the language-model call.",
-        )
+        self.llm_category = safe_category(llm_category)
+        super().__init__(variant, failure_message(self.llm_category))
 
 
 @dataclass(frozen=True)

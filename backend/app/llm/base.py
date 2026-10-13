@@ -20,6 +20,7 @@ from app.llm.errors import (
     LLMRetryExhausted,
     LLMTransientError,
     ResponseStats,
+    safe_category,
 )
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,7 @@ class LLMResponse:
     input_tokens: int | None = None
     output_tokens: int | None = None
     stop_reason: str | None = None
+    http_status: int | None = None
     served_by: str | None = None
     reasoning_tokens: int | None = None
     cached_input_tokens: int | None = None
@@ -193,6 +195,8 @@ class LLMAdapter(ABC):
             rate_limit_headers: tuple[str, ...] = ()
             category = "success"
             format_reason: str | None = None
+            http_status: int | None = None
+            exception_class: str | None = None
             try:
                 response = await asyncio.wait_for(
                     self.send_prompt(
@@ -214,19 +218,26 @@ class LLMAdapter(ABC):
                 if self._clock() >= ends_at:
                     raise LLMDeadlineExceeded(attempt, self._clock() - started)
                 return LLMResult(data, response, attempt, self._clock() - started)
-            except TimeoutError:
+            except TimeoutError as error:
                 category = "timeout"
+                exception_class = type(error).__name__
             except asyncio.CancelledError:
                 category = "cancelled"
                 raise
             except LLMTransientError as error:
                 category = error.category
+                http_status = error.http_status
+                exception_class = error.original_exception_class
                 retry_after = error.retry_after
                 rate_limit_headers = error.rate_limit_headers
             except LLMResponseFormatError as error:
                 category = (
                     "truncated" if error.reason == "truncated" else "invalid_json"
                 )
+                http_status = error.http_status or (
+                    response.http_status if response else None
+                )
+                exception_class = error.original_exception_class
                 format_reason = error.reason
                 last_stats = error.stats or last_stats
             except LLMDeadlineExceeded:
@@ -234,9 +245,12 @@ class LLMAdapter(ABC):
                 raise
             except LLMPermanentError as error:
                 category = error.category
+                http_status = error.http_status
+                exception_class = error.original_exception_class
                 raise
-            except Exception:
+            except Exception as error:
                 category = "unexpected"
+                exception_class = type(error).__name__
                 raise LLMPermanentError("unexpected") from None
             finally:
                 stats = response.stats() if response is not None else None
@@ -245,6 +259,9 @@ class LLMAdapter(ABC):
                     f"model={self.model}",
                     f"attempt={attempt}",
                     f"outcome={category}",
+                    f"category={safe_category(category)}",
+                    f"http_status={http_status if http_status is not None else 'none'}",
+                    f"exception_class={exception_class or 'none'}",
                     f"reasoning_effort={self.reasoning_effort or 'unset'}",
                     f"latency={self._clock() - attempt_started:.3f}",
                     f"input_tokens={stats.input_tokens if stats else None}",

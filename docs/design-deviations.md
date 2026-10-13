@@ -933,6 +933,17 @@ the run's frozen partial_success. Clean variants remain unchanged. This is a
 test/demo aid, not deployable infrastructure; installed offline scanning and
 Terraform prerequisites remain necessary for complete readiness settlement.
 
+### D-43 — Phase 9 safe provider failures and evaluation method (Accepted)
+
+Provider failures use eight fixed categories and public sentences. The author
+approved request_rejected for otherwise unmapped 4xx responses; these fail fast,
+as do authentication, spending-limit and missing-model failures. SDK wire bodies
+may be inspected only to classify; no body/message/URL/identifier/amount survives.
+Operator attempt logs retain category, actual HTTP status and original exception
+class name, with no original exception object. HTTP-200 error envelopes are
+classified before parsing. Existing agent deadlines and remediation policy remain.
+Legacy internal stub/format reasons normalize at the reporting boundary.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

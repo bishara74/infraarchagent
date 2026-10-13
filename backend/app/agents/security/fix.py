@@ -14,7 +14,12 @@ from app.domain.package_layout import package_structure_errors
 from app.domain.paths import UnsafePathError, validate_relative_path
 from app.domain.plan import DeploymentPlan
 from app.llm.base import LLMAdapter
-from app.llm.errors import LLMDeadlineExceeded, LLMPermanentError, LLMRetryExhausted
+from app.llm.errors import (
+    LLMDeadlineExceeded,
+    LLMPermanentError,
+    LLMRetryExhausted,
+    failure_message,
+)
 
 SUPPRESSION = re.compile(
     r"#\s*(?:checkov\s*:\s*skip|bridgecrew\s*:\s*skip|"
@@ -185,14 +190,17 @@ class FixAgent:
                 max_output_tokens=self.max_output_tokens,
             )
         except LLMRetryExhausted as error:
-            reason = (
-                "json_invalid"
-                if error.last_category in {"invalid_json", "truncated"}
-                else "llm_failure"
+            return FixProposal(
+                path, False, failure_message(error.last_category), None, {}, ()
             )
-            return FixProposal(path, False, reason, None, {}, ())
-        except (LLMDeadlineExceeded, LLMPermanentError):
-            return FixProposal(path, False, "llm_failure", None, {}, ())
+        except LLMPermanentError as error:
+            return FixProposal(
+                path, False, failure_message(error.category), None, {}, ()
+            )
+        except LLMDeadlineExceeded:
+            return FixProposal(
+                path, False, failure_message("unreachable"), None, {}, ()
+            )
         proposal = validate_fix(response.data, path=path, files=files, plan=plan)
         return FixProposal(
             proposal.path,

@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 0 — Classify provider failures safely
+
+**Summary:** Add eight provider-error categories, fixed public sentences and
+safe category/HTTP-status/original-class diagnostics across SDK and agent failures.
+
+**Requirements addressed:** NFR-01, NFR-03, FR-A-04, FR-S-02.
+
+**Files:** backend/app/llm/{errors,base,openai,anthropic}.py;
+backend/app/agents/{architect,generators/base,security/fix}.py;
+backend/app/core/logging.py; backend/tests/unit/{test_phase9_provider_errors,
+test_llm_base,test_eval_architect,test_security_fix}.py; this log;
+docs/design-deviations.md (D-43).
+
+**Decisions:** D-43. Preserve retry/deadline policy; retain only safe diagnostics,
+not SDK exceptions. Existing successful-result schemas are unchanged. Suppress
+provider transport logs. Use an isolated existing-image PostgreSQL container,
+ordinary app/owner roles and explicitly dotenv-disabled verification settings.
+
+**Tests:** make lint passed Ruff/format (183 files), mypy (98 sources), ESLint
+and both TS projects. Initial focused suite: 192 passed, 1 failed due to the old
+fix-reason expectation; corrected. Initial make test: 1115 passed, 1 failed,
+6 perf deselected; its old evaluator category assertion was corrected. Final
+focused suite: 204 passed, 0 failed, 0 skipped (2.42s). No real provider call, dotenv read or installation.
+
+**Known gaps / follow-ups:** Full final suite repeats in section 8; tool building
+follows section 1. No database migration or UI behavior change.
+
+
 ## 2026-10-13 — Phase 8c follow-up to item 2 — Settle approve/reject SSE provenance
 
 **Summary:** Commit the late item 2 correction that resumes the closed SSE stream

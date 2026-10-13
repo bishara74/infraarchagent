@@ -79,7 +79,12 @@ async def test_attempt_log_is_parseable_for_every_outcome(
     assert len(lines) == 1
     assert "  " not in lines[0]
     parsed = dict(field.split("=", 1) for field in lines[0].split(" "))
-    assert set(parsed) - {"format_reason"} == {
+    assert set(parsed) - {
+        "format_reason",
+        "category",
+        "http_status",
+        "exception_class",
+    } == {
         "provider",
         "model",
         "attempt",

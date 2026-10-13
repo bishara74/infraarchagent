@@ -169,8 +169,8 @@ async def test_llm_failure_category_is_reported_without_response(
     summary = (output / "summary.md").read_text(encoding="utf-8")
     assert report["plan"] is None
     assert report["error_category"] == "llm_failure"
-    assert report["llm_category"] == "request"
-    assert "LLM category: `request`" in summary
+    assert report["llm_category"] == "request_rejected"
+    assert "LLM category: `request_rejected`" in summary
 
 
 @pytest.mark.req("FR-I-04", "NFR-01")

@@ -8,9 +8,12 @@ import openai
 from app.core.config import ReasoningEffort, ResponseFormat
 from app.llm.base import LLMAdapter, LLMResponse, RetryPolicy, extract_json_object
 from app.llm.errors import (
+    LLMError,
     LLMPermanentError,
+    LLMResponseFormatError,
     LLMTransientError,
     cached_response_tokens,
+    check_error_envelope,
     rate_limit_wait,
     status_error,
 )
@@ -82,19 +85,28 @@ class OpenAIAdapter(LLMAdapter):
             params["extra_body"] = {"reasoning": {"effort": self.reasoning_effort}}
         if self.response_format == "json_object":
             params["response_format"] = {"type": "json_object"}
+        failure: LLMError
+        http_status: int | None = None
         try:
             raw = await self.client.chat.completions.with_raw_response.create(**params)
+            http_status = raw.http_response.status_code
+            body = raw.http_response.json()
+            check_error_envelope(body, http_status)
             cached = cached_response_tokens(
-                raw.http_response.json(),
+                body,
                 "usage",
                 "prompt_tokens_details",
                 "cached_tokens",
             )
             completion = raw.parse()
-        except openai.APITimeoutError:
-            raise LLMTransientError("timeout") from None
-        except openai.APIConnectionError:
-            raise LLMTransientError("connection") from None
+        except openai.APITimeoutError as error:
+            failure = LLMTransientError("unreachable")
+            failure.diagnostics(None, type(error).__name__)
+            raise failure from None
+        except openai.APIConnectionError as error:
+            failure = LLMTransientError("unreachable")
+            failure.diagnostics(None, type(error).__name__)
+            raise failure from None
         except openai.APIStatusError as error:
             retry_after, header_names = (
                 rate_limit_wait(error.response.headers)
@@ -103,11 +115,29 @@ class OpenAIAdapter(LLMAdapter):
             )
             raise status_error(
                 error.status_code,
+                body=error.body,
+                exception_class=type(error).__name__,
                 retry_after=retry_after,
                 rate_limit_headers=header_names,
             ) from None
-        except (openai.APIError, httpx2.TransportError):
-            raise LLMPermanentError("provider") from None
+        except LLMError:
+            raise
+        except httpx2.TransportError as error:
+            failure = LLMTransientError("unreachable")
+            failure.diagnostics(http_status, type(error).__name__)
+            raise failure from None
+        except (ValueError, TypeError, openai.APIResponseValidationError) as error:
+            failure = LLMResponseFormatError("invalid_json")
+            failure.diagnostics(http_status, type(error).__name__)
+            raise failure from None
+        except openai.APIError as error:
+            failure = LLMPermanentError("provider_error")
+            failure.diagnostics(http_status, type(error).__name__)
+            raise failure from None
+        if not isinstance(completion.choices, list):
+            failure = LLMResponseFormatError("empty")
+            failure.diagnostics(http_status, None)
+            raise failure from None
         provider = getattr(completion, "provider", None)
         served_by = provider if isinstance(provider, str) and provider else None
         details = (
@@ -127,6 +157,7 @@ class OpenAIAdapter(LLMAdapter):
                 served_by=served_by,
                 reasoning_tokens=reasoning_tokens,
                 cached_input_tokens=cached,
+                http_status=http_status,
             )
         choice = completion.choices[0]
         return LLMResponse(
@@ -143,6 +174,7 @@ class OpenAIAdapter(LLMAdapter):
             served_by=served_by,
             reasoning_tokens=reasoning_tokens,
             cached_input_tokens=cached,
+            http_status=http_status,
         )
 
     def parse_response(self, response: LLMResponse) -> dict[str, Any]:

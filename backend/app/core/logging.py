@@ -33,6 +33,15 @@ class RedactingFilter(logging.Filter):
         return DB_PASSWORD.sub(rf"\1{REDACTED}\2", value)
 
     def filter(self, record: logging.LogRecord) -> bool:
+        if record.name.split(".")[0] in {
+            "openai",
+            "anthropic",
+            "httpx",
+            "httpx2",
+            "httpcore",
+            "httpcore2",
+        }:
+            return False
         rendered = record.getMessage()
         if record.exc_info:
             rendered += "\n" + "".join(traceback.format_exception(*record.exc_info))
@@ -47,6 +56,9 @@ class RedactingFilter(logging.Filter):
 
 
 def configure_logging(settings: Settings) -> None:
+    for name in ("openai", "anthropic", "httpx2", "httpcore2"):
+        logging.getLogger(name).disabled = True
+        logging.getLogger(name).addFilter(lambda record: False)
     root = logging.getLogger()
     root.setLevel(settings.log_level.upper())
     if not root.handlers:

@@ -13,7 +13,13 @@ from app.agents.prompts.architect import (
 from app.domain.input_rules import validate_request_text
 from app.domain.plan import DeploymentPlan, plan_validation_errors
 from app.llm.base import LLMAdapter
-from app.llm.errors import LLMDeadlineExceeded, LLMPermanentError, LLMRetryExhausted
+from app.llm.errors import (
+    LLMDeadlineExceeded,
+    LLMPermanentError,
+    LLMRetryExhausted,
+    failure_message,
+    safe_category,
+)
 
 
 class ArchitectError(Exception):
@@ -45,10 +51,8 @@ class ArchitectLLMFailure(ArchitectError):
     category = "llm_failure"
 
     def __init__(self, llm_category: str) -> None:
-        self.llm_category = llm_category
-        super().__init__(
-            "Architecture planning could not reach the language model successfully."
-        )
+        self.llm_category = safe_category(llm_category)
+        super().__init__(failure_message(self.llm_category))
 
 
 @dataclass(frozen=True)

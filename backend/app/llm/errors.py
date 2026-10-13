@@ -17,6 +17,46 @@ _DURATION = re.compile(
 )
 
 
+SAFE_MESSAGES = {
+    "auth_failed": "The LLM provider refused the request: authentication failed.",
+    "usage_limit": "The LLM provider refused the request: usage limit reached.",
+    "model_unavailable": "The requested language model is unavailable.",
+    "rate_limited": "The LLM provider rate limited the request.",
+    "provider_error": "The LLM provider could not complete the request.",
+    "unreachable": "The LLM provider could not be reached.",
+    "invalid_response": "The LLM provider returned an unusable response.",
+    "request_rejected": (
+        "The LLM provider rejected the request (check model options and permissions)."
+    ),
+}
+LEGACY_CATEGORIES = {
+    "request": "request_rejected",
+    "rate_limit": "rate_limited",
+    "server": "provider_error",
+    "connection": "unreachable",
+    "timeout": "unreachable",
+    "deadline": "unreachable",
+    "invalid_json": "invalid_response",
+    "truncated": "invalid_response",
+    "unexpected": "provider_error",
+    "permanent": "provider_error",
+    "transient": "provider_error",
+    "stub_script_exhausted": "provider_error",
+}
+
+
+def safe_category(category: str) -> str:
+    return (
+        category
+        if category in SAFE_MESSAGES
+        else LEGACY_CATEGORIES.get(category, "provider_error")
+    )
+
+
+def failure_message(category: str) -> str:
+    return SAFE_MESSAGES[safe_category(category)]
+
+
 @dataclass(frozen=True)
 class ResponseStats:
     input_tokens: int | None = None
@@ -29,6 +69,13 @@ class ResponseStats:
 class LLMError(Exception):
     """Base class whose messages never contain provider response details."""
 
+    http_status: int | None = None
+    original_exception_class: str | None = None
+
+    def diagnostics(self, http_status: int | None, exception_class: str | None) -> None:
+        self.http_status = http_status
+        self.original_exception_class = exception_class
+
 
 class LLMTransientError(LLMError):
     def __init__(
@@ -38,16 +85,24 @@ class LLMTransientError(LLMError):
         retry_after: float | None = None,
         rate_limit_headers: tuple[str, ...] = (),
     ) -> None:
-        self.category = category
+        self.category = (
+            category if category in LEGACY_CATEGORIES else safe_category(category)
+        )
         self.retry_after = retry_after
         self.rate_limit_headers = rate_limit_headers
-        super().__init__(f"LLM {category} failure")
+        super().__init__(failure_message(self.category))
 
 
 class LLMPermanentError(LLMError):
     def __init__(self, category: str = "permanent") -> None:
-        self.category = category
-        super().__init__(f"LLM {category} failure")
+        self.category = (
+            category if category in LEGACY_CATEGORIES else safe_category(category)
+        )
+        super().__init__(
+            "LLM stub_script_exhausted"
+            if category == "stub_script_exhausted"
+            else failure_message(self.category)
+        )
 
 
 class LLMConfigurationError(LLMError):
@@ -127,18 +182,70 @@ def rate_limit_wait(headers: Mapping[str, str]) -> tuple[float | None, tuple[str
 def status_error(
     status_code: int,
     *,
+    body: object = None,
+    http_status: int | None = None,
+    exception_class: str | None = None,
     retry_after: float | None = None,
     rate_limit_headers: tuple[str, ...] = (),
 ) -> LLMError:
-    if status_code == 429 or status_code >= 500:
-        if status_code == 429:
-            return LLMTransientError(
-                "rate_limit",
-                retry_after=retry_after,
-                rate_limit_headers=rate_limit_headers,
-            )
-        return LLMTransientError("server")
-    return LLMPermanentError("request")
+    envelope = body.get("error", body) if isinstance(body, dict) else {}
+    envelope = envelope if isinstance(envelope, dict) else {}
+    metadata = envelope.get("metadata")
+    metadata = metadata if isinstance(metadata, dict) else {}
+    message = envelope.get("message")
+    message = message[:4096].lower() if isinstance(message, str) else ""
+    budget = metadata.get("limit_source") in {
+        "openrouter_key_limit",
+        "openrouter_guardrail_budget",
+        "openrouter_workspace_budget",
+        "openrouter_credits",
+    } or any(
+        phrase in message
+        for phrase in (
+            "key limit exceeded",
+            "credit limit exceeded",
+            "budget limit exceeded",
+            "insufficient credits",
+            "spending limit exceeded",
+        )
+    )
+    if status_code == 401:
+        category = "auth_failed"
+    elif status_code == 402 or status_code == 403 and budget:
+        category = "usage_limit"
+    elif status_code == 404:
+        category = "model_unavailable"
+    elif status_code == 429:
+        category = "rate_limited"
+    elif 500 <= status_code <= 599:
+        category = "provider_error"
+    else:
+        category = "request_rejected"
+    error: LLMError = (
+        LLMTransientError(
+            category, retry_after=retry_after, rate_limit_headers=rate_limit_headers
+        )
+        if category in {"rate_limited", "provider_error"}
+        else LLMPermanentError(category)
+    )
+    error.diagnostics(
+        http_status if http_status is not None else status_code, exception_class
+    )
+    return error
+
+
+def check_error_envelope(body: object, http_status: int) -> None:
+    if not isinstance(body, dict):
+        raise LLMResponseFormatError("invalid_json")
+    if "error" not in body:
+        return
+    error = body["error"]
+    code = error.get("code") if isinstance(error, dict) else None
+    if type(code) is int and 400 <= code <= 599:
+        raise status_error(code, body=body, http_status=http_status) from None
+    failure = LLMResponseFormatError("invalid_json")
+    failure.diagnostics(http_status, None)
+    raise failure from None
 
 
 def cached_tokens(value: object) -> int | None:
