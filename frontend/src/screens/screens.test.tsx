@@ -1,5 +1,5 @@
 import {afterEach,expect,it,vi} from 'vitest';
-import {render,screen,fireEvent} from '@testing-library/react';
+import {render,screen,fireEvent,within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter,Routes,Route} from 'react-router';
 import pending from '../test/fixtures/pending-results.json';
@@ -29,3 +29,17 @@ it('FR-UI-05 validation statuses and file links are accessible',async()=>{snapsh
 it('unavailable variant and missing selected file are honest states',()=>{snapshot();const root=show(<PackageScreen/>,'/runs/run/packages/absent');expect(screen.getByText('This variant is unavailable.')).toBeVisible();root.unmount();show(<PackageScreen/>,'/runs/run/packages/security?file=absent');expect(screen.getByText(/requested file is unavailable/)).toBeVisible();});
 it('generated text is escaped',()=>{const value=structuredClone(pending) as ResultsResponse;value.packages[2]!.files['terraform/main.tf']='<img src=x onerror=alert(1)>';snapshot(value);show(<PackageScreen/>,'/runs/run/packages/security');expect(document.querySelector('img')).toBeNull();expect(screen.getByText('<img src=x onerror=alert(1)>')).toBeVisible();});
 it('401 permits key reentry on the current route',async()=>{snapshot(null,new ApiError(401,'unauthorized','Authentication required.'));show(<PackageScreen/>,'/runs/run/packages/security');fireEvent.change(screen.getByLabelText('API key'),{target:{value:'test-only'}});await userEvent.click(screen.getByRole('button',{name:'Continue'}));expect(sessionStorage.getItem('infraarch.apiKey')).toBe('test-only');expect(state.current.reconnect).toHaveBeenCalled();});
+
+
+it('FR-UI-06/07 screen 4 has one readiness badge beside download and a clear pending review heading',()=>{
+ snapshot(repaired as ResultsResponse);const root=show(<PackageScreen/>,'/runs/run/packages/security');
+ const panel=screen.getByRole('region',{name:'Package readiness and review'});
+ expect(screen.getAllByText('production ready',{exact:true})).toHaveLength(1);
+ expect(within(panel).getByText('production ready')).toBeVisible();
+ expect(within(panel).getByRole('button',{name:'Download ZIP'}).parentElement).toContainElement(within(panel).getByText('production ready'));
+ expect(document.querySelector('.page-heading .badge')).toBeNull();
+ root.unmount();snapshot();show(<PackageScreen/>,'/runs/run/packages/security');
+ expect(screen.getByRole('heading',{name:'Pending review'})).toBeVisible();
+ expect(screen.getByRole('button',{name:'Approve'})).toBeVisible();
+ expect(screen.queryByRole('button',{name:'Download ZIP'})).toBeNull();
+});

@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8c item 3 — Show one package readiness badge
+
+**Summary:** Remove the duplicate readiness/status badge from screen 4's header
+and place the single readiness badge beside Download ZIP in the action panel.
+
+**Requirements addressed:** FR-UI-06, FR-UI-07.
+
+**Files:** frontend/src/screens/PackageScreen.tsx and screens.test.tsx;
+frontend/src/components/ReviewPanel.tsx; docs/design-deviations.md (D-40
+presentation clarification); docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Reuse the existing action-row spacing, native download button,
+status badge and muted provenance text. Pending review keeps its explicit
+heading, reasons and engineer controls; accepted retries hide stale labels.
+No new deviation or open question.
+
+**Tests:** Frontend: 94 passed, 0 failed, 0 skipped in 14 files (4.71s).
+Regression asserts exactly one badge, adjacency to download, a clean header
+and clear pending review. Frontend lint/strict TS pass after removing a
+test-only unsupported ByRoleOptions property. Full Make checks follow item 7.
+
+**Known gaps / follow-ups:** Real browser layout verification follows item 7.
+
 ## 2026-10-13 — Phase 8c item 2 — Retain readiness provenance after review retries
 
 **Summary:** ZIP readiness documents and screen 4 distinguish automatic labels,

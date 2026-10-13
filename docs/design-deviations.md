@@ -904,6 +904,8 @@ activity once. Duration timers update text only, without API polling or batching
 Phase 8c stage summaries count the latest recorded scan/validation outcome per
 variant, retaining mixed failures even when the last variant succeeds; a new
 stage attempt clears that variant's prior outcome. No score or outcome is inferred.
+Screen 4 has one readiness badge in the action row beside Download ZIP; its
+header identifies the package. Pending review retains its heading and controls.
 All four screens and real-backend acceptance checks are implemented; screenshot
 comparisons and PR-02 development evidence are retained under docs/evals/.
 
