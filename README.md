@@ -611,3 +611,19 @@ locations and pattern names, never matched values. Exit 1 means findings; exit 2
 means the scan was incomplete. See D-42 for heuristic and coverage limitations.
 Both commands write timestamped raw data, environment metadata and summaries
 under `docs/evals/phase9-*`. Neither installs tools or reads `.env`.
+
+The HTTP harness is `make benchmark BENCH_ARGS='--mode stub pr01 --runs 10'`.
+It defaults to `http://127.0.0.1:8000`; place global options before the subcommand.
+PR-03 reads `runner_capacity` from health and refuses values below three. It
+compares three simultaneous runs with one isolated run; same-prompt PR-01 medians
+are secondary references only (`pr03 --pr01-results <results.json-or-csv>`).
+A terminal run is timed only through a final results response confirming all
+packages settled and no retry active. Pending review does not wait for engineers.
+
+Real mode uses exported settings only and requires a positive `--budget-usd`
+minimum-credit reserve. It never loads `.env`. Sequential launch requires
+remaining credit at least max(reserve, 2 × highest observed per-run cost); the
+three-run cohort also requires 4.5 × that highest cost. Unknown remaining credit
+or unsupported providers require explicit `--max-runs`. OpenRouter lifetime
+usage deltas measure costs; cohort costs are total/3 averages with individual
+costs not attributed. These safeguards are heuristics, not a guaranteed spend cap.

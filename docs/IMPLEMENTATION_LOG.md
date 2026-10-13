@@ -27,6 +27,37 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 3 — Measure HTTP settlement and guarded budgets
+
+**Summary:** Add PR-01/03/04 HTTP observation, per-agent/security-iteration timing,
+same-prompt secondary references, safe CSV/JSON reports and measured-credit guards.
+
+**Requirements addressed:** PR-01, PR-03, PR-05, NFR-01.
+
+**Files:** backend/scripts/benchmark.py and phase9_budget.py; docs/phase9-prompts.json;
+backend/app/api/health.py; backend/tests/integration/{test_health,
+test_phase9_benchmark_http}.py; backend/tests/unit/{test_phase9_budget,
+test_phase9_benchmark}.py; Makefile; README.md; docs/design-deviations.md (D-43);
+this log. Budget helpers are isolated in a phase9 module for direct offline tests.
+
+**Decisions:** D-43. Actual package transitions are emitted by the orchestrator,
+so security iteration correlation uses variant/status rather than agent name.
+Retain missing metrics as unknown. Health exposes actual runner_capacity without
+new settings or migrations. OpenRouter key-info probes never retain response text
+or key identifiers. Real commands read exported settings with dotenv disabled.
+
+**Tests:** 26 focused unit and real-PostgreSQL HTTP integration checks passed,
+0 failed, 0 skipped (7.24s). Tests cover guard thresholds/caps, unknown/malformed
+credit, cost resets, offline fake key-info, zero/unknown affordability projections,
+EOF replay with active snapshots, security iteration events, secondary references,
+and a complete public-API stub baseline/cohort. make lint passed Ruff/format,
+mypy (98 sources), ESLint and both strict TS projects. No real LLM/provider call.
+
+**Known gaps / follow-ups:** Real-provider measurements remain author-only;
+per-request cohort costs and absent Architect token metrics cannot be attributed.
+Download fixture creation and coordinated author commands follow sections 4–6.
+
+
 ## 2026-10-13 — Phase 9 section 2 — Scan working-tree and historical secrets
 
 **Summary:** Add an offline standard-library credential scanner with safe

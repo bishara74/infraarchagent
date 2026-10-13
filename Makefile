@@ -37,8 +37,8 @@ test-perf: migrate-test
 	$(BACKEND) .venv/bin/python -m scripts.run_verification pytest -q -m perf
 
 lint:
-	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py
-	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py
+	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py
+	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py
 	$(BACKEND) .venv/bin/ruff check app tests
 	$(BACKEND) .venv/bin/ruff format --check app tests
 	$(BACKEND) .venv/bin/mypy app
@@ -88,3 +88,7 @@ traceability:
 .PHONY: secret-scan
 secret-scan:
 	$(BACKEND) .venv/bin/python -m scripts.secret_scan
+
+.PHONY: benchmark
+benchmark:
+	$(BACKEND) .venv/bin/python -m scripts.benchmark $(BENCH_ARGS)

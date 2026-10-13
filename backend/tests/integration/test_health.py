@@ -22,6 +22,7 @@ async def test_health_real_database_and_unreachable_override(
         assert response.json()["status"] == "ok"
         assert response.json()["database"] == "ok"
         assert response.json()["llm_configured"] is False
+        assert response.json()["runner_capacity"] == app.state.runner.capacity
         assert set(response.json()["validators"]) == {
             "terraform",
             "helm",

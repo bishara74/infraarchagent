@@ -959,6 +959,17 @@ class name, with no original exception object. HTTP-200 error envelopes are
 classified before parsing. Existing agent deadlines and remediation policy remain.
 Legacy internal stub/format reasons normalize at the reporting boundary.
 
+Benchmark completion is measured from immediately before HTTP submission through
+consumption of a final results response confirming a terminal run, settled package
+states and no retry marker. This is API settlement, not browser appearance;
+PR-02 supplies separate UI latency evidence. Pending review is settled.
+PR-03's spec verdict uses an isolated identical-prompt baseline; same-prompt
+PR-01 medians are labelled secondary references. Overlapping key usage cannot
+attribute individual costs: retain a measured cohort total and total/3 average.
+The cohort needs max(reserve, 2H, 4.5H) remaining credit. Unknown costs/credit stay
+unknown and require explicit run bounds; no estimated benchmark measurements.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
