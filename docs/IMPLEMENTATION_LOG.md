@@ -27,6 +27,91 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 8b — Scope the verification bootstrap to explicit test children
+
+**Summary:** Fix plain-shell `make test` failing before pytest because the Phase 8
+Makefile disabled dotenv in its `migrate-test` prerequisite. Guard the bootstrap
+with explicit opt-in and launch verification with configured test URLs, stub
+defaults and empty LLM/API keys, while restoring normal operator settings.
+
+**Requirements addressed:** NFR-01; verification infrastructure regression.
+
+**Files:** Makefile; backend/scripts/run_verification.py (added);
+backend/tests/bootstrap/sitecustomize.py;
+backend/tests/unit/test_test_bootstrap.py;
+backend/tests/unit/test_run_verification.py (added);
+backend/tests/unit/test_eval_validation.py;
+backend/tests/unit/test_scanner_timeout.py;
+backend/tests/unit/test_trivy_scanners.py;
+backend/tests/unit/test_validation_terraform.py;
+frontend/playwright.config.ts; README.md; docs/design-deviations.md;
+docs/IMPLEMENTATION_LOG.md.
+
+**Decisions / confirmed cause:** The Makefile exported bootstrap PYTHONPATH for
+`test test-perf migrate-test`; Make also inherited the stub/empty-value exports
+from test targets into prerequisites. The unguarded sitecustomize disabled
+Settings.model_config.env_file before Alembic instantiated settings. A fresh
+subprocess with synthetic environment values reproduced dotenv_disabled=True
+and exactly the four missing database fields, without reading the real dotenv.
+Phase 8's explicitly exported test URLs masked this ordinary-shell failure.
+
+The proposed venv-contamination hypothesis is ruled out here: plain venv Python
+from both repository root and backend imported /usr/lib/python3.12/sitecustomize.py.
+`python -m site` reported user-site disabled; the user site directory is absent.
+All venv/user-site .pth/sitecustomize.py/usercustomize.py candidates were checked:
+only the ordinary editable-install .pth exists, with no bootstrap reference.
+No activation script or pyvenv.cfg references bootstrap/PYTHONPATH. Pytest's
+pythonpath is only `.`; conftest's internal Alembic inherits its parent environment.
+The E2E webServer and four isolated Python harnesses intentionally opt in now.
+No venv file was modified; no cleanup command is needed.
+
+INFRAARCH_TEST_BOOTSTRAP=1 is required before importing settings or mutating
+environment in the bootstrap. Normal Make migrations, including test
+prerequisites, receive no test overrides. The parent launcher uses the existing
+get_settings() source behavior; only configured test database credentials are
+forwarded, with ordinary URLs also mapped to test URLs. LLM/API credentials are
+cleared and the child is executed with scoped PYTHONPATH/flag. No hardcoded URL,
+runtime settings-source change, installed dependency, role/grant change or
+later-phase feature. D-40 is corrected; D-41 is unchanged. No new deviation or
+open question. README documents the parent/child distinction and direct E2E use.
+
+**Tests:** Initial bootstrap regression: 2 failed, 2 passed, demonstrating the
+unguarded startup bug. An intermediate focused run had 10 failed, 20 passed,
+4 deselected because the new Make probe used multiline --eval syntax and the
+temporary-file guard referenced argv after replacement; both test harnesses
+were corrected. Bootstrap/launcher focused checks then passed 18 tests; two
+command-usage checks and a subprocess secret-redaction check were subsequently
+added, with all 8 launcher tests passing. Ordinary `make up` reported PostgreSQL
+healthy. All required Make commands ran in the ordinary shell without exported
+database URLs, bootstrap flag or PYTHONPATH overrides:
+
+- `make lint`: passed Ruff, format (181 files), mypy (98 sources), ESLint and
+  both strict TypeScript projects. Supplemental Ruff check/format also passed
+  for the new launcher, which is outside Make's existing app/tests lint scope.
+- Initial `make test`: 1076 passed, 0 failed, 0 skipped, 6 deselected (183.70s),
+  before collection included the last subprocess canary regression. Final
+  `make test`: 1077 passed, 0 failed, 0 skipped, 6 deselected (158.48s).
+- `make test-perf`: 6 passed, 0 failed, 0 skipped, 1077 deselected (27.62s).
+- `make frontend-test`: 82 passed, 0 failed, 0 skipped, 13 files (15.75s).
+- `make test-e2e`: 6 passed, 0 failed, 0 skipped (2.1m); fresh test-role backend
+  migration/startup, real scanner/mirror prerequisites, and all browser flows
+  passed. The separately selected UI @perf test was outside the requested run.
+- `git diff --check`: passed. Final venv-wide startup-file enumeration again
+  found only the editable-install .pth, no sitecustomize.py/usercustomize.py.
+
+The 20 new regression cases cover inactive/explicitly active startup, temporary
+dotenv database loading, normal Make environments and prerequisite inheritance,
+child-only test database selection, credential isolation, pytest/E2E execution,
+command usage, and secret-free configuration failures (including fresh processes).
+
+**Known gaps / follow-ups:** No production migration, server or real-provider
+evaluation was executed; normal command environment/loader behavior is covered
+by nine fresh-process Make probes and synthetic dotenv tests. The real root
+dotenv was never opened, printed, copied or modified by the agent; normal
+operator commands and the parent launcher may load it through existing settings
+as required. No installs, real LLM calls, push, spec edits or changes to the
+pre-existing untracked REVISION.txt.
+
 ## 2026-10-13 — Phase 8 section 9 — Audit completed scope and protected files
 
 **Summary:** Finish the documentation-only audit of sections 0–9, approved backend

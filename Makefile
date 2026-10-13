@@ -29,25 +29,11 @@ run-pipeline: export PIPELINE_TEXT = $(TEXT)
 run-pipeline:
 	$(BACKEND) .venv/bin/python scripts/run_pipeline.py
 
-test test-perf migrate-test: export PYTHONPATH := $(abspath backend/tests/bootstrap):$(abspath backend):$(PYTHONPATH)
-
-test test-perf: export LLM_PROVIDER := stub
-test test-perf: export LLM_MODEL :=
-test test-perf: export LLM_API_KEY :=
-test test-perf: export API_KEY :=
-test test-perf: export LLM_REASONING_EFFORT :=
-test test-perf: export LLM_RESPONSE_FORMAT :=
-test test-perf: export LLM_PROMPT_CACHE := off
-test test-perf: export LLM_BASE_URL :=
-test test-perf: export SECURITY_FIX_PROVIDER :=
-test test-perf: export SECURITY_FIX_MODEL :=
-test test-perf: export SECURITY_FIX_REASONING_EFFORT :=
-
 test: migrate-test
-	$(BACKEND) .venv/bin/pytest -q -m "not perf"
+	$(BACKEND) .venv/bin/python -m scripts.run_verification pytest -q -m "not perf"
 
 test-perf: migrate-test
-	$(BACKEND) .venv/bin/pytest -q -m perf
+	$(BACKEND) .venv/bin/python -m scripts.run_verification pytest -q -m perf
 
 lint:
 	$(BACKEND) .venv/bin/ruff check app tests
@@ -68,7 +54,7 @@ frontend-test:
 	$(FRONTEND) npm test
 
 test-e2e:
-	$(FRONTEND) npm run test:e2e
+	$(BACKEND) .venv/bin/python -m scripts.run_verification e2e
 
 sweep:
 	$(BACKEND) .venv/bin/python -m app.cli sweep-packages

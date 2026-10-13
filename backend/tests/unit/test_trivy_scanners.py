@@ -87,6 +87,7 @@ asyncio.run(main())
     package = tmp_path / "files.json"
     package.write_text(json.dumps(files("remote_module" if remote else "vulnerable")))
     env = scanner_environment(tmp_path, "trivy")
+    env["INFRAARCH_TEST_BOOTSTRAP"] = "1"
     env["PYTHONPATH"] = (
         f"{Path(__file__).resolve().parents[2] / 'tests/bootstrap'}:"
         f"{Path(__file__).resolve().parents[2]}"

@@ -86,9 +86,10 @@ scanner timeout/cancellation kills the whole process group and bounds pipe clean
    from the repository root.
    `make install` uses `backend/requirements.lock` as pip constraints to pin
    the runtime and dev dependencies recorded for Phase 1.
-3. Export `TEST_DATABASE_URL` and `TEST_MIGRATION_DATABASE_URL` from your test
-   setup, using `infraarch_test` and the ordinary app/owner roles. Verification
-   does not read `.env`. Run `make test` and `make lint`. Tests migrate and clean `infraarch_test`
+3. Run `make test` and `make lint`. The test launcher resolves the configured
+   test database URLs through normal settings (environment or root `.env`), then
+   starts pytest with dotenv disabled, stub defaults and empty LLM/API keys.
+   Tests migrate and clean `infraarch_test`
    using the owner role; code under test connects as the app role. The default
    suite excludes wall-clock performance assertions. `make test-perf` runs
    only those assertions; final timing measurements are Phase 9 work on a
@@ -151,20 +152,27 @@ This uses the pinned local Playwright package. Agents must not download browsers
 or use `npx` to fetch tools. Manual visual checks use the existing global
 `playwright-cli` directly.
 
-Verification never loads dotenv. Export `TEST_DATABASE_URL` (app role) and
-`TEST_MIGRATION_DATABASE_URL` (owner role), both pointing to `infraarch_test`,
-from your test setup before running `make test`, `make test-perf` or E2E.
-The Python test bootstrap supplies omitted ordinary database URLs from these
-explicit test URLs. `make test` and `make test-perf` force empty credentials and
-stub defaults; canary tests still set their own fake values inside the process.
-E2E validates the exact database name and app/owner roles before starting servers.
-Alembic and verification subprocesses inherit the dotenv-disabled bootstrap.
-Normal operator `make run` retains its existing settings behavior.
+`make test`, `make test-perf` and `make test-e2e` use a parent launcher that
+resolves normal operator settings and passes only the test database URLs into
+verification. Exported test URLs override those in `.env`. The test processes
+themselves never load dotenv: they receive stub defaults and empty LLM/API keys;
+canary tests still set their own fake values inside the process. E2E validates
+the exact `infraarch_test` database name and ordinary app/owner roles before
+starting servers.
+
+The bootstrap activates only with `INFRAARCH_TEST_BOOTSTRAP=1` and its directory
+on `PYTHONPATH`, both scoped to the verification child. Pytest's internal Alembic
+subprocess and E2E's migration/server inherit that explicit opt-in. Standalone
+`make migrate`, `make migrate-test`, `make run`, `make eval-*` and plain Python
+retain normal dotenv loading; the `migrate-test` prerequisite also runs normally.
+No bootstrap is installed in the venv and no venv cleanup is required.
+Direct `npm run test:e2e` still requires exported `TEST_DATABASE_URL` and
+`TEST_MIGRATION_DATABASE_URL`, since the Node configuration never loads dotenv.
 
 ```text
 make test-e2e
-cd frontend
-npm run test:e2e -- --grep @perf
+cd backend
+.venv/bin/python -m scripts.run_verification e2e --grep @perf
 ```
 
 Default E2E excludes `@perf`. PR-02 writes live server-timestamp-to-badge-mutation

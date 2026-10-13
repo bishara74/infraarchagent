@@ -159,6 +159,7 @@ assert not any(n.startswith(('app.db', 'app.llm')) for n in sys.modules)
         ],
         env={
             "PATH": os.defpath,
+            "INFRAARCH_TEST_BOOTSTRAP": "1",
             "PYTHONPATH": f"{backend / 'tests/bootstrap'}:{backend}",
             "HOME": str(tmp_path),
         },

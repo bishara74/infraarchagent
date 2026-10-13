@@ -858,8 +858,18 @@ This covers D-38's marked intermediate states. An active EOF resumes with
 Last-Event-ID and backoff; five EOF reconnect attempts without a new event are
 allowed before pausing with a manual Reconnect notice. Normal settled EOF
 does not reconnect; retry 202 explicitly reopens the stream. Verification uses a
-Python sitecustomize bootstrap to disable dotenv before settings instantiate,
-including migrations and isolated scanner subprocesses; Vite uses envDir=false.
+Python sitecustomize bootstrap to disable dotenv before settings instantiate
+in explicitly opted-in pytest/E2E processes and their migration/scanner children;
+Vite uses envDir=false. Phase 8b corrects the original Make target-specific
+PYTHONPATH export, which also disabled dotenv for ordinary migrate-test and
+inherited test prerequisites. The bootstrap is now a no-op unless
+INFRAARCH_TEST_BOOTSTRAP=1. A parent verification launcher resolves normal
+operator settings, forwards only configured test database URLs, forces stub
+defaults and clears LLM/API keys before executing pytest or E2E. The child
+retains the Phase 8 dotenv-disabled guarantee; the parent and standalone
+migrations/server/evaluations/Python retain normal settings loading. No runtime
+settings-source change, hardcoded database URL, venv mutation, new dependency,
+spec deviation or open question is introduced by this correction.
 E2E starts fresh stub/review servers, because health cannot verify defaults of an
 existing server without changing the API. Every submitted E2E run explicitly
 requests stub. Browser/system prerequisites are installed only by the author.
