@@ -708,3 +708,9 @@ PR-03 verdict stays ≤1.5× its isolated baseline; exact-prompt PR-01 medians a
 labelled secondary references. Concurrent cost total/3 is an average, with each
 individual cost explicitly not attributed. No key, key identifier, provider error
 body or generated package contents enter these artifacts.
+
+Phase 9 verification evidence is recorded in the implementation log. The one
+stub rehearsal completed all 14 pipelines and 10 downloads, while **PR-03 failed**
+(2.76–2.78× the isolated baseline); PR-01, PR-04 and recorded PR-05 thresholds
+passed. A completed-command exit does not imply performance criteria passed:
+read `summary.md`. The real-provider results are still author-run work.

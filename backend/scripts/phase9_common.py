@@ -6,6 +6,7 @@ import os
 import platform
 import subprocess
 import sys
+import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -16,9 +17,31 @@ BACKEND = ROOT / "backend"
 
 def command_version(command: list[str]) -> str | None:
     try:
-        result = subprocess.run(
-            command, cwd=ROOT, capture_output=True, text=True, timeout=15, check=False
-        )
+        with tempfile.TemporaryDirectory(
+            prefix="infraarch-phase9-version-"
+        ) as temporary:
+            isolated = {
+                "PATH": os.environ.get("PATH", os.defpath),
+                "LANG": "C.UTF-8",
+                "HOME": temporary,
+                "TMPDIR": temporary,
+                "HTTP_PROXY": "http://127.0.0.1:9",
+                "HTTPS_PROXY": "http://127.0.0.1:9",
+                "http_proxy": "http://127.0.0.1:9",
+                "https_proxy": "http://127.0.0.1:9",
+                "NO_PROXY": "",
+                "no_proxy": "",
+                "GIT_TERMINAL_PROMPT": "0",
+            }
+            result = subprocess.run(
+                command,
+                cwd=ROOT if command[0] == "git" else temporary,
+                env=isolated,
+                capture_output=True,
+                text=True,
+                timeout=15,
+                check=False,
+            )
         return (
             result.stdout.strip().splitlines()[0][:200]
             if result.returncode == 0 and result.stdout.strip()
@@ -71,6 +94,10 @@ def environment(
         "python": platform.python_version(),
         "node": command_version(["node", "--version"]),
         "git_commit": command_version(["git", "rev-parse", "HEAD"]),
+        "git_tracked_dirty": subprocess.run(
+            ["git", "diff", "--quiet"], cwd=ROOT, capture_output=True, check=False
+        ).returncode
+        != 0,
         "python_packages": versions,
         "frontend_packages": {
             **frontend["dependencies"],

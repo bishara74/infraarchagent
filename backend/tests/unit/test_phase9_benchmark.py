@@ -295,3 +295,93 @@ async def test_first_cost_advisory_once_and_later_guard_overrides(tmp_path, caps
     assert all(
         "budget-canary-key" not in path.read_text() for path in tmp_path.iterdir()
     )
+
+
+@pytest.mark.req("NFR-01")
+def test_reference_loader_rejects_dotenv_before_read(tmp_path, monkeypatch):
+    from scripts.benchmark import load_reference
+
+    protected = tmp_path / ".env"
+    alias = tmp_path / "results.json"
+    alias.symlink_to(protected)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("No file contents may be opened")
+
+    monkeypatch.setattr(type(tmp_path), "open", forbidden)
+    for path in (protected, alias):
+        with pytest.raises(ValueError, match="measurement report"):
+            load_reference(path)
+
+
+@pytest.mark.req("FR-UI-01")
+def test_benchmark_prompts_match_frontend_examples():
+    import re
+
+    from scripts.phase9_common import ROOT
+
+    assert prompts() == re.findall(
+        r"text:'([^']+)'", (ROOT / "frontend/src/constants/examples.ts").read_text()
+    )
+
+
+@pytest.mark.req("NFR-01")
+async def test_non_openrouter_metadata_redacts_configured_canary(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from app.core.config import Settings
+    from scripts.benchmark import configured_harness
+    from scripts.phase9_common import write_json
+
+    canary = "native-provider-canary"
+    settings = Settings(
+        database_url="postgresql+asyncpg://app:fake@localhost/db",
+        migration_database_url="postgresql+asyncpg://owner:fake@localhost/db",
+        test_database_url="postgresql+asyncpg://app:fake@localhost/test",
+        test_migration_database_url="postgresql+asyncpg://owner:fake@localhost/test",
+        llm_provider="anthropic",
+        llm_model=canary,
+        llm_api_key=canary,
+        _env_file=None,
+    )
+    monkeypatch.setattr("app.core.config.Settings", lambda **kwargs: settings)
+    write_json(tmp_path / "environment.json", {})
+    args = SimpleNamespace(
+        mode="real",
+        command="pr01",
+        budget_usd=Decimal(1),
+        max_runs=2,
+        base_url="http://test",
+        timeout=1,
+    )
+    harness = await configured_harness(args, tmp_path, None)
+    assert harness.credit_reader is None
+    assert canary not in (tmp_path / "environment.json").read_text()
+    assert harness.redactor.redact(canary) == "[REDACTED]"
+
+
+@pytest.mark.req("PR-01", "FR-G-06")
+def test_generation_failure_final_status_from_events_or_snapshot():
+    harness = Harness(None)
+    value = {
+        "run": {"status": "partial_success", "provider": "stub", "model": "stub"},
+        "packages": [],
+        "missing_variants": [{"variant": "cost", "error": "hidden"}],
+    }
+    row = {"run_id": "fixture"}
+    harness.finish(row, value, [], 1)
+    assert row["cost_variant_status"] == "failed"
+    assert row["security_variant_status"] == "not_generated"
+    value["missing_variants"] = []
+    local = [
+        event(
+            1,
+            "orchestrator",
+            "failed",
+            "2026-01-01T00:00:00Z",
+            "package_status",
+            "security",
+        )
+    ]
+    harness.finish(row, value, local, 1)
+    assert row["security_variant_status"] == "failed"

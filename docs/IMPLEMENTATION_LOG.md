@@ -27,6 +27,77 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-13 — Phase 9 section 8 — Audit scope and retain final measured evidence
+
+**Summary:** Complete all sections 0–8, retain raw verification/rehearsal reports,
+and document the actual stub PR-03 failure without altering runtime performance.
+
+**Requirements addressed:** PR-01 through PR-05, NFR-01, NFR-03, FR-A-04,
+FR-G-06, FR-S-02; traceability reports every specification ID.
+
+**Files:** final reports under docs/evals/phase9-{backend-perf,pr02,bench-stub,
+traceability,secret-scan}-*; backend/app/llm/{errors,base,openai,anthropic}.py;
+backend/app/agents/security/agent.py; backend/scripts/{benchmark,
+run_phase9_benchmarks,phase9_common}.py; backend/tests/unit/
+{test_phase9_provider_errors,test_phase9_benchmark,test_phase9_traceability}.py;
+backend/tests/integration/test_phase9_provider_surfaces.py; README.md;
+docs/design-deviations.md; this log.
+
+**Final audit corrections:** Clear original provider exception contexts, retain
+original JSON decoder class names and actual HTTP status for malformed responses,
+validate success-body shapes before SDK attribute access, and keep untrusted token
+values out of logs. Success logs now say category=success. Failed security fixes
+emit their fixed safe notice. New canaries verify quota/permission/authentication
+messages across results, SSE, logs and PostgreSQL rows. Reject dotenv reference
+paths before reading; redact native-provider configured secrets in metadata;
+version probes use secret-free environments and temporary working directories.
+Record tracked dirty state with the Git parent reference so pre-commit evidence
+is explicit. Capture failed generation statuses from retained events/results and
+distinguish partial usage deltas from final per-run costs. These corrections remain
+within approved error/evaluation scope; no agent policy, prompt or UI redesign.
+
+**Tests / actual final output:**
+- make lint: passed Ruff/format (10 new evaluation scripts; 193 app/test files),
+  mypy (98 app sources), ESLint and both strict TypeScript projects.
+- make test: 1180 passed, 0 failed, 0 skipped; 6 perf deselected (116.22s).
+  Earlier complete runs passed 1173 and 1178 before final audit coverage additions.
+- make frontend-test: 100 passed, 0 failed, 0 skipped; 15 files (5.25s).
+- make test-e2e: 6 passed, 0 failed, 0 skipped (1.2m).
+- make test-perf: 6 passed, 0 failed, 0 skipped (JUnit recorded), with
+  operator-confirmed quiet-machine status explicitly unknown.
+- make test-ui-perf: 1 passed, 0 failed, 0 skipped; 32 live PR-02 samples,
+  min 22ms, max 188ms, median 68.5ms. These are stub verification samples.
+- make traceability: 59 requirements, no collection failures/invalid annotations;
+  nine uncovered IDs: NFR-02, NFR-04, UC-01 through UC-07. Annotation coverage does
+  not prove semantic coverage. Final report: phase9-traceability-20261013T185112881628Z.
+- make secret-scan: zero findings, zero scan errors across working tree and full
+  refs/reflogs history. Final report: phase9-secret-scan-20261013T185541011173Z.
+- make bench-stub executed once: 14 pipelines all success, 10 ZIP requests all
+  complete; PR-01 median 5.470856s (PASS), PR-03 isolated-baseline ratios
+  2.755901–2.780750 (FAIL versus 1.5), PR-04 median 0.942928s/max 1.361918s
+  (PASS), recorded PR-05 thresholds PASS. Synthetic source 13,177,789 bytes,
+  calibrated ZIP 9,989,867 bytes. Mode stub; no provider spending. Report:
+  phase9-bench-stub-20261013T182956518992Z. The command's successful exit means
+  measurements completed; the report preserves the failed performance criterion.
+- git diff --check passed; specification, dependency manifests/locks and applied
+  migrations are untouched. Existing untracked REVISION.txt is untouched.
+
+**Decisions:** D-42/D-43 completed; no new open question. Preserve initial scanner
+trial reports with an explicit superseded-trial note, rather than presenting their
+placeholder/parser false positives as operational credential findings. Verification
+used a separate postgres:16 container from the existing local image, ordinary
+roles/grants and synthetic passwords. Author database/container state was untouched.
+Temporary backend stopped after rehearsal; isolated verification container removed.
+
+**Known gaps / follow-ups:** Stub PR-03 fails on this environment with actual
+local scanners/validation; runtime optimization is outside Phase 9. Real provider
+PR-01/03/05, costs and quiet-machine final thesis evidence remain author-only.
+NFR-04 clean-Ubuntu deployment remains Phase 10; NFR-02 and UC annotation gaps are
+explicit. Static validation does not prove deployability. No real LLM call, .env
+read, installation/download, push, history rewrite or Phase 10 work occurred.
+Next: author-run guarded real measurements, then Phase 9b report generation.
+
+
 ## 2026-10-13 — Phase 9 section 7 — Document evaluation and thesis follow-ups
 
 **Summary:** Consolidate the Phase 9 author workflow, D-42/D-43 methods/limits and

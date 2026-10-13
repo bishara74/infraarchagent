@@ -14,6 +14,7 @@ from app.llm.errors import (
     LLMTransientError,
     cached_response_tokens,
     check_error_envelope,
+    check_success_body,
     rate_limit_wait,
     status_error,
 )
@@ -85,13 +86,14 @@ class OpenAIAdapter(LLMAdapter):
             params["extra_body"] = {"reasoning": {"effort": self.reasoning_effort}}
         if self.response_format == "json_object":
             params["response_format"] = {"type": "json_object"}
-        failure: LLMError
+        failure: LLMError | None = None
         http_status: int | None = None
         try:
             raw = await self.client.chat.completions.with_raw_response.create(**params)
             http_status = raw.http_response.status_code
             body = raw.http_response.json()
             check_error_envelope(body, http_status)
+            check_success_body(body, self.provider, http_status)
             cached = cached_response_tokens(
                 body,
                 "usage",
@@ -102,41 +104,37 @@ class OpenAIAdapter(LLMAdapter):
         except openai.APITimeoutError as error:
             failure = LLMTransientError("unreachable")
             failure.diagnostics(None, type(error).__name__)
-            raise failure from None
         except openai.APIConnectionError as error:
             failure = LLMTransientError("unreachable")
             failure.diagnostics(None, type(error).__name__)
-            raise failure from None
         except openai.APIStatusError as error:
             retry_after, header_names = (
                 rate_limit_wait(error.response.headers)
                 if error.status_code == 429
                 else (None, ())
             )
-            raise status_error(
+            failure = status_error(
                 error.status_code,
                 body=error.body,
                 exception_class=type(error).__name__,
                 retry_after=retry_after,
                 rate_limit_headers=header_names,
-            ) from None
-        except LLMError:
-            raise
+            )
+        except LLMError as error:
+            failure = error
+            if failure.http_status is None:
+                failure.http_status = http_status
         except httpx2.TransportError as error:
             failure = LLMTransientError("unreachable")
             failure.diagnostics(http_status, type(error).__name__)
-            raise failure from None
         except (ValueError, TypeError, openai.APIResponseValidationError) as error:
             failure = LLMResponseFormatError("invalid_json")
             failure.diagnostics(http_status, type(error).__name__)
-            raise failure from None
         except openai.APIError as error:
             failure = LLMPermanentError("provider_error")
             failure.diagnostics(http_status, type(error).__name__)
-            raise failure from None
-        if not isinstance(completion.choices, list):
-            failure = LLMResponseFormatError("empty")
-            failure.diagnostics(http_status, None)
+        if failure is not None:
+            failure.__context__ = None
             raise failure from None
         provider = getattr(completion, "provider", None)
         served_by = provider if isinstance(provider, str) and provider else None
@@ -162,10 +160,8 @@ class OpenAIAdapter(LLMAdapter):
         choice = completion.choices[0]
         return LLMResponse(
             text=choice.message.content or "",
-            input_tokens=completion.usage.prompt_tokens if completion.usage else None,
-            output_tokens=(
-                completion.usage.completion_tokens if completion.usage else None
-            ),
+            input_tokens=cached_response_tokens(body, "usage", "prompt_tokens"),
+            output_tokens=(cached_response_tokens(body, "usage", "completion_tokens")),
             stop_reason=(
                 "max_tokens"
                 if choice.finish_reason == "length"

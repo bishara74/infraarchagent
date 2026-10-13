@@ -14,6 +14,7 @@ from app.llm.errors import (
     LLMTransientError,
     cached_response_tokens,
     check_error_envelope,
+    check_success_body,
     rate_limit_wait,
     status_error,
 )
@@ -52,49 +53,50 @@ class AnthropicAdapter(LLMAdapter):
         }
         if system is not None:
             params["system"] = system
-        failure: LLMError
+        failure: LLMError | None = None
         http_status: int | None = None
         try:
             raw = await self.client.messages.with_raw_response.create(**params)
             http_status = raw.http_response.status_code
             body = await raw.json()
             check_error_envelope(body, http_status)
+            check_success_body(body, self.provider, http_status)
             cached = cached_response_tokens(body, "usage", "cache_read_input_tokens")
             message = await raw.parse()
         except anthropic.APITimeoutError as error:
             failure = LLMTransientError("unreachable")
             failure.diagnostics(None, type(error).__name__)
-            raise failure from None
         except anthropic.APIConnectionError as error:
             failure = LLMTransientError("unreachable")
             failure.diagnostics(None, type(error).__name__)
-            raise failure from None
         except anthropic.APIStatusError as error:
             retry_after, header_names = (
                 rate_limit_wait(error.response.headers)
                 if error.status_code == 429
                 else (None, ())
             )
-            raise status_error(
+            failure = status_error(
                 error.status_code,
                 body=error.body,
                 exception_class=type(error).__name__,
                 retry_after=retry_after,
                 rate_limit_headers=header_names,
-            ) from None
-        except LLMError:
-            raise
+            )
+        except LLMError as error:
+            failure = error
+            if failure.http_status is None:
+                failure.http_status = http_status
         except httpx2.TransportError as error:
             failure = LLMTransientError("unreachable")
             failure.diagnostics(http_status, type(error).__name__)
-            raise failure from None
         except (ValueError, TypeError, anthropic.APIResponseValidationError) as error:
             failure = LLMResponseFormatError("invalid_json")
             failure.diagnostics(http_status, type(error).__name__)
-            raise failure from None
         except anthropic.APIError as error:
             failure = LLMPermanentError("provider_error")
             failure.diagnostics(http_status, type(error).__name__)
+        if failure is not None:
+            failure.__context__ = None
             raise failure from None
         if not isinstance(message.content, list):
             failure = LLMResponseFormatError("empty")
@@ -104,8 +106,8 @@ class AnthropicAdapter(LLMAdapter):
             text="".join(
                 block.text for block in message.content if block.type == "text"
             ),
-            input_tokens=message.usage.input_tokens,
-            output_tokens=message.usage.output_tokens,
+            input_tokens=cached_response_tokens(body, "usage", "input_tokens"),
+            output_tokens=cached_response_tokens(body, "usage", "output_tokens"),
             stop_reason=message.stop_reason,
             cached_input_tokens=cached,
             http_status=http_status,

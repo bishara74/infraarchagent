@@ -589,8 +589,22 @@ class Harness:
             package = next(
                 (p for p in snapshot["packages"] if p["variant"] == variant), None
             )
+            last_status = next(
+                (
+                    event["status"]
+                    for event in reversed(local)
+                    if event["kind"] == "package_status" and event["variant"] == variant
+                ),
+                None,
+            )
+            missing = any(
+                item.get("variant") == variant
+                for item in snapshot.get("missing_variants", [])
+            )
             row[variant + "_variant_status"] = (
-                package["status"] if package else "not_generated"
+                package["status"]
+                if package
+                else last_status or ("failed" if missing else "not_generated")
             )
         self.agent_rows.extend(timings(row["run_id"], local))
         generated = [e["metrics"] for e in local if e["kind"] == "package_generated"]
@@ -637,7 +651,8 @@ class Harness:
             after = await self.credit() if self.mode == "real" else CreditSnapshot()
             cost = measured_cost(before, after) if self.mode == "real" else Decimal(0)
             row.update(
-                cost_usd=float(cost) if cost is not None else None,
+                cost_usd=float(cost) if cost is not None and row["complete"] else None,
+                observed_usage_delta_usd=float(cost) if cost is not None else None,
                 cost_attribution="sequential" if self.mode == "real" else "stub free",
                 cost_before_usd=float(before.usage)
                 if before.usage is not None
@@ -651,7 +666,8 @@ class Harness:
                 else None,
             )
             if self.guard:
-                self.guard.observe(cost)
+                if row["complete"]:
+                    self.guard.observe(cost)
                 if cost is None and self.guard.max_runs is None:
                     self.stop_reason = (
                         "Cost delta unknown; explicit --max-runs required."
@@ -810,6 +826,8 @@ class Harness:
 def load_reference(path: Path | None) -> list[dict] | None:
     if path is None:
         return None
+    if path.resolve().name.startswith(".env") or path.suffix not in {".json", ".csv"}:
+        raise ValueError("Reference must be a CSV or JSON measurement report")
     if path.suffix == ".json":
         return json.loads(path.read_text())["runs"]
     with path.open(newline="") as handle:
@@ -876,6 +894,9 @@ async def configured_harness(
         output=directory,
     )
     if args.mode == "real" and args.command != "pr04":
+        from app.core.safety import PublicDataSafety
+
+        harness.redactor = PublicDataSafety(settings).redactor
         harness.expected_provider = settings.llm_provider.value
         metadata = json.loads((directory / "environment.json").read_text())
         metadata.update(

@@ -101,6 +101,7 @@ def extract_json_object(text: str) -> dict[str, Any]:
             pass
         else:
             raise LLMResponseFormatError("not_object")
+    failure: LLMResponseFormatError | None = None
     try:
         parsed, end = json.JSONDecoder().raw_decode(candidate)
     except json.JSONDecodeError as error:
@@ -110,9 +111,14 @@ def extract_json_object(text: str) -> dict[str, Any]:
             or "Expecting ',' delimiter" in error.msg
             or "Expecting property name" in error.msg
         )
-        raise LLMResponseFormatError(
+        failure = LLMResponseFormatError(
             "truncated" if incomplete else f"syntax_error@{error.pos}"
-        ) from None
+        )
+        failure.diagnostics(None, type(error).__name__)
+    else:
+        failure = None
+    if failure is not None:
+        raise failure from None
     if not isinstance(parsed, dict):
         raise LLMResponseFormatError("not_object")
     if candidate[end:].strip():
@@ -225,12 +231,14 @@ class LLMAdapter(ABC):
                 category = "cancelled"
                 raise
             except LLMTransientError as error:
+                error.__context__ = None
                 category = error.category
                 http_status = error.http_status
                 exception_class = error.original_exception_class
                 retry_after = error.retry_after
                 rate_limit_headers = error.rate_limit_headers
             except LLMResponseFormatError as error:
+                error.__context__ = None
                 category = (
                     "truncated" if error.reason == "truncated" else "invalid_json"
                 )
@@ -244,6 +252,7 @@ class LLMAdapter(ABC):
                 category = "deadline"
                 raise
             except LLMPermanentError as error:
+                error.__context__ = None
                 category = error.category
                 http_status = error.http_status
                 exception_class = error.original_exception_class
@@ -254,12 +263,17 @@ class LLMAdapter(ABC):
                 raise LLMPermanentError("unexpected") from None
             finally:
                 stats = response.stats() if response is not None else None
+                log_category = (
+                    category
+                    if category in {"success", "cancelled"}
+                    else safe_category(category)
+                )
                 fields = [
                     f"provider={self.provider}",
                     f"model={self.model}",
                     f"attempt={attempt}",
                     f"outcome={category}",
-                    f"category={safe_category(category)}",
+                    f"category={log_category}",
                     f"http_status={http_status if http_status is not None else 'none'}",
                     f"exception_class={exception_class or 'none'}",
                     f"reasoning_effort={self.reasoning_effort or 'unset'}",
@@ -274,7 +288,11 @@ class LLMAdapter(ABC):
                     "rate_limit_headers="
                     + (",".join(rate_limit_headers) if rate_limit_headers else "none"),
                 ]
-                if response is not None and response.served_by is not None:
+                if (
+                    category == "success"
+                    and response is not None
+                    and response.served_by is not None
+                ):
                     host = quote(response.served_by, safe="@._/-")
                     fields.append(f"served_by={host}")
                 if response is not None and response.reasoning_tokens is not None:

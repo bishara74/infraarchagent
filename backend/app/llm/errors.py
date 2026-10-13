@@ -194,12 +194,12 @@ def status_error(
     metadata = metadata if isinstance(metadata, dict) else {}
     message = envelope.get("message")
     message = message[:4096].lower() if isinstance(message, str) else ""
-    budget = metadata.get("limit_source") in {
+    budget = metadata.get("limit_source") in (
         "openrouter_key_limit",
         "openrouter_guardrail_budget",
         "openrouter_workspace_budget",
         "openrouter_credits",
-    } or any(
+    ) or any(
         phrase in message
         for phrase in (
             "key limit exceeded",
@@ -261,3 +261,29 @@ def cached_response_tokens(body: object, *path: str) -> int | None:
             return None
         value = value.get(key)
     return cached_tokens(value)
+
+
+def check_success_body(body: object, provider: str, http_status: int) -> None:
+    usable = isinstance(body, dict)
+    if isinstance(body, dict) and provider == "openai":
+        choices = body.get("choices")
+        usable = isinstance(choices, list) and bool(choices)
+        if isinstance(choices, list) and choices:
+            choice = choices[0]
+            message = choice.get("message") if isinstance(choice, dict) else None
+            usable = isinstance(message, dict) and isinstance(
+                message.get("content"), str
+            )
+    elif isinstance(body, dict):
+        content = body.get("content")
+        usable = isinstance(content, list) and bool(content)
+        if isinstance(content, list) and content:
+            usable = all(
+                isinstance(block, dict)
+                and (block.get("type") != "text" or isinstance(block.get("text"), str))
+                for block in content
+            )
+    if not usable:
+        failure = LLMResponseFormatError("empty")
+        failure.diagnostics(http_status, None)
+        raise failure from None

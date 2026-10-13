@@ -970,6 +970,12 @@ The cohort needs max(reserve, 2H, 4.5H) remaining credit. Unknown costs/credit s
 unknown and require explicit run bounds; no estimated benchmark measurements.
 
 
+Verification evidence from the one Phase 9 stub rehearsal is retained: 14 runs
+all succeeded and 10 downloads completed; PR-01 median 5.47s and PR-04 maximum
+1.36s passed their thresholds. PR-03 ratios 2.76–2.78x failed the isolated-baseline
+criterion with local scanners/validation. This is overhead rehearsal evidence,
+not real-provider performance evidence; no runtime optimization was made.
+
 The first settled real run produces a measured-cost/remaining-credit notice and
 an informational simulation of the remaining finite schedule at that first cost.
 The cohort is indivisible, with its 4.5H guard; zero/unknown costs are explicit.

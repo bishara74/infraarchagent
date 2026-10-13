@@ -24,6 +24,7 @@ from app.domain.package_layout import package_structure_errors
 from app.domain.review import retry_targets, security_final
 from app.domain.states import remediation_budget_decision
 from app.events.kinds import stage_notice_payload
+from app.llm.errors import SAFE_MESSAGES
 from app.pipeline.stages import StageContext
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import Scanner, ScanResult
@@ -189,6 +190,16 @@ class SecurityAgent:
                     "cached_input_tokens": proposal.cached_input_tokens,
                 }
             )
+        for reason in sorted(
+            {
+                proposal.reason
+                for proposal in proposals
+                if isinstance(proposal.reason, str)
+                and proposal.reason in SAFE_MESSAGES.values()
+            }
+        ):
+            assert reason is not None
+            await self._notice(ctx, variant, reason)
         return current, results, package_diff(snapshot, current)
 
     async def run(

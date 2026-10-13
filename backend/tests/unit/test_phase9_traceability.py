@@ -121,3 +121,26 @@ def test_statistics_unknown_empty_even_and_nearest_rank():
         "max": 4,
     }
     assert statistics_for([float("nan"), 1, 3])["median"] == 2
+
+
+@pytest.mark.req("NFR-01")
+def test_version_probes_isolate_secrets_and_project_dotenv(monkeypatch):
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    from scripts.phase9_common import command_version
+
+    calls = []
+    monkeypatch.setenv("LLM_API_KEY", "version-probe-canary")
+    monkeypatch.setenv("API_KEY", "version-probe-api-canary")
+
+    def runner(command, **kwargs):
+        calls.append(kwargs)
+        assert Path(kwargs["cwd"]).is_dir()
+        assert "LLM_API_KEY" not in kwargs["env"] and "API_KEY" not in kwargs["env"]
+        assert kwargs["env"]["HTTP_PROXY"] == "http://127.0.0.1:9"
+        return SimpleNamespace(returncode=0, stdout="3.3.21\n")
+
+    monkeypatch.setattr("scripts.phase9_common.subprocess.run", runner)
+    assert command_version(["checkov", "--version"]) == "3.3.21"
+    assert not Path(calls[0]["cwd"]).exists()

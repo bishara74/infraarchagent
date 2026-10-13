@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import math
 import os
 from decimal import Decimal
 from pathlib import Path
@@ -152,6 +153,8 @@ def main() -> None:
         or args.budget_usd <= 0
     ):
         parser.error("bench-real requires a positive BUDGET minimum-credit reserve.")
+    if not math.isfinite(args.timeout) or args.timeout <= 0:
+        parser.error("Observation timeout must be positive and finite.")
     if args.max_runs is not None and args.max_runs < 1:
         parser.error("MAX_RUNS must be positive.")
     asyncio.run(run(args))

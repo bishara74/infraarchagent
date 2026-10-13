@@ -87,3 +87,43 @@ async def test_transport_original_class(provider, caplog):
     assert "http_status=none" in caplog.text
     assert "exception_class=APIConnectionError" in caplog.text
     assert "secret-canary" not in caplog.text
+
+
+@pytest.mark.req("NFR-01", "NFR-03")
+@pytest.mark.parametrize("provider", ["openai", "anthropic"])
+async def test_sanitized_status_exception_retains_no_original_context(provider):
+    async with httpx2.AsyncClient(
+        transport=httpx2.MockTransport(
+            lambda request: httpx2.Response(
+                403, json={"error": {"message": "Key limit exceeded secret-canary"}}
+            )
+        )
+    ) as client:
+        with pytest.raises(LLMPermanentError) as caught:
+            await adapter_for(provider, client).send_prompt(
+                "test", max_output_tokens=10, timeout=1
+            )
+    assert caught.value.__context__ is None
+    assert caught.value.__cause__ is None
+    assert caught.value.http_status == 403
+    assert caught.value.original_exception_class == "PermissionDeniedError"
+
+
+@pytest.mark.req("NFR-01")
+@pytest.mark.parametrize("provider", ["openai", "anthropic"])
+async def test_original_json_parser_class_and_status(provider, caplog):
+    from tests.unit.test_llm_providers import success_body
+
+    body = success_body(provider)
+    if provider == "openai":
+        body["choices"][0]["message"]["content"] = "{ invalid secret-canary"
+    else:
+        body["content"][0]["text"] = "{ invalid secret-canary"
+    caplog.set_level(logging.INFO, logger="app.llm.base")
+    async with httpx2.AsyncClient(
+        transport=httpx2.MockTransport(lambda request: httpx2.Response(200, json=body))
+    ) as client:
+        with pytest.raises(LLMRetryExhausted):
+            await adapter_for(provider, client).complete_json("test")
+    assert "exception_class=JSONDecodeError" in caplog.text
+    assert "http_status=200" in caplog.text and "secret-canary" not in caplog.text
