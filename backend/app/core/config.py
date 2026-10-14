@@ -12,6 +12,7 @@ from app.domain.enums import LLMProvider
 ROOT = Path(__file__).resolve().parents[3]
 ReasoningEffort = Literal["off", "low", "medium", "high"]
 ResponseFormat = Literal["json_object"]
+StructuredOutput = Literal["json_schema", "json_object", "off"]
 
 
 class ConfigurationError(ValueError):
@@ -33,6 +34,7 @@ class Settings(BaseSettings):
     llm_base_url: str | None = None
     llm_reasoning_effort: ReasoningEffort | None = None
     llm_response_format: ResponseFormat | None = None
+    llm_structured_output: StructuredOutput = "json_schema"
     llm_prompt_cache: Literal["off", "system"] = "off"
     security_fix_provider: LLMProvider | None = None
     security_fix_model: str | None = None

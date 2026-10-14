@@ -994,6 +994,23 @@ limit allowed 10k–19k-token failed responses taking 70–138 seconds. The firs
 real attempt retained four usable runs out of eight, median 189.81 seconds,
 three settled failures and one incomplete run, at measured cost $4.940978.
 
+**Phase 9c format enforcement:** LLM_STRUCTURED_OUTPUT applies only to generator
+adapters. json_schema derives a closed wire representation from GeneratorOutput:
+files become a nonempty list of path/content objects; notes is required. Internal
+IaCPackage.files remains a dictionary, with duplicate paths rejected. OpenRouter
+strict requests require supporting providers; no automatic fallback changes
+requests. Refusals retain fixed categories and recommend json_object. Native
+Anthropic/stub retain dictionary responses and share local validation/salvage.
+
+The parser first accepts a schema-valid whole object, ignoring backticks in
+string values. Only then does it inspect external fences/prose. Exactly one
+balanced, schema-valid object may be salvaged and counted; multiple objects or
+external fenced blocks remain rejected. The previous global four-backtick test
+could reject valid README/template/script contents. A mocked valid response
+reproduced this bug; raw invalid historical outputs were not retained, so no
+specific historical attempt can be reclassified. OQ-08's mechanism is extended;
+actual real-run reliability improvements remain unmeasured.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

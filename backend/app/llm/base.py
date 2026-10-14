@@ -1,10 +1,8 @@
 """Provider-independent JSON completion and timing policy."""
 
 import asyncio
-import json
 import logging
 import random
-import re
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
@@ -12,7 +10,7 @@ from dataclasses import dataclass
 from typing import Any
 from urllib.parse import quote
 
-from app.core.config import ReasoningEffort, ResponseFormat, Settings
+from app.core.config import ReasoningEffort, ResponseFormat, Settings, StructuredOutput
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -22,9 +20,10 @@ from app.llm.errors import (
     ResponseStats,
     safe_category,
 )
+from app.llm.json_output import Validator, validated_json
+from app.llm.json_output import extract_json_object as extract_json_object
 
 logger = logging.getLogger(__name__)
-FENCE = re.compile(r"```(?:json)?[ \t]*\n(.*?)\n```", re.DOTALL | re.IGNORECASE)
 
 
 @dataclass(frozen=True)
@@ -73,61 +72,12 @@ class LLMResult:
     response: LLMResponse
     attempts: int
     elapsed_seconds: float
-
-
-def extract_json_object(text: str) -> dict[str, Any]:
-    candidate = text.strip()
-    if not candidate:
-        raise LLMResponseFormatError("empty")
-    if candidate.count("```") >= 4:
-        raise LLMResponseFormatError("multiple_blocks")
-    fenced = FENCE.fullmatch(candidate)
-    if fenced:
-        candidate = fenced.group(1).strip()
-    elif candidate.startswith("```"):
-        raise LLMResponseFormatError(
-            "truncated" if candidate.count("```") == 1 else "prose_after"
-        )
-    elif "```" in candidate:
-        raise LLMResponseFormatError("prose_before")
-    if not candidate:
-        raise LLMResponseFormatError("empty")
-    if not candidate.startswith("{"):
-        if "{" in candidate:
-            raise LLMResponseFormatError("prose_before")
-        try:
-            json.loads(candidate)
-        except (ValueError, TypeError):
-            pass
-        else:
-            raise LLMResponseFormatError("not_object")
-    failure: LLMResponseFormatError | None = None
-    try:
-        parsed, end = json.JSONDecoder().raw_decode(candidate)
-    except json.JSONDecodeError as error:
-        incomplete = error.pos >= len(candidate) - 1 and (
-            "Unterminated" in error.msg
-            or "Expecting value" in error.msg
-            or "Expecting ',' delimiter" in error.msg
-            or "Expecting property name" in error.msg
-        )
-        failure = LLMResponseFormatError(
-            "truncated" if incomplete else f"syntax_error@{error.pos}"
-        )
-        failure.diagnostics(None, type(error).__name__)
-    else:
-        failure = None
-    if failure is not None:
-        raise failure from None
-    if not isinstance(parsed, dict):
-        raise LLMResponseFormatError("not_object")
-    if candidate[end:].strip():
-        raise LLMResponseFormatError("prose_after")
-    return parsed
+    format_reason: str | None = None
 
 
 class LLMAdapter(ABC):
     provider = "unknown"
+    supports_structured_output = False
 
     def __init__(
         self,
@@ -144,6 +94,9 @@ class LLMAdapter(ABC):
         self.policy = policy
         self.reasoning_effort = reasoning_effort
         self.response_format = response_format
+        self.structured_output: StructuredOutput | None = None
+        self.output_schema: dict[str, Any] | None = None
+        self.output_validator: Validator | None = None
         self._sleep = sleep
         self._clock = clock
         self._rng = rng or random.Random()
@@ -220,10 +173,17 @@ class LLMAdapter(ABC):
                 last_stats = response.stats()
                 if response.stop_reason == "max_tokens":
                     raise LLMResponseFormatError("truncated", last_stats)
-                data = self.parse_response(response)
+                if self.output_validator is not None:
+                    data, format_reason = validated_json(
+                        response.text, self.output_validator
+                    )
+                else:
+                    data = self.parse_response(response)
                 if self._clock() >= ends_at:
                     raise LLMDeadlineExceeded(attempt, self._clock() - started)
-                return LLMResult(data, response, attempt, self._clock() - started)
+                return LLMResult(
+                    data, response, attempt, self._clock() - started, format_reason
+                )
             except TimeoutError as error:
                 category = "timeout"
                 exception_class = type(error).__name__

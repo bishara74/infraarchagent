@@ -88,6 +88,7 @@ class AgentFactory:
             attempt_timeout=self.settings.generator_attempt_timeout_seconds,
             max_output_tokens=self.settings.generator_max_output_tokens,
             max_package_attempts=self.settings.generator_max_package_attempts,
+            structured_output=self.settings.llm_structured_output,
         )
 
     def create_generators(

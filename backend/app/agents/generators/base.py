@@ -8,12 +8,17 @@ from dataclasses import dataclass
 from pydantic import ValidationError
 
 from app.agents.budget import AgentBudget
-from app.agents.generators.schema import GeneratorOutput
+from app.agents.generators.schema import (
+    GeneratorOutput,
+    generator_wire_schema,
+    validate_generator_output,
+)
 from app.agents.prompts.generator import (
     GENERATOR_PROMPT_VERSION,
     build_system_prompt,
     build_user_prompt,
 )
+from app.core.config import StructuredOutput
 from app.domain.enums import Variant
 from app.domain.models import IaCPackage
 from app.domain.package_layout import package_structure_errors, required_types_missing
@@ -61,9 +66,17 @@ class GeneratorIncompletePackage(GeneratorError):
 class GeneratorLLMFailure(GeneratorError):
     category = "llm_failure"
 
-    def __init__(self, variant: Variant, llm_category: str) -> None:
+    def __init__(
+        self, variant: Variant, llm_category: str, *, structured_output: bool = False
+    ) -> None:
         self.llm_category = safe_category(llm_category)
-        super().__init__(variant, failure_message(self.llm_category))
+        message = failure_message(self.llm_category)
+        if structured_output and self.llm_category in {
+            "request_rejected",
+            "model_unavailable",
+        }:
+            message += " Set LLM_STRUCTURED_OUTPUT=json_object and retry."
+        super().__init__(variant, message)
 
 
 @dataclass(frozen=True)
@@ -99,11 +112,21 @@ class GeneratorAgent(ABC):
         attempt_timeout: float,
         max_output_tokens: int,
         max_package_attempts: int,
+        structured_output: StructuredOutput = "json_schema",
         clock: Callable[[], float] = time.monotonic,
     ) -> None:
         if attempt_timeout <= 0 or max_output_tokens < 1 or max_package_attempts < 1:
             raise ValueError("generator limits must be positive")
         self.llm_adapter = llm_adapter
+        self.wire_files = (
+            llm_adapter.supports_structured_output
+            and structured_output == "json_schema"
+        )
+        llm_adapter.structured_output = structured_output
+        llm_adapter.output_schema = generator_wire_schema() if self.wire_files else None
+        llm_adapter.output_validator = lambda data: validate_generator_output(
+            data, wire_files=self.wire_files
+        )
         self.deadline_seconds = deadline_seconds
         self.attempt_timeout = attempt_timeout
         self.max_output_tokens = max_output_tokens
@@ -144,6 +167,7 @@ class GeneratorAgent(ABC):
                         system=build_system_prompt(
                             self.optimisation_directive,
                             max_output_tokens=self.max_output_tokens,
+                            wire_files=self.wire_files,
                         ),
                         deadline=remaining,
                         attempt_timeout=self.attempt_timeout,
@@ -167,7 +191,11 @@ class GeneratorAgent(ABC):
                     llm_attempts = input_tokens = output_tokens = (
                         cached_input_tokens
                     ) = None
-                    raise GeneratorLLMFailure(self.variant, error.category) from None
+                    raise GeneratorLLMFailure(
+                        self.variant,
+                        error.category,
+                        structured_output=self.wire_files,
+                    ) from None
                 if llm_attempts is not None:
                     llm_attempts += result.attempts
                 response = result.response

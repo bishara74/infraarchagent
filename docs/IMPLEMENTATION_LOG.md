@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-14 — Phase 9c section 2 — Enforce and validate generator output
+
+**Summary:** Add generator-only structured modes, a closed file-list wire schema,
+whole-object-first parsing and schema-validated salvage with safe reason codes.
+
+**Requirements addressed:** PR-01, PR-05, FR-G-02, NFR-01, NFR-03.
+
+**Files:** backend/app/{core/config,agents/factory,agents/generators/{base,schema},
+agents/prompts/generator,llm/{base,openai,json_output}}.py; tests/unit/
+{test_generators,test_phase9c_generator}.py; .env.example; README.md;
+docs/design-deviations.md; this log.
+
+**Decisions:** D-43. Free-form dictionary keys cannot form a closed strict wire
+schema; adapt only the request/response boundary. Preserve other agents' request
+settings and native Anthropic wire format. Whole valid JSON always wins over
+markdown heuristics; historical multiple_blocks false positives are possible
+but not individually provable. Reject invalid schema before safe salvage.
+
+**Tests:** Focused generator/parser/provider/config suite: 191 passed, 0 failed,
+0 skipped (1.97s). Ruff passed; mypy results follow final acceptance. New mocked
+HTTP tests cover all modes and 8,000-token limits, routing/reasoning merge,
+truncation, salvage, internal fences, multiple objects/blocks, wire round-trip,
+duplicate paths and safe structured-refusal advice.
+
+**Known gaps / follow-ups:** Retry correction and attempt/event metrics follow
+section 3. No paid evaluation or .env access.
+
 ## 2026-10-14 — Phase 9c section 1 — Bound full-package output
 
 **Summary:** Change the existing generator output default from 32,000 to 8,000

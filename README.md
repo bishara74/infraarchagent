@@ -471,6 +471,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `API_KEY` | Optional static pipeline API credential, sent as `X-API-Key`; empty leaves local access open | Unset |
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
+| `LLM_STRUCTURED_OUTPUT` | Generator-only `json_schema`, `json_object`, or `off`; strict mode uses a closed file-entry list over OpenAI-compatible requests | `json_schema` |
 | `LLM_RESPONSE_FORMAT` | `json_object` sends OpenAI-compatible JSON mode; Anthropic ignores it | Unset |
 | `SECURITY_FIX_PROVIDER` | Optional fixer provider for runs using configured `LLM_PROVIDER`; stub runs always use the stub fixer | Unset |
 | `SECURITY_FIX_MODEL` | Optional fixer model for runs using configured `LLM_PROVIDER`; otherwise the run model, with `stub` for stub fixers | Unset |

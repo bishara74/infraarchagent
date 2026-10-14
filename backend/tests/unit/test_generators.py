@@ -209,8 +209,8 @@ async def test_schema_invalid_reply_is_corrected() -> None:
     )
     package = await generator.generate(plan())
     assert package.files == {"terraform/main.tf": "x"}
-    assert "extra" in generator.llm_adapter.prompts[1]
-    assert "terraform/main.tf" in generator.llm_adapter.prompts[1]
+    assert len(generator.llm_adapter.prompts) == 2
+    assert "extra" not in generator.llm_adapter.prompts[1]
 
 
 @pytest.mark.req("FR-G-03")
