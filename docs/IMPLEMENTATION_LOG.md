@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-14 — Phase 9c evidence integrity correction — Preserve stored bytes
+
+**Summary:** Post-commit blob verification found Git had normalized CRLF endings
+in four original benchmark CSVs, although all working-copy hashes stayed intact.
+Disable text normalization for the exact original evidence directory and restore
+its original bytes to the index. Add a corrective commit instead of rewriting
+history; this is the sole additional commit beyond the six numbered sections.
+
+**Requirements addressed:** PR-01, PR-05, NFR-01.
+
+**Files:** .gitattributes; the four original CSV Git blobs (working files unchanged);
+this log. No runtime source changed.
+
+**Decisions:** Byte preservation includes committed blobs, not only working
+copies. The original folder's 13 SHA-256 hashes must match both index and working
+tree before committing. Git's no-history-rewrite instruction remains in force.
+
+**Tests:** Full acceptance remains 1217 backend passed/6 perf deselected,
+100 frontend passed, 6 E2E passed, lint clean, 14 successful stub pipelines and
+10 downloads (PR-03 FAIL preserved). Manual blob-integrity verification found
+four line-ending mismatches and verifies all 13 original index/working hashes
+after correction. Fresh make secret-scan: 0 findings/0 errors, report
+phase9-secret-scan-20261014T121937053671Z, before this corrective commit.
+
+**Known gaps / follow-ups:** No code retest needed for attributes/evidence-only
+changes. Real post-change measurements remain author-only.
+
 ## 2026-10-14 — Phase 9c section 6 — Keep first real attempt and final evidence
 
 **Summary:** Preserve all 13 files of the author's first real benchmark unchanged,
