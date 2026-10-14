@@ -27,6 +27,72 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-14 — Phase 9c section 6 — Keep first real attempt and final evidence
+
+**Summary:** Preserve all 13 files of the author's first real benchmark unchanged,
+retain the free post-change rehearsal/secret-scan evidence, and record the actual
+acceptance results and Chapter 6 follow-ups without running a paid provider.
+
+**Requirements addressed:** PR-01, PR-03, PR-04, PR-05, FR-G-02, FR-G-06, NFR-01.
+
+**Files:** docs/evals/phase9-bench-real-20261014T101701420278Z/ (unchanged);
+docs/evals/phase9-bench-stub-20261014T121247036453Z/;
+docs/evals/phase9-secret-scan-20261014T120847350989Z/ and final scan evidence;
+docs/design-deviations.md; this log. README/.env.example recommendations and
+commands were updated in sections 1–4.
+
+**Section 0 / confirmed findings:** the old OpenRouter body sent
+max_completion_tokens=32,000, json_object, reasoning disabled, no explicit
+temperature or provider routing. Prompt v3 had compactness guidance but no actual
+budget; GeneratorOutput used a free-form file map with optional capped notes.
+The old parser counted four backticks anywhere as multiple_blocks, potentially
+rejecting valid string content; raw invalid outputs were not stored, so individual
+historical false positives cannot be established. Adapter retries repeated the
+same prompt; package retries supplied only errors/paths, not previous content.
+The author confirms attempt=150, generator=270 and duplicate completion values
+150 then 270; synthetic installed-loader checks prove last assignment wins,
+and a shared-clock mock reproduces 150 then 120-second calls ending at 270.
+General attempt=60/output=16,000 fallbacks were overridden; an unset generator
+output now selects 8,000. Settings/authentication guidance is in README and D-43.
+
+**Final actual acceptance:**
+- make lint: passed Ruff/format (200 app/test files; 11 evaluation scripts),
+  mypy (101 app sources), ESLint and both strict TypeScript projects.
+- make test: 1217 passed, 0 failed, 0 skipped; 6 perf deselected (125.84s).
+  The first full run's 1214 passed/2 failed exposed generator options leaking
+  into generic adapter calls; the corrected scope and regression passed rerun.
+- make frontend-test: 100 passed, 0 failed, 0 skipped; 15 files (10.20s).
+- make test-e2e: 6 passed, 0 failed, 0 skipped (1.3m).
+- make secret-scan: 0 findings, 0 scan errors in the initial and final scans;
+  final report phase9-secret-scan-20261014T121615100543Z, checked before the evidence commit.
+- make bench-stub executed once: 14 pipelines all success and 10 complete ZIP
+  downloads. PR-01 median 6.696361s PASS; PR-03 ratios 2.212720–2.241065 FAIL
+  versus 1.5; PR-04 maximum 1.314243s PASS; recorded PR-05 thresholds PASS.
+  Three recorded generator attempts per run, all first-attempt success. Effective
+  server configuration captured as output=8,000, structured=json_schema,
+  attempt=120, completion/generator=150, adapter/package attempts=3/2. Mode is
+  stub, provider cost zero; this is overhead rehearsal, not real LLM performance.
+- git diff --check passed. All 13 original evidence hashes matched the pre-edit
+  snapshot; no original bytes were modified.
+
+**Decisions:** Extend existing D-43 and timing/JSON clarifications, with no new
+open question. Retain valid late packages and report their configured-budget
+flag/overrun without changing PR-05. Keep the original failed real outcome and
+both unknown historical settings/attempt fields in those unchanged artifacts;
+author-confirmed historical settings are recorded separately here. Official
+OpenRouter docs confirm max_completion_tokens semantics and required-parameter
+strict routing; client-side schema validation remains authoritative.
+
+**Known gaps / follow-ups:** Stub PR-03 still fails; runtime optimisation is
+outside this phase. Post-change real reliability/cost are unmeasured. Recommend
+the author use 8,000 output tokens, attempt=90, generator/completion=150, one dotenv
+assignment per key, matching server/client API_KEY, restart, then bench-smoke.
+No real LLM calls, .env reads/edits, installations/downloads, dependencies, model
+changes, pushes, specification edits or Phase 10 work occurred. Verification used
+an isolated postgres:16 container from an existing image with ordinary roles and
+synthetic credentials; the backend/container were removed after rehearsal. The
+author's database/container state and untracked REVISION.txt are untouched.
+
 ## 2026-10-14 — Phase 9c section 5 — Verify generator and reporting behavior
 
 **Summary:** Add real PostgreSQL regressions proving valid late packages remain

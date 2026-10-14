@@ -994,6 +994,11 @@ limit allowed 10k–19k-token failed responses taking 70–138 seconds. The firs
 real attempt retained four usable runs out of eight, median 189.81 seconds,
 three settled failures and one incomplete run, at measured cost $4.940978.
 
+The existing max_completion_tokens request parameter is documented with the same
+limit semantics as max_tokens in [OpenRouter's parameter reference](https://openrouter.ai/docs/api_reference/parameters).
+Strict routing follows [OpenRouter's structured-output guidance](https://openrouter.ai/docs/guides/features/structured-outputs).
+Provider enforcement varies, so local schema validation remains required.
+
 **Phase 9c format enforcement:** LLM_STRUCTURED_OUTPUT applies only to generator
 adapters. json_schema derives a closed wire representation from GeneratorOutput:
 files become a nonempty list of path/content objects; notes is required. Internal
@@ -1117,7 +1122,9 @@ bench-smoke is three representative guarded real runs, not PR-01 acceptance.
 - **Implementation:** short calls keep the 30-second adapter default. A
   GeneratorAgent has a configurable 150-second overall budget and passes a
   configurable 120-second per-attempt timeout and 8,000 output-token limit
-  for full-package calls. Remaining agent time still caps each call.
+  for full-package calls. Remaining agent time still caps each call. A fully
+  valid package finishing synchronous final validation after the budget is
+  retained with an explicit deadline flag/overrun (D-43); no late retry starts.
 - **Reason:** a multi-file package is substantially longer than a plan.
 - **Implemented in Phase 3:** per-call adapter overrides and generator settings.
 
@@ -1220,6 +1227,18 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+- Chapter 6 / Phase 9c: the first real benchmark failed for generator output
+  reliability on larger plans. Four usable runs of eight had a 189.81s median;
+  three settled failures and one incomplete run cost $4.940978 in measured
+  total. Larger ~4.5–5.5K-character plans produced 10–19K-token failed answers,
+  taking 70–138s or timing out. Describe the 8,000-token budget, closed strict
+  wire schema, whole-object-first parser, counted safe salvage and reason-only
+  retries. Internal code fences could have caused false multiple_blocks errors,
+  but absent raw outputs prevent proving individual historical cases. Explain
+  the author's 150/270/270 attempt/generator/completion settings, last-assignment
+  duplicate-key behavior, authenticated effective-settings evidence and PR-05's
+  unchanged 150-second threshold. Post-change real outcomes remain unmeasured.
 
 - Phase 9 / NFR-01: describe the standard-library working-tree/ref/reflog scanner,
   exact placeholders/canaries, safe location-only findings and D-42 limitations.
@@ -1340,7 +1359,9 @@ metadata or semantic naming inference is a later design decision.
   `optimisation_directive` instead of overriding `generate()` (D-15).
 - In Chapter 4's generator pattern description, name both Template Method
   and Strategy, and describe the shared algorithm and varying directive.
-- PR-05 / per-attempt timing: state the per-agent timeouts (CL-06).
+- PR-05 / per-attempt timing: state the per-agent timeouts (CL-06),
+  author-confirmed first-run 270-second overrides and the retained-valid-late
+  validation exception with explicit deadline flags/overrun evidence (D-43).
 - Tighten FR-S-07 wording to say that exhausted remediation stops fix passes,
   then validation runs before the package enters `pending_review` (CL-02).
 - Section 4.2 retention paragraph: say that the sweep deletes only packages
