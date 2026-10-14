@@ -86,7 +86,10 @@ class OpenAIAdapter(LLMAdapter):
             params["extra_body"] = {"reasoning": {"enabled": False}}
         elif self.reasoning_effort is not None:
             params["extra_body"] = {"reasoning": {"effort": self.reasoning_effort}}
-        if self.structured_output == "json_schema":
+        structured_output = (
+            self.structured_output if self._generator_request.get() else None
+        )
+        if structured_output == "json_schema":
             params["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
@@ -99,8 +102,8 @@ class OpenAIAdapter(LLMAdapter):
                 params.setdefault("extra_body", {})["provider"] = {
                     "require_parameters": True
                 }
-        elif self.structured_output == "json_object" or (
-            self.structured_output is None and self.response_format == "json_object"
+        elif structured_output == "json_object" or (
+            structured_output is None and self.response_format == "json_object"
         ):
             params["response_format"] = {"type": "json_object"}
         failure: LLMError | None = None

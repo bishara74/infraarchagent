@@ -128,7 +128,7 @@ class GeneratorAgent(ABC):
         )
         llm_adapter.structured_output = structured_output
         llm_adapter.output_schema = generator_wire_schema() if self.wire_files else None
-        llm_adapter.output_validator = lambda data: validate_generator_output(
+        self.output_validator = lambda data: validate_generator_output(
             data, wire_files=self.wire_files
         )
         self.deadline_seconds = deadline_seconds
@@ -188,6 +188,7 @@ class GeneratorAgent(ABC):
                             attempt_timeout=self.attempt_timeout,
                             max_output_tokens=self.max_output_tokens,
                             attempt_observer=observe,
+                            response_validator=self.output_validator,
                         )
                 except TimeoutError:
                     llm_attempts = len(attempt_details)

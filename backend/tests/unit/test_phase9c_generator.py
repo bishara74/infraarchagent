@@ -316,3 +316,82 @@ async def test_external_cancellation_is_preserved():
     assert len(agent.last_run.attempt_details) == 1
     assert agent.last_run.attempt_details[0].outcome == "cancelled"
     assert not agent.last_run.deadline_exceeded
+
+
+@pytest.mark.req("PR-05", "FR-G-06")
+@pytest.mark.parametrize(
+    "budget,attempt_limit,output_limit,expected",
+    [
+        (270, 150, 32000, [150, 120]),
+        (150, 90, 8000, [90, 60]),
+    ],
+)
+async def test_specific_limits_override_fallbacks_and_share_budget(
+    budget, attempt_limit, output_limit, expected
+):
+    from app.agents.generators.base import GeneratorDeadlineExceeded
+
+    now = [0.0]
+    limits = []
+
+    def handler(request):
+        body = json.loads(request.content)
+        timeout = request.extensions["timeout"]["read"]
+        limits.append((timeout, body["max_completion_tokens"]))
+        now[0] += timeout
+        return response("invalid mocked answer")
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        agent = generator(
+            client,
+            attempts=3,
+            deadline_seconds=budget,
+            attempt_timeout=attempt_limit,
+            clock=lambda: now[0],
+        )
+        agent.max_output_tokens = output_limit
+        agent.llm_adapter.policy = RetryPolicy(60, 3, budget, 0, 16000)
+        agent.llm_adapter._clock = lambda: now[0]
+        with pytest.raises(GeneratorDeadlineExceeded):
+            await agent.generate(plan())
+    assert limits == [(timeout, output_limit) for timeout in expected]
+    assert agent.last_run.package_attempts == 1
+    assert agent.last_run.elapsed_seconds == budget
+    assert agent.last_run.total_llm_attempts == 2
+
+
+@pytest.mark.req("PR-05", "NFR-01")
+def test_duplicate_dotenv_assignments_use_last_value_without_reading_file(monkeypatch):
+    from io import StringIO
+    from pathlib import Path
+
+    from dotenv import dotenv_values
+    from pydantic_settings.sources.providers.dotenv import DotEnvSettingsSource
+
+    monkeypatch.setattr(
+        "pydantic_settings.sources.providers.dotenv.dotenv_values",
+        lambda *args, **kwargs: dotenv_values(
+            stream=StringIO("LLM_DEADLINE_SECONDS=150\nLLM_DEADLINE_SECONDS=270\n")
+        ),
+    )
+    values = DotEnvSettingsSource._static_read_env_file(
+        Path("/never-read-synthetic-fixture")
+    )
+    assert values["llm_deadline_seconds"] == "270"
+
+
+@pytest.mark.req("NFR-03", "FR-G-02")
+async def test_generic_adapter_calls_do_not_inherit_generator_schema():
+    requests = []
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+        return response('{"known":"scripted output"}')
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        agent = generator(client, "json_schema")
+        result = await agent.llm_adapter.complete_json("generic evaluation")
+    assert result.data == {"known": "scripted output"}
+    assert requests[0]["response_format"] == {"type": "json_object"}
+    assert requests[0]["max_completion_tokens"] == 16000
+    assert "provider" not in requests[0]

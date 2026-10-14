@@ -27,6 +27,37 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-14 — Phase 9c section 5 — Verify generator and reporting behavior
+
+**Summary:** Add real PostgreSQL regressions proving valid late packages remain
+stored and failed attempt metrics reach EventLog/SSE without raw output. Complete
+mocked deadline/fallback/duplicate-key and generic-adapter compatibility coverage.
+
+**Requirements addressed:** PR-01, PR-05, FR-G-02, FR-G-06, FR-G-07, NFR-01, NFR-03.
+
+**Files:** backend/tests/integration/test_phase9c_events.py;
+tests/unit/test_phase9c_generator.py; app/agents/generators/base.py;
+app/llm/{base,openai}.py; this log.
+
+**Decisions:** Keep output validation and strict request options scoped to generator
+calls using an async context, so generic spike/evaluation calls through the same
+adapter keep their original contract. The first full run exposed this regression
+in two existing tests; fix it rather than weakening those tests. Log actual retry
+prompt sizes, never response contents. Other agents keep their original options.
+
+**Tests:** New PostgreSQL persistence/canary cases: 2 passed, 0 failed, 0 skipped
+(6.76s). Focused compatibility/generator/parser/provider suite: 178 passed,
+0 failed, 0 skipped (3.49s). First full make test: 1214 passed, 2 failed,
+6 perf deselected (135.84s); final rerun after the scope correction: 1217 passed,
+0 failed, 0 skipped, 6 perf deselected (125.84s). make lint passed Ruff/format
+(200 app/test files; 11 scripts), mypy (101 sources), ESLint and both TS projects.
+make frontend-test: 100 passed, 0 failed, 0 skipped across 15 files (10.20s).
+Initial make secret-scan: 0 findings/0 errors (phase9-secret-scan-20261014T120847350989Z).
+Browser acceptance, the one free stub rehearsal and final scan follow section 6.
+
+**Known gaps / follow-ups:** Real post-change reliability and spending remain
+author-only measurements; no estimated performance claim is made.
+
 ## 2026-10-14 — Phase 9c section 4 — Authenticate settings and expose attempt evidence
 
 **Summary:** Add a strictly key-protected generator settings endpoint, capture

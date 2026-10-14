@@ -6,6 +6,7 @@ import random
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
+from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any
 from urllib.parse import quote
@@ -112,7 +113,9 @@ class LLMAdapter(ABC):
         self.response_format = response_format
         self.structured_output: StructuredOutput | None = None
         self.output_schema: dict[str, Any] | None = None
-        self.output_validator: Validator | None = None
+        self._generator_request: ContextVar[bool] = ContextVar(
+            "generator_request", default=False
+        )
         self._sleep = sleep
         self._clock = clock
         self._rng = rng or random.Random()
@@ -139,6 +142,7 @@ class LLMAdapter(ABC):
         attempt_timeout: float | None = None,
         max_output_tokens: int | None = None,
         attempt_observer: Callable[[LLMAttempt], None] | None = None,
+        response_validator: Validator | None = None,
     ) -> LLMResult:
         if attempt_timeout is not None and (
             not isinstance(attempt_timeout, (int, float))
@@ -174,10 +178,12 @@ class LLMAdapter(ABC):
             format_reason: str | None = None
             http_status: int | None = None
             exception_class: str | None = None
+            attempt_prompt = retry_prompt
+            context_token = self._generator_request.set(response_validator is not None)
             try:
                 response = await asyncio.wait_for(
                     self.send_prompt(
-                        retry_prompt,
+                        attempt_prompt,
                         system=system,
                         max_output_tokens=(
                             max_output_tokens
@@ -191,9 +197,9 @@ class LLMAdapter(ABC):
                 last_stats = response.stats()
                 if response.stop_reason == "max_tokens":
                     raise LLMResponseFormatError("truncated", last_stats)
-                if self.output_validator is not None:
+                if response_validator is not None:
                     data, format_reason = validated_json(
-                        response.text, self.output_validator
+                        response.text, response_validator
                     )
                 else:
                     data = self.parse_response(response)
@@ -226,7 +232,7 @@ class LLMAdapter(ABC):
                 exception_class = error.original_exception_class
                 format_reason = error.reason
                 last_stats = error.stats or last_stats
-                if self.output_validator is not None:
+                if response_validator is not None:
                     retry_prompt = (
                         prompt
                         + "\nCorrection: Previous response failed ("
@@ -249,6 +255,7 @@ class LLMAdapter(ABC):
                 exception_class = type(error).__name__
                 raise LLMPermanentError("unexpected") from None
             finally:
+                self._generator_request.reset(context_token)
                 stats = response.stats() if response is not None else None
                 log_category = (
                     category
@@ -269,7 +276,7 @@ class LLMAdapter(ABC):
                     f"output_tokens={stats.output_tokens if stats else None}",
                     "cached_input_tokens="
                     + str(stats.cached_input_tokens if stats else None),
-                    f"prompt_chars={len(prompt)}",
+                    f"prompt_chars={len(attempt_prompt)}",
                     f"system_chars={len(system) if system else 0}",
                     f"retry_after={retry_after if retry_after is not None else 'none'}",
                     "rate_limit_headers="
