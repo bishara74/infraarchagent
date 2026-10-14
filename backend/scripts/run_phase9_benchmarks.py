@@ -42,7 +42,11 @@ def section_reports(harness: Harness, directory: Path) -> None:
         view.flush()
 
 
-async def execute(harness: Harness, *, seeder=None) -> None:
+async def execute(harness: Harness, *, seeder=None, smoke: bool = False) -> None:
+    if smoke:
+        await harness.pr01(3, following=[], prompt_indices=[0, 1, 2])
+        harness.flush()
+        return
     await harness.pr01(10, following=[1, 3])
     if not harness.stop_reason:
         await harness.pr03()
@@ -68,7 +72,7 @@ async def execute(harness: Harness, *, seeder=None) -> None:
 
 async def run(args) -> None:
     directory = evidence_directory(
-        "bench-" + args.mode,
+        "bench-smoke" if args.smoke else "bench-" + args.mode,
         mode=args.mode,
         provider="stub" if args.mode == "stub" else None,
         model="stub" if args.mode == "stub" else None,
@@ -118,7 +122,7 @@ async def run(args) -> None:
                         "scanners and provider mirror."
                     )
             if not harness.stop_reason:
-                await execute(harness, seeder=seed)
+                await execute(harness, seeder=seed, smoke=args.smoke)
         except (OSError, ValueError, RuntimeError, httpx.HTTPError):
             harness.stop_reason = (
                 "Benchmark prerequisite or fixture preparation failed."
@@ -145,7 +149,12 @@ def main() -> None:
         "--max-runs", type=int, default=os.environ.get("PHASE9_MAX_RUNS") or None
     )
     parser.add_argument("--timeout", type=float, default=1800)
+    parser.add_argument("--smoke", action="store_true")
     args = parser.parse_args()
+    if args.smoke:
+        if args.mode != "real":
+            parser.error("Smoke is real mode only")
+        args.max_runs = min(args.max_runs or 3, 3)
     args.command = "suite"
     if args.mode == "real" and (
         args.budget_usd is None

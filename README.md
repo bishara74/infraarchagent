@@ -663,11 +663,18 @@ When running Codex verification, also set `INFRAARCH_TEST_BOOTSTRAP=1` and put
 verification parents never load dotenv. Normal operator server startup keeps its
 existing configuration behavior.
 
+Export a matching `API_KEY` for both backend and benchmark processes. Benchmarks
+require it to read `GET /api/benchmark/settings`: this endpoint always requires
+a configured matching `X-API-Key`, including for stub rehearsals. Missing/wrong
+keys and an unset server key return generic 401 responses with no settings.
+`/api/health` remains unauthenticated and does not expose generator settings.
+Never copy or print credentials into reports.
+
 Start a single backend in a separate terminal; 8765 avoids the browser test ports:
 
 ```bash
 make migrate
-LLM_PROVIDER=stub LLM_API_KEY='' API_KEY='' make run PORT=8765
+LLM_PROVIDER=stub LLM_API_KEY='' make run PORT=8765
 ```
 
 With that backend running, rehearse the entire free procedure:
@@ -689,6 +696,8 @@ for the measurement process. Stop other uses of that key and run on a quiet
 machine. `MAX_CONCURRENT_RUNS` must be at least three. Then:
 
 ```bash
+# Run this first after any generator change (three examples, same guard):
+make bench-smoke BASE_URL=http://127.0.0.1:8765 BUDGET=2
 make bench-real BASE_URL=http://127.0.0.1:8765 BUDGET=2
 # For providers with unknown costs/credit, an explicit bound is required:
 make bench-real BASE_URL=http://127.0.0.1:8765 BUDGET=2 MAX_RUNS=14
@@ -722,3 +731,74 @@ retries. Default nominal calls are 2 × 3 × 120 = 720 seconds before backoff,
 clipped by the shared 150-second budget. A valid package completing synchronous
 final validation after that budget is retained with `deadline_exceeded` and
 `overrun_seconds`; this does not change PR-05's 150-second timing threshold.
+
+### Phase 9c generator configuration and evidence
+
+Every benchmark captures the effective server values from its authenticated
+settings endpoint before submitting a run: output tokens, structured mode,
+attempt/completion timeouts, shared generator budget and both retry counts.
+Missing, unauthorized or malformed settings stop measurement. Capture the
+server values rather than the measurement process defaults: the backend may
+have loaded different operator configuration. Reports add safe attempt outcomes,
+format reasons (including `truncated` and `salvaged`), token counts per attempt,
+failure categories and deadline flags/overruns. `agents.csv` keeps event-based
+`seconds` alongside internal `generator_elapsed_seconds`; PR-05 remains 150s.
+Old evidence missing these values stays unknown and is never rewritten.
+
+Target prompts with `make benchmark BENCH_ARGS='pr01 --runs 3 --prompts 2,0'`:
+indices select the fixed example set in the given order and `--runs` cycles
+through them. Empty, duplicate and out-of-range indices are rejected before
+submission. `bench-smoke` runs one of each example and writes
+`docs/evals/phase9-bench-smoke-*`; a three-sample smoke check does not establish
+full PR-01 acceptance. Budget guard stops can produce fewer than three runs.
+
+Settings precedence is explicit constructor arguments, then process environment,
+then dotenv, then defaults. Duplicate dotenv assignments use the last value;
+keep exactly one assignment per key and restart the backend after changes.
+Codex does not read or edit the author's dotenv file. Recommended author values:
+
+```dotenv
+GENERATOR_MAX_OUTPUT_TOKENS=8000
+LLM_STRUCTURED_OUTPUT=json_schema
+GENERATOR_ATTEMPT_TIMEOUT_SECONDS=90
+GENERATOR_DEADLINE_SECONDS=150
+LLM_DEADLINE_SECONDS=150
+LLM_MAX_ATTEMPTS=3
+GENERATOR_MAX_PACKAGE_ATTEMPTS=2
+```
+
+At ~140 tokens/second, 8,000 tokens take ~57–60 seconds. A 90-second attempt adds
+latency allowance while two ~60-second calls may fit into 150 seconds. A full
+90-second timeout leaves less than 60 seconds for retry after overhead; no
+completion guarantee is implied. Repository attempt defaults remain 120 seconds.
+Changing the shared LLM deadline also affects other completion callers.
+
+| Setting | Generator precedence / use |
+|---|---|
+| `GENERATOR_MAX_OUTPUT_TOKENS` | Always supplied; unset now means 8,000 |
+| `LLM_MAX_OUTPUT_TOKENS` | General fallback, unused when the generator supplies its limit; 16,000 cannot override 8,000 |
+| `GENERATOR_ATTEMPT_TIMEOUT_SECONDS` | Always supplied; clipped to remaining completion time |
+| `LLM_ATTEMPT_TIMEOUT_SECONDS` | General fallback, unused when the generator supplies its timeout; 60 does not cap 90/150 |
+| `GENERATOR_DEADLINE_SECONDS` | One shared budget across package attempts, adapter retries and backoff |
+| `LLM_DEADLINE_SECONDS` | Each completion uses min(this limit, remaining generator budget) |
+| `LLM_MAX_ATTEMPTS` | Adapter attempts per completion, default 3 |
+| `GENERATOR_MAX_PACKAGE_ATTEMPTS` | Schema/layout package corrections, default 2; exhausted format retries stop generation |
+| `LLM_BACKOFF_BASE_SECONDS` | Jittered exponential retry delay, consuming the same budget |
+| `LLM_STRUCTURED_OUTPUT` | Generator-only format; overrides inherited `LLM_RESPONSE_FORMAT`, including `off` |
+
+`AGENT_DEADLINE_SECONDS` controls other agents, not generators. Native Anthropic
+and stub keep dictionary output and local format/schema validation; strict wire
+parameters target OpenAI-compatible generators. json_schema uses closed
+path/content entries and OpenRouter's required-parameter routing. Refusals retain
+fixed categories and recommend json_object; no automatic fallback occurs.
+
+The first real attempt used author-confirmed generator attempt=150, budget=270,
+and completion=270 (last duplicate assignment). A slow first call leaves ~120s
+for retry, matching historical 70–150s failed responses and the observed 270.03s
+ceiling. General attempt=60/output=16,000 were overridden; unset generator output
+used the old 32,000 default. These settings explain 15 generator intervals above
+150s; they still fail PR-05. The parser's old global backtick count could also
+reject valid packages, but no raw invalid responses were retained to establish
+which attempts were affected. First evidence: four usable runs of eight,
+median 189.81s, three settled failures and one incomplete run, $4.940978 measured.
+Real reliability/cost improvements remain author-only measurements.

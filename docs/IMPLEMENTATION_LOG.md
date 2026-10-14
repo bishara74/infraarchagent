@@ -27,6 +27,39 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-14 — Phase 9c section 4 — Authenticate settings and expose attempt evidence
+
+**Summary:** Add a strictly key-protected generator settings endpoint, capture
+server-effective numeric/mode evidence, report all generator attempts/failures/
+overruns, and support selected prompts plus a three-example guarded smoke check.
+
+**Requirements addressed:** PR-01, PR-05, FR-G-02, FR-G-06, NFR-01.
+
+**Files:** backend/app/{api/{benchmark,deps},core/generator_settings,main,
+pipeline/{orchestrator,state}}.py; scripts/{benchmark,phase9c_metrics,
+run_phase9_benchmarks}.py; tests/unit/test_phase9c_benchmark.py;
+tests/integration/test_phase9c_settings.py; Makefile; .env.example; README.md;
+docs/design-deviations.md; this log.
+
+**Decisions:** D-43. Health is unchanged. Missing/wrong/unconfigured API keys
+receive generic 401 responses; clients cannot substitute local defaults for
+server metadata. Benchmarks now require matching server/client API keys, including
+stub rehearsals. Existing EventLog/state paths persist terminal metrics for both
+success and failure; generation policy/stage classification is unchanged. CSV
+nested metrics are JSON, unknown historical values remain unknown. PR-05 compares
+150 seconds while configured-budget overrun flags remain separately descriptive.
+
+**Tests:** Selection/report/authenticated-metadata/coordinator units: 27 passed,
+0 failed, 0 skipped (1.64s). Real PostgreSQL settings/orchestrator/HTTP harness:
+15 passed, 0 failed, 0 skipped (15.59s). make lint passed Ruff/format, mypy
+(101 sources), ESLint and both strict TypeScript projects. New tests cover API
+key cases, no settings on health, actual server overrides, prompt order, all
+report outputs/canaries and smoke schedule. An initial missing type annotation
+and long report strings were corrected before the passing lint run.
+
+**Known gaps / follow-ups:** Section 5 adds late/failing persistence regressions
+and runs full required acceptance. Real smoke is author-only, never run by Codex.
+
 ## 2026-10-14 — Phase 9c section 3 — Correct retries and audit shared deadlines
 
 **Summary:** Add safe format correction messages and per-attempt records,

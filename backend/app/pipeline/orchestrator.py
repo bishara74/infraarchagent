@@ -4,6 +4,8 @@ import asyncio
 import logging
 import time
 from collections.abc import Callable
+from dataclasses import asdict
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -85,29 +87,24 @@ class PipelineOrchestrator:
                         self.run_id, variant, package.files
                     )
         except GeneratorError as error:
-            await self._generation_failed(variant, str(error))
+            await self._generation_failed(
+                variant,
+                str(error),
+                generator,
+                getattr(error, "llm_category", error.category),
+            )
             return variant, None
         except Exception:
             logger.exception("generator %s failed for run %s", variant, self.run_id)
-            await self._generation_failed(variant, "package generation failed")
+            await self._generation_failed(
+                variant, "package generation failed", generator, "provider_error"
+            )
             return variant, None
         await self.writer.package_transition(
             self.run_id, variant, PackageStatus.GENERATED, message="package generated"
         )
         info = generator.last_run
-        metrics = (
-            {
-                "attempts": info.package_attempts,
-                "llm_attempts": info.total_llm_attempts,
-                "elapsed_seconds": info.elapsed_seconds,
-                "input_tokens": info.input_tokens,
-                "output_tokens": info.output_tokens,
-                "cached_input_tokens": info.cached_input_tokens,
-                "prompt_version": info.prompt_version,
-            }
-            if info
-            else {}
-        )
+        metrics = self._generator_metrics(generator)
         await self.writer.event_log.append(
             self.run_id,
             name,
@@ -124,10 +121,39 @@ class PipelineOrchestrator:
             previous=AgentState.RUNNING,
             message="generator completed",
             variant=variant,
+            metrics=metrics,
         )
         return variant, package
 
-    async def _generation_failed(self, variant: Variant, message: str) -> None:
+    @staticmethod
+    def _generator_metrics(generator: GeneratorAgent) -> dict[str, Any]:
+        info = generator.last_run
+        return (
+            {
+                "attempts": info.package_attempts,
+                "llm_attempts": len(info.attempt_details)
+                if info.attempt_details
+                else info.total_llm_attempts,
+                "elapsed_seconds": info.elapsed_seconds,
+                "input_tokens": info.input_tokens,
+                "output_tokens": info.output_tokens,
+                "cached_input_tokens": info.cached_input_tokens,
+                "prompt_version": info.prompt_version,
+                "llm_attempt_details": [asdict(item) for item in info.attempt_details],
+                "deadline_exceeded": info.deadline_exceeded,
+                "overrun_seconds": info.overrun_seconds,
+            }
+            if info
+            else {}
+        )
+
+    async def _generation_failed(
+        self,
+        variant: Variant,
+        message: str,
+        generator: GeneratorAgent,
+        failure_category: str,
+    ) -> None:
         await self.writer.package_transition(
             self.run_id, variant, PackageStatus.FAILED, message=message, error=message
         )
@@ -138,6 +164,8 @@ class PipelineOrchestrator:
             previous=AgentState.RUNNING,
             message=message,
             variant=variant,
+            metrics=self._generator_metrics(generator),
+            failure_category=failure_category,
         )
 
     async def _package_status(self, variant: Variant) -> PackageStatus:

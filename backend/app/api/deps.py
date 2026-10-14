@@ -23,6 +23,14 @@ def require_api_key(
         raise UnauthorizedError()
 
 
+def require_benchmark_api_key(
+    request: Request, supplied: Annotated[str | None, Header(alias="X-API-Key")] = None
+) -> None:
+    if request.app.state.settings.api_key is None or not supplied:
+        raise UnauthorizedError()
+    require_api_key(request, supplied)
+
+
 def get_engine(request: Request) -> AsyncEngine:
     return request.app.state.engine  # type: ignore[no-any-return]
 

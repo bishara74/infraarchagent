@@ -18,6 +18,7 @@ from uuid import UUID
 import httpx
 from pydantic import SecretStr
 
+from app.core.generator_settings import GeneratorSettings
 from app.core.logging import RedactingFilter
 from app.domain.enums import AgentName, PackageStatus, RunStatus
 from scripts.phase9_budget import (
@@ -31,6 +32,12 @@ from scripts.phase9_budget import (
 )
 from scripts.phase9_common import ROOT, evidence_directory, safe_main, write_json
 from scripts.phase9_report import statistics_for, summary, write_csv
+from scripts.phase9c_metrics import (
+    FAILURES,
+    attempt_details,
+    generator_evidence,
+    number,
+)
 
 TERMINAL = {"success", "partial_success", "failed"}
 SETTLED = {"pending_review", "production_ready", "not_production_ready", "scan_error"}
@@ -80,6 +87,26 @@ def normalized_event(item: dict) -> dict:
     payload = payload if isinstance(payload, dict) else {}
     metrics = payload.get("metrics", {})
     metrics = metrics if isinstance(metrics, dict) else {}
+    safe_metrics = {
+        name: value if type(value) is int and value >= 0 else None
+        for name, value in metrics.items()
+        if name
+        in {"llm_attempts", "input_tokens", "output_tokens", "cached_input_tokens"}
+    }
+    for name in ("elapsed_seconds", "overrun_seconds"):
+        if name in metrics:
+            safe_metrics[name] = number(metrics[name])
+    if "deadline_exceeded" in metrics:
+        safe_metrics["deadline_exceeded"] = (
+            metrics["deadline_exceeded"]
+            if type(metrics["deadline_exceeded"]) is bool
+            else None
+        )
+    if "llm_attempt_details" in metrics:
+        safe_metrics["llm_attempt_details"] = attempt_details(
+            metrics["llm_attempt_details"]
+        )
+    failure = payload.get("failure_category")
     return {
         "seq": item["seq"],
         "kind": item["kind"],
@@ -90,12 +117,10 @@ def normalized_event(item: dict) -> dict:
         "iteration": payload.get("iteration")
         if type(payload.get("iteration")) is int
         else None,
-        "metrics": {
-            name: value if type(value) is int and value >= 0 else None
-            for name, value in metrics.items()
-            if name
-            in {"llm_attempts", "input_tokens", "output_tokens", "cached_input_tokens"}
-        },
+        "metrics": safe_metrics,
+        "failure_category": failure
+        if isinstance(failure, str) and failure in FAILURES
+        else None,
     }
 
 
@@ -128,6 +153,13 @@ def timings(run_id: str, events: list[dict]) -> list[dict]:
                         "variant": event["variant"],
                         "iteration": None,
                         "seconds": elapsed,
+                        "generator_elapsed_seconds": event["metrics"].get(
+                            "elapsed_seconds"
+                        )
+                        if event["agent"].startswith("generator_")
+                        else None,
+                        "deadline_exceeded": event["metrics"].get("deadline_exceeded"),
+                        "overrun_seconds": event["metrics"].get("overrun_seconds"),
                         "complete": elapsed is not None,
                         "threshold_seconds": limit,
                         "pass": elapsed <= limit
@@ -290,7 +322,15 @@ class Harness:
         write_json(self.output / "events.json", self.events)
         write_csv(
             self.output / "results.csv",
-            self.rows,
+            [
+                {
+                    key: json.dumps(value, sort_keys=True)
+                    if isinstance(value, (dict, list))
+                    else value
+                    for key, value in row.items()
+                }
+                for row in self.rows
+            ],
             list(
                 dict.fromkeys(
                     [
@@ -317,6 +357,11 @@ class Harness:
                         "performance_variant_status",
                         "security_variant_status",
                         "generator_llm_attempts",
+                        "generator_attempt_count",
+                        "generator_attempts_by_format_reason",
+                        "generator_output_tokens_per_attempt",
+                        "generator_deadlines",
+                        "failure_categories",
                         "generator_input_tokens",
                         "generator_output_tokens",
                         "fixer_input_tokens",
@@ -427,6 +472,56 @@ class Harness:
                 f"PR-05 individual thresholds: {verdict}. "
                 "Missing metrics unknown; Validator descriptive."
             )
+        generator_rows = [
+            row for row in self.rows if row["measurement"] in {"pr01", "pr03"}
+        ]
+        if generator_rows:
+            table = [
+                "| Run | Attempts | Format reasons | Output tokens / attempt | "
+                "Failures | Overruns |",
+                "|---|---:|---|---|---|---|",
+            ]
+            for index, row in enumerate(generator_rows, 1):
+                count = row.get("generator_attempt_count")
+                count_label = count if count is not None else "unknown"
+                tokens = row.get("generator_output_tokens_per_attempt")
+                token_label = (
+                    ", ".join(
+                        f"{item['variant']}#{item['attempt']}:"
+                        + (
+                            str(item["output_tokens"])
+                            if item["output_tokens"] is not None
+                            else "unknown"
+                        )
+                        for item in (tokens or [])
+                    )
+                    or "unknown"
+                )
+                overruns = {
+                    variant: data.get("overrun_seconds")
+                    for variant, data in row.get("generator_deadlines", {}).items()
+                    if data.get("deadline_exceeded") is True
+                }
+                table.append(
+                    f"| {index} | {count_label} | "
+                    + json.dumps(row.get("generator_attempts_by_format_reason"))
+                    + " | "
+                    + token_label
+                    + " | "
+                    + json.dumps(row.get("failure_categories", {}))
+                    + " | "
+                    + json.dumps(overruns)
+                    + " |"
+                )
+            lines.append(
+                "Generator attempts (missing historical metrics remain unknown):\n\n"
+                + "\n".join(table)
+            )
+            lines.append(
+                "Output tokens per attempt are in results.csv/results.json; "
+                "event seconds and internal generator seconds are in agents.csv. "
+                "PR-05 remains 150 seconds regardless of configured budgets."
+            )
         known = sum(row.get("cost_usd") or 0 for row in self.rows) + sum(
             cohort.get("cost_usd") or 0 for cohort in self.cohorts
         )
@@ -463,6 +558,32 @@ class Harness:
                 *lines,
             ],
         )
+
+    async def capture_settings(self) -> bool:
+        if not self.headers.get("X-API-Key"):
+            self.stop_reason = (
+                "Authenticated benchmark settings require API_KEY on server and client."
+            )
+            return False
+        try:
+            response = await self.client.get(
+                self.base_url + "/api/benchmark/settings", headers=self.headers
+            )
+            if response.status_code != 200:
+                raise ValueError("Settings unavailable")
+            effective = GeneratorSettings.model_validate(response.json()).model_dump()
+            if self.output is not None:
+                path = self.output / "environment.json"
+                metadata = json.loads(path.read_text())
+                metadata["generator_settings"] = effective
+                write_json(path, metadata)
+            return True
+        except (httpx.HTTPError, ValueError, OSError):
+            self.stop_reason = (
+                "Authenticated generator settings unavailable or malformed; "
+                "no benchmark submitted."
+            )
+            return False
 
     async def snapshot(self, run_id: str) -> dict:
         response = await self.client.get(
@@ -557,9 +678,13 @@ class Harness:
                     await self.sleep(0.5)
         except (TimeoutError, httpx.HTTPError, RuntimeError, ValueError, KeyError):
             row["failure"] = "Run could not be observed to confirmed settlement."
+            row["failure_categories"] = {"run": "observation_incomplete"}
             self.stop_reason = row["failure"]
         finally:
             if not row["complete"] and row["run_id"]:
+                failure = row.get("failure_categories", {})
+                row.update(generator_evidence(local))
+                row["failure_categories"].update(failure)
                 self.agent_rows.extend(timings(row["run_id"], local))
             self.flush()
         return row
@@ -607,6 +732,9 @@ class Harness:
                 else last_status or ("failed" if missing else "not_generated")
             )
         self.agent_rows.extend(timings(row["run_id"], local))
+        row.update(generator_evidence(local))
+        if row["run_status"] == "failed" and not row["failure_categories"]:
+            row["failure_categories"] = {"run": "unknown"}
         generated = [e["metrics"] for e in local if e["kind"] == "package_generated"]
         for field in ("llm_attempts", "input_tokens", "output_tokens"):
             values = [numeric(m.get(field)) for m in generated]
@@ -615,6 +743,13 @@ class Harness:
                 if values and all(v is not None for v in values)
                 else None
             )
+        if row["generator_attempt_count"] is not None:
+            row["generator_llm_attempts"] = row["generator_attempt_count"]
+            for field in ("input_tokens", "output_tokens"):
+                values = [item[field] for item in row["generator_attempt_details"]]
+                row["generator_" + field] = (
+                    sum(values) if all(v is not None for v in values) else None
+                )
         fixes = []
         for package in snapshot["packages"]:
             report = package.get("security_report")
@@ -697,15 +832,29 @@ class Harness:
             self.flush()
             return None
 
-    async def pr01(self, runs: int = 10, *, following: list[int] | None = None) -> None:
+    async def pr01(
+        self,
+        runs: int = 10,
+        *,
+        following: list[int] | None = None,
+        prompt_indices: list[int] | None = None,
+    ) -> None:
         texts = prompts()
+        indices = list(range(len(texts))) if prompt_indices is None else prompt_indices
+        if (
+            not indices
+            or len(set(indices)) != len(indices)
+            or any(type(i) is not int or not 0 <= i < len(texts) for i in indices)
+        ):
+            raise ValueError("Invalid prompt selection")
         for index in range(runs):
             if self.stop_reason:
                 break
             await self.sequential(
-                texts[index % len(texts)],
+                texts[indices[index % len(indices)]],
                 "pr01",
                 [1] * (runs - index - 1) + (following or []),
+                prompt_index=indices[index % len(indices)],
             )
 
     async def pr03(self, reference_rows: list[dict] | None = None) -> None:
@@ -838,6 +987,22 @@ def load_reference(path: Path | None) -> list[dict] | None:
     return rows
 
 
+def parse_prompt_indices(value: str) -> list[int]:
+    try:
+        indices = [int(item) for item in value.split(",")]
+    except ValueError:
+        raise argparse.ArgumentTypeError(
+            "Prompts must be comma-separated indices"
+        ) from None
+    if (
+        not indices
+        or len(set(indices)) != len(indices)
+        or any(not 0 <= i < len(prompts()) for i in indices)
+    ):
+        raise argparse.ArgumentTypeError("Prompt indices must be unique and in range")
+    return indices
+
+
 def arguments() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
@@ -847,7 +1012,9 @@ def arguments() -> argparse.ArgumentParser:
     parser.add_argument("--timeout", type=float, default=1800)
     parser.add_argument("--output-dir", type=Path)
     subs = parser.add_subparsers(dest="command", required=True)
-    subs.add_parser("pr01").add_argument("--runs", type=int, default=10)
+    pr01 = subs.add_parser("pr01")
+    pr01.add_argument("--runs", type=int, default=10)
+    pr01.add_argument("--prompts", type=parse_prompt_indices)
     subs.add_parser("pr03").add_argument("--pr01-results", type=Path)
     download = subs.add_parser("pr04")
     download.add_argument("--run-id", required=True)
@@ -905,6 +1072,7 @@ async def configured_harness(
             fixing_model=harness.redactor.redact(settings.security_fix_model or ""),
         )
         write_json(directory / "environment.json", metadata)
+    await harness.capture_settings()
     return harness
 
 
@@ -920,8 +1088,10 @@ async def run(args) -> None:
         timeout=httpx.Timeout(60, connect=5), follow_redirects=False
     ) as client:
         harness = await configured_harness(args, directory, client)
-        if args.command == "pr01":
-            await harness.pr01(args.runs)
+        if harness.stop_reason:
+            harness.flush()
+        elif args.command == "pr01":
+            await harness.pr01(args.runs, prompt_indices=args.prompts)
         elif args.command == "pr03":
             await harness.pr03(load_reference(args.pr01_results))
         else:

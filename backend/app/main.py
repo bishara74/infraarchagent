@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from app.agents.factory import AgentFactory
+from app.api.benchmark import router as benchmark_router
 from app.api.frontend import DEFAULT_DIST, register_frontend
 from app.api.health import router as health_router
 from app.api.pipeline import router as pipeline_router
@@ -135,6 +136,7 @@ def create_app(
     app.add_exception_handler(Exception, internal_error_handler)
     app.add_exception_handler(UnauthorizedError, unauthorized_error_handler)
     app.include_router(health_router)
+    app.include_router(benchmark_router)
     app.include_router(pipeline_router)
     register_frontend(app, frontend_dist if frontend_dist is not None else DEFAULT_DIST)
     return app

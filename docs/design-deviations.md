@@ -1038,6 +1038,23 @@ calls/backoff. Exhausted format retries stop generation, rather than starting a
 new package completion. A recommended 90-second attempt has a nominal 540-second
 ceiling, also clipped to 150; a first 90-second timeout leaves under 60 seconds.
 
+**Phase 9c benchmark evidence:** GET /api/benchmark/settings always requires a
+configured matching X-API-Key, even when ordinary local pipeline authentication
+is disabled. It exposes only the generator numeric/mode allowlist; health is
+unchanged. Benchmarks capture server-effective settings before submission and
+stop on unavailable/malformed evidence. Existing terminal generator events now
+include safe attempt records, failure categories and overruns through EventLog.
+Reports include all variants (including failed ones), per-attempt output tokens,
+format-reason counts, and internal elapsed alongside event intervals. Historical
+missing fields remain unknown; original first-run evidence is preserved.
+
+The author recommendation is output=8,000, attempt=90, generator/completion=150,
+with adapter/package attempts 3/2. Defaults keep attempt=120. Generator arguments
+override general attempt=60/output=16,000 fallbacks; an unset generator output
+picks the new 8,000 default. Settings resolve constructor > environment > dotenv
+> defaults; one assignment per dotenv key avoids last-assignment ambiguity.
+bench-smoke is three representative guarded real runs, not PR-01 acceptance.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

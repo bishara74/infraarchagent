@@ -137,12 +137,19 @@ class PipelineStateWriter:
         message: str,
         variant: Variant | None = None,
         previous: AgentState | None = None,
+        metrics: dict[str, Any] | None = None,
+        failure_category: str | None = None,
     ) -> None:
+        payload = agent_state_payload(variant)
+        if metrics is not None:
+            payload["metrics"] = metrics
+        if failure_category is not None:
+            payload["failure_category"] = failure_category
         await self.event_log.append(
             run_id,
             agent_name,
             state,
             previous,
             message,
-            agent_state_payload(variant),
+            payload,
         )

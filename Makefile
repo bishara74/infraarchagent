@@ -109,3 +109,10 @@ bench-real: export PHASE9_MAX_RUNS = $(MAX_RUNS)
 bench-real: export PHASE9_BUDGET = $(BUDGET)
 bench-real:
 	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks real
+
+.PHONY: bench-smoke
+bench-smoke: export PHASE9_BASE_URL = $(BASE_URL)
+bench-smoke: export PHASE9_BUDGET = $(BUDGET)
+bench-smoke: export PHASE9_MAX_RUNS = 3
+bench-smoke:
+	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks real --smoke
