@@ -46,11 +46,15 @@ def test_plan_is_data_and_layout_is_table_driven() -> None:
     assert "‹/deployment_plan>" in user_prompt
     assert '"cloud_provider": "aws"' in user_prompt
     system_prompt = build_system_prompt("directive")
-    assert GENERATOR_PROMPT_VERSION == "3"
+    assert GENERATOR_PROMPT_VERSION == "4"
     assert f"prompt version {GENERATOR_PROMPT_VERSION}" in system_prompt
     assert "no explanatory comments beyond one short header" in system_prompt
     assert "no duplicated boilerplate" in system_prompt
     assert "Terraform locals or modules" in system_prompt
+    assert "8000 output tokens" in system_prompt
+    assert "only the files the plan needs" in system_prompt
+    assert "omit long README prose" in system_prompt
+    assert "do not repeat the plan text" in system_prompt
     for rule in LAYOUT.values():
         for pattern in rule.required:
             assert pattern in system_prompt

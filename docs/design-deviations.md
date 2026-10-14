@@ -986,6 +986,14 @@ so its stored source is larger than the normal generator size cap. Repository
 path validation and existing state rules remain in force. This rejected synthetic
 run has explicit synthetic notices and no claimed scanner/validator execution.
 
+**Phase 9c output budget:** full-package output now defaults to 8,000 tokens,
+about 60 seconds at the author's observed ~140 tokens/second. Generator prompt
+v4 names the configured budget and limits files/comments/README prose without
+weakening security, validity or variant directives. The former 32,000-token
+limit allowed 10k–19k-token failed responses taking 70–138 seconds. The first
+real attempt retained four usable runs out of eight, median 189.81 seconds,
+three settled failures and one incomplete run, at measured cost $4.940978.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -1047,7 +1055,7 @@ run has explicit synthetic notices and no claimed scanner/validator execution.
 - **Spec:** PR-05 describes 30 seconds per LLM attempt for every agent.
 - **Implementation:** short calls keep the 30-second adapter default. A
   GeneratorAgent has a configurable 150-second overall budget and passes a
-  configurable 120-second per-attempt timeout and 32,000 output-token limit
+  configurable 120-second per-attempt timeout and 8,000 output-token limit
   for full-package calls. Remaining agent time still caps each call.
 - **Reason:** a multi-file package is substantially longer than a plan.
 - **Implemented in Phase 3:** per-call adapter overrides and generator settings.

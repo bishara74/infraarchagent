@@ -5,12 +5,12 @@ import json
 from app.domain.package_layout import layout_guidance
 from app.domain.plan import DeploymentPlan
 
-GENERATOR_PROMPT_VERSION = "3"
+GENERATOR_PROMPT_VERSION = "4"
 DIRECTIVE_START = "<optimisation_directive>"
 DIRECTIVE_END = "</optimisation_directive>"
 
 
-def build_system_prompt(directive: str) -> str:
+def build_system_prompt(directive: str, *, max_output_tokens: int = 8000) -> str:
     return "\n".join(
         (
             f"GeneratorAgent prompt version {GENERATOR_PROMPT_VERSION}.",
@@ -18,6 +18,9 @@ def build_system_prompt(directive: str) -> str:
             "Terraform is the source of truth for cloud resources.",
             "Produce files only for plan.file_types, including every requested type.",
             "The optional root README.md is permitted.",
+            f"Fit the whole response within {max_output_tokens} output tokens.",
+            "Produce a focused package with only the files the plan needs; "
+            "omit long README prose and do not repeat the plan text.",
             "Use plan service and storage names consistently across all files,",
             "including Kubernetes Services, Helm values, RDS identifiers,"
             " and Nginx upstreams.",

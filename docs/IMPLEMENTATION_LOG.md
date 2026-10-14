@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-14 — Phase 9c section 1 — Bound full-package output
+
+**Summary:** Change the existing generator output default from 32,000 to 8,000
+and give prompt v4 the actual configured size budget. Keep all security,
+validity and optimisation guidance.
+
+**Requirements addressed:** PR-01, PR-05, FR-G-02, FR-G-06.
+
+**Files:** backend/app/core/config.py; agents/generators/base.py;
+agents/prompts/generator.py; tests/unit/test_config.py and
+test_generator_prompt.py; .env.example; README.md; design-deviations.md; this log.
+
+**Decisions:** Section 0 investigation completed before edits. The adapter already
+sends max_completion_tokens and classifies provider length as truncated; reuse
+those paths. D-43 records the observed failure and budget rationale. The author's
+unset GENERATOR_MAX_OUTPUT_TOKENS will pick up 8,000; the general 16,000 fallback
+cannot override an explicitly supplied generator limit.
+
+**Tests:** Focused config/prompt/generator/provider unit suite: 113 passed, 0 failed, 0 skipped (1.77s). Initial verification helper forced a stub fixer and caused one default-setting assertion failure; corrected the helper environment before rerunning..
+Full required acceptance checks follow section 5; no real provider call.
+
+**Known gaps / follow-ups:** Structured format, parser repair, retry telemetry,
+strictly authenticated settings and benchmark reports follow sections 2–5.
+
 ## 2026-10-13 — Phase 9 section 8 — Audit scope and retain final measured evidence
 
 **Summary:** Complete all sections 0–8, retain raw verification/rehearsal reports,

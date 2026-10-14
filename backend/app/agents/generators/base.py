@@ -141,7 +141,10 @@ class GeneratorAgent(ABC):
                 try:
                     result = await self.llm_adapter.complete_json(
                         prompt,
-                        system=build_system_prompt(self.optimisation_directive),
+                        system=build_system_prompt(
+                            self.optimisation_directive,
+                            max_output_tokens=self.max_output_tokens,
+                        ),
                         deadline=remaining,
                         attempt_timeout=self.attempt_timeout,
                         max_output_tokens=self.max_output_tokens,
