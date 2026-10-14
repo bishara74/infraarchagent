@@ -113,9 +113,25 @@ class LLMResponseFormatError(LLMError):
     def __init__(
         self, reason: str = "invalid_json", stats: ResponseStats | None = None
     ) -> None:
-        self.reason = reason
+        self.reason = (
+            reason
+            if reason
+            in {
+                "invalid_json",
+                "empty",
+                "multiple_blocks",
+                "prose_before",
+                "prose_after",
+                "not_object",
+                "truncated",
+                "schema_invalid",
+                "salvaged",
+            }
+            or re.fullmatch(r"syntax_error@\d+", reason)
+            else "invalid_json"
+        )
         self.stats = stats
-        super().__init__(f"LLM response {reason}")
+        super().__init__(f"LLM response {self.reason}")
 
 
 class LLMDeadlineExceeded(LLMError):

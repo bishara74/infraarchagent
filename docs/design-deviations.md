@@ -1011,6 +1011,33 @@ reproduced this bug; raw invalid historical outputs were not retained, so no
 specific historical attempt can be reclassified. OQ-08's mechanism is extended;
 actual real-run reliability improvements remain unmeasured.
 
+**Phase 9c retry/timing investigation:** the author confirms no shell overrides,
+GENERATOR_ATTEMPT_TIMEOUT_SECONDS=150, GENERATOR_DEADLINE_SECONDS=270 and duplicate
+LLM_DEADLINE_SECONDS assignments of 150 then 270. The installed settings loader
+uses the last assignment, proven with a synthetic stream without reading .env.
+A shared-clock mocked reproduction ends at 270 seconds with 150 then 120-second
+attempt limits within one package attempt. Thus the 15 event durations above
+150 seconds (maximum 270.03) are explained by the configured budget, not a
+per-package reset. A slow 150-second call leaves ~120 seconds minus backoff for
+another historically 70–150-second answer. PR-05 still requires 150 seconds.
+
+Format retries now name the safe reason and repeat only the original prompt,
+never invalid output. Safe attempt records include failures and salvage. Async
+calls are cancelled at the shared generator deadline; no new attempt starts
+after expiry. A fully valid package whose synchronous final validation overruns
+is retained, with deadline_exceeded and overrun_seconds on the final attempt and
+generator metrics. An injected-clock reproduction accepted a valid package at
+151 seconds under a 150-second budget; retaining that paid-for work is the
+author-approved exception to FR-G-06/PR-05, not a timing pass. Invalid late
+packages cannot retry. The end-to-end budget flag compares configured time;
+benchmark PR-05 always compares measured duration against 150 seconds.
+
+Nominal defaults permit up to 2 package completions × 3 adapter attempts × 120
+seconds = 720 seconds before backoff, but the one shared 150-second budget clips
+calls/backoff. Exhausted format retries stop generation, rather than starting a
+new package completion. A recommended 90-second attempt has a nominal 540-second
+ceiling, also clipped to 150; a first 90-second timeout leaves under 60 seconds.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

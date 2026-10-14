@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-14 — Phase 9c section 3 — Correct retries and audit shared deadlines
+
+**Summary:** Add safe format correction messages and per-attempt records,
+cancel in-flight calls at the shared budget, and retain valid late packages
+with explicit deadline flags/overrun seconds. Invalid late packages cannot retry.
+
+**Requirements addressed:** PR-01, PR-05, FR-G-02, FR-G-06, NFR-01.
+
+**Files:** backend/app/llm/{base,errors}.py; agents/generators/base.py;
+tests/unit/test_phase9c_generator.py; README.md; design-deviations.md; this log.
+
+**Decisions:** D-43. Author-confirmed 270-second generator/completion settings
+explain the original ceiling; synthetic duplicate-key parsing confirms last
+assignment wins. General 60-second and 16,000-token fallbacks are overridden
+by generator-specific arguments. Retain paid-for valid late validation per the
+author's explicit instruction, recording the overrun instead of hiding it.
+
+**Tests:** Focused mocked provider/parser/generator/error suite: 194 passed,
+0 failed, 0 skipped (3.58s). Slow HTTP cancellation uses an event-blocked mock
+and a 1.1-second budget; final-validation tests use a shared injected clock.
+External cancellation, no late retry, reason-only correction and failed token
+records are verified. Full acceptance follows section 5.
+
+**Known gaps / follow-ups:** Event persistence and reports follow section 4.
+No real provider call, dotenv read or default timeout change.
+
 ## 2026-10-14 — Phase 9c section 2 — Enforce and validate generator output
 
 **Summary:** Add generator-only structured modes, a closed file-list wire schema,

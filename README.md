@@ -715,3 +715,10 @@ stub rehearsal completed all 14 pipelines and 10 downloads, while **PR-03 failed
 (2.76–2.78× the isolated baseline); PR-01, PR-04 and recorded PR-05 thresholds
 passed. A completed-command exit does not imply performance criteria passed:
 read `summary.md`. The real-provider results are still author-run work.
+
+Generator format retries name the previous safe failure reason without repeating
+its output. The generator has one budget across package corrections and adapter
+retries. Default nominal calls are 2 × 3 × 120 = 720 seconds before backoff,
+clipped by the shared 150-second budget. A valid package completing synchronous
+final validation after that budget is retained with `deadline_exceeded` and
+`overrun_seconds`; this does not change PR-05's 150-second timing threshold.

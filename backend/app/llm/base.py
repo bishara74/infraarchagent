@@ -18,6 +18,7 @@ from app.llm.errors import (
     LLMRetryExhausted,
     LLMTransientError,
     ResponseStats,
+    cached_tokens,
     safe_category,
 )
 from app.llm.json_output import Validator, validated_json
@@ -75,6 +76,21 @@ class LLMResult:
     format_reason: str | None = None
 
 
+@dataclass(frozen=True)
+class LLMAttempt:
+    attempt: int
+    outcome: str
+    category: str
+    format_reason: str | None
+    elapsed_seconds: float
+    input_tokens: int | None
+    output_tokens: int | None
+    response_characters: int | None
+    package_attempt: int = 1
+    deadline_exceeded: bool = False
+    overrun_seconds: float = 0.0
+
+
 class LLMAdapter(ABC):
     provider = "unknown"
     supports_structured_output = False
@@ -122,6 +138,7 @@ class LLMAdapter(ABC):
         deadline: float | None = None,
         attempt_timeout: float | None = None,
         max_output_tokens: int | None = None,
+        attempt_observer: Callable[[LLMAttempt], None] | None = None,
     ) -> LLMResult:
         if attempt_timeout is not None and (
             not isinstance(attempt_timeout, (int, float))
@@ -137,6 +154,7 @@ class LLMAdapter(ABC):
             else started + self.policy.deadline
         )
         last_stats: ResponseStats | None = None
+        retry_prompt = prompt
         for attempt in range(1, self.policy.max_attempts + 1):
             remaining = ends_at - self._clock()
             if remaining <= 0:
@@ -159,7 +177,7 @@ class LLMAdapter(ABC):
             try:
                 response = await asyncio.wait_for(
                     self.send_prompt(
-                        prompt,
+                        retry_prompt,
                         system=system,
                         max_output_tokens=(
                             max_output_tokens
@@ -208,6 +226,15 @@ class LLMAdapter(ABC):
                 exception_class = error.original_exception_class
                 format_reason = error.reason
                 last_stats = error.stats or last_stats
+                if self.output_validator is not None:
+                    retry_prompt = (
+                        prompt
+                        + "\nCorrection: Previous response failed ("
+                        + format_reason
+                        + "). Answer again with exactly one JSON object, "
+                        "no markdown fences or surrounding text. "
+                        "Keep the package within the output budget."
+                    )
             except LLMDeadlineExceeded:
                 category = "deadline"
                 raise
@@ -260,6 +287,25 @@ class LLMAdapter(ABC):
                 if format_reason is not None:
                     fields.append(f"format_reason={format_reason}")
                 logger.info("%s", " ".join(fields))
+                if attempt_observer is not None:
+                    attempt_observer(
+                        LLMAttempt(
+                            attempt=attempt,
+                            outcome=category,
+                            category=log_category,
+                            format_reason=format_reason,
+                            elapsed_seconds=max(0.0, self._clock() - attempt_started),
+                            input_tokens=cached_tokens(stats.input_tokens)
+                            if stats
+                            else None,
+                            output_tokens=cached_tokens(stats.output_tokens)
+                            if stats
+                            else None,
+                            response_characters=stats.response_characters
+                            if stats
+                            else None,
+                        )
+                    )
             elapsed = self._clock() - started
             if self._clock() >= ends_at:
                 raise LLMDeadlineExceeded(attempt, elapsed)

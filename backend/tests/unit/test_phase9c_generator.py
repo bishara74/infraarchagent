@@ -201,3 +201,118 @@ async def test_structured_refusal_has_safe_fallback_advice(status):
             await generator(client, "json_schema").generate(plan())
     assert "LLM_STRUCTURED_OUTPUT=json_object" in str(caught.value)
     assert "private provider body" not in str(caught.value)
+
+
+@pytest.mark.req("FR-G-02", "NFR-01", "PR-05")
+async def test_format_retry_contains_reason_not_previous_output():
+    requests = []
+
+    def handler(request):
+        requests.append(json.loads(request.content))
+        if len(requests) == 1:
+            return response("PRIVATE_PREVIOUS_RESPONSE {broken}")
+        return response(json.dumps(output()))
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        agent = generator(client, attempts=2)
+        await agent.generate(plan())
+    retry = requests[1]["messages"][-1]["content"]
+    assert "syntax_error@1" in retry
+    assert "PRIVATE_PREVIOUS_RESPONSE" not in retry
+    assert len(agent.last_run.attempt_details) == 2
+    assert agent.last_run.attempt_details[0].category == "invalid_response"
+    assert agent.last_run.attempt_details[1].category == "success"
+    assert agent.last_run.attempt_details[0].output_tokens == 20
+
+
+@pytest.mark.req("FR-G-06", "PR-05")
+async def test_inflight_http_is_cancelled_at_shared_deadline():
+    import asyncio
+    import time
+
+    from app.agents.generators.base import GeneratorDeadlineExceeded
+
+    started, cancelled, never = asyncio.Event(), asyncio.Event(), asyncio.Event()
+
+    async def handler(request):
+        started.set()
+        try:
+            await never.wait()
+        finally:
+            cancelled.set()
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        agent = generator(client, attempts=3, deadline_seconds=1.1, attempt_timeout=90)
+        before = time.monotonic()
+        with pytest.raises(GeneratorDeadlineExceeded):
+            await agent.generate(plan())
+        elapsed = time.monotonic() - before
+    assert started.is_set() and cancelled.is_set()
+    assert 1.05 <= elapsed < 1.5
+    assert agent.last_run.package_attempts == 1
+    assert len(agent.last_run.attempt_details) == 1
+    assert agent.last_run.deadline_exceeded
+
+
+@pytest.mark.req("FR-G-02", "FR-G-06", "PR-05")
+@pytest.mark.parametrize("valid", [True, False])
+async def test_final_validation_overrun_keeps_only_valid_package(valid):
+    from unittest.mock import patch
+
+    from app.agents.generators.base import GeneratorDeadlineExceeded
+
+    now = [0.0]
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        now[0] = 149.0
+        return response(json.dumps(output()))
+
+    def validate(*args):
+        now[0] += 2.0
+        return [] if valid else ["missing required files"]
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        agent = generator(client, clock=lambda: now[0])
+        agent.llm_adapter._clock = lambda: now[0]
+        with patch(
+            "app.agents.generators.base.package_structure_errors", side_effect=validate
+        ):
+            if valid:
+                assert (await agent.generate(plan())).files == output()["files"]
+            else:
+                with pytest.raises(GeneratorDeadlineExceeded):
+                    await agent.generate(plan())
+    assert len(calls) == 1
+    assert agent.last_run.elapsed_seconds == 151
+    assert agent.last_run.deadline_exceeded
+    assert agent.last_run.overrun_seconds == 1
+    assert agent.last_run.attempt_details[-1].deadline_exceeded
+    assert agent.last_run.attempt_details[-1].overrun_seconds == 1
+
+
+@pytest.mark.req("FR-G-06", "PR-05")
+async def test_external_cancellation_is_preserved():
+    import asyncio
+
+    started, cancelled, never = asyncio.Event(), asyncio.Event(), asyncio.Event()
+
+    async def handler(request):
+        started.set()
+        try:
+            await never.wait()
+        finally:
+            cancelled.set()
+
+    async with httpx2.AsyncClient(transport=httpx2.MockTransport(handler)) as client:
+        agent = generator(client, attempts=3)
+        task = asyncio.create_task(agent.generate(plan()))
+        await asyncio.wait_for(started.wait(), timeout=1)
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+    assert cancelled.is_set()
+    assert len(agent.last_run.attempt_details) == 1
+    assert agent.last_run.attempt_details[0].outcome == "cancelled"
+    assert not agent.last_run.deadline_exceeded

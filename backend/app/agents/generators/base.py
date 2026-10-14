@@ -1,9 +1,10 @@
 """Template Method for one complete package, with bounded structural correction."""
 
+import asyncio
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from pydantic import ValidationError
 
@@ -23,7 +24,7 @@ from app.domain.enums import Variant
 from app.domain.models import IaCPackage
 from app.domain.package_layout import package_structure_errors, required_types_missing
 from app.domain.plan import DeploymentPlan, FileType
-from app.llm.base import LLMAdapter
+from app.llm.base import LLMAdapter, LLMAttempt
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -93,6 +94,9 @@ class GeneratorRunInfo:
     file_count: int
     total_characters: int
     cached_input_tokens: int | None = None
+    attempt_details: tuple[LLMAttempt, ...] = ()
+    deadline_exceeded: bool = False
+    overrun_seconds: float = 0.0
 
 
 class GeneratorAgent(ABC):
@@ -154,25 +158,41 @@ class GeneratorAgent(ABC):
         error_counts: list[int] = []
         notes: str | None = None
         file_count = total_characters = 0
+        attempt_details: list[LLMAttempt] = []
+
+        def observe(attempt: LLMAttempt) -> None:
+            attempt_details.append(
+                replace(
+                    attempt, attempt=len(attempt_details) + 1, package_attempt=attempts
+                )
+            )
+
         try:
             for _ in range(self.max_package_attempts):
                 prompt = build_user_prompt(plan, previous_errors, previous_paths)
+                system = build_system_prompt(
+                    self.optimisation_directive,
+                    max_output_tokens=self.max_output_tokens,
+                    wire_files=self.wire_files,
+                )
                 remaining = budget.remaining()
                 if remaining < 1:
                     raise GeneratorDeadlineExceeded(self.variant)
                 attempts += 1
                 try:
-                    result = await self.llm_adapter.complete_json(
-                        prompt,
-                        system=build_system_prompt(
-                            self.optimisation_directive,
+                    async with asyncio.timeout(remaining):
+                        result = await self.llm_adapter.complete_json(
+                            prompt,
+                            system=system,
+                            deadline=remaining,
+                            attempt_timeout=self.attempt_timeout,
                             max_output_tokens=self.max_output_tokens,
-                            wire_files=self.wire_files,
-                        ),
-                        deadline=remaining,
-                        attempt_timeout=self.attempt_timeout,
-                        max_output_tokens=self.max_output_tokens,
-                    )
+                            attempt_observer=observe,
+                        )
+                except TimeoutError:
+                    llm_attempts = len(attempt_details)
+                    input_tokens = output_tokens = cached_input_tokens = None
+                    raise GeneratorDeadlineExceeded(self.variant) from None
                 except LLMDeadlineExceeded as error:
                     if llm_attempts is not None:
                         llm_attempts += error.attempts
@@ -249,10 +269,19 @@ class GeneratorAgent(ABC):
                 previous_errors or [],
             )
         finally:
+            elapsed = budget.elapsed()
+            deadline_exceeded = elapsed >= self.deadline_seconds
+            overrun_seconds = max(0.0, elapsed - self.deadline_seconds)
+            if attempt_details and deadline_exceeded:
+                attempt_details[-1] = replace(
+                    attempt_details[-1],
+                    deadline_exceeded=True,
+                    overrun_seconds=overrun_seconds,
+                )
             self._last_run = GeneratorRunInfo(
                 package_attempts=attempts,
                 total_llm_attempts=llm_attempts,
-                elapsed_seconds=budget.elapsed(),
+                elapsed_seconds=elapsed,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 cached_input_tokens=cached_input_tokens,
@@ -262,4 +291,7 @@ class GeneratorAgent(ABC):
                 notes_length=len(notes) if notes is not None else 0,
                 file_count=file_count,
                 total_characters=total_characters,
+                attempt_details=tuple(attempt_details),
+                deadline_exceeded=deadline_exceeded,
+                overrun_seconds=overrun_seconds,
             )
