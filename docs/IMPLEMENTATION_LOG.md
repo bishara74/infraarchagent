@@ -27,6 +27,23 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-15 — Phase 9d section 0 — Investigate baseline quality
+
+**Summary:** Record the approved investigation, real failure samples, S3 fix
+histories and timing headroom before implementation.
+
+**Requirements addressed:** FR-S-03, FR-S-09, FR-V-01, FR-V-03, PR-01, PR-05.
+
+**Files:** docs/phase9d-investigation.md; this log.
+
+**Decisions:** No readiness or validation changes. Three baseline fix passes;
+recommend four, with bounded validation repair and fair generator overrides.
+
+**Tests:** Read-only snapshot aggregation and offline Terraform/Ansible diagnostics;
+implementation suites not run for this documentation section. No pass counts claimed.
+
+**Known gaps / follow-ups:** New quality and timing require an author benchmark.
+
 ## 2026-10-14 — Phase 9c evidence integrity correction — Preserve stored bytes
 
 **Summary:** Post-commit blob verification found Git had normalized CRLF endings
