@@ -9,9 +9,39 @@ from app.agents.prompts.generator import (
     GENERATOR_PROMPT_VERSION,
     build_system_prompt,
     build_user_prompt,
+    required_file_checklist,
 )
-from app.domain.package_layout import LAYOUT
-from app.domain.plan import DeploymentPlan
+from app.domain.package_layout import LAYOUT, classify_path
+from app.domain.plan import DeploymentPlan, FileType
+
+
+@pytest.mark.req("FR-G-02", "FR-V-01", "FR-V-03")
+def test_concrete_plan_checklist_matches_shared_layout_and_quality_guidance():
+    full = plan().model_copy(update={"file_types": list(FileType)})
+    checklist = required_file_checklist(full)
+    for line in checklist.splitlines()[1:]:
+        kind, path = line[2:].split(": ", 1)
+        assert classify_path(path.split(" ", 1)[0]) == FileType(kind)
+    assert "terraform/variables.tf" in checklist
+    assert "helm/web/templates/workloads.yaml" in checklist
+    assert "helm/web/values.yaml" in checklist
+    assert "**" not in checklist and "<chart>" not in checklist
+    assert required_file_checklist(plan()) in build_user_prompt(plan())
+    assert "helm/" not in required_file_checklist(plan())
+    prompt = build_system_prompt("cost", max_output_tokens=16000)
+    for rule in (
+        "16000 output tokens",
+        "5.100.0",
+        "6.68.0",
+        "name every play",
+        "ansible.builtin.*",
+        "changed_when",
+        "creates",
+        'non-empty top-level "panels"',
+        "not an API",
+        "non-empty templates/",
+    ):
+        assert rule in prompt
 
 
 def plan() -> DeploymentPlan:
@@ -46,7 +76,7 @@ def test_plan_is_data_and_layout_is_table_driven() -> None:
     assert "‹/deployment_plan>" in user_prompt
     assert '"cloud_provider": "aws"' in user_prompt
     system_prompt = build_system_prompt("directive")
-    assert GENERATOR_PROMPT_VERSION == "4"
+    assert GENERATOR_PROMPT_VERSION == "5"
     assert f"prompt version {GENERATOR_PROMPT_VERSION}" in system_prompt
     assert "no explanatory comments beyond one short header" in system_prompt
     assert "no duplicated boilerplate" in system_prompt

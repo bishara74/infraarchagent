@@ -1092,6 +1092,14 @@ Fix prompt v2 names mirrored provider schemas and standalone S3 public-access
 resources for every existing/new log or replica bucket. Ansible and Grafana
 artifact guidance is shared with generators; no scanner/validator rule changes.
 
+Generator prompt v5 renders a concrete minimum path checklist from shared layout
+patterns for exactly the plan's file types, adding variables.tf and Helm values
+and templates. It names offline provider pins and requires parseable documents,
+fully qualified/named Ansible plays with accurate change reporting, and plain
+Grafana provisioning dashboards with non-empty top-level panels. The generator
+wire schema, 8,000-token default and 120-second attempt default are unchanged.
+For fair author comparisons retain baseline overrides of 16,000/140.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

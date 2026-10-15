@@ -27,6 +27,24 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-15 — Phase 9d section 4 — Require complete valid generator artifacts
+
+**Summary:** Generator prompt v5 renders concrete plan-specific file paths from
+shared layout rules and reuses provider/S3/Ansible/Grafana correctness guidance.
+
+**Requirements addressed:** FR-G-02, FR-V-01, FR-V-03, NFR-01.
+
+**Files:** agents/prompts/generator.py; unit/test_generator_prompt.py; D-44; this log.
+
+**Decisions:** Preserve structured-output schema and output/attempt defaults.
+The Architect schema stays unchanged. Plain dashboard JSON is required without
+changing the Grafana validator; wrappers are not provisioning dashboards.
+
+**Tests:** Generator prompt/generation/Phase 9c regression command: 39 passed,
+0 failed, 0 skipped. Concrete checklist paths classify under existing layout.
+
+**Known gaps / follow-ups:** Author-only real quality measurement remains pending.
+
 ## 2026-10-15 — Phase 9d section 3 — Correct S3 guidance and bound iterations
 
 **Summary:** Teach the shared fixer standalone public-access resources and
