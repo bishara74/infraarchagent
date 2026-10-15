@@ -21,11 +21,22 @@ from app.agents.validator import ValidatorAgent
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
-from app.domain.enums import AgentName, AgentState, PackageStatus, RunStatus, Variant
+from app.domain.enums import (
+    AgentName,
+    AgentState,
+    LLMProvider,
+    PackageStatus,
+    RunStatus,
+    Variant,
+)
 from app.domain.models import IaCPackage
 from app.domain.run_config import RunConfig
 from app.domain.states import classify_run, readiness_after_validation
-from app.domain.validation import DeterministicRepair, RemediationReport
+from app.domain.validation import (
+    DeterministicRepair,
+    RemediationReport,
+    ValidationReport,
+)
 from app.events.kinds import (
     package_generated_payload,
     package_status_payload,
@@ -203,7 +214,12 @@ class PipelineOrchestrator:
                 error="validation failed",
             )
             return PackageStatus.VALIDATION_ERROR
-        if current == PackageStatus.GENERATED:
+        if current in {
+            PackageStatus.GENERATED,
+            PackageStatus.VALID,
+            PackageStatus.INVALID,
+            PackageStatus.VALIDATION_ERROR,
+        }:
             await self.writer.package_transition(
                 self.run_id,
                 variant,
@@ -239,6 +255,8 @@ class PipelineOrchestrator:
         demo_review = (
             getattr(self.factory, "pipeline_demo_stub", False)
             and self.factory.settings.pipeline_demo_scenario == "review"
+            and self.run_config.resolve(self.factory.settings).provider
+            == LLMProvider.STUB
         )
         if (
             isinstance(stage, SecurityAgent)
@@ -262,15 +280,27 @@ class PipelineOrchestrator:
                 PackageStatus.VALIDATING,
                 message="validation preflight started",
             )
-            package, report, metadata = await repair.run(
-                ctx,
-                variant,
-                package,
-                rounds=self.factory.settings.validation_repair_max_rounds,
-                budget=repair_budget,
-                phase="before_security",
-                metadata=metadata,
-            )
+            try:
+                package, report, metadata = await repair.run(
+                    ctx,
+                    variant,
+                    package,
+                    rounds=self.factory.settings.validation_repair_max_rounds,
+                    budget=repair_budget,
+                    phase="before_security",
+                    metadata=metadata,
+                )
+            except Exception:
+                logger.exception(
+                    "validation preflight failed for run %s variant %s",
+                    self.run_id,
+                    variant,
+                )
+                report = ValidationReport.build(
+                    [],
+                    terraform_required=True,
+                    abort_reason="internal_error",
+                ).model_copy(update={"remediation": metadata})
             async with self.session_factory() as session:
                 async with session.begin():
                     await PackageRepository(session).save_automatic_repairs(
@@ -332,20 +362,31 @@ class PipelineOrchestrator:
                     self.validation_stage.engine, ctx.plan, remediated_package.files
                 )
                 report = report.model_copy(update={"remediation": metadata})
-                scan = await stage.confirm_final(ctx, variant, remediated_package)
+                await self.writer.package_transition(
+                    self.run_id,
+                    variant,
+                    PackageStatus.VALIDATING,
+                    message="final validation and security verification",
+                )
                 async with self.session_factory() as session:
                     async with session.begin():
-                        await PackageRepository(session).save_automatic_repairs(
+                        repository = PackageRepository(session)
+                        await repository.save_automatic_repairs(
                             self.run_id,
                             variant,
                             original_files=original_files,
                             files=remediated_package.files,
                         )
+                        await repository.save_validation_results(
+                            self.run_id, variant, report
+                        )
+                scan = await stage.confirm_final(ctx, variant, remediated_package)
                 validation = await self.validation_stage.run(
                     ctx,
                     variant,
                     remediated_package,
                     prepared_report=report,
+                    already_validating=True,
                 )
             else:
                 validation = await self.validation_stage.run(

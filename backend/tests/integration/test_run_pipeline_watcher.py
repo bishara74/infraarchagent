@@ -33,9 +33,9 @@ async def test_watcher_prints_terminal_summary_offline(
                 "checkov": [
                     ToolResult('{"passed":0,"failed":0,"resource_count":0}', "", 0, 0)
                 ]
-                * 3,
-                "trivy": [ToolResult('{"Results":[]}', "", 0, 0)] * 3,
-                "terraform": [ToolResult('{"diagnostics":[]}', "", 0, 0)] * 3,
+                * 6,
+                "trivy": [ToolResult('{"Results":[]}', "", 0, 0)] * 6,
+                "terraform": [ToolResult('{"diagnostics":[]}', "", 0, 0)] * 6,
             }
         )
     )

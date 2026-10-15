@@ -10,7 +10,7 @@ from app.agents.validator import ValidatorAgent
 from app.core.config import get_settings
 from app.db.repositories.packages import PackageRepository
 from app.db.session import make_session_factory
-from app.domain.enums import PackageStatus, Variant
+from app.domain.enums import LLMProvider, PackageStatus, Variant
 from app.domain.run_config import RunConfig
 from app.domain.validation import ValidationCheck, ValidationReport
 from app.pipeline.orchestrator import PipelineOrchestrator
@@ -98,3 +98,78 @@ async def test_final_security_and_validation_describe_repaired_files(
         assert row.security_report["final"]["remaining_blocking"] == []
         assert "final_verification" in row.security_report
         assert row.iteration_count == 1
+
+
+@pytest.mark.req("FR-S-09", "FR-V-04")
+async def test_engineer_retry_preserves_automatic_repair_history(
+    db_engines, monkeypatch
+):
+    from tests.integration.test_pipeline_review import (
+        client_for,
+        install_retry,
+        pending_app,
+        review_url,
+        state,
+    )
+
+    engine, _ = db_engines
+    app, run_id = await pending_app(engine)
+    metadata = {
+        "deterministic_repairs": [
+            {
+                "file": "terraform/variables.tf",
+                "kind": "missing_variable",
+                "name": "region",
+            }
+        ],
+        "rounds": [],
+    }
+    async with app.state.session_factory() as session:
+        async with session.begin():
+            row = await PackageRepository(session).get_for_update(run_id, Variant.COST)
+            row.validation_report = {**row.validation_report, "remediation": metadata}
+    install_retry(app, monkeypatch)
+    async with client_for(app) as client:
+        response = await client.post(review_url(run_id), json={"action": "retry"})
+        assert response.status_code == 202
+        import asyncio
+
+        await asyncio.gather(*app.state.runner.tasks.values())
+    _, row = await state(app, run_id)
+    assert row.validation_report["remediation"] == metadata
+
+
+@pytest.mark.req("FR-V-03", "NFR-01")
+@pytest.mark.parametrize("provider", [LLMProvider.STUB, LLMProvider.OPENAI])
+async def test_review_demo_bypass_is_scoped_to_stub_runs(db_engines, provider):
+    engine, _ = db_engines
+    ctx, package = await setup(engine)
+    sessions = make_session_factory(engine)
+    settings = get_settings().model_copy(update={"pipeline_demo_scenario": "review"})
+
+    class Engine:
+        async def validate(self, plan, files):
+            return ValidationReport.build([], terraform_required=False)
+
+    scanner = ScriptedScanner([[], []])
+    security = SecurityAgent(scanner, None, sessions, settings)
+    orchestrator = PipelineOrchestrator(
+        ctx.run_id,
+        "Deploy infrastructure",
+        RunConfig(provider=provider, model="fake"),
+        factory=SimpleNamespace(settings=settings, pipeline_demo_stub=True),
+        session_factory=sessions,
+        writer=ctx.writer,
+        security_stage=security,
+        validation_stage=ValidatorAgent(Engine(), sessions, settings=settings),
+    )
+    assert (
+        await orchestrator._post_generation(ctx, Variant.SECURITY, package)
+        == PackageStatus.PRODUCTION_READY
+    )
+    async with sessions() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+    assert (row.validation_report.get("remediation") is None) == (
+        provider == LLMProvider.STUB
+    )
+    assert scanner.calls == (1 if provider == LLMProvider.STUB else 2)

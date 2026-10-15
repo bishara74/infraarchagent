@@ -236,7 +236,7 @@ async def test_correct_header_allows_submission_and_sanitizes_input(
     from tests.integration.test_security_agent import ScriptedScanner
 
     app, _ = await authenticated_app(db_engines[0])
-    app.state.runner.factory.scanner = ScriptedScanner([[], [], []])
+    app.state.runner.factory.scanner = ScriptedScanner([[], [], [], [], [], []])
 
     class Engine:
         async def validate(self, plan, files):

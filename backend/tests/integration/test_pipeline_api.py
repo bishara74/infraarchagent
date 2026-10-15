@@ -437,7 +437,7 @@ async def test_three_runs_overlap_and_keep_events_isolated(
     app = create_app(
         get_settings().model_copy(update={"llm_provider": LLMProvider.STUB}), engine
     )
-    app.state.runner.factory.scanner = _empty_scanner(9)
+    app.state.runner.factory.scanner = _empty_scanner(18)
     app.state.runner.validation_stage = ValidatorAgent(
         ValidationEngine(Clean(), mirror=mirror(tmp_path), versions={}),
         make_session_factory(engine),
@@ -506,7 +506,7 @@ async def test_three_runs_finish_within_fifty_percent_of_solo_time(
     app = create_app(
         get_settings().model_copy(update={"llm_provider": LLMProvider.STUB}), engine
     )
-    app.state.runner.factory.scanner = _empty_scanner(12)
+    app.state.runner.factory.scanner = _empty_scanner(24)
     original = PipelineDemoStub.send_prompt
 
     async def delayed(self: PipelineDemoStub, *args: object, **kwargs: object):

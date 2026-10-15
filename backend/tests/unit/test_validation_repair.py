@@ -11,6 +11,7 @@ from app.agents.security.agent import SecurityAgent
 from app.agents.security.fix import FixProposal
 from app.agents.validation_repair import ValidationRepair
 from app.core.config import get_settings
+from app.core.safety import PublicDataSafety
 from app.domain.enums import Variant
 from app.domain.models import IaCPackage, Violation
 from app.domain.plan import DeploymentPlan
@@ -224,3 +225,71 @@ async def test_cancellation_propagates_without_mutating_original():
     with pytest.raises(asyncio.CancelledError):
         await task
     assert package.files == {"terraform/main.tf": "# original\n"}
+
+
+async def test_new_candidate_canary_is_redacted_before_verification(canary_key):
+    repair, ctx, package = setup([1, 0])
+    repair.security.safety = PublicDataSafety(canary_key)
+    key = canary_key.llm_api_key.get_secret_value()
+
+    async def propose(**kwargs):
+        return FixProposal(
+            kwargs["path"],
+            True,
+            None,
+            kwargs["files"][kwargs["path"]] + f"# {key}\n",
+            {},
+            (),
+        )
+
+    repair.security.fix_agent.propose = propose
+    fixed, report, metadata = await repair.run(
+        ctx,
+        Variant.COST,
+        package,
+        rounds=2,
+        budget=AgentBudget(30),
+        phase="before_security",
+        metadata=RemediationReport(),
+    )
+    assert key not in str(
+        (
+            fixed.files,
+            report,
+            metadata,
+            repair.engine.inputs,
+            repair.security.scanner.inputs,
+        )
+    )
+    assert "[REDACTED]" in fixed.files["terraform/main.tf"]
+
+
+async def test_call_deadline_rolls_back_and_zero_rounds_never_calls_fixer():
+    repair, ctx, package = setup([1])
+
+    async def timeout(**kwargs):
+        raise TimeoutError
+
+    repair.security.fix_agent.propose = timeout
+    fixed, _, metadata = await repair.run(
+        ctx,
+        Variant.COST,
+        package,
+        rounds=2,
+        budget=AgentBudget(30),
+        phase="before_security",
+        metadata=RemediationReport(),
+    )
+    assert fixed.files == package.files and metadata.rounds[0].reason == "deadline"
+    repair, ctx, package = setup([1])
+    _, _, metadata = await repair.run(
+        ctx,
+        Variant.COST,
+        package,
+        rounds=0,
+        budget=AgentBudget(30),
+        phase="before_security",
+        metadata=RemediationReport(),
+    )
+    assert not repair.security.fix_agent.calls
+    assert metadata.rounds[0].reason == "round_limit"

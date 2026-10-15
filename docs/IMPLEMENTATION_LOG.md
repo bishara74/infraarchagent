@@ -27,6 +27,45 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-15 — Phase 9d section 6 — Verify feedback, safety and quality evidence
+
+**Summary:** Finish failure/cancellation/canary and real-database regressions;
+retain compact baseline and stub measurement evidence; document author settings
+and Chapter 4/6 follow-ups without changing readiness or validator criteria.
+
+**Requirements addressed:** FR-G-02, FR-S-03, FR-S-07, FR-S-09, FR-V-01,
+FR-V-03, FR-V-04, NFR-01, PR-01, PR-03, PR-04, PR-05.
+
+**Files:** final verification and stub/secret-scan evidence; pipeline
+orchestrator/review; security/validation repair persistence; narrow domain
+verification arrows; repair/canary/row-panel/scope-guard tests; recorded scanner
+and recursive canary fixtures; README.md; D-44/thesis follow-ups; this log.
+
+**Decisions:** Final candidate files and validation results commit together
+before security confirmation; scan failure cannot produce readiness. Preserve
+repair history through engineer Retry. Review-demo bypass is stub-only. Keep
+all finding classifications and validator meanings. Exact next-benchmark lines
+and defaults are in README and the verification summary. No new open question.
+
+**Tests:** make lint PASS (105 mypy files; Ruff/format/frontend lint/TypeScript).
+make test: 1244 passed, 0 failed, 0 skipped, 6 perf deselected. make frontend-test:
+100 passed / 0 failed. make test-e2e: 6 passed / 0 failed. Final make secret-scan:
+0 findings / 0 errors ([evidence](evals/phase9-secret-scan-20261015T154529168973Z/summary.md)).
+make bench-stub: 14 successful pipelines
+and 10 downloads; PR-01 median 14.229337s PASS, PR-03 ratios 2.571282–2.616546
+FAIL, PR-04 maximum 1.321749s PASS, PR-05 PASS. Overall stub benchmark FAIL
+is preserved. Backend/browser runs used isolated PostgreSQL and were rerun
+serially after an interrupted overlapping attempt. Final acceptance includes
+new round/call deadlines, rollback, candidate redaction, final scan failures,
+Retry history, provider-scoped demo bypass and nested Grafana row panels.
+Exact deduplication preserves a newline in an otherwise emptied file so later
+fix proposals still satisfy the existing non-empty-file guard.
+
+**Known gaps / follow-ups:** Real production-ready rate and total run time
+remain author-only. Stub readiness is not real quality evidence. PR-03 overhead
+still fails and is not hidden or optimized outside this phase. Original
+baseline/spec remain unchanged; no real keys/calls, installs or downloads.
+
 ## 2026-10-15 — Phase 9d section 5 — Measure quality with compact safe inputs
 
 **Summary:** Add status/review/check/finding tables to benchmark summaries and

@@ -98,7 +98,8 @@ async def test_benchmark_reads_authenticated_server_settings(case, tmp_path):
     assert all(
         "PRIVATE_BODY" not in p.read_text()
         and "canary-placeholder" not in p.read_text()
-        for p in tmp_path.iterdir()
+        for p in tmp_path.rglob("*")
+        if p.is_file()
     )
 
 
@@ -183,7 +184,9 @@ async def test_attempt_reports_include_failed_and_salvaged_generators(tmp_path):
     )
     assert "invalid_response" in (tmp_path / "summary.md").read_text()
     assert "salvaged" in (tmp_path / "summary.md").read_text()
-    assert all("PRIVATE_BODY" not in p.read_text() for p in tmp_path.iterdir())
+    assert all(
+        "PRIVATE_BODY" not in p.read_text() for p in tmp_path.rglob("*") if p.is_file()
+    )
     legacy = terminal("cost", "success", None, 10)
     legacy["metrics"].pop("llm_attempt_details")
     assert generator_evidence([legacy])["generator_attempt_count"] is None

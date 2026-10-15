@@ -2,6 +2,8 @@
 
 import pytest
 
+from app.domain.package_layout import package_structure_errors
+from app.domain.plan import FileType
 from app.validation.repairs import repair_terraform
 
 pytestmark = pytest.mark.req("FR-V-01", "NFR-01")
@@ -59,3 +61,12 @@ def test_json_declarations_prevent_duplicate_hcl_inputs():
         "terraform/inputs.tf.json": '{"variable":{"region":{"type":"string"}}}',
     }
     assert repair_terraform(files) == (files, [])
+
+
+def test_deduplication_does_not_leave_a_file_that_blocks_subsequent_fixes():
+    declaration = 'variable "region" { type = string }'
+    files = {"terraform/main.tf": declaration, "terraform/variables.tf": declaration}
+    fixed, repairs = repair_terraform(files)
+    assert len(repairs) == 1 and fixed["terraform/variables.tf"] == "\n"
+    assert package_structure_errors(fixed, [FileType.TERRAFORM]) == []
+    assert repair_terraform(fixed) == (fixed, [])

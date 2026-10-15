@@ -193,6 +193,7 @@ class ReviewService:
                     variant=variant,
                     files=dict(remediated.files),
                     security_report=remediated.security_report,
+                    validation_report=remediated.validation_report,
                 )
             outcome = await self.runner.validation_stage.run(ctx, variant, package)
             if outcome == PackageStatus.VALIDATION_ERROR:

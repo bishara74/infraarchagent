@@ -1060,7 +1060,7 @@ picks the new 8,000 default. Settings resolve constructor > environment > dotenv
 > defaults; one assignment per dotenv key avoids last-assignment ambiguity.
 bench-smoke is three representative guarded real runs, not PR-01 acceptance.
 
-### D-44 — Quality repairs before readiness (Phase 9d; implementation in progress)
+### D-44 — Quality repairs before readiness (Accepted; implemented in Phase 9d)
 
 Deterministic declaration repairs operate per Terraform module: missing inputs
 have descriptions and no defaults, secret-like names are sensitive, and only
@@ -1276,6 +1276,15 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+- Chapter 4 / D-44: add Validator feedback into the shared remediation path;
+  describe deterministic declarations, bounded pre/post-security repair,
+  rollback acceptance and final validation/security confirmation. Readiness and
+  validator meanings remain unchanged; engineer Retry keeps its policy.
+- Chapter 6 / D-44: report the original 1/36 production-ready baseline and six
+  missing variants; author measures the after-change rate/runtime using the same
+  16,000-token/140-second generator overrides. Do not substitute stub outcomes
+  for real quality measurements.
 
 - Chapter 6 / Phase 9c: the first real benchmark failed for generator output
   reliability on larger plans. Four usable runs of eight had a 189.81s median;

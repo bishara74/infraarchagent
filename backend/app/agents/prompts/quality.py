@@ -16,7 +16,8 @@ PROVIDER_GUIDANCE = "\n".join(
 S3_GUIDANCE = "\n".join(
     (
         "For each S3 bucket, including every new log/replica bucket, use a standalone",
-        "resource aws_s3_bucket_public_access_block with bucket = aws_s3_bucket.NAME.id",
+        "resource aws_s3_bucket_public_access_block with "
+        "bucket = aws_s3_bucket.NAME.id",
         "and block_public_acls = true, block_public_policy = true,",
         "ignore_public_acls = true, restrict_public_buckets = true (separate lines).",
         "Do not place these arguments directly on aws_s3_bucket and do not nest a",
@@ -36,7 +37,8 @@ DOCUMENT_GUIDANCE = "\n".join(
         "that accurately describes changes; do not mask changes or lint failures.",
         "Grafana provisioning dashboards must be plain dashboard JSON, not an API",
         'wrapper: use a non-empty top-level "panels" array, with real panel types',
-        "and useful queries. Do not substitute datasource configuration for dashboards.",
+        "and useful queries. Do not substitute datasource configuration "
+        "for dashboards.",
         "Helm charts require non-empty templates/ manifests, not just Chart.yaml.",
         "All HCL, YAML and JSON documents must parse; preserve required file types.",
     )

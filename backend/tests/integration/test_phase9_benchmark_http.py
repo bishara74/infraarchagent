@@ -38,4 +38,6 @@ async def test_harness_runs_public_stub_api_and_concurrent_cohort(db_engines, tm
         "generator_security",
         "security_iteration",
     }
-    assert all("sk-" not in path.read_text() for path in tmp_path.iterdir())
+    assert all(
+        "sk-" not in path.read_text() for path in tmp_path.rglob("*") if path.is_file()
+    )

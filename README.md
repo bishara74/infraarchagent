@@ -831,3 +831,27 @@ For a new benchmark folder its saved `quality/` directory is the default snapsho
 source. The output directory must be new and outside both input directories.
 The committed `docs/evals/phase9d-baseline-quality-20261015/` reproduces 1/36
 production ready, with six missing variants, without retaining generated code.
+
+For the author's next real comparison, keep the baseline model/provider choices
+and these generator overrides. New default: VALIDATION_REPAIR_MAX_ROUNDS=2;
+changed default: MAX_REMEDIATION_ITERATIONS=4 (was 3). Fix attempt/output and
+all other deadlines keep their previous defaults; 45 seconds is an author-run
+override, while automated security iterations always have a 60-second ceiling.
+Use one assignment per key; no real run is executed by the implementation agent.
+
+```dotenv
+VALIDATION_REPAIR_MAX_ROUNDS=2
+MAX_REMEDIATION_ITERATIONS=4
+FIX_ATTEMPT_TIMEOUT_SECONDS=45
+SECURITY_DEADLINE_SECONDS=240
+GENERATOR_MAX_OUTPUT_TOKENS=16000
+GENERATOR_ATTEMPT_TIMEOUT_SECONDS=140
+GENERATOR_DEADLINE_SECONDS=150
+LLM_DEADLINE_SECONDS=150
+LLM_STRUCTURED_OUTPUT=json_schema
+```
+
+The validator still accepts row panels nested inside a top-level panels array.
+The sampled wrapped dashboard at run 48ce2227/security instead has a top-level
+`dashboard` API envelope; the author may separately decide whether to support
+that representation. Phase 9d leaves the check unchanged.

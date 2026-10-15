@@ -92,6 +92,7 @@ class ValidationRepair:
                             update={"outcome": "rejected", "reason": "invalid_patch"}
                         )
                     else:
+                        candidate = self.security.safety.value(candidate)
                         checked = await validate_files(self.engine, ctx.plan, candidate)
                         scanned = await scan_files(
                             self.security.scanner, candidate, variant

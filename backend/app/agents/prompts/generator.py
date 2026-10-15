@@ -78,7 +78,8 @@ def required_file_checklist(plan: DeploymentPlan) -> str:
             required.extend(
                 (
                     f"- helm: helm/{chart}/values.yaml",
-                    f"- helm: helm/{chart}/templates/workloads.yaml (non-empty manifests)",
+                    f"- helm: helm/{chart}/templates/workloads.yaml "
+                    "(non-empty manifests)",
                 )
             )
     return "Required files for this plan (include every path):\n" + "\n".join(required)

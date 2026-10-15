@@ -91,6 +91,9 @@ def repair_terraform(
                     seen.add(key)
             for start, end in reversed(sorted(edits)):
                 result[path] = result[path][:start] + result[path][end:]
+            if edits and not result[path]:
+                # Preserve the file without tripping the fixer's empty-file guard.
+                result[path] = "\n"
         additions = []
         for ref in sorted(references):
             parts = ref.split(".")

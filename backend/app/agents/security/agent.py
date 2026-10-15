@@ -195,7 +195,7 @@ class SecurityAgent:
         async with self.session_factory() as session:
             async with session.begin():
                 repository = PackageRepository(session)
-                row = await repository.get(ctx.run_id, variant)
+                row = await repository.get_for_update(ctx.run_id, variant)
                 if row is None:
                     raise LookupError("package not found")
                 final = dict(security_final(row.security_report))

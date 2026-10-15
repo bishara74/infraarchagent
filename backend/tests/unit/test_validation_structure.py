@@ -12,6 +12,18 @@ def run(files, *types):
     )
 
 
+@pytest.mark.req("FR-V-04")
+def test_grafana_rows_remain_valid_and_api_wrappers_remain_rejected():
+    dashboard = '{"panels":[{"type":"row","panels":[{"type":"timeseries"}]}]}'
+    path = "monitoring/grafana/dashboard.json"
+    assert not [c for c in run({path: dashboard}, "grafana") if c.status == "failed"]
+    wrapped = '{"dashboard":' + dashboard + ',"overwrite":true}'
+    assert any(
+        c.check_id == "grafana.panels" and c.status == "failed"
+        for c in run({path: wrapped}, "grafana")
+    )
+
+
 @pytest.mark.req("FR-V-03", "FR-V-04")
 @pytest.mark.parametrize(
     "kind,path,valid,invalid",

@@ -55,6 +55,7 @@ PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
             PackageStatus.VALID,
             PackageStatus.INVALID,
             PackageStatus.VALIDATION_ERROR,
+            PackageStatus.SCAN_ERROR,
         }
     ),
     PackageStatus.VALID: frozenset(
