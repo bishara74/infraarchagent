@@ -82,7 +82,9 @@ def code_text(
     return re.sub(pattern, mask, source)
 
 
-def hcl_reference_locations(tree: Tree[Any]) -> dict[str, int]:
+def hcl_reference_locations(
+    tree: Tree[Any], *, include_data: bool = False
+) -> dict[str, int]:
     """Retain identifier positions from the same tree used for serialization."""
 
     def chain(node: Tree[Any]) -> tuple[list[str], int] | None:
@@ -106,14 +108,20 @@ def hcl_reference_locations(tree: Tree[Any]) -> dict[str, int]:
         if found is None:
             continue
         names, line = found
-        if len(names) < 2 or names[0] not in {"var", "local", "module"}:
+        if len(names) < 2 or names[0] not in (
+            {"var", "local", "module", "data"}
+            if include_data
+            else {"var", "local", "module"}
+        ):
             continue
-        reference = ".".join(names[:3] if names[0] == "module" else names[:2])
+        reference = ".".join(names[:3] if names[0] in {"module", "data"} else names[:2])
         locations[reference] = min(line, locations.get(reference, line))
     return locations
 
 
-def json_reference_locations(source: str) -> dict[str, int]:
+def json_reference_locations(
+    source: str, *, include_data: bool = False
+) -> dict[str, int]:
     """Locate interpolations in JSON values, excluding keys and plain literals."""
     locations: dict[str, int] = {}
     for scalar in re.finditer(r'"(?:\\.|[^"\\])*"', source):
@@ -123,12 +131,14 @@ def json_reference_locations(source: str) -> dict[str, int]:
         line = source.count("\n", 0, scalar.start()) + 1
         for expression in re.findall(r"(?<!\$)\$\{([^}]*)\}", value):
             for match in re.finditer(
-                r"\b(var|local|module)\.([A-Za-z_][\w-]*)(?:\.([A-Za-z_][\w-]*))?",
+                r"\b(var|local|module|data)\.([A-Za-z_][\w-]*)(?:\.([A-Za-z_][\w-]*))?",
                 code_text(expression),
             ):
                 family, name, output = match.groups()
+                if family == "data" and not include_data:
+                    continue
                 reference = f"{family}.{name}"
-                if family == "module" and output:
+                if family in {"module", "data"} and output:
                     reference += f".{output}"
                 locations.setdefault(reference, line)
     return locations

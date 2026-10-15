@@ -27,6 +27,25 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-15 — Phase 9d section 1 — Repair Terraform declarations
+
+**Summary:** Add source-preserving, per-module missing-variable and allowlisted
+data-source repairs and exact variable deduplication; expose optional data
+reference indexing without changing ordinary validator checks.
+
+**Requirements addressed:** FR-V-01, FR-V-03, NFR-01.
+
+**Files:** app/validation/{repairs,documents}.py; unit/test_terraform_repairs.py;
+design-deviations.md D-44; this log.
+
+**Decisions:** No variable defaults; secret names are sensitive. Existing JSON
+and HCL declarations count. Unparsable modules and conflicting duplicates stay.
+
+**Tests:** New repair tests: 5 passed, 0 failed, 0 skipped after correcting
+idempotence for data declarations. Full acceptance follows section 6.
+
+**Known gaps / follow-ups:** Pipeline/report wiring belongs to section 2.
+
 ## 2026-10-15 — Phase 9d section 0 — Investigate baseline quality
 
 **Summary:** Record the approved investigation, real failure samples, S3 fix

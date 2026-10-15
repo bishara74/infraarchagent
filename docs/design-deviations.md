@@ -1060,6 +1060,19 @@ picks the new 8,000 default. Settings resolve constructor > environment > dotenv
 > defaults; one assignment per dotenv key avoids last-assignment ambiguity.
 bench-smoke is three representative guarded real runs, not PR-01 acceptance.
 
+### D-44 — Quality repairs before readiness (Phase 9d; implementation in progress)
+
+Deterministic declaration repairs operate per Terraform module: missing inputs
+have descriptions and no defaults, secret-like names are sensitive, and only
+source-identical variable duplicates are removed. The only created data-source
+kinds are aws_availability_zones (state=available), aws_caller_identity,
+aws_region and aws_partition. Existing declarations and conflicting duplicates
+are preserved. Repairs are logged and idempotent; unsafe modules are skipped.
+The Architect supplies file types rather than exact file names; the generator
+checklist derives required paths from the shared layout, without a schema change.
+Readiness, severity/blocking policy and every validator check remain unchanged.
+Automatic validation feedback and measurement follow in the next sections.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
