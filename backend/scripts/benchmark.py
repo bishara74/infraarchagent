@@ -38,6 +38,7 @@ from scripts.phase9c_metrics import (
     generator_evidence,
     number,
 )
+from scripts.phase9d_quality import quality_snapshot, quality_table, recompute_quality
 
 TERMINAL = {"success", "partial_success", "failed"}
 SETTLED = {"pending_review", "production_ready", "not_production_ready", "scan_error"}
@@ -290,6 +291,7 @@ class Harness:
         self.capacity = None
         self.fixing_model = None
         self.expected_provider = None
+        self.quality_inputs = {}
 
     async def credit(self) -> CreditSnapshot:
         return (
@@ -391,7 +393,21 @@ class Harness:
                 )
             ),
         )
-        lines, checks = [], []
+        quality_packages = [
+            p for variants in self.quality_inputs.values() for p in variants.values()
+        ]
+        quality, quality_markdown = quality_table(
+            quality_packages,
+            missing=sum(3 - len(variants) for variants in self.quality_inputs.values()),
+        )
+        if self.quality_inputs:
+            for run_id, variants in self.quality_inputs.items():
+                directory = self.output / "quality" / str(UUID(run_id))
+                directory.mkdir(parents=True, exist_ok=True)
+                for variant, package in variants.items():
+                    write_json(directory / f"{variant}.json", package)
+            write_json(self.output / "quality.json", quality)
+        lines, checks = ([quality_markdown] if self.quality_inputs else []), []
         for measurement in ("pr01", "pr03", "pr04"):
             rows = [row for row in self.rows if row["measurement"] == measurement]
             if not rows:
@@ -692,6 +708,11 @@ class Harness:
     def finish(
         self, row: dict, snapshot: dict, local: list[dict], elapsed: float
     ) -> None:
+        self.quality_inputs[row["run_id"]] = {
+            p["variant"]: quality_snapshot(p, self.redactor)
+            for p in snapshot.get("packages", [])
+            if p.get("variant") in VARIANTS
+        }
         run = snapshot["run"]
         provider = run.get("provider")
         if (
@@ -1019,6 +1040,12 @@ def arguments() -> argparse.ArgumentParser:
     download = subs.add_parser("pr04")
     download.add_argument("--run-id", required=True)
     download.add_argument("--repeat", type=int, default=10)
+    quality = subs.add_parser("quality")
+    quality.add_argument("--results-dir", type=Path, required=True)
+    quality.add_argument("--snapshots-dir", type=Path)
+    quality.add_argument(
+        "--output-dir", type=Path, required=True, dest="quality_output_dir"
+    )
     return parser
 
 
@@ -1105,6 +1132,14 @@ async def run(args) -> None:
 def main() -> None:
     parser = arguments()
     args = parser.parse_args()
+    if args.command == "quality":
+        recompute_quality(
+            args.results_dir,
+            args.snapshots_dir or args.results_dir / "quality",
+            args.quality_output_dir,
+        )
+        print(args.quality_output_dir)
+        return
     if (
         not math.isfinite(args.timeout)
         or args.timeout <= 0

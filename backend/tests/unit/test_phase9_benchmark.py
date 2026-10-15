@@ -132,7 +132,9 @@ async def test_early_terminal_snapshot_then_eof_active_and_replay(tmp_path):
     assert row["complete"] and len(harness.events) == 1
     assert any(request.headers.get("last-event-id") == "1" for request in requests)
     assert all(
-        "canary-provider-body" not in path.read_text() for path in tmp_path.iterdir()
+        "canary-provider-body" not in path.read_text()
+        for path in tmp_path.rglob("*")
+        if path.is_file()
     )
 
 
@@ -293,7 +295,9 @@ async def test_first_cost_advisory_once_and_later_guard_overrides(tmp_path, caps
     captured = capsys.readouterr().out
     assert captured.count("First real run") == 1 and "remaining credit: 48" in captured
     assert all(
-        "budget-canary-key" not in path.read_text() for path in tmp_path.iterdir()
+        "budget-canary-key" not in path.read_text()
+        for path in tmp_path.rglob("*")
+        if path.is_file()
     )
 
 

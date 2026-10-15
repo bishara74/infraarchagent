@@ -1,0 +1,82 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "ansible-lint.lint",
+      "message": "ansible-lint optional lint failed",
+      "file_path": "ansible/setup.yml",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "ansible-lint.lint",
+      "message": "ansible-lint optional lint failed",
+      "file_path": "ansible/setup.yml",
+      "line_start": 5,
+      "line_end": null
+    },
+    {
+      "check_id": "k8s.service_selector",
+      "message": "Service selector must match a workload in its namespace",
+      "file_path": "k8s/grafana-service.yaml",
+      "line_start": 12,
+      "line_end": null
+    },
+    {
+      "check_id": "k8s.service_selector",
+      "message": "Service selector must match a workload in its namespace",
+      "file_path": "k8s/prometheus-service.yaml",
+      "line_start": 12,
+      "line_end": null
+    },
+    {
+      "check_id": "helm.templates",
+      "message": "Chart requires templates",
+      "file_path": "helm/grafana/Chart.yaml",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "helm.templates",
+      "message": "Chart requires templates",
+      "file_path": "helm/prometheus/Chart.yaml",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "grafana.panels",
+      "message": "Dashboard requires panels",
+      "file_path": "monitoring/grafana/dashboard.json",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "document.parse",
+      "message": "Document could not be parsed",
+      "file_path": "terraform/main.tf",
+      "line_start": 170,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "line_start": 5,
+      "line_end": 5
+    }
+  ],
+  "remaining_findings": {
+    "KSV-0125": 1
+  },
+  "counts": {
+    "failed_checks": 9,
+    "remaining_findings": 1,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 0,
+    "security_iterations": 3
+  }
+}

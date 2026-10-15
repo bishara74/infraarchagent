@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-15 — Phase 9d section 5 — Measure quality with compact safe inputs
+
+**Summary:** Add status/review/check/finding tables to benchmark summaries and
+an offline quality command. Save only explicit allowlisted metadata, never
+source/diffs/feedback. Recompute the original baseline into a separate folder.
+
+**Requirements addressed:** FR-V-04, NFR-01, PR-01, PR-05.
+
+**Files:** scripts/{phase9d_quality,benchmark,run_phase9_benchmarks}.py;
+unit/{test_quality_metrics,test_phase9_benchmark}.py;
+docs/evals/phase9d-baseline-quality-20261015/; README.md; D-44; this log.
+
+**Decisions:** Run/variant association lives in filenames. Generated-package rate
+is separate from six missing variants. Historical absent snapshots are unknown.
+Existing canary assertions now recursively inspect every new evidence file.
+
+**Tests:** Quality and benchmark regression command: 19 passed, 0 failed,
+0 skipped. Real offline baseline command reproduces 1/36 (2.78%), 35 validation
+failures, 30 unresolved-security packages and all supplied top-check/rule counts.
+make lint passes including strict mypy (105 files), frontend eslint/TypeScript.
+
+**Known gaps / follow-ups:** Full backend/browser acceptance is section 6;
+no real provider calls or estimated post-change outcomes.
+
 ## 2026-10-15 — Phase 9d section 4 — Require complete valid generator artifacts
 
 **Summary:** Generator prompt v5 renders concrete plan-specific file paths from

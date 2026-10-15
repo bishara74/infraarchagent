@@ -1,0 +1,74 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.aws_region is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 10,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.bucket_name is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 65,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.website_replica_bucket_name is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 116,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.replica_region is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 124,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.log_bucket_name is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 142,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.log_replica_bucket_name is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 185,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared input variable",
+      "file_path": "terraform/main.tf",
+      "line_start": 10,
+      "line_end": 10
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0011": 1,
+    "AWS-0086": 4,
+    "AWS-0087": 4,
+    "AWS-0091": 4,
+    "AWS-0093": 4,
+    "CKV_AWS_144": 2,
+    "CKV_AWS_18": 2
+  },
+  "counts": {
+    "failed_checks": 7,
+    "remaining_findings": 21,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 0,
+    "security_iterations": 3
+  }
+}

@@ -1100,6 +1100,15 @@ Grafana provisioning dashboards with non-empty top-level panels. The generator
 wire schema, 8,000-token default and 120-second attempt default are unchanged.
 For fair author comparisons retain baseline overrides of 16,000/140.
 
+Quality snapshots explicitly allow only status/review reasons, failed-check
+IDs/messages/locations, remaining rule IDs and counts. No generated source,
+diffs, feedback, fixer summaries or finding messages are saved in benchmark
+quality inputs. Association uses run/variant directory names. The offline quality
+subcommand accepts historical full API snapshots but writes only the allowlist
+into a distinct new directory. Missing historical metrics stay unknown.
+The separate baseline quality folder reproduces 1/36 ready and six missing;
+original baseline files and cached input snapshots are not modified.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

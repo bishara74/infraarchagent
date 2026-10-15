@@ -1,0 +1,51 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.lb_logs_bucket is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 293,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.acm_certificate_arn is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 337,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "line_start": 43,
+      "line_end": 43
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "line_start": 50,
+      "line_end": 50
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0052": 1,
+    "AWS-0065": 1,
+    "CKV2_AWS_12": 1,
+    "CKV_AWS_111": 1,
+    "CKV_AWS_129": 1
+  },
+  "counts": {
+    "failed_checks": 4,
+    "remaining_findings": 5,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 0,
+    "security_iterations": 3
+  }
+}

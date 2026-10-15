@@ -813,3 +813,21 @@ Every accepted round strictly reduces failed checks without new blocking finding
 Final validation and security scanning still run on the final files. Engineer
 Retry shares patch/prompt/verification primitives and retains its acceptance rules.
 The opt-in review demo retains its intentional manual-review failure.
+
+Quality snapshots contain only package status/review reasons, failed-check
+IDs/messages/locations, remaining rule IDs and numeric counts. They exclude
+source, diffs, feedback and fixer text. Benchmark summaries include quality tables.
+Recompute the original baseline into a separate folder (no API or model calls):
+
+```sh
+cd backend
+.venv/bin/python -m scripts.benchmark quality \
+  --results-dir ../docs/evals/phase9-bench-real-20261015T124330508703Z \
+  --snapshots-dir ../.cache/phase9d-results \
+  --output-dir ../docs/evals/phase9d-baseline-quality-new
+```
+
+For a new benchmark folder its saved `quality/` directory is the default snapshot
+source. The output directory must be new and outside both input directories.
+The committed `docs/evals/phase9d-baseline-quality-20261015/` reproduces 1/36
+production ready, with six missing variants, without retaining generated code.

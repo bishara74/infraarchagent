@@ -1,0 +1,33 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "document.parse",
+      "message": "Document could not be parsed",
+      "file_path": "terraform/main.tf",
+      "line_start": 228,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "line_start": 228,
+      "line_end": 228
+    }
+  ],
+  "remaining_findings": {
+    "TERRAFORM_SYNTAX": 1
+  },
+  "counts": {
+    "failed_checks": 2,
+    "remaining_findings": 1,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 0,
+    "security_iterations": 3
+  }
+}

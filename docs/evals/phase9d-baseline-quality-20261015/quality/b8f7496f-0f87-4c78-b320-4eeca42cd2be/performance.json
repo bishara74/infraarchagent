@@ -1,0 +1,92 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "k8s.configmap_ref",
+      "message": "ConfigMap reference must resolve in its namespace",
+      "file_path": "k8s/prometheus-deployment.yaml",
+      "line_start": 53,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.account_id is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 261,
+      "line_end": null
+    },
+    {
+      "check_id": "helm.templates",
+      "message": "Chart requires templates",
+      "file_path": "helm/grafana/Chart.yaml",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "helm.templates",
+      "message": "Chart requires templates",
+      "file_path": "helm/prometheus/Chart.yaml",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "k8s.duplicate",
+      "message": "Kubernetes identity must be unique in its namespace",
+      "file_path": "k8s/grafana-hpa.yaml",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "line_start": 17,
+      "line_end": 17
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared resource",
+      "file_path": "terraform/main.tf",
+      "line_start": 45,
+      "line_end": 45
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared resource",
+      "file_path": "terraform/main.tf",
+      "line_start": 53,
+      "line_end": 53
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared input variable",
+      "file_path": "terraform/main.tf",
+      "line_start": 261,
+      "line_end": 261
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0052": 1,
+    "AWS-0053": 1,
+    "AWS-0065": 3,
+    "AWS-0079": 1,
+    "AWS-0086": 1,
+    "AWS-0087": 1,
+    "AWS-0091": 1,
+    "AWS-0093": 1,
+    "AWS-0104": 2,
+    "AWS-0343": 1,
+    "KSV-0125": 2
+  },
+  "counts": {
+    "failed_checks": 9,
+    "remaining_findings": 15,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 0,
+    "security_iterations": 3
+  }
+}

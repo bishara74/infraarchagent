@@ -1,0 +1,51 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.replica_bucket_arn is not declared",
+      "file_path": "terraform/main.tf",
+      "line_start": 61,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "line_start": 220,
+      "line_end": 220
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "line_start": 232,
+      "line_end": 232
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "line_start": 275,
+      "line_end": 275
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0010": 1,
+    "AWS-0086": 2,
+    "AWS-0087": 2,
+    "AWS-0091": 2,
+    "AWS-0093": 2
+  },
+  "counts": {
+    "failed_checks": 4,
+    "remaining_findings": 9,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 0,
+    "security_iterations": 3
+  }
+}

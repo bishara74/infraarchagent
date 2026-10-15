@@ -36,6 +36,11 @@ def section_reports(harness: Harness, directory: Path) -> None:
         view.agent_rows = [row for row in harness.agent_rows if row["run_id"] in ids]
         view.events = [event for event in harness.events if event["run_id"] in ids]
         view.cohorts = harness.cohorts if name == "pr03" else []
+        view.quality_inputs = {
+            run_id: data
+            for run_id, data in harness.quality_inputs.items()
+            if run_id in ids
+        }
         view.capacity = harness.capacity
         view.fixing_model = harness.fixing_model
         view.stop_reason = harness.stop_reason
