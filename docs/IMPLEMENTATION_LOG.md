@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-15 — Phase 9d section 2 — Share remediation and repair validation
+
+**Summary:** Reuse Retry's fixer, prompt and patch-merging code for bounded
+atomic validation rounds, then verify the exact final files with both tools.
+Preserve original files, typed repair history and existing engineer-Retry policy.
+
+**Requirements addressed:** FR-S-07, FR-S-09, FR-V-01, FR-V-03, FR-V-04, NFR-01.
+
+**Files:** agents/{remediation,validation_repair,validator,security/*,prompts/security_fix}.py;
+pipeline/orchestrator.py; domain/{states,validation}.py; core/config.py;
+db/repositories/packages.py; new repair unit/integration tests; pipeline API
+recorded-scanner fixture; README.md; .env.example; D-44; this log.
+
+**Decisions:** Default two initial rounds plus one after security changes;
+share the 120-second repair budget. Automatic acceptance requires fewer failed
+checks and no new blocking fingerprints; Retry's acceptance stays unchanged.
+Review demo intentionally retains manual repair. Final scan errors cannot pass.
+
+**Tests:** Retry/security/concurrency/recovery regression command: 67 passed,
+0 failed, 0 skipped. Automatic repair/validator command: 22 passed, 0 failed,
+0 skipped. Strict mypy on app passed (104 files). Earlier fixture exhaustion
+was corrected by provisioning enough recorded replies for new final scans.
+
+**Known gaps / follow-ups:** Security guidance, iteration bounds and quality
+aggregation follow. Full acceptance remains section 6.
+
 ## 2026-10-15 — Phase 9d section 1 — Repair Terraform declarations
 
 **Summary:** Add source-preserving, per-module missing-variable and allowlisted

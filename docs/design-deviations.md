@@ -1071,7 +1071,18 @@ are preserved. Repairs are logged and idempotent; unsafe modules are skipped.
 The Architect supplies file types rather than exact file names; the generator
 checklist derives required paths from the shared layout, without a schema change.
 Readiness, severity/blocking policy and every validator check remain unchanged.
-Automatic validation feedback and measurement follow in the next sections.
+Automatic validation feedback uses the existing Retry fix pass and shared patch
+and verification helpers. Preflight allows VALIDATION_REPAIR_MAX_ROUNDS=2;
+security-modified invalid files receive at most one additional round. One
+validation-deadline budget spans the repair phases, without per-round resets.
+A candidate is kept only if failed checks decrease and no new blocking finding
+fingerprints appear; otherwise the whole round rolls back and stops. Retry keeps
+its existing per-proposal acceptance, feedback, ordering and recovery behavior.
+Final validation and a scan-only security confirmation describe the same files;
+original generation and typed repair history survive report replacement. Optional
+preflight transitions are added to the domain state table; readiness is unchanged.
+The explicit review-demo scenario bypasses automatic repair to preserve its
+manual-review demonstration; this does not match or exempt benchmark prompts.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

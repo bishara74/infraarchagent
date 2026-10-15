@@ -13,6 +13,7 @@ from app.agents.generators.cost import CostGeneratorAgent
 from app.agents.generators.performance import PerformanceGeneratorAgent
 from app.agents.generators.security import SecurityGeneratorAgent
 from app.agents.prompts.security_fix import SECURITY_FIX_PROMPT_VERSION
+from app.agents.remediation import apply_proposals, scan_files
 from app.agents.security.fix import FixAgent, FixProposal
 from app.core.config import Settings
 from app.core.logging import RedactingFilter
@@ -20,7 +21,6 @@ from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.domain.enums import AgentName, AgentState, PackageStatus, Severity, Variant
 from app.domain.models import IaCPackage, Violation
-from app.domain.package_layout import package_structure_errors
 from app.domain.review import retry_targets, security_final
 from app.domain.states import remediation_budget_decision
 from app.events.kinds import stage_notice_payload
@@ -156,40 +156,9 @@ class SecurityAgent:
 
         paths = targets if review_target_order else sorted(targets)
         proposals = await asyncio.gather(*(one(path) for path in paths))
-        results: list[dict[str, Any]] = []
-        current = dict(snapshot)
-        for proposal in sorted(proposals, key=lambda item: item.path):
-            accepted = proposal.accepted
-            reason = proposal.reason
-            if accepted:
-                candidate = dict(current)
-                assert proposal.content is not None
-                candidate[proposal.path] = proposal.content
-                if any(path in candidate for path in proposal.new_files):
-                    accepted, reason = False, "new_file_conflict"
-                else:
-                    candidate.update(proposal.new_files)
-                    if package_structure_errors(candidate, ctx.plan.file_types):
-                        accepted, reason = False, "invalid_merged_structure"
-                    else:
-                        current = candidate
-            results.append(
-                {
-                    "file": proposal.path,
-                    "rule_ids": sorted(
-                        {item.rule_id for item in targets[proposal.path]}
-                    ),
-                    "accepted": accepted,
-                    "reason": reason,
-                    "summaries": [
-                        self.redactor.redact(text) for text in proposal.summaries
-                    ],
-                    "new_files": sorted(proposal.new_files) if accepted else [],
-                    "input_tokens": proposal.input_tokens,
-                    "output_tokens": proposal.output_tokens,
-                    "cached_input_tokens": proposal.cached_input_tokens,
-                }
-            )
+        current, results = apply_proposals(
+            snapshot, proposals, targets, ctx.plan, self.redactor
+        )
         for reason in sorted(
             {
                 proposal.reason
@@ -216,6 +185,30 @@ class SecurityAgent:
             ctx.run_id, variant, PackageStatus.SCANNING, message="security scan started"
         )
         return await self._loop(ctx, variant, package, kind="automated")
+
+    async def confirm_final(
+        self, ctx: StageContext, variant: Variant, package: IaCPackage
+    ) -> PackageStatus:
+        """Readiness verification only: no extra fix passes or counter reset."""
+        scan = await scan_files(self.scanner, package.files, variant)
+        blocking = [item for item in scan.violations if item.blocking]
+        async with self.session_factory() as session:
+            async with session.begin():
+                repository = PackageRepository(session)
+                row = await repository.get(ctx.run_id, variant)
+                if row is None:
+                    raise LookupError("package not found")
+                final = dict(security_final(row.security_report))
+                final.update(
+                    outcome="exhausted" if blocking else "clean",
+                    reason="final verification" if blocking else None,
+                    remaining_blocking=[_finding(item) for item in blocking],
+                )
+                report = dict(row.security_report or {})
+                report["final"] = self._redact_report(final)
+                report["final_verification"] = self._redact_report(_scan_report(scan))
+                row.security_report = report
+        return PackageStatus.SCAN_EXHAUSTED if blocking else PackageStatus.SCAN_CLEAN
 
     async def remediate_from_review(
         self,
@@ -367,8 +360,8 @@ class SecurityAgent:
 
         while True:
             try:
-                scan = await self.scanner.scan(
-                    files, variant, iteration=iteration_count
+                scan = await scan_files(
+                    self.scanner, files, variant, iteration=iteration_count
                 )
             except ToolFailure as error:
                 reason = (

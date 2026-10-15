@@ -802,3 +802,14 @@ reject valid packages, but no raw invalid responses were retained to establish
 which attempts were affected. First evidence: four usable runs of eight,
 median 189.81s, three settled failures and one incomplete run, $4.940978 measured.
 Real reliability/cost improvements remain author-only measurements.
+
+### Phase 9d validation feedback
+
+Generated Terraform receives conservative declaration repairs before automatic
+validation repair (VALIDATION_REPAIR_MAX_ROUNDS=2; zero disables initial LLM
+rounds). All automatic rounds share the existing validation deadline, including
+time spent in security between preflight and the single post-security round.
+Every accepted round strictly reduces failed checks without new blocking findings.
+Final validation and security scanning still run on the final files. Engineer
+Retry shares patch/prompt/verification primitives and retains its acceptance rules.
+The opt-in review demo retains its intentional manual-review failure.

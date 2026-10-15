@@ -29,7 +29,9 @@ PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
     PackageStatus.GENERATING: frozenset(
         {PackageStatus.GENERATED, PackageStatus.FAILED}
     ),
-    PackageStatus.GENERATED: frozenset({PackageStatus.SCANNING}),
+    PackageStatus.GENERATED: frozenset(
+        {PackageStatus.SCANNING, PackageStatus.VALIDATING}
+    ),
     PackageStatus.FAILED: frozenset(),
     PackageStatus.SCANNING: frozenset(
         {
@@ -41,8 +43,12 @@ PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
     PackageStatus.REMEDIATING: frozenset(
         {PackageStatus.SCANNING, PackageStatus.SCAN_EXHAUSTED}
     ),
-    PackageStatus.SCAN_CLEAN: frozenset({PackageStatus.VALIDATING}),
-    PackageStatus.SCAN_EXHAUSTED: frozenset({PackageStatus.VALIDATING}),
+    PackageStatus.SCAN_CLEAN: frozenset(
+        {PackageStatus.VALIDATING, PackageStatus.SCAN_ERROR}
+    ),
+    PackageStatus.SCAN_EXHAUSTED: frozenset(
+        {PackageStatus.VALIDATING, PackageStatus.SCAN_ERROR}
+    ),
     PackageStatus.SCAN_ERROR: frozenset(),
     PackageStatus.VALIDATING: frozenset(
         {
@@ -52,10 +58,18 @@ PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
         }
     ),
     PackageStatus.VALID: frozenset(
-        {PackageStatus.PRODUCTION_READY, PackageStatus.PENDING_REVIEW}
+        {
+            PackageStatus.PRODUCTION_READY,
+            PackageStatus.PENDING_REVIEW,
+            PackageStatus.SCANNING,
+        }
     ),
-    PackageStatus.INVALID: frozenset({PackageStatus.PENDING_REVIEW}),
-    PackageStatus.VALIDATION_ERROR: frozenset({PackageStatus.PENDING_REVIEW}),
+    PackageStatus.INVALID: frozenset(
+        {PackageStatus.PENDING_REVIEW, PackageStatus.SCANNING}
+    ),
+    PackageStatus.VALIDATION_ERROR: frozenset(
+        {PackageStatus.PENDING_REVIEW, PackageStatus.SCANNING}
+    ),
     PackageStatus.PENDING_REVIEW: frozenset(
         {
             PackageStatus.PRODUCTION_READY,

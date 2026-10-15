@@ -11,8 +11,13 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.agents.architect import ArchitectError
+from app.agents.budget import AgentBudget
 from app.agents.factory import AgentFactory
 from app.agents.generators.base import GeneratorAgent, GeneratorError
+from app.agents.remediation import validate_files
+from app.agents.security.agent import SecurityAgent
+from app.agents.validation_repair import ValidationRepair
+from app.agents.validator import ValidatorAgent
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
@@ -20,6 +25,7 @@ from app.domain.enums import AgentName, AgentState, PackageStatus, RunStatus, Va
 from app.domain.models import IaCPackage
 from app.domain.run_config import RunConfig
 from app.domain.states import classify_run, readiness_after_validation
+from app.domain.validation import DeterministicRepair, RemediationReport
 from app.events.kinds import (
     package_generated_payload,
     package_status_payload,
@@ -27,6 +33,8 @@ from app.events.kinds import (
 )
 from app.pipeline.stages import SecurityStage, StageContext, ValidationStage
 from app.pipeline.state import PipelineStateWriter
+from app.scanners.runner import ToolFailure
+from app.validation.repairs import repair_terraform
 
 logger = logging.getLogger(__name__)
 GENERATOR_NAMES = {
@@ -221,10 +229,61 @@ class PipelineOrchestrator:
     async def _post_generation(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
     ) -> PackageStatus:
-        try:
-            stage = self.security_stage or self.factory.create_security_agent(
-                self.run_config
+        stage = self.security_stage or self.factory.create_security_agent(
+            self.run_config
+        )
+        repair = None
+        repair_budget = None
+        metadata = RemediationReport()
+        original_files = dict(package.files)
+        demo_review = (
+            getattr(self.factory, "pipeline_demo_stub", False)
+            and self.factory.settings.pipeline_demo_scenario == "review"
+        )
+        if (
+            isinstance(stage, SecurityAgent)
+            and isinstance(self.validation_stage, ValidatorAgent)
+            and not demo_review
+        ):
+            repair = ValidationRepair(stage, self.validation_stage.engine)
+            repair_budget = AgentBudget(
+                self.factory.settings.validation_deadline_seconds, clock=ctx.clock
             )
+            files, records = repair_terraform(package.files)
+            metadata = RemediationReport(
+                deterministic_repairs=[
+                    DeterministicRepair.model_validate(r) for r in records
+                ]
+            )
+            package = package.model_copy(update={"files": files})
+            await ctx.writer.package_transition(
+                ctx.run_id,
+                variant,
+                PackageStatus.VALIDATING,
+                message="validation preflight started",
+            )
+            package, report, metadata = await repair.run(
+                ctx,
+                variant,
+                package,
+                rounds=self.factory.settings.validation_repair_max_rounds,
+                budget=repair_budget,
+                phase="before_security",
+                metadata=metadata,
+            )
+            async with self.session_factory() as session:
+                async with session.begin():
+                    await PackageRepository(session).save_automatic_repairs(
+                        self.run_id,
+                        variant,
+                        original_files=original_files,
+                        files=package.files,
+                    )
+            await self.validation_stage.run(
+                ctx, variant, package, prepared_report=report, already_validating=True
+            )
+        before_security_files = dict(package.files)
+        try:
             scan = await stage.run(ctx, variant, package)
         except Exception:
             logger.exception(
@@ -241,12 +300,59 @@ class PipelineOrchestrator:
                 update={
                     "files": dict(remediated_row.files),
                     "security_report": remediated_row.security_report,
+                    "validation_report": remediated_row.validation_report,
                 }
             )
         try:
-            validation = await self.validation_stage.run(
-                ctx, variant, remediated_package
-            )
+            if repair is not None and repair_budget is not None:
+                assert isinstance(self.validation_stage, ValidatorAgent)
+                assert isinstance(stage, SecurityAgent)
+                report = await validate_files(
+                    self.validation_stage.engine, ctx.plan, remediated_package.files
+                )
+                if (
+                    remediated_package.files != before_security_files
+                    and report.summary.result == "invalid"
+                ):
+                    remediated_package, report, metadata = await repair.run(
+                        ctx,
+                        variant,
+                        remediated_package,
+                        rounds=1,
+                        budget=repair_budget,
+                        phase="after_security",
+                        metadata=metadata,
+                        report=report,
+                    )
+                # Final checks describe the same candidate, including rollback.
+                remediated_package = remediated_package.model_copy(
+                    update={"files": stage.safety.value(remediated_package.files)}
+                )
+                report = await validate_files(
+                    self.validation_stage.engine, ctx.plan, remediated_package.files
+                )
+                report = report.model_copy(update={"remediation": metadata})
+                scan = await stage.confirm_final(ctx, variant, remediated_package)
+                async with self.session_factory() as session:
+                    async with session.begin():
+                        await PackageRepository(session).save_automatic_repairs(
+                            self.run_id,
+                            variant,
+                            original_files=original_files,
+                            files=remediated_package.files,
+                        )
+                validation = await self.validation_stage.run(
+                    ctx,
+                    variant,
+                    remediated_package,
+                    prepared_report=report,
+                )
+            else:
+                validation = await self.validation_stage.run(
+                    ctx, variant, remediated_package
+                )
+        except ToolFailure:
+            return await self._stage_error(variant, validation=False)
         except Exception:
             logger.exception(
                 "validation stage failed for run %s variant %s", self.run_id, variant

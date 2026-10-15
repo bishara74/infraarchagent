@@ -4,6 +4,7 @@ import time
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.agents.remediation import validate_files
 from app.core.config import Settings
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
@@ -33,7 +34,13 @@ class ValidatorAgent:
         self.safety = PublicDataSafety(settings) if settings else None
 
     async def run(
-        self, ctx: StageContext, variant: Variant, package: IaCPackage
+        self,
+        ctx: StageContext,
+        variant: Variant,
+        package: IaCPackage,
+        *,
+        prepared_report: ValidationReport | None = None,
+        already_validating: bool = False,
     ) -> PackageStatus:
         started = time.monotonic()
         await ctx.writer.agent_state(
@@ -43,10 +50,24 @@ class ValidatorAgent:
             message="validation started",
             variant=variant,
         )
-        await ctx.writer.package_transition(
-            ctx.run_id, variant, PackageStatus.VALIDATING, message="validation started"
+        if not already_validating:
+            await ctx.writer.package_transition(
+                ctx.run_id,
+                variant,
+                PackageStatus.VALIDATING,
+                message="validation started",
+            )
+        report = prepared_report or await validate_files(
+            self.engine, ctx.plan, package.files
         )
-        report = await self.engine.validate(ctx.plan, package.files)
+        if report.remediation is None and package.validation_report:
+            from app.domain.validation import RemediationReport
+
+            metadata = package.validation_report.get("remediation")
+            if metadata is not None:
+                report = report.model_copy(
+                    update={"remediation": RemediationReport.model_validate(metadata)}
+                )
         if self.safety is not None:
             safe = self.safety.value(report.model_dump(mode="json"))
             checks = sorted(

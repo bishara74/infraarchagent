@@ -1,7 +1,7 @@
 """Per-file security fix prompt with nonce-delimited untrusted code data."""
 
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from secrets import token_hex
 from typing import Any
 
@@ -39,6 +39,7 @@ def user_prompt(
     feedback: str | None = None,
     validation_failures: Sequence[dict[str, Any]] = (),
     nonce: str | None = None,
+    related_files: Mapping[str, str] | None = None,
 ) -> str:
     marker = nonce or token_hex(16)
     numbered = "\n".join(
@@ -55,6 +56,11 @@ def user_prompt(
         + (numbered or "(scanner found none; use failed validation checks)"),
         f'<file_content id="{marker}">\n{content}\n</file_content id="{marker}">',
     ]
+    if related_files:
+        related = json.dumps(dict(related_files), ensure_ascii=False)
+        parts.append(
+            f'<related_files id="{marker}">\n{related}\n</related_files id="{marker}">'
+        )
     if feedback is not None:
         parts.append(
             f'<review_feedback id="{marker}">\n{feedback}\n'

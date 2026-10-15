@@ -58,6 +58,7 @@ class Settings(BaseSettings):
     scanner_timeout_seconds: float = Field(default=120.0, gt=0)
     validator_tool_timeout_seconds: float = Field(default=60.0, gt=0)
     validator_max_parallel_tools: int = Field(default=3, ge=1, le=3)
+    validation_repair_max_rounds: int = Field(default=2, ge=0)
     validation_deadline_seconds: float = Field(default=120.0, gt=0)
     fix_attempt_timeout_seconds: float = Field(default=90.0, gt=0)
     fix_max_output_tokens: int = Field(default=16000, ge=1)

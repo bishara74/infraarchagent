@@ -26,7 +26,7 @@ from app.validation.engine import ValidationEngine
 from tests.unit.test_validation_engine import Clean, mirror
 
 
-def _empty_scanner(repeats: int = 3) -> Scanner:
+def _empty_scanner(repeats: int = 32) -> Scanner:
     return Scanner(
         RecordedToolRunner(
             {

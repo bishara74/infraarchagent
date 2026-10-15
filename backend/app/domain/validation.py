@@ -100,6 +100,38 @@ class ValidationSummary(BaseModel):
     result: ValidationResult
 
 
+class DeterministicRepair(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    file: str
+    kind: Literal["missing_variable", "duplicate_variable", "missing_data_source"]
+    name: str
+
+
+class RepairRound(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    phase: Literal["before_security", "after_security"]
+    index: int = Field(ge=1)
+    before_failed: int = Field(ge=0)
+    after_failed: int | None = Field(default=None, ge=0)
+    outcome: Literal["accepted", "rejected", "stopped"]
+    reason: Literal[
+        "improved",
+        "no_improvement",
+        "new_blocking_findings",
+        "invalid_patch",
+        "verification_unavailable",
+        "deadline",
+        "round_limit",
+        "no_targets",
+    ]
+
+
+class RemediationReport(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    deterministic_repairs: list[DeterministicRepair] = Field(default_factory=list)
+    rounds: list[RepairRound] = Field(default_factory=list)
+
+
 def check_order(
     check: ValidationCheck,
 ) -> tuple[str, str, int, str, str, str, str, int, str]:
@@ -126,6 +158,7 @@ class ValidationReport(BaseModel):
     failed_checks_for_remediation: tuple[ValidationCheck, ...]
     omitted_counts: dict[CheckStatus, int] = Field(default_factory=dict)
     abort_reason: AbortReason | None = None
+    remediation: RemediationReport | None = None
 
     @field_validator("checks", "failed_checks_for_remediation", mode="before")
     @classmethod

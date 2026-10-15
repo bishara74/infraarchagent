@@ -4,6 +4,7 @@ import re
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import PurePosixPath
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -183,6 +184,14 @@ class FixAgent:
                     findings=findings,
                     feedback=feedback,
                     validation_failures=validation_failures,
+                    related_files={
+                        name: text
+                        for name, text in files.items()
+                        if name != path
+                        and path.startswith("terraform/")
+                        and PurePosixPath(name).parent == PurePosixPath(path).parent
+                        and name.endswith((".tf", ".tf.json"))
+                    },
                 ),
                 system=system_prompt(directive),
                 deadline=remaining,

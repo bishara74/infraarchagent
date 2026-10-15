@@ -176,6 +176,23 @@ class PackageRepository:
         await self.session.flush()
         return row
 
+    async def save_automatic_repairs(
+        self,
+        run_id: UUID,
+        variant: Variant,
+        *,
+        original_files: dict[str, str],
+        files: dict[str, str],
+    ) -> None:
+        row = await self.get_for_update(run_id, variant)
+        if row is None:
+            raise LookupError("package not found")
+        if row.original_files is None:
+            row.original_files = validate_file_map(original_files)
+        row.files = validate_file_map(files)
+        row.remediation_diff = package_diff(row.original_files, row.files)
+        await self.session.flush()
+
     async def reset_iteration_count(self, run_id: UUID, variant: Variant) -> None:
         row = await self.get(run_id, variant)
         if row is None:
