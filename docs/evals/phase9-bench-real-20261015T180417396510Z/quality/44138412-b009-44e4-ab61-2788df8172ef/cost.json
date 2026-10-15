@@ -1,0 +1,37 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "helm.lint",
+      "message": "helm optional lint failed",
+      "file_path": "helm/api/Chart.yaml",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "line_start": 13,
+      "line_end": 13
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid resource type",
+      "file_path": "terraform/main.tf",
+      "line_start": 180,
+      "line_end": 180
+    }
+  ],
+  "remaining_findings": {},
+  "counts": {
+    "failed_checks": 3,
+    "remaining_findings": 0,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 1,
+    "security_iterations": 2
+  }
+}
