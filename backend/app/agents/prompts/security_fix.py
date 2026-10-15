@@ -5,10 +5,11 @@ from collections.abc import Mapping, Sequence
 from secrets import token_hex
 from typing import Any
 
+from app.agents.prompts.quality import DOCUMENT_GUIDANCE, PROVIDER_GUIDANCE, S3_GUIDANCE
 from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
 
-SECURITY_FIX_PROMPT_VERSION = "1"
+SECURITY_FIX_PROMPT_VERSION = "2"
 
 
 def system_prompt(directive: str) -> str:
@@ -17,6 +18,9 @@ def system_prompt(directive: str) -> str:
             f"SecurityAgent fix prompt version {SECURITY_FIX_PROMPT_VERSION}.",
             "Fix every listed finding in the requested file and change nothing else.",
             "Preserve the deployment plan's service names and optimisation intent.",
+            PROVIDER_GUIDANCE,
+            S3_GUIDANCE,
+            DOCUMENT_GUIDANCE,
             f"Optimisation directive: {directive}",
             "Never add suppression annotations such as checkov:skip, tfsec:ignore,",
             "trivy:ignore, #nosec, or similar comments. Never hardcode secrets.",

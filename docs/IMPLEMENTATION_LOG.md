@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-15 — Phase 9d section 3 — Correct S3 guidance and bound iterations
+
+**Summary:** Teach the shared fixer standalone public-access resources and
+provider-compatible repairs, covering new log/replica buckets and preserving
+existing resources. Raise the existing iteration default to four and cap each
+automated iteration at 60 seconds within the 240-second stage budget.
+
+**Requirements addressed:** FR-S-03, FR-S-05, FR-V-03, PR-05.
+
+**Files:** agents/prompts/{quality,security_fix}.py; agents/security/agent.py;
+core/config.py; .env.example; unit/{test_quality_guidance,test_config}.py;
+integration/test_security_agent.py; D-44; this log.
+
+**Decisions:** Fixer attempt default stays 90, clipped to iteration time;
+recommend 45 for the author. No model, readiness or finding reclassification.
+Measured baseline iterations were median 8.13s/max 28.11s; added validation
+work and the new total runtime remain unmeasured.
+
+**Tests:** Guidance/config/security/concurrency command: 50 passed, 0 failed,
+0 skipped. Injected-clock deadline regression preserves files and iteration count.
+
+**Known gaps / follow-ups:** Real quality/runtime measurements are author-only.
+
 ## 2026-10-15 — Phase 9d section 2 — Share remediation and repair validation
 
 **Summary:** Reuse Retry's fixer, prompt and patch-merging code for bounded

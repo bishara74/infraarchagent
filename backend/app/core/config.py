@@ -53,7 +53,7 @@ class Settings(BaseSettings):
     generator_max_package_attempts: int = Field(default=2, ge=1)
     llm_backoff_base_seconds: float = Field(default=1.0, ge=0)
     llm_max_output_tokens: int = Field(default=16000, ge=1)
-    max_remediation_iterations: int = Field(default=3, ge=1)
+    max_remediation_iterations: int = Field(default=4, ge=1)
     security_deadline_seconds: float = Field(default=240.0, gt=0)
     scanner_timeout_seconds: float = Field(default=120.0, gt=0)
     validator_tool_timeout_seconds: float = Field(default=60.0, gt=0)

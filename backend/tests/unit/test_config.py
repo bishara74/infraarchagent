@@ -27,7 +27,7 @@ def _settings(**overrides: object) -> Settings:
 def test_defaults_and_secret_representations() -> None:
     settings = _settings(llm_api_key="sk-ant-api03-CANARY-7f3c9e2a1b4d5e6f")
     assert settings.llm_provider == "stub"
-    assert settings.max_remediation_iterations == 3
+    assert settings.max_remediation_iterations == 4
     assert settings.package_retention_days == 30
     assert settings.llm_attempt_timeout_seconds == 30
     assert settings.llm_max_attempts == 3

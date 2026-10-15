@@ -1084,6 +1084,14 @@ preflight transitions are added to the domain state table; readiness is unchange
 The explicit review-demo scenario bypasses automatic repair to preserve its
 manual-review demonstration; this does not match or exempt benchmark prompts.
 
+Security fix passes now default to four rather than the thesis default of three.
+Each automated scan/fix iteration is capped at 60 seconds inside the existing
+240-second security budget; fixer calls are clipped to remaining iteration time.
+A timed-out fix round keeps its input files. A timed-out scan remains scan_error.
+Fix prompt v2 names mirrored provider schemas and standalone S3 public-access
+resources for every existing/new log or replica bucket. Ansible and Grafana
+artifact guidance is shared with generators; no scanner/validator rule changes.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

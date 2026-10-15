@@ -359,13 +359,19 @@ class SecurityAgent:
             )
 
         while True:
+            iteration_budget = AgentBudget(
+                max(0.001, min(60.0, budget.remaining())), clock=ctx.clock
+            )
             try:
-                scan = await scan_files(
-                    self.scanner, files, variant, iteration=iteration_count
-                )
-            except ToolFailure as error:
+                async with asyncio.timeout(iteration_budget.remaining()):
+                    scan = await scan_files(
+                        self.scanner, files, variant, iteration=iteration_count
+                    )
+            except (ToolFailure, TimeoutError) as error:
                 reason = (
-                    f"{error.tool} is not installed"
+                    "security iteration deadline"
+                    if isinstance(error, TimeoutError)
+                    else f"{error.tool} is not installed"
                     if error.category == "not_installed"
                     else f"{error.tool} scan {error.category}"
                 )
@@ -447,15 +453,28 @@ class SecurityAgent:
             targets = defaultdict(list)
             for item in blocking:
                 targets[item.file_path].append(item)
-            files, fixes, diff = await self._fix_pass(
-                ctx,
-                variant,
-                files,
-                targets,
-                budget,
-                feedback=feedback,
-                validation_failures=validation_failures,
-            )
+            try:
+                async with asyncio.timeout(iteration_budget.remaining()):
+                    files, fixes, diff = await self._fix_pass(
+                        ctx,
+                        variant,
+                        files,
+                        targets,
+                        iteration_budget,
+                        feedback=feedback,
+                        validation_failures=validation_failures,
+                    )
+            except TimeoutError:
+                reason, outcome, status = (
+                    "time budget",
+                    "exhausted",
+                    PackageStatus.SCAN_EXHAUSTED,
+                )
+                entry["stop_reason"] = "iteration_deadline"
+                await ctx.writer.package_transition(
+                    ctx.run_id, variant, status, message=reason
+                )
+                break
             entry["fixes"] = fixes
             entry["diff"], entry["diff_omitted_chars"] = _capped_diff(diff)
             iteration_count = decision.next_iteration_count

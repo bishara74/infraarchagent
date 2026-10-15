@@ -1,5 +1,6 @@
 """FR-S-03/05/06/09: real database state and report audit through the loop."""
 
+import asyncio
 import json
 from copy import deepcopy
 from dataclasses import replace
@@ -26,6 +27,37 @@ from app.pipeline.stages import StageContext
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import ScanResult
+
+
+@pytest.mark.req("FR-S-03", "PR-05")
+async def test_iteration_deadline_preserves_unmodified_files(db_engines):
+    engine, _ = db_engines
+    ctx, package = await setup(engine)
+    now = [0.0]
+    ctx = replace(ctx, clock=lambda: now[0])
+
+    class SlowScan(ScriptedScanner):
+        async def scan(self, *args, **kwargs):
+            now[0] = 61.0
+            return await super().scan(*args, **kwargs)
+
+    class WaitingFix(ScriptedFix):
+        async def propose(self, **kwargs):
+            await asyncio.Event().wait()
+
+    security = agent(engine, SlowScan([[finding("RULE")]]), WaitingFix())
+    assert (
+        await security.run(ctx, Variant.SECURITY, package)
+        == PackageStatus.SCAN_EXHAUSTED
+    )
+    async with make_session_factory(engine)() as session:
+        row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+    assert row.files == package.files
+    assert row.iteration_count == 0
+    assert (
+        row.security_report["sessions"][0]["iterations"][0]["stop_reason"]
+        == "iteration_deadline"
+    )
 
 
 def finding(rule: str, tool: str = "checkov") -> Violation:
