@@ -1123,8 +1123,11 @@ severities and existing check meanings remain unchanged.
 Approved extensions include exactly two new deterministic idiom repairs,
 per-iteration Terraform regression rollback under the existing 60-second
 ceiling, private initialized package workspaces, explicit timing/provenance,
-and independent initial/post-security repair budgets. Remaining implementation
-and verification are recorded in the Phase 9e section entries.
+and independent initial/post-security repair budgets. Scanner-only prompts receive the same 16000-character schema cap as repair;
+the generator gets at most 6000 input characters without output-budget changes.
+Initialized provider versions take precedence; namespace mismatches are never
+grounded with unrelated schemas. Remaining implementation and verification are
+recorded in the Phase 9e section entries.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

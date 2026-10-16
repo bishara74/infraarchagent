@@ -5,6 +5,8 @@ PROVIDER_GUIDANCE = "\n".join(
         "Offline provider mirror: hashicorp/aws 5.100.0 and 6.68.0; random 3.9.1;",
         "kubernetes 2.38.0; helm 2.17.0; tls 4.4.1; null 3.3.2.",
         "Choose a compatible mirrored version and use its actual resource schema.",
+        "Every Terraform module must explicitly declare terraform/required_providers,",
+        "including provider sources and constraints satisfiable by this mirror.",
         "Use separate lines or commas between object attributes; no HCL semicolons.",
         "Declare every var.* input exactly once, normally in variables.tf;",
         "never give secret inputs defaults. Declare every referenced data source.",
@@ -27,6 +29,12 @@ S3_GUIDANCE = "\n".join(
         "For load balancers use drop_invalid_header_fields = true,",
         "not load_balancer_attributes blocks. Empty security-group rule blocks",
         "are incomplete rules; use supported empty rule collections to deny traffic.",
+        "CKV2_AWS_12: manage the VPC's default group with aws_default_security_group",
+        "and NO ingress/egress blocks. Never use empty blocks or revoke_all_rules.",
+        "aws_flow_log custom log_format field placeholders must be literal $${...},",
+        "for example $${version} $${account-id}, preserving real Terraform references.",
+        "S3 replication uses aws_s3_bucket_replication_configuration with its",
+        "provider-supported rule/destination blocks, never inline bucket replication.",
     )
 )
 

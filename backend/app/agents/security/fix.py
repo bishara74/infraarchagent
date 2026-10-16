@@ -21,6 +21,7 @@ from app.llm.errors import (
     LLMRetryExhausted,
     failure_message,
 )
+from app.validation.schema_context import schema_context
 
 SUPPRESSION = re.compile(
     r"#\s*(?:checkov\s*:\s*skip|bridgecrew\s*:\s*skip|"
@@ -104,6 +105,7 @@ class FixProposal:
     input_tokens: int | None = None
     output_tokens: int | None = None
     cached_input_tokens: int | None = None
+    schema_context_chars: int = 0
 
 
 def validate_fix(
@@ -158,10 +160,12 @@ class FixAgent:
         *,
         attempt_timeout: float = 90,
         max_output_tokens: int = 16000,
+        schema_context_max_chars: int = 16000,
     ) -> None:
         self.adapter = adapter
         self.attempt_timeout = attempt_timeout
         self.max_output_tokens = max_output_tokens
+        self.schema_context_max_chars = schema_context_max_chars
 
     async def propose(
         self,
@@ -175,6 +179,13 @@ class FixAgent:
         feedback: str | None = None,
         validation_failures: Sequence[dict[str, Any]] = (),
     ) -> FixProposal:
+        context = schema_context(
+            path,
+            dict(files),
+            failures=list(validation_failures),
+            findings=list(findings),
+            limit=self.schema_context_max_chars,
+        )
         try:
             response = await self.adapter.complete_json(
                 user_prompt(
@@ -184,6 +195,7 @@ class FixAgent:
                     findings=findings,
                     feedback=feedback,
                     validation_failures=validation_failures,
+                    schema_context=context,
                     related_files={
                         name: text
                         for name, text in files.items()
@@ -221,4 +233,5 @@ class FixAgent:
             response.response.input_tokens,
             response.response.output_tokens,
             response.response.cached_input_tokens,
+            len(context),
         )

@@ -37,8 +37,8 @@ test-perf:
 	$(BACKEND) .venv/bin/python -m scripts.measure_performance backend
 
 lint:
-	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
-	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+	$(BACKEND) .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+	$(BACKEND) .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
 	$(BACKEND) .venv/bin/ruff check app tests
 	$(BACKEND) .venv/bin/ruff format --check app tests
 	$(BACKEND) .venv/bin/mypy app

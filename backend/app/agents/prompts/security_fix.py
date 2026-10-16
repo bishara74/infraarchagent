@@ -9,7 +9,7 @@ from app.agents.prompts.quality import DOCUMENT_GUIDANCE, PROVIDER_GUIDANCE, S3_
 from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
 
-SECURITY_FIX_PROMPT_VERSION = "2"
+SECURITY_FIX_PROMPT_VERSION = "3"
 
 
 def system_prompt(directive: str) -> str:
@@ -21,6 +21,7 @@ def system_prompt(directive: str) -> str:
             PROVIDER_GUIDANCE,
             S3_GUIDANCE,
             DOCUMENT_GUIDANCE,
+            "Use the version-labelled provider schemas as authoritative structure.",
             f"Optimisation directive: {directive}",
             "Never add suppression annotations such as checkov:skip, tfsec:ignore,",
             "trivy:ignore, #nosec, or similar comments. Never hardcode secrets.",
@@ -44,6 +45,7 @@ def user_prompt(
     validation_failures: Sequence[dict[str, Any]] = (),
     nonce: str | None = None,
     related_files: Mapping[str, str] | None = None,
+    schema_context: str = "",
 ) -> str:
     marker = nonce or token_hex(16)
     numbered = "\n".join(
@@ -60,6 +62,11 @@ def user_prompt(
         + (numbered or "(scanner found none; use failed validation checks)"),
         f'<file_content id="{marker}">\n{content}\n</file_content id="{marker}">',
     ]
+    if schema_context:
+        parts.append(
+            f'<provider_schema id="{marker}">\n{schema_context}\n'
+            f'</provider_schema id="{marker}">'
+        )
     if related_files:
         related = json.dumps(dict(related_files), ensure_ascii=False)
         parts.append(

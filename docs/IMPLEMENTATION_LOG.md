@@ -27,6 +27,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-16 — Phase 9e section 3 — Ground scanner fixes and repair prompts
+
+**Summary:** Supply exact-version resource/data schemas to every shared fixer
+entry point, including scanner-only calls; add bounded generator references and
+explicit provider/default-security-group/flow-log/replication idioms.
+
+**Requirements addressed:** FR-G-02, FR-S-03, FR-S-09, FR-V-03, NFR-01.
+
+**Files:** validation/schema_context.py; agents/{factory,remediation,security/fix,
+prompts/*}.py; schema-context tests; prompt version assertion; Makefile; this log.
+
+**Decisions:** Initialized versions outrank constraint selection; non-HashiCorp
+sources never receive HashiCorp schemas. File-linked failures prioritize target
+schemas and nested blocks. Context includes symbol/attribute names, never values;
+complete JSON entries fit the 16000-character cap. Generator input is capped at
+6000 characters without changing output limits. Missing indexes log/degrade (D-45).
+
+**Tests:** Schema/context/fixer/generator regressions: 52 passed, 0 failed,
+0 skipped. Strict mypy: 110 source files passed. Ruff passed. make provider-schema:
+seven versioned exports successful, no downloads; AWS index sizes 10323113 and
+13961639 bytes. Earlier prompt-version assertion updated from v5 to v6.
+
+**Known gaps / follow-ups:** Patch/iteration guards and benchmark measurements
+follow in sections 4–5. No real quality gain is inferred from stub tests.
+
 ## 2026-10-16 — Phase 9e section 2 — Gate generation in reusable workspaces
 
 **Summary:** Add all-type parsing, formatting and installed-tool generation

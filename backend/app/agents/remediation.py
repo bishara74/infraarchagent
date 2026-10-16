@@ -54,6 +54,7 @@ def apply_proposals(
                 "input_tokens": proposal.input_tokens,
                 "output_tokens": proposal.output_tokens,
                 "cached_input_tokens": proposal.cached_input_tokens,
+                "schema_context_chars": proposal.schema_context_chars,
             }
         )
     return current, results

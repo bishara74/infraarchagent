@@ -128,6 +128,7 @@ class AgentFactory:
                 adapter,
                 attempt_timeout=self.settings.fix_attempt_timeout_seconds,
                 max_output_tokens=self.settings.fix_max_output_tokens,
+                schema_context_max_chars=self.settings.schema_context_max_chars,
             ),
             self.session_factory,
             self.settings,

@@ -76,7 +76,7 @@ def test_plan_is_data_and_layout_is_table_driven() -> None:
     assert "‹/deployment_plan>" in user_prompt
     assert '"cloud_provider": "aws"' in user_prompt
     system_prompt = build_system_prompt("directive")
-    assert GENERATOR_PROMPT_VERSION == "5"
+    assert GENERATOR_PROMPT_VERSION == "6"
     assert f"prompt version {GENERATOR_PROMPT_VERSION}" in system_prompt
     assert "no explanatory comments beyond one short header" in system_prompt
     assert "no duplicated boilerplate" in system_prompt
