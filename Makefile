@@ -81,6 +81,10 @@ eval-validation:
 providers:
 	$(BACKEND) .venv/bin/python -m scripts.mirror_providers
 
+.PHONY: provider-schema
+provider-schema:
+	$(BACKEND) .venv/bin/python -m scripts.provider_schema
+
 .PHONY: traceability
 traceability:
 	$(BACKEND) .venv/bin/python -m scripts.traceability

@@ -1109,6 +1109,23 @@ into a distinct new directory. Missing historical metrics stay unknown.
 The separate baseline quality folder reproduces 1/36 ready and six missing;
 original baseline files and cached input snapshots are not modified.
 
+### D-45 — Syntax gates and schema-grounded repair (Accepted; Phase 9e)
+
+The author approved generation-time validity checks, syntax checks for every
+patch and version-correct offline schema grounding for both scanner fixes and
+validation repairs. Provider indexes are built offline by make provider-schema
+beside the installed mirror, with version/hash manifests; missing/corrupt
+indexes degrade grounding with safe notices and never trigger downloads.
+Schema exports capture structure, not every provider conditional constraint;
+terraform validate remains authoritative. Readiness, blocking criteria,
+severities and existing check meanings remain unchanged.
+
+Approved extensions include exactly two new deterministic idiom repairs,
+per-iteration Terraform regression rollback under the existing 60-second
+ceiling, private initialized package workspaces, explicit timing/provenance,
+and independent initial/post-security repair budgets. Remaining implementation
+and verification are recorded in the Phase 9e section entries.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -1276,6 +1293,11 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+- Chapter 4 / D-45: tool-grounded generation, scanner fixes and repair; offline
+  versioned schemas, syntax/validity ordering and bounded workspace reuse.
+- Chapter 6 / D-45: compare 9d and 9e using actual timing, rollback/deadline
+  causes and production-ready counts; never infer missing historical origins.
 
 - Chapter 4 / D-44: add Validator feedback into the shared remediation path;
   describe deterministic declarations, bounded pre/post-security repair,

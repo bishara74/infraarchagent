@@ -580,6 +580,12 @@ Validation settings are read with the existing application settings:
 | `VALIDATOR_MAX_PARALLEL_TOOLS` | `3` | Concurrent commands per package, from 1 to 3. |
 | `VALIDATION_DEADLINE_SECONDS` | `120` | Whole-package validation deadline. |
 
+Export the compact provider schema index offline with `make provider-schema`
+after provisioning the mirror. It writes version/hash manifests and indexes to
+`.cache/terraform-provider-schemas/` beside the mirror; do not commit them.
+This is also a Phase 10 installation prerequisite. Missing indexes degrade
+repair grounding with a safe log notice; they never trigger downloads.
+
 Provision the provider mirror once with `make providers` before live validation
 or evaluation. This needs network access; a failed download stops provisioning.
 Runtime tools use temporary copies, minimal environments and refusal proxies;

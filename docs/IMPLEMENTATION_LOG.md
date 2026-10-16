@@ -27,6 +27,26 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-16 — Phase 9e section 1 — Export offline provider schema indexes
+
+**Summary:** Add compact hash-verified indexes for every pinned version and
+version-bound resource/data queries, required-member checks and name suggestions.
+
+**Requirements addressed:** FR-V-03, NFR-01.
+
+**Files:** validation/provider_schema.py; scripts/provider_schema.py; schema
+unit/offline integration tests; Makefile; .gitignore; README; D-45; this log.
+
+**Decisions:** Offline scratch HOME/provider-installation config; no network
+fallback. Index absence/corruption safely degrades. Descriptions are removed,
+recursive types/blocks retained; optional+computed stays writable (D-45).
+
+**Tests:** Schema unit and real-mirror integration: 9 passed, 0 failed,
+0 skipped. Ruff/format and strict mypy verification recorded below/final.
+
+**Known gaps / follow-ups:** Prompt integration/workspace gates follow in
+sections 2–4. Schema structure cannot describe every conditional provider rule.
+
 ## 2026-10-16 — Phase 9e section 0 — Investigate syntax, repair and timing
 
 **Summary:** Record approved read-only findings, offline schema feasibility,
