@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-16 — Phase 9e section 0 — Investigate syntax, repair and timing
+
+**Summary:** Record approved read-only findings, offline schema feasibility,
+error-origin samples and measurement gaps before implementation.
+
+**Requirements addressed:** FR-V-03, FR-V-04, NFR-01, PR-05.
+
+**Files:** docs/phase9e-investigation.md; this log.
+
+**Decisions:** Preserve unknown provenance; distinguish deadline/limit markers
+from completed rounds. Author approved schema grounding for scanner fixes,
+two narrow deterministic repairs, iteration rollback, fresh post-security
+budget and private initialized workspace reuse. D-45 follows in implementation.
+
+**Tests:** Baseline make lint PASS (105 mypy source files; Ruff/format and
+frontend ESLint/TypeScript). Investigation: 136 offline stage evaluations,
+0 unavailable-tool skips; seven provider-schema exports successful. No unit
+or full-suite tests run in section 0; these are not test-suite counts.
+
+**Known gaps / follow-ups:** 12 incomplete intermediate package histories;
+no real-run prediction or provider calls. Sections 1–6 implement and verify.
+
 ## 2026-10-15 — Phase 9d section 6 — Verify feedback, safety and quality evidence
 
 **Summary:** Finish failure/cancellation/canary and real-database regressions;
