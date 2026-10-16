@@ -11,6 +11,7 @@ from app.domain.package_layout import package_structure_errors
 from app.domain.plan import DeploymentPlan
 from app.domain.validation import ValidationReport
 from app.scanners.scan import Scanner, ScanResult
+from app.validation.gate import syntax_checks
 
 
 class ValidationService(Protocol):
@@ -41,6 +42,8 @@ def apply_proposals(
                 candidate.update(proposal.new_files)
                 if package_structure_errors(candidate, plan.file_types):
                     accepted, reason = False, "invalid_merged_structure"
+                elif syntax_checks(candidate, {proposal.path, *proposal.new_files}):
+                    accepted, reason = False, "invalid_merged_syntax"
                 else:
                     current = candidate
         results.append(

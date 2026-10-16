@@ -1129,6 +1129,14 @@ Initialized provider versions take precedence; namespace mismatches are never
 grounded with unrelated schemas. Remaining implementation and verification are
 recorded in the Phase 9e section entries.
 
+Each security iteration compares Terraform failures before/after the two idiom
+repairs and restores its Terraform files on regression or unverifiable changes
+(unless the candidate fully validates). Non-Terraform changes require security
+verification. No-new-blocker protection and the 60-second ceiling remain;
+rolled-back attempts consume allowance. Retry uses a fresh workspace shared
+through validation. Existing control removal is rejected; same-kind replacements
+retain control fields and still require scanner verification.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

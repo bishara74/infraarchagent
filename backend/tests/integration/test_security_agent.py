@@ -113,7 +113,7 @@ async def setup(
             repository = PackageRepository(session)
             await repository.create(run.run_id, Variant.SECURITY)
             await repository.save_files(
-                run.run_id, Variant.SECURITY, {"terraform/main.tf": "original\n"}
+                run.run_id, Variant.SECURITY, {"terraform/main.tf": "# original\n"}
             )
             await repository.transition_status(
                 run.run_id, Variant.SECURITY, PackageStatus.GENERATED
@@ -126,7 +126,9 @@ async def setup(
             DeploymentPlan.model_validate(DEMO_PLAN),
             max_iterations=max_iterations,
         ),
-        IaCPackage(variant=Variant.SECURITY, files={"terraform/main.tf": "original\n"}),
+        IaCPackage(
+            variant=Variant.SECURITY, files={"terraform/main.tf": "# original\n"}
+        ),
     )
 
 
@@ -137,6 +139,12 @@ def agent(
     *,
     fixing_model: str | None = None,
 ) -> SecurityAgent:
+    class RecordedVerifier:
+        async def checks(self, files):
+            # This suite records scanner/loop behavior; schema regression has
+            # its own scripted counts and real-mirror coverage.
+            return []
+
     return SecurityAgent(  # type: ignore[arg-type]
         scanner,
         fix,
@@ -144,6 +152,7 @@ def agent(
         get_settings(),
         versions={"checkov": "3.3.21", "trivy": "0.69.3"},
         fixing_model=fixing_model,
+        terraform_verifier=RecordedVerifier(),
     )
 
 
@@ -156,7 +165,7 @@ async def test_two_fix_passes_and_three_first_scan_counts(
     scanner = ScriptedScanner(
         [
             [finding("CKV_AWS_16"), finding("AWS-0080", "trivy")],
-            [finding("CKV_AWS_17")],
+            [finding("CKV_AWS_16")],
             [],
         ]
     )
@@ -171,7 +180,7 @@ async def test_two_fix_passes_and_three_first_scan_counts(
         row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
         assert row is not None
         assert row.iteration_count == 2
-        assert row.original_files == {"terraform/main.tf": "original\n"}
+        assert row.original_files == {"terraform/main.tf": "# original\n"}
         assert row.files["terraform/main.tf"].endswith("# pass 2\n")
         report = row.security_report
         assert report is not None
@@ -326,7 +335,7 @@ async def test_no_progress_then_retry_appends_session_and_keeps_baseline(
     async with make_session_factory(engine)() as session:
         row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
         assert row is not None and row.security_report is not None
-        assert row.original_files == {"terraform/main.tf": "original\n"}
+        assert row.original_files == {"terraform/main.tf": "# original\n"}
         assert row.security_report["sessions"][0] == old_session
         assert row.security_report["sessions"][1]["kind"] == "review_retry"
         latest = row.security_report["sessions"][1]["final"]
@@ -535,6 +544,12 @@ async def test_loop_with_recorded_trivy_and_terraform(
         scripts[tool] = outputs
     scanner = Scanner(RecordedToolRunner(scripts, recorded_root=Path(RECORDED_ROOT)))
     ctx, _ = await setup(engine, max_iterations=1 if scenario == "exhausted" else 3)
+    ctx = replace(
+        ctx,
+        plan=DeploymentPlan.model_validate(
+            {**DEMO_PLAN, "file_types": ["terraform", "kubernetes"]}
+        ),
+    )
     initial = files(
         "fixed"
         if scenario == "clean"

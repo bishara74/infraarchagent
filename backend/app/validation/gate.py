@@ -156,8 +156,23 @@ class GenerationGate:
                             passed = not syntax_checks(
                                 {"k8s/rendered.yaml": result.stdout or "\n"}
                             )
+                        location = path
+                        output = result.stdout + "\n" + result.stderr
+                        if tool == "helm" and not passed:
+                            location = next(
+                                (
+                                    p
+                                    for p in sorted(files, key=len, reverse=True)
+                                    if p.startswith("helm/")
+                                    and "/templates/" in p
+                                    and (
+                                        p in output or p.removeprefix("helm/") in output
+                                    )
+                                ),
+                                path,
+                            )
                         checks.append(
-                            self.check(tool, path, "passed" if passed else "failed")
+                            self.check(tool, location, "passed" if passed else "failed")
                         )
                     except ToolFailure as error:
                         checks.append(self.check(tool, path, "skipped", error.category))
@@ -220,3 +235,26 @@ class GateRepairEngine:
         self, plan: DeploymentPlan, files: dict[str, str]
     ) -> ValidationReport:
         return (await self.gate.run(plan, files)).report
+
+
+async def patch_syntax_failure(
+    before: dict[str, str], candidate: dict[str, str], touched: set[str]
+) -> bool:
+    if syntax_checks(candidate, touched):
+        return True
+    if not any(path.startswith("helm/") for path in touched):
+        return False
+    gate = GenerationGate(ValidationEngine(versions={}))
+    _, checks, _ = await gate.extra_checks(candidate, touched=touched)
+    failed = [c for c in checks if c.status == "failed"]
+    if not failed:
+        return False
+    _, old, _ = await gate.extra_checks(before, touched=touched)
+    previous = {
+        (c.check_id, c.file_path, c.line_start) for c in old if c.status == "failed"
+    }
+    return any(
+        c.file_path in touched
+        or (c.check_id, c.file_path, c.line_start) not in previous
+        for c in failed
+    )

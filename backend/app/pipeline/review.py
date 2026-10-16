@@ -18,6 +18,7 @@ from app.domain.review import TERMINAL_RUNS, package_presentation, retry_targets
 from app.domain.run_config import RunConfig
 from app.domain.states import readiness_after_validation
 from app.pipeline.stages import StageContext
+from app.validation.workspace import ValidationWorkspace
 
 if TYPE_CHECKING:
     from app.pipeline.runner import PipelineRunner
@@ -150,6 +151,16 @@ class ReviewService:
                 self.runner.release()
 
     async def run_retry(
+        self, run_id: UUID, variant: Variant, target_files: list[str]
+    ) -> None:
+        workspace = ValidationWorkspace()
+        try:
+            with workspace.activate():
+                await self._run_retry_inside(run_id, variant, target_files)
+        finally:
+            workspace.close()
+
+    async def _run_retry_inside(
         self, run_id: UUID, variant: Variant, target_files: list[str]
     ) -> None:
         try:

@@ -11,6 +11,7 @@ from app.agents.generators.performance import PerformanceGeneratorAgent
 from app.agents.generators.security import SecurityGeneratorAgent
 from app.agents.security.agent import SecurityAgent
 from app.agents.security.fix import FixAgent
+from app.agents.security.verification import TerraformVerifier
 from app.agents.validator import ValidatorAgent
 from app.core.config import Settings
 from app.domain.enums import LLMProvider, Variant
@@ -19,7 +20,7 @@ from app.llm.factory import build_adapter
 from app.pipeline.demo_stub import PipelineDemoFixStub, PipelineDemoStub
 from app.scanners.runner import ProcessToolRunner
 from app.scanners.scan import Scanner
-from app.validation.engine import ValidationEngine
+from app.validation.engine import BoundedRunner, ValidationEngine
 
 
 class AgentFactory:
@@ -41,6 +42,10 @@ class AgentFactory:
         self.scanner_versions = scanner_versions or {}
         self.security_semaphore = asyncio.Semaphore(
             settings.security_max_parallel_fixes
+        )
+        self.validation_runner = BoundedRunner(
+            ProcessToolRunner(settings.validator_tool_timeout_seconds),
+            asyncio.Semaphore(settings.validator_max_parallel_tools),
         )
 
     def create_architect(self, run_config: RunConfig | None = None) -> ArchitectAgent:
@@ -137,6 +142,7 @@ class AgentFactory:
             fixing_provider=adapter.provider,
             fixing_model=adapter.model,
             fixing_reasoning_effort=adapter.reasoning_effort,
+            terraform_verifier=TerraformVerifier(self.validation_runner),
         )
 
     def create_validator_agent(self) -> ValidatorAgent:
@@ -144,6 +150,7 @@ class AgentFactory:
             raise RuntimeError("validator requires a database session factory")
         return ValidatorAgent(
             ValidationEngine(
+                self.validation_runner,
                 tool_timeout_seconds=self.settings.validator_tool_timeout_seconds,
                 max_parallel_tools=self.settings.validator_max_parallel_tools,
                 deadline_seconds=self.settings.validation_deadline_seconds,

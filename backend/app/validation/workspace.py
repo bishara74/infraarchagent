@@ -12,6 +12,7 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from app.domain.paths import validate_file_map
+from app.domain.validation import ValidationCheck
 
 _current: ContextVar["ValidationWorkspace | None"] = ContextVar(
     "validation_workspace", default=None
@@ -31,6 +32,7 @@ class ValidationWorkspace:
         self.initialized: dict[str, str] = {}
         self.resolved: dict[str, dict[str, str]] = {}
         self.terraform_metrics: list[dict[str, Any]] = []
+        self.terraform_checks: dict[str, list[ValidationCheck]] = {}
         self.measurements: list[dict[str, Any]] = []
         self.gate: dict[str, Any] | None = None
         self.original_files: dict[str, str] | None = None

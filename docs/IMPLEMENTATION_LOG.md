@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-16 — Phase 9e section 4 — Reject broken patches and iteration regressions
+
+**Summary:** Parse touched/merged documents, render affected charts, preserve
+security controls and verify Terraform before/after security fix iterations.
+Roll back Terraform regressions including added files; verify retained YAML.
+
+**Requirements addressed:** FR-S-03, FR-S-07, FR-S-09, FR-V-03, NFR-01, PR-05.
+
+**Files:** security/{agent,fix,verification}.py; validation/{gate,preservation,
+terraform,workspace}.py; factory/remediation; pipeline/review.py; iteration tests;
+recorded security/automatic-repair fixture corrections; this log.
+
+**Decisions:** One shared bounded tool runner and private workspaces. Cache
+complete checks only for identical package/mirror inputs; never cache tool
+unavailability. The 60-second iteration encloses verification; distinguish
+candidate rollback at deadline from a stop before a candidate. Retry keeps one
+workspace through final validation. Existing scanner recordings now inject their
+schema verifier; new regressions explicitly script schema counts (D-45).
+
+**Tests:** Iteration/fixer/repair/real-PostgreSQL security regressions: 49 passed,
+0 failed, 0 skipped. Strict mypy: 112 source files passed. Fixtures now use valid
+HCL comments instead of bare original text, declare their Kubernetes type, and
+use a remaining subset of original fingerprints. History comparisons normalize
+new default metadata fields. No readiness assertion or check meaning weakened.
+
+**Known gaps / follow-ups:** Per-stage measurement and benchmark tables follow
+in section 5; comprehensive deadline/canary/workspace regressions in section 6.
+
 ## 2026-10-16 — Phase 9e section 3 — Ground scanner fixes and repair prompts
 
 **Summary:** Supply exact-version resource/data schemas to every shared fixer

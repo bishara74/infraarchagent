@@ -1,6 +1,8 @@
 """Generate and validate an atomic fix proposal for one existing file."""
 
+import asyncio
 import re
+import time
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -21,6 +23,7 @@ from app.llm.errors import (
     LLMRetryExhausted,
     failure_message,
 )
+from app.validation.gate import patch_syntax_failure, syntax_checks
 from app.validation.schema_context import schema_context
 
 SUPPRESSION = re.compile(
@@ -143,6 +146,8 @@ def validate_fix(
     candidate.update(output.new_files)
     if package_structure_errors(candidate, plan.file_types):
         return FixProposal(path, False, "invalid_structure", None, {}, ())
+    if syntax_checks(candidate, {path, *output.new_files}):
+        return FixProposal(path, False, "invalid_syntax", None, {}, ())
     return FixProposal(
         path,
         True,
@@ -179,6 +184,7 @@ class FixAgent:
         feedback: str | None = None,
         validation_failures: Sequence[dict[str, Any]] = (),
     ) -> FixProposal:
+        started = time.monotonic()
         context = schema_context(
             path,
             dict(files),
@@ -223,6 +229,21 @@ class FixAgent:
                 path, False, failure_message("unreachable"), None, {}, ()
             )
         proposal = validate_fix(response.data, path=path, files=files, plan=plan)
+        if proposal.accepted:
+            assert proposal.content is not None
+            candidate = {**files, path: proposal.content, **proposal.new_files}
+            try:
+                async with asyncio.timeout(
+                    max(0.001, remaining - (time.monotonic() - started))
+                ):
+                    if await patch_syntax_failure(
+                        dict(files), candidate, {path, *proposal.new_files}
+                    ):
+                        proposal = FixProposal(
+                            path, False, "invalid_syntax", None, {}, ()
+                        )
+            except TimeoutError:
+                proposal = FixProposal(path, False, "time_budget", None, {}, ())
         return FixProposal(
             proposal.path,
             proposal.accepted,

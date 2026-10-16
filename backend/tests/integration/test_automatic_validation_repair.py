@@ -136,7 +136,11 @@ async def test_engineer_retry_preserves_automatic_repair_history(
 
         await asyncio.gather(*app.state.runner.tasks.values())
     _, row = await state(app, run_id)
-    assert row.validation_report["remediation"] == metadata
+    from app.domain.validation import RemediationReport
+
+    assert RemediationReport.model_validate(
+        row.validation_report["remediation"]
+    ) == RemediationReport.model_validate(metadata)
 
 
 @pytest.mark.req("FR-V-03", "NFR-01")

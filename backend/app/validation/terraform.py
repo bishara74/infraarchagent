@@ -512,6 +512,22 @@ async def validate_terraform(
     documents = documents or PackageDocuments.parse(
         {p: (root / p).read_text() for p in files}
     )
+    workspace = current_workspace()
+    key = ValidationWorkspace.fingerprint(
+        {"files": documents.files, "mirror": str(mirror.resolve())}
+    )
+    if workspace is not None and key in workspace.terraform_checks:
+        workspace.terraform_metrics.append(
+            {
+                "module": "terraform",
+                "init_reused": True,
+                "init_seconds": 0.0,
+                "validate_seconds": 0.0,
+                "seconds": 0.0,
+                "init_outcome": "validation_cached",
+            }
+        )
+        return list(workspace.terraform_checks[key])
     modules = sorted(
         {
             str(Path(p).parent)
@@ -524,4 +540,10 @@ async def validate_terraform(
         checks.extend(
             await _validate_module(root, files, runner, mirror, documents, module)
         )
+    if (
+        workspace is not None
+        and checks
+        and not any(c.status == "skipped" for c in checks)
+    ):
+        workspace.terraform_checks[key] = list(checks)
     return checks
