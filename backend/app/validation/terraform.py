@@ -1,5 +1,6 @@
 """Offline Terraform initialization and full provider-schema diagnostics."""
 
+import hashlib
 import json
 import re
 import time
@@ -128,18 +129,44 @@ def terraform_diagnostics(
             title = "Cycle"
         if not isinstance(title, str) or title not in SAFE_TITLES:
             title = "Terraform configuration diagnostic"
-        checks.append(
-            ValidationCheck(
-                check_id="terraform.validate",
-                category="terraform",
-                tool="terraform",
-                status="failed" if diagnostic["severity"] == "error" else "warning",
-                file_path=path,
-                line_start=start,
-                line_end=end,
-                message=title,
-            )
+        check = ValidationCheck(
+            check_id="terraform.validate",
+            category="terraform",
+            tool="terraform",
+            status="failed" if diagnostic["severity"] == "error" else "warning",
+            file_path=path,
+            line_start=start,
+            line_end=end,
+            message=title,
         )
+        scope_match = re.match(
+            r'(resource|data) "([\w-]+)" "([\w-]+)"',
+            str((diagnostic.get("snippet") or {}).get("context", "")),
+        )
+        if scope_match:
+            scope = ".".join(scope_match.groups())
+            argument = re.search(
+                r'(?:argument|attribute|block(?:s)? of type)(?: named)? "([\w-]+)"',
+                str(diagnostic.get("detail", "")),
+                re.IGNORECASE,
+            )
+            key = (
+                title,
+                path,
+                scope,
+                argument[1]
+                if argument
+                else (start, (location.get("start") or {}).get("column")),
+            )
+            check = check.model_copy(
+                update={
+                    "diagnostic_key": hashlib.sha256(
+                        json.dumps(key).encode()
+                    ).hexdigest()
+                }
+            )
+            check._origin_scope = scope
+        checks.append(check)
     if data["valid"]:
         checks.append(
             ValidationCheck(
@@ -356,6 +383,11 @@ async def _validate_module(
         "init_seconds": 0.0,
         "validate_seconds": 0.0,
         "init_outcome": "reused" if reused else "not_started",
+        "reinitialization_reason": "dependencies_changed"
+        if workspace and module in workspace.initialized and not reused
+        else "none"
+        if reused
+        else "first_or_failed_initialization",
     }
     started = time.monotonic()
     try:
@@ -368,22 +400,24 @@ async def _validate_module(
                 + " } }\n"
             )
             init_started = time.monotonic()
-            init = await runner.run_command(
-                "terraform",
-                [
+            try:
+                init = await runner.run_command(
                     "terraform",
-                    "init",
-                    "-backend=false",
-                    "-input=false",
-                    f"-plugin-dir={mirror}",
-                    f"-get={'true' if local else 'false'}",
-                    "-no-color",
-                ],
-                root,
-                cwd=tf,
-                environment_dir=environment,
-            )
-            metrics["init_seconds"] = time.monotonic() - init_started
+                    [
+                        "terraform",
+                        "init",
+                        "-backend=false",
+                        "-input=false",
+                        f"-plugin-dir={mirror}",
+                        f"-get={'true' if local else 'false'}",
+                        "-no-color",
+                    ],
+                    root,
+                    cwd=tf,
+                    environment_dir=environment,
+                )
+            finally:
+                metrics["init_seconds"] = time.monotonic() - init_started
             metrics["init_outcome"] = (
                 "initialized"
                 if init.exit_code == 0
@@ -406,14 +440,16 @@ async def _validate_module(
         else:
             init = None
         validate_started = time.monotonic()
-        validation = await runner.run_command(
-            "terraform",
-            ["terraform", "validate", "-json", "-no-color"],
-            root,
-            cwd=tf,
-            environment_dir=environment,
-        )
-        metrics["validate_seconds"] = time.monotonic() - validate_started
+        try:
+            validation = await runner.run_command(
+                "terraform",
+                ["terraform", "validate", "-json", "-no-color"],
+                root,
+                cwd=tf,
+                environment_dir=environment,
+            )
+        finally:
+            metrics["validate_seconds"] = time.monotonic() - validate_started
         if validation.exit_code < 0 or (init is not None and init.exit_code < 0):
             return [terraform_skip("tool_error")]
         checks = terraform_diagnostics(validation.stdout, root, files, module)
@@ -516,7 +552,11 @@ async def validate_terraform(
     key = ValidationWorkspace.fingerprint(
         {"files": documents.files, "mirror": str(mirror.resolve())}
     )
-    if workspace is not None and key in workspace.terraform_checks:
+    if (
+        workspace is not None
+        and key in workspace.terraform_checks
+        and workspace.terraform_check_initialization.get(key) == workspace.initialized
+    ):
         workspace.terraform_metrics.append(
             {
                 "module": "terraform",
@@ -546,4 +586,5 @@ async def validate_terraform(
         and not any(c.status == "skipped" for c in checks)
     ):
         workspace.terraform_checks[key] = list(checks)
+        workspace.terraform_check_initialization[key] = dict(workspace.initialized)
     return checks

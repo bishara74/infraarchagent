@@ -19,6 +19,8 @@ from app.domain.validation import (
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.validation.engine import ValidationEngine
+from app.validation.measurement import publish_measurement
+from app.validation.workspace import current_workspace
 
 
 class ValidatorAgent:
@@ -57,9 +59,27 @@ class ValidatorAgent:
                 PackageStatus.VALIDATING,
                 message="validation started",
             )
-        report = prepared_report or await validate_files(
-            self.engine, ctx.plan, package.files
-        )
+        if prepared_report is None:
+            validation_started = time.monotonic()
+            report = await validate_files(self.engine, ctx.plan, package.files)
+            await publish_measurement(
+                ctx, variant, "final_validation", time.monotonic() - validation_started
+            )
+        else:
+            report = prepared_report
+        workspace = current_workspace()
+        if workspace is not None:
+            annotated_checks = workspace.annotate(report.checks)
+            report = report.model_copy(
+                update={
+                    "checks": annotated_checks,
+                    "failed_checks_for_remediation": tuple(
+                        c
+                        for c in annotated_checks
+                        if c.status == "failed" and c.file_path is not None
+                    ),
+                }
+            )
         if report.remediation is None and package.validation_report:
             from app.domain.validation import RemediationReport
 
@@ -68,6 +88,24 @@ class ValidatorAgent:
                 report = report.model_copy(
                     update={"remediation": RemediationReport.model_validate(metadata)}
                 )
+        if workspace is not None and report.remediation is not None:
+            metadata = report.remediation.model_copy(
+                update={
+                    "measurements": list(workspace.measurements),
+                    "final_origins": [
+                        {
+                            "check_id": c.check_id,
+                            "file_path": c.file_path,
+                            "line_start": c.line_start,
+                            "message": c.message,
+                            "origin": c.origin,
+                        }
+                        for c in report.checks
+                        if c.status == "failed"
+                    ],
+                }
+            )
+            report = report.model_copy(update={"remediation": metadata})
         if self.safety is not None:
             safe = self.safety.value(report.model_dump(mode="json"))
             checks = sorted(
@@ -119,5 +157,6 @@ class ValidatorAgent:
             previous=AgentState.RUNNING,
             message=f"validation {report.summary.result}",
             variant=variant,
+            metrics={"prepared_report": prepared_report is not None},
         )
         return outcome

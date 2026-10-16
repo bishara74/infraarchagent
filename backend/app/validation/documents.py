@@ -218,7 +218,9 @@ class PackageDocuments:
                             explicit_blocks=False,
                         ),
                     )
-                elif path.endswith(".json"):
+                elif path.endswith(".json") and not (
+                    kind == FileType.HELM and "/templates/" in path
+                ):
                     data = json.loads(source)
                 elif path.endswith((".yaml", ".yml")) and not (
                     kind == FileType.HELM and "/templates/" in path

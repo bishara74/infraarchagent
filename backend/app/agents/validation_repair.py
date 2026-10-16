@@ -1,6 +1,7 @@
 """Bounded validation feedback using the engineer-Retry remediation path."""
 
 import asyncio
+import time
 from typing import Literal
 
 from app.agents.budget import AgentBudget
@@ -13,6 +14,8 @@ from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import ScanResult
+from app.validation.measurement import publish_measurement
+from app.validation.workspace import current_workspace
 
 
 def fingerprints(scan: ScanResult) -> set[tuple[str, str, str]]:
@@ -37,8 +40,51 @@ class ValidationRepair:
         report: ValidationReport | None = None,
     ) -> tuple[IaCPackage, ValidationReport, RemediationReport]:
         files = dict(package.files)
-        report = report or await validate_files(self.engine, ctx.plan, files)
+        if report is None:
+            started = time.monotonic()
+            try:
+                async with asyncio.timeout(max(0.001, budget.remaining())):
+                    report = await validate_files(self.engine, ctx.plan, files)
+            except TimeoutError:
+                report = ValidationReport.build(
+                    [], terraform_required=True, abort_reason="deadline"
+                )
+            await publish_measurement(
+                ctx,
+                variant,
+                "initial_validation",
+                time.monotonic() - started,
+                phase=phase,
+            )
+        workspace = current_workspace()
+        if (
+            workspace is not None
+            and phase == "before_security"
+            and not workspace.observed
+        ):
+            workspace.observe(list(report.checks), "generated", files)
         history = list(metadata.rounds)
+        if report.abort_reason == "deadline":
+            history.append(
+                RepairRound(
+                    phase=phase,
+                    index=1,
+                    before_failed=report.summary.failed,
+                    outcome="stopped",
+                    reason="deadline",
+                )
+            )
+            await publish_measurement(
+                ctx,
+                variant,
+                "validation_repair_round",
+                0.0,
+                phase=phase,
+                iteration=1,
+                outcome="stopped",
+                reason="deadline",
+                attempted=False,
+            )
         for index in range(1, rounds + 1):
             if report.summary.result != "invalid":
                 break
@@ -49,9 +95,23 @@ class ValidationRepair:
                 before_failed=before,
                 outcome="stopped",
                 reason="deadline",
+                error_classes=sorted(
+                    {c.message for c in report.checks if c.status == "failed"}
+                ),
             )
             if budget.remaining() < 1:
                 history.append(record)
+                await publish_measurement(
+                    ctx,
+                    variant,
+                    "validation_repair_round",
+                    0.0,
+                    phase=phase,
+                    iteration=index,
+                    outcome="stopped",
+                    reason="deadline",
+                    attempted=False,
+                )
                 break
             failures = [
                 {
@@ -74,6 +134,8 @@ class ValidationRepair:
             if not targets:
                 history.append(record.model_copy(update={"reason": "no_targets"}))
                 break
+            started = time.monotonic()
+            record = record.model_copy(update={"attempted": True})
             try:
                 async with asyncio.timeout(budget.remaining()):
                     baseline = await scan_files(self.security.scanner, files, variant)
@@ -85,6 +147,13 @@ class ValidationRepair:
                         budget,
                         feedback=None,
                         validation_failures=failures,
+                    )
+                    record = record.model_copy(
+                        update={
+                            "schema_context_chars": sum(
+                                int(p.get("schema_context_chars", 0)) for p in proposals
+                            )
+                        }
                     )
                     if not proposals or any(not p["accepted"] for p in proposals):
                         record = record.model_copy(
@@ -115,12 +184,30 @@ class ValidationRepair:
                         )
                         if accepted:
                             files, report = candidate, checked
+                            if workspace is not None:
+                                workspace.observe(
+                                    list(checked.checks), "repair", candidate
+                                )
             except TimeoutError:
                 pass
             except ToolFailure:
                 record = record.model_copy(
                     update={"reason": "verification_unavailable", "outcome": "rejected"}
                 )
+            record = record.model_copy(
+                update={"duration_seconds": time.monotonic() - started}
+            )
+            await publish_measurement(
+                ctx,
+                variant,
+                "validation_repair_round",
+                record.duration_seconds,
+                phase=phase,
+                iteration=index,
+                outcome=record.outcome,
+                reason=record.reason,
+                attempted=record.attempted,
+            )
             history.append(record)
             await ctx.writer.event_log.append(
                 ctx.run_id,
@@ -146,6 +233,13 @@ class ValidationRepair:
                         reason="round_limit",
                     )
                 )
-        metadata = metadata.model_copy(update={"rounds": history})
+        metadata = metadata.model_copy(
+            update={
+                "rounds": history,
+                "measurements": list(workspace.measurements)
+                if workspace
+                else metadata.measurements,
+            }
+        )
         report = report.model_copy(update={"remediation": metadata})
         return package.model_copy(update={"files": files}), report, metadata

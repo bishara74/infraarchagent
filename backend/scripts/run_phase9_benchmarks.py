@@ -128,6 +128,24 @@ async def run(args) -> None:
                     )
             if not harness.stop_reason:
                 await execute(harness, seeder=seed, smoke=args.smoke)
+                if args.mode == "stub" and not harness.stop_reason:
+                    from scripts.phase9e_rehearsal import verification_rehearsal
+
+                    rehearsal = await verification_rehearsal()
+                    write_json(directory / "verification-rehearsal.json", rehearsal)
+                    for raw in rehearsal["records"]:
+                        harness.agent_rows.append(
+                            {
+                                **raw,
+                                "run_id": "verification-rehearsal",
+                                "agent": "scripted_security_iteration_verification",
+                                "seconds": raw["duration_seconds"],
+                                "complete": raw.get("outcome") != "stopped",
+                                "threshold_seconds": None,
+                                "pass": None,
+                                "evidence_scope": "scripted_verification_rehearsal",
+                            }
+                        )
         except (OSError, ValueError, RuntimeError, httpx.HTTPError):
             harness.stop_reason = (
                 "Benchmark prerequisite or fixture preparation failed."

@@ -40,6 +40,7 @@ from app.security.diff import package_diff
 from app.security.policy import SECURITY_POLICY_VERSION
 from app.validation.gate import patch_syntax_failure
 from app.validation.idioms import repair_idioms
+from app.validation.measurement import initialization_metrics, publish_measurement
 from app.validation.preservation import removes_security_controls
 from app.validation.workspace import ValidationWorkspace, current_workspace
 
@@ -221,7 +222,13 @@ class SecurityAgent:
         self, ctx: StageContext, variant: Variant, package: IaCPackage
     ) -> PackageStatus:
         """Readiness verification only: no extra fix passes or counter reset."""
-        scan = await scan_files(self.scanner, package.files, variant)
+        started = time.monotonic()
+        try:
+            scan = await scan_files(self.scanner, package.files, variant)
+        finally:
+            await publish_measurement(
+                ctx, variant, "final_security_scan", time.monotonic() - started
+            )
         blocking = [item for item in scan.violations if item.blocking]
         async with self.session_factory() as session:
             async with session.begin():
@@ -427,9 +434,71 @@ class SecurityAgent:
             ) != files.get(fix["file"])
         workspace = current_workspace()
         if workspace:
+            workspace.observe(
+                after
+                if terraform_files(candidate) != terraform_files(files)
+                else before,
+                "security_fix",
+                candidate,
+                partial=True,
+            )
             async with workspace.check(candidate):
                 pass
         return candidate, fixes, package_diff(files, candidate), scanned
+
+    async def _publish_iteration(
+        self,
+        ctx: StageContext,
+        variant: Variant,
+        record: dict[str, Any],
+        iteration: int,
+        metrics_start: int,
+    ) -> None:
+        workspace = current_workspace()
+        record.update(
+            initialization_metrics(
+                workspace.terraform_metrics[metrics_start:] if workspace else []
+            )
+        )
+        if "deterministic_seconds" in record:
+            await publish_measurement(
+                ctx,
+                variant,
+                "deterministic_repairs",
+                record["deterministic_seconds"],
+                phase="security",
+                iteration=iteration,
+                count=len(record.get("deterministic_repairs", [])),
+            )
+        selected = {
+            key: record[key]
+            for key in (
+                "before_failed",
+                "after_failed",
+                "init_runs",
+                "init_reused",
+                "reinitializations",
+                "init_seconds",
+                "validate_seconds",
+                "deadline_only",
+                "candidate_created",
+                "fix_started",
+                "outcome",
+                "reasons",
+                "terraform_verification_seconds",
+                "security_verification_seconds",
+            )
+            if key in record
+        }
+        await publish_measurement(
+            ctx,
+            variant,
+            "security_iteration_verification",
+            record.get("verification_seconds", 0.0),
+            phase="security",
+            iteration=iteration,
+            **selected,
+        )
 
     async def _loop_inside(
         self,
@@ -483,6 +552,8 @@ class SecurityAgent:
                 iteration_budget = AgentBudget(
                     max(0.001, min(60.0, budget.remaining())), clock=ctx.clock
                 )
+                workspace = current_workspace()
+                metrics_start = len(workspace.terraform_metrics) if workspace else 0
                 try:
                     async with asyncio.timeout(iteration_budget.remaining()):
                         files, fixes, diff, pending_scan = await self._fix_iteration(
@@ -521,6 +592,9 @@ class SecurityAgent:
                     )
                     reason = "time budget"
                 iteration_count = 1
+                await self._publish_iteration(
+                    ctx, variant, verification, iteration_count, metrics_start
+                )
                 capped, omitted = _capped_diff(diff)
                 iterations.append(
                     {
@@ -655,6 +729,8 @@ class SecurityAgent:
                 targets[item.file_path].append(item)
             try:
                 entry["verification"] = {}
+                workspace = current_workspace()
+                metrics_start = len(workspace.terraform_metrics) if workspace else 0
                 async with asyncio.timeout(iteration_budget.remaining()):
                     files, fixes, diff, pending_scan = await self._fix_iteration(
                         ctx,
@@ -694,11 +770,21 @@ class SecurityAgent:
                 )
                 if verification.get("fix_started"):
                     iteration_count = decision.next_iteration_count
+                await self._publish_iteration(
+                    ctx, variant, verification, iteration_count, metrics_start
+                )
                 await ctx.writer.package_transition(
                     ctx.run_id, variant, status, message=reason
                 )
                 break
             entry["fixes"] = fixes
+            await self._publish_iteration(
+                ctx,
+                variant,
+                entry["verification"],
+                decision.next_iteration_count,
+                metrics_start,
+            )
             entry["diff"], entry["diff_omitted_chars"] = _capped_diff(diff)
             iteration_count = decision.next_iteration_count
             await self._notice(

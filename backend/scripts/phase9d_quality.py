@@ -11,6 +11,7 @@ from app.domain.enums import PackageStatus
 from app.domain.paths import validate_relative_path
 from app.domain.review import security_final
 from scripts.phase9_common import ROOT, write_json
+from scripts.phase9e_metrics import measurement, measurement_summary
 
 
 def safe_text(value: object, redactor: RedactingFilter, limit: int = 500) -> str:
@@ -39,6 +40,9 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
                 "check_id": safe_text(raw.get("check_id", "unknown"), redactor, 100),
                 "message": safe_text(raw.get("message", ""), redactor),
                 "file_path": safe_text(path, redactor, 255) if path else None,
+                "origin": raw.get("origin")
+                if raw.get("origin") in {"generated", "security_fix", "repair"}
+                else "unknown",
                 **{
                     key: raw.get(key)
                     if type(raw.get(key)) is int and raw[key] > 0
@@ -53,6 +57,40 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         for item in final.get("remaining_blocking", [])
     )
     remediation = validation.get("remediation") or {}
+    gate = remediation.get("gate") or {}
+    rounds = [
+        {
+            "phase": r.get("phase")
+            if r.get("phase") in {"generation", "before_security", "after_security"}
+            else "unknown",
+            "outcome": r.get("outcome")
+            if r.get("outcome") in {"accepted", "rejected", "stopped"}
+            else "unknown",
+            "reason": r.get("reason")
+            if r.get("reason")
+            in {
+                "improved",
+                "no_improvement",
+                "new_blocking_findings",
+                "invalid_patch",
+                "verification_unavailable",
+                "deadline",
+                "round_limit",
+                "no_targets",
+            }
+            else "unknown",
+            "error_classes": [
+                safe_text(c, redactor)
+                for c in r.get("error_classes", [])
+                if isinstance(c, str)
+            ],
+            "schema_context_chars": r.get("schema_context_chars")
+            if type(r.get("schema_context_chars")) is int
+            and r["schema_context_chars"] >= 0
+            else None,
+        }
+        for r in remediation.get("rounds", [])
+    ]
     return {
         "status": status,
         "review_reasons": sorted(
@@ -63,6 +101,38 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         ),
         "failed_checks": checks,
         "remaining_findings": dict(sorted(findings.items())),
+        "phase9e": {
+            "gate_outcome": gate.get("outcome")
+            if gate.get("outcome") in {"passed", "failed", "error", "valid", "invalid"}
+            else "unknown",
+            "gate_failed_checks": [
+                {
+                    "check_id": safe_text(c.get("check_id", "unknown"), redactor, 100),
+                    "message": safe_text(c.get("message", ""), redactor),
+                }
+                for c in gate.get("failed_checks", [])
+                if isinstance(c, dict)
+            ],
+            "init_categories": [
+                safe_text(r.get("init_outcome", "unknown"), redactor, 100)
+                for r in gate.get("terraform", [])
+            ],
+            "repair_rounds": rounds,
+            "measurements": [
+                m
+                for raw in remediation.get("measurements", [])
+                if (m := measurement(raw)) is not None
+            ],
+            "security_schema_context_chars": [
+                f["schema_context_chars"]
+                for iteration in (package.get("security_report") or {}).get(
+                    "iterations", []
+                )
+                for f in iteration.get("fixes", [])
+                if type(f.get("schema_context_chars")) is int
+                and f["schema_context_chars"] >= 0
+            ],
+        },
         "counts": {
             "failed_checks": len(checks),
             "remaining_findings": sum(findings.values()),
@@ -107,6 +177,32 @@ def quality_table(
         ],
         "remaining_finding_counts": dict(findings.most_common()),
     }
+    origins = Counter(
+        c.get("origin", "unknown") for p in packages for c in p["failed_checks"]
+    )
+    outcomes = Counter(
+        (r["phase"], r["outcome"], r["reason"], error)
+        for p in packages
+        for r in p.get("phase9e", {}).get("repair_rounds", [])
+        for error in (r["error_classes"] or ["unknown"])
+    )
+    measured, measured_table = measurement_summary(
+        [m for p in packages for m in p.get("phase9e", {}).get("measurements", [])]
+    )
+    result.update(
+        final_failure_origins=dict(origins),
+        measurements=measured,
+        repair_outcomes_by_class=[
+            {
+                "phase": k[0],
+                "outcome": k[1],
+                "reason": k[2],
+                "error_class": k[3],
+                "count": n,
+            }
+            for k, n in sorted(outcomes.items())
+        ],
+    )
     rate = f"{ready}/{total} ({100 * ready / total:.2f}%)" if total else "unknown"
     lines = [
         f"Production-ready rate among generated packages: **{rate}**.",
@@ -123,6 +219,18 @@ def quality_table(
             f"| {str(key).replace('|', chr(92) + '|')} | {count} |"
             for key, count in rows
         ]
+    lines += [
+        "",
+        "Final failure origins: " + str(dict(origins)),
+        "",
+        "| Repair phase / outcome / reason | Error class | Count |",
+        "|---|---|---:|",
+    ]
+    lines += [
+        f"| {' / '.join(k[:3])} | {k[3].replace('|', '/')} | {n} |"
+        for k, n in sorted(outcomes.items())
+    ]
+    lines += ["", measured_table]
     return result, "\n".join(lines)
 
 
@@ -163,6 +271,7 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                 path = compact / f"{variant}.json"
                 if path.is_file():
                     raw = json.loads(path.read_text())
+                    extra = raw.get("phase9e", {})
                     # Re-allowlist historical compact data before exporting it.
                     pseudo = {
                         "status": raw.get("status"),
@@ -171,9 +280,33 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                             "checks": [
                                 {**c, "status": "failed"}
                                 for c in raw.get("failed_checks", [])
-                            ]
+                            ],
+                            "remediation": {
+                                "rounds": extra.get("repair_rounds", []),
+                                "measurements": extra.get("measurements", []),
+                                "gate": {
+                                    "outcome": extra.get("gate_outcome"),
+                                    "failed_checks": extra.get(
+                                        "gate_failed_checks", []
+                                    ),
+                                    "terraform": [
+                                        {"init_outcome": c}
+                                        for c in extra.get("init_categories", [])
+                                    ],
+                                },
+                            },
                         },
                         "security_report": {
+                            "iterations": [
+                                {
+                                    "fixes": [
+                                        {"schema_context_chars": n}
+                                        for n in extra.get(
+                                            "security_schema_context_chars", []
+                                        )
+                                    ]
+                                }
+                            ],
                             "final": {
                                 "remaining_blocking": [
                                     {"rule_id": rule}
@@ -182,7 +315,7 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                                     ).items()
                                     for _ in range(count)
                                 ]
-                            }
+                            },
                         },
                     }
                     current[variant] = quality_snapshot(pseudo, redactor)

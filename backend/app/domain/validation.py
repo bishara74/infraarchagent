@@ -4,7 +4,14 @@ from collections import Counter
 from collections.abc import Iterable
 from typing import Any, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    field_validator,
+    model_validator,
+)
 
 from app.domain.enums import PackageStatus
 from app.domain.paths import validate_relative_path
@@ -38,6 +45,9 @@ class ValidationCheck(BaseModel):
     skip_reason: str | None = Field(
         default=None, min_length=1, max_length=100, pattern=r"^[a-z0-9_]+$"
     )
+    diagnostic_key: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
+    origin: Literal["generated", "security_fix", "repair", "unknown"] = "unknown"
+    _origin_scope: str | None = PrivateAttr(default=None)
 
     @field_validator("file_path")
     @classmethod
@@ -140,6 +150,7 @@ class RepairRound(BaseModel):
     attempted: bool = False
     duration_seconds: float = Field(default=0.0, ge=0)
     error_classes: list[str] = Field(default_factory=list)
+    schema_context_chars: int = Field(default=0, ge=0)
 
 
 class RemediationReport(BaseModel):

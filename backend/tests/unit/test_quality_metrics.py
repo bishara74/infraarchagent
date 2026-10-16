@@ -62,6 +62,7 @@ def test_strict_projection_redacts_allowed_text_and_counts_findings():
         "failed_checks",
         "remaining_findings",
         "counts",
+        "phase9e",
     }
     assert set(snapshot["failed_checks"][0]) == {
         "check_id",
@@ -69,6 +70,7 @@ def test_strict_projection_redacts_allowed_text_and_counts_findings():
         "file_path",
         "line_start",
         "line_end",
+        "origin",
     }
     assert snapshot["remaining_findings"] == {"AWS-0086": 2}
     assert snapshot["counts"]["deterministic_repairs"] == 1

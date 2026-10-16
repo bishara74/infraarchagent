@@ -138,9 +138,11 @@ async def test_engineer_retry_preserves_automatic_repair_history(
     _, row = await state(app, run_id)
     from app.domain.validation import RemediationReport
 
-    assert RemediationReport.model_validate(
-        row.validation_report["remediation"]
-    ) == RemediationReport.model_validate(metadata)
+    retained = RemediationReport.model_validate(row.validation_report["remediation"])
+    prior = RemediationReport.model_validate(metadata)
+    assert retained.deterministic_repairs == prior.deterministic_repairs
+    assert retained.rounds == prior.rounds
+    assert any(m["stage"] == "final_validation" for m in retained.measurements)
 
 
 @pytest.mark.req("FR-V-03", "NFR-01")

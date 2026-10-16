@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-16 — Phase 9e section 5 — Measure validation and iteration verification
+
+**Summary:** Publish actual stage durations through EventLog; export strict,
+source-free benchmark rows, gate/context/repair outcomes and conservative final
+failure origins. Distinguish validator persistence from prepared validation.
+
+**Requirements addressed:** FR-V-03, FR-V-04, FR-S-09, NFR-01, PR-05.
+
+**Files:** validation/{measurement,workspace,terraform,documents}.py; agents
+security/repair/validator; orchestrator; domain reports; benchmark/quality scripts;
+new phase9e_metrics.py and phase9e_rehearsal.py; measurement/history tests.
+
+**Decisions:** Initialization and validation timings include concurrency waiting;
+unknown/hidden error origins remain unknown. Stub packages are clean, so their
+zero fix iterations are reported separately from a labelled three-workspace,
+real-offline-Terraform/scripted-fix load rehearsal. Neither rehearsal rows nor new
+descriptive timings alter quality rates or thresholds (D-45). Cache reuse also
+requires matching current initialization state after rollback. Helm JSON
+Go templates are checked after rendering, like YAML Go templates.
+
+**Tests:** Focused measurement/gate/iteration/benchmark/repair/security suite:
+82 passed, 0 failed, 0 skipped. Ruff checks and formatting passed; strict mypy
+113 source files passed. Canary allowlists, historical unknown origins,
+deadline-only/multiple-cause counts and fixture-runner reuse are covered.
+
+**Known gaps / follow-ups:** Full verification and measured real-tool stub
+rehearsal results follow in section 6. No real-run improvements are predicted.
+
 ## 2026-10-16 — Phase 9e section 4 — Reject broken patches and iteration regressions
 
 **Summary:** Parse touched/merged documents, render affected charts, preserve

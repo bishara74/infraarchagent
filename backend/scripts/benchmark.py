@@ -39,6 +39,8 @@ from scripts.phase9c_metrics import (
     number,
 )
 from scripts.phase9d_quality import quality_snapshot, quality_table, recompute_quality
+from scripts.phase9e_metrics import measurement as safe_measurement
+from scripts.phase9e_metrics import measurement_summary
 
 TERMINAL = {"success", "partial_success", "failed"}
 SETTLED = {"pending_review", "production_ready", "not_production_ready", "scan_error"}
@@ -103,6 +105,8 @@ def normalized_event(item: dict) -> dict:
             if type(metrics["deadline_exceeded"]) is bool
             else None
         )
+    if type(metrics.get("prepared_report")) is bool:
+        safe_metrics["prepared_report"] = metrics["prepared_report"]
     if "llm_attempt_details" in metrics:
         safe_metrics["llm_attempt_details"] = attempt_details(
             metrics["llm_attempt_details"]
@@ -119,6 +123,7 @@ def normalized_event(item: dict) -> dict:
         if type(payload.get("iteration")) is int
         else None,
         "metrics": safe_metrics,
+        "measurement": safe_measurement(payload.get("measurement")),
         "failure_category": failure
         if isinstance(failure, str) and failure in FAILURES
         else None,
@@ -135,6 +140,21 @@ def duration(start: str, end: str) -> float | None:
 def timings(run_id: str, events: list[dict]) -> list[dict]:
     starts, scans, rows, indexes = {}, {}, [], {}
     for event in sorted(events, key=lambda event: event["seq"]):
+        measured = event.get("measurement")
+        if measured is not None:
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "agent": measured["stage"],
+                    "variant": event["variant"],
+                    "iteration": measured.get("iteration"),
+                    "seconds": measured["duration_seconds"],
+                    "complete": measured["duration_seconds"] is not None,
+                    "threshold_seconds": None,
+                    "pass": None,
+                    **measured,
+                }
+            )
         key = (event["agent"], event["variant"])
         if event["kind"] == "agent_state":
             if event["status"] == "running":
@@ -150,7 +170,10 @@ def timings(run_id: str, events: list[dict]) -> list[dict]:
                 rows.append(
                     {
                         "run_id": run_id,
-                        "agent": event["agent"],
+                        "agent": "validator_persistence"
+                        if event["agent"] == "validator"
+                        and event["metrics"].get("prepared_report")
+                        else event["agent"],
                         "variant": event["variant"],
                         "iteration": None,
                         "seconds": elapsed,
@@ -408,6 +431,30 @@ class Harness:
                     write_json(directory / f"{variant}.json", package)
             write_json(self.output / "quality.json", quality)
         lines, checks = ([quality_markdown] if self.quality_inputs else []), []
+        descriptive, descriptive_table = measurement_summary(
+            [
+                r
+                for r in self.agent_rows
+                if r.get("evidence_scope") != "scripted_verification_rehearsal"
+            ]
+        )
+        write_json(self.output / "measurements.json", descriptive)
+        lines.append(descriptive_table)
+        rehearsal_rows = [
+            r
+            for r in self.agent_rows
+            if r.get("evidence_scope") == "scripted_verification_rehearsal"
+        ]
+        if rehearsal_rows:
+            rehearsal_summary, rehearsal_table = measurement_summary(rehearsal_rows)
+            write_json(
+                self.output / "verification-rehearsal-summary.json", rehearsal_summary
+            )
+            lines += [
+                "Separate scripted-fix offline verification rehearsal "
+                "(excluded from quality rates and PR thresholds).",
+                rehearsal_table,
+            ]
         for measurement in ("pr01", "pr03", "pr04"):
             rows = [row for row in self.rows if row["measurement"] == measurement]
             if not rows:

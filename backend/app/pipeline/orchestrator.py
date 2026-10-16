@@ -48,6 +48,7 @@ from app.pipeline.state import PipelineStateWriter
 from app.scanners.runner import ToolFailure
 from app.validation.gate import GateRepairEngine, GenerationGate
 from app.validation.idioms import repair_idioms
+from app.validation.measurement import initialization_metrics, publish_measurement
 from app.validation.repairs import repair_terraform
 from app.validation.workspace import ValidationWorkspace, current_workspace
 
@@ -120,13 +121,14 @@ class PipelineOrchestrator:
                 DeterministicRepair.model_validate(r) for r in [*records, *idioms]
             ]
         )
-        workspace.measurements.append(
-            {
-                "stage": "deterministic_repairs",
-                "duration_seconds": self.clock() - deterministic_started,
-                "phase": "generation",
-                "count": len(records) + len(idioms),
-            }
+        ctx = StageContext(self.run_id, self.writer, plan, self.clock)
+        await publish_measurement(
+            ctx,
+            package.variant,
+            "deterministic_repairs",
+            self.clock() - deterministic_started,
+            phase="generation",
+            count=len(records) + len(idioms),
         )
         package = package.model_copy(update={"files": files})
         remaining = generator.deadline_seconds - max(
@@ -149,6 +151,9 @@ class PipelineOrchestrator:
                     result = await gate.run(plan, package.files)
                     package = package.model_copy(update={"files": result.files})
                     workspace.gate = result.metrics
+                    workspace.observe(
+                        list(result.report.checks), "generated", package.files
+                    )
                     demo = (
                         getattr(self.factory, "pipeline_demo_stub", False)
                         and self.factory.settings.pipeline_demo_scenario == "review"
@@ -187,6 +192,15 @@ class PipelineOrchestrator:
             finally:
                 assert workspace.gate is not None
                 workspace.gate["duration_seconds"] = self.clock() - gate_started
+        await publish_measurement(
+            ctx,
+            package.variant,
+            "generation_gate",
+            float(workspace.gate.get("duration_seconds", 0)),
+            phase="generation",
+            outcome=workspace.gate.get("outcome", "unknown"),
+            **initialization_metrics(workspace.terraform_metrics),
+        )
         metadata = metadata.model_copy(
             update={
                 "gate": workspace.gate,
@@ -502,8 +516,16 @@ class PipelineOrchestrator:
             if repair is not None and repair_budget is not None:
                 assert isinstance(self.validation_stage, ValidatorAgent)
                 assert isinstance(stage, SecurityAgent)
+                started_validation = time.monotonic()
                 report = await validate_files(
                     self.validation_stage.engine, ctx.plan, remediated_package.files
+                )
+                await publish_measurement(
+                    ctx,
+                    variant,
+                    "post_security_validation",
+                    time.monotonic() - started_validation,
+                    phase="after_security",
                 )
                 if (
                     remediated_package.files != before_security_files
@@ -526,8 +548,15 @@ class PipelineOrchestrator:
                 remediated_package = remediated_package.model_copy(
                     update={"files": stage.safety.value(remediated_package.files)}
                 )
+                started_validation = time.monotonic()
                 report = await validate_files(
                     self.validation_stage.engine, ctx.plan, remediated_package.files
+                )
+                await publish_measurement(
+                    ctx,
+                    variant,
+                    "final_validation",
+                    time.monotonic() - started_validation,
                 )
                 report = report.model_copy(update={"remediation": metadata})
                 await self.writer.package_transition(
