@@ -13,7 +13,14 @@ from tempfile import TemporaryDirectory
 from typing import Literal, Protocol
 
 ToolName = Literal[
-    "checkov", "trivy", "terraform", "helm", "hadolint", "ansible-lint", "promtool"
+    "checkov",
+    "trivy",
+    "terraform",
+    "helm",
+    "hadolint",
+    "ansible-lint",
+    "ansible-playbook",
+    "promtool",
 ]
 EXECUTABLES = {
     "checkov",
@@ -22,6 +29,7 @@ EXECUTABLES = {
     "helm",
     "hadolint",
     "ansible-lint",
+    "ansible-playbook",
     "promtool",
 }
 TOOLS: tuple[ToolName, ...] = ("checkov", "trivy", "terraform")
@@ -47,7 +55,7 @@ def scanner_environment(workdir: Path, tool: str) -> dict[str, str]:
     env.update({"NO_PROXY": "", "no_proxy": ""})
     if tool == "checkov":
         env["CHECKOV_PARALLELIZATION_TYPE"] = "none"
-    if tool == "ansible-lint":
+    if tool in {"ansible-lint", "ansible-playbook"}:
         env.update(
             {
                 "ANSIBLE_HOME": str(workdir / ".ansible"),
@@ -190,9 +198,15 @@ class ProcessToolRunner:
             ):
                 env.pop(key, None)
         started = time.monotonic()
+        command = list(args)
+        if tool == "ansible-playbook" and shutil.which(tool) is None:
+            lint = shutil.which("ansible-lint")
+            sibling = Path(lint).resolve().with_name(tool) if lint else None
+            if sibling is not None and sibling.is_file():
+                command[0] = str(sibling)
         try:
             process = await asyncio.create_subprocess_exec(
-                *args,
+                *command,
                 cwd=selected_cwd,
                 env=env,
                 stdout=asyncio.subprocess.PIPE,

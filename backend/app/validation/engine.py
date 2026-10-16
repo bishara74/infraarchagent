@@ -4,7 +4,6 @@ import asyncio
 import time
 from collections.abc import Awaitable
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from app.domain.package_layout import (
     MAX_FILE_BYTES,
@@ -32,6 +31,7 @@ from app.validation.references import reference_checks
 from app.validation.structure import structural_checks
 from app.validation.terraform import validate_terraform
 from app.validation.tools import DEFAULT_MIRROR, report_versions
+from app.validation.workspace import ValidationWorkspace, current_workspace
 
 
 class BoundedRunner:
@@ -90,6 +90,8 @@ class ValidationEngine:
         required = FileType.TERRAFORM in plan.file_types
         abort: AbortReason | None = None
         started = time.monotonic()
+        existing = current_workspace()
+        workspace = existing or ValidationWorkspace()
         try:
             async with asyncio.timeout(self.deadline_seconds):
                 if (
@@ -112,12 +114,7 @@ class ValidationEngine:
                 checks.extend(naming_checks(documents, plan))
                 if time.monotonic() - started >= self.deadline_seconds:
                     raise TimeoutError
-                with TemporaryDirectory(prefix="infraarch-validation-") as directory:
-                    root = Path(directory)
-                    for path, source in documents.files.items():
-                        destination = root / path
-                        destination.parent.mkdir(parents=True, exist_ok=True)
-                        destination.write_text(source)
+                async with workspace.check(documents.files) as root:
                     runner = BoundedRunner(
                         self.runner, asyncio.Semaphore(self.max_parallel_tools)
                     )
@@ -150,6 +147,9 @@ class ValidationEngine:
             abort = "deadline"
         except Exception:
             abort = "internal_error"
+        finally:
+            if existing is None:
+                workspace.close()
         if abort:
             checks.append(
                 ValidationCheck(

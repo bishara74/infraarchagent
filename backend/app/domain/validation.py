@@ -2,7 +2,7 @@
 
 from collections import Counter
 from collections.abc import Iterable
-from typing import Literal, Self
+from typing import Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -11,7 +11,13 @@ from app.domain.paths import validate_relative_path
 
 Category = Literal["terraform", "reference", "naming", "structure", "lint"]
 ValidationTool = Literal[
-    "terraform", "builtin", "helm", "hadolint", "ansible-lint", "promtool"
+    "terraform",
+    "builtin",
+    "helm",
+    "hadolint",
+    "ansible-lint",
+    "ansible-playbook",
+    "promtool",
 ]
 CheckStatus = Literal["passed", "failed", "warning", "skipped"]
 ValidationResult = Literal["valid", "invalid", "error"]
@@ -103,13 +109,20 @@ class ValidationSummary(BaseModel):
 class DeterministicRepair(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     file: str
-    kind: Literal["missing_variable", "duplicate_variable", "missing_data_source"]
+    kind: Literal[
+        "missing_variable",
+        "duplicate_variable",
+        "missing_data_source",
+        "empty_default_security_group_rule",
+        "flow_log_placeholders",
+    ]
     name: str
+    line: int | None = None
 
 
 class RepairRound(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    phase: Literal["before_security", "after_security"]
+    phase: Literal["generation", "before_security", "after_security"]
     index: int = Field(ge=1)
     before_failed: int = Field(ge=0)
     after_failed: int | None = Field(default=None, ge=0)
@@ -124,12 +137,18 @@ class RepairRound(BaseModel):
         "round_limit",
         "no_targets",
     ]
+    attempted: bool = False
+    duration_seconds: float = Field(default=0.0, ge=0)
+    error_classes: list[str] = Field(default_factory=list)
 
 
 class RemediationReport(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     deterministic_repairs: list[DeterministicRepair] = Field(default_factory=list)
     rounds: list[RepairRound] = Field(default_factory=list)
+    gate: dict[str, Any] | None = None
+    measurements: list[dict[str, Any]] = Field(default_factory=list)
+    final_origins: list[dict[str, Any]] = Field(default_factory=list)
 
 
 def check_order(

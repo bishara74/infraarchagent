@@ -4,7 +4,7 @@ import asyncio
 import logging
 import time
 from collections.abc import Callable
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from typing import Any
 from uuid import UUID
 
@@ -30,6 +30,7 @@ from app.domain.enums import (
     Variant,
 )
 from app.domain.models import IaCPackage
+from app.domain.plan import DeploymentPlan
 from app.domain.run_config import RunConfig
 from app.domain.states import classify_run, readiness_after_validation
 from app.domain.validation import (
@@ -45,7 +46,10 @@ from app.events.kinds import (
 from app.pipeline.stages import SecurityStage, StageContext, ValidationStage
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.runner import ToolFailure
+from app.validation.gate import GateRepairEngine, GenerationGate
+from app.validation.idioms import repair_idioms
 from app.validation.repairs import repair_terraform
+from app.validation.workspace import ValidationWorkspace, current_workspace
 
 logger = logging.getLogger(__name__)
 GENERATOR_NAMES = {
@@ -81,12 +85,126 @@ class PipelineOrchestrator:
         self.security_stage = security_stage
         self.validation_stage = validation_stage
         self.clock = clock
+        self.workspaces: dict[Variant, ValidationWorkspace] = {}
 
     async def _generate(
         self, generator: GeneratorAgent, plan: object
     ) -> tuple[Variant, IaCPackage | None]:
+        workspace = ValidationWorkspace()
+        self.workspaces[generator.variant] = workspace
+        with workspace.activate():
+            return await self._generate_inside(generator, plan)
+
+    async def _prepare_generation(
+        self,
+        generator: GeneratorAgent,
+        plan: DeploymentPlan,
+        package: IaCPackage,
+        started: float,
+    ) -> IaCPackage:
+        if not isinstance(self.validation_stage, ValidatorAgent):
+            return package
+        workspace = current_workspace()
+        assert workspace is not None
+        workspace.original_files = (
+            self.safety.value(dict(package.files))
+            if self.safety is not None
+            else dict(package.files)
+        )
+        package = package.model_copy(update={"files": dict(workspace.original_files)})
+        deterministic_started = self.clock()
+        files, records = repair_terraform(package.files)
+        files, idioms = repair_idioms(files)
+        metadata = RemediationReport(
+            deterministic_repairs=[
+                DeterministicRepair.model_validate(r) for r in [*records, *idioms]
+            ]
+        )
+        workspace.measurements.append(
+            {
+                "stage": "deterministic_repairs",
+                "duration_seconds": self.clock() - deterministic_started,
+                "phase": "generation",
+                "count": len(records) + len(idioms),
+            }
+        )
+        package = package.model_copy(update={"files": files})
+        remaining = generator.deadline_seconds - max(
+            self.clock() - started,
+            generator.last_run.elapsed_seconds if generator.last_run else 0,
+        )
+        gate = GenerationGate(self.validation_stage.engine)
+        if remaining <= 0:
+            workspace.gate = {
+                "outcome": "deadline",
+                "duration_seconds": 0.0,
+                "failed_checks": [],
+                "skipped_checks": [],
+            }
+        else:
+            budget = AgentBudget(remaining, clock=self.clock)
+            gate_started = self.clock()
+            try:
+                async with asyncio.timeout(budget.remaining()):
+                    result = await gate.run(plan, package.files)
+                    package = package.model_copy(update={"files": result.files})
+                    workspace.gate = result.metrics
+                    demo = (
+                        getattr(self.factory, "pipeline_demo_stub", False)
+                        and self.factory.settings.pipeline_demo_scenario == "review"
+                        and self.run_config.resolve(self.factory.settings).provider
+                        == LLMProvider.STUB
+                    )
+                    if (
+                        result.report.summary.result == "invalid"
+                        and budget.remaining() >= 1
+                        and not demo
+                    ):
+                        security = (
+                            self.security_stage
+                            or self.factory.create_security_agent(self.run_config)
+                        )
+                        if isinstance(security, SecurityAgent):
+                            repair = ValidationRepair(security, GateRepairEngine(gate))
+                            ctx = StageContext(
+                                self.run_id, self.writer, plan, self.clock
+                            )
+                            package, _, metadata = await repair.run(
+                                ctx,
+                                package.variant,
+                                package,
+                                rounds=1,
+                                budget=budget,
+                                phase="generation",
+                                metadata=metadata,
+                                report=result.report,
+                            )
+                            result = await gate.run(plan, package.files)
+                            package = package.model_copy(update={"files": result.files})
+                            workspace.gate = result.metrics
+            except TimeoutError:
+                workspace.gate = {**(workspace.gate or {}), "outcome": "deadline"}
+            finally:
+                assert workspace.gate is not None
+                workspace.gate["duration_seconds"] = self.clock() - gate_started
+        metadata = metadata.model_copy(
+            update={
+                "gate": workspace.gate,
+                "measurements": list(workspace.measurements),
+            }
+        )
+        return package.model_copy(
+            update={
+                "validation_report": {"remediation": metadata.model_dump(mode="json")}
+            }
+        )
+
+    async def _generate_inside(
+        self, generator: GeneratorAgent, plan: object
+    ) -> tuple[Variant, IaCPackage | None]:
         variant = generator.variant
         name = GENERATOR_NAMES[variant]
+        started = self.clock()
         await self.writer.agent_state(
             self.run_id,
             name,
@@ -96,6 +214,22 @@ class PipelineOrchestrator:
         )
         try:
             package = await generator.generate(plan)  # type: ignore[arg-type]
+            if isinstance(generator, GeneratorAgent) and isinstance(
+                plan, DeploymentPlan
+            ):
+                package = await self._prepare_generation(
+                    generator, plan, package, started
+                )
+                if generator.last_run is not None:
+                    elapsed = max(
+                        generator.last_run.elapsed_seconds, self.clock() - started
+                    )
+                    generator._last_run = replace(
+                        generator.last_run,
+                        elapsed_seconds=elapsed,
+                        deadline_exceeded=elapsed >= generator.deadline_seconds,
+                        overrun_seconds=max(0.0, elapsed - generator.deadline_seconds),
+                    )
             if self.safety is not None:
                 package = package.model_copy(
                     update={"files": self.safety.value(package.files)}
@@ -105,6 +239,14 @@ class PipelineOrchestrator:
                     await PackageRepository(session).save_files(
                         self.run_id, variant, package.files
                     )
+                    workspace = current_workspace()
+                    if workspace is not None and workspace.original_files is not None:
+                        await PackageRepository(session).save_automatic_repairs(
+                            self.run_id,
+                            variant,
+                            original_files=workspace.original_files,
+                            files=package.files,
+                        )
         except GeneratorError as error:
             await self._generation_failed(
                 variant,
@@ -245,13 +387,29 @@ class PipelineOrchestrator:
     async def _post_generation(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
     ) -> PackageStatus:
+        workspace = self.workspaces.get(variant)
+        if workspace is None:
+            return await self._post_generation_inside(ctx, variant, package)
+        with workspace.activate():
+            return await self._post_generation_inside(ctx, variant, package)
+
+    async def _post_generation_inside(
+        self, ctx: StageContext, variant: Variant, package: IaCPackage
+    ) -> PackageStatus:
         stage = self.security_stage or self.factory.create_security_agent(
             self.run_config
         )
         repair = None
         repair_budget = None
-        metadata = RemediationReport()
-        original_files = dict(package.files)
+        metadata = RemediationReport.model_validate(
+            (package.validation_report or {}).get("remediation") or {}
+        )
+        workspace = current_workspace()
+        original_files = dict(
+            workspace.original_files
+            if workspace and workspace.original_files is not None
+            else package.files
+        )
         demo_review = (
             getattr(self.factory, "pipeline_demo_stub", False)
             and self.factory.settings.pipeline_demo_scenario == "review"
@@ -267,11 +425,18 @@ class PipelineOrchestrator:
             repair_budget = AgentBudget(
                 self.factory.settings.validation_deadline_seconds, clock=ctx.clock
             )
-            files, records = repair_terraform(package.files)
-            metadata = RemediationReport(
-                deterministic_repairs=[
-                    DeterministicRepair.model_validate(r) for r in records
-                ]
+            files, records = (
+                (dict(package.files), [])
+                if workspace and workspace.gate is not None
+                else repair_terraform(package.files)
+            )
+            metadata = metadata.model_copy(
+                update={
+                    "deterministic_repairs": [
+                        *metadata.deterministic_repairs,
+                        *(DeterministicRepair.model_validate(r) for r in records),
+                    ]
+                }
             )
             package = package.model_copy(update={"files": files})
             await ctx.writer.package_transition(
@@ -349,7 +514,10 @@ class PipelineOrchestrator:
                         variant,
                         remediated_package,
                         rounds=1,
-                        budget=repair_budget,
+                        budget=AgentBudget(
+                            self.factory.settings.post_security_repair_deadline_seconds,
+                            clock=ctx.clock,
+                        ),
                         phase="after_security",
                         metadata=metadata,
                         report=report,
@@ -540,3 +708,6 @@ class PipelineOrchestrator:
             except Exception:
                 logger.exception("could not settle failed run %s", self.run_id)
             return RunStatus.FAILED
+        finally:
+            for workspace in self.workspaces.values():
+                workspace.close()

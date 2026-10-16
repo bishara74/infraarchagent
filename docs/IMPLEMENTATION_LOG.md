@@ -27,6 +27,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-16 — Phase 9e section 2 — Gate generation in reusable workspaces
+
+**Summary:** Add all-type parsing, formatting and installed-tool generation
+checks, a bounded generation repair, private reusable module initialization,
+safe init categories, two targeted idiom repairs and a fresh post-security budget.
+
+**Requirements addressed:** FR-G-02, FR-G-06, FR-V-03, FR-V-04, NFR-01, PR-05.
+
+**Files:** validation/{workspace,gate,idioms,engine,terraform,documents}.py;
+pipeline/orchestrator.py; remediation/repair protocol; runner; domain/config;
+unit/test_phase9e_gate.py; .env.example; README; this log.
+
+**Decisions:** Gate metadata is separate from final readiness; original files
+are redacted before audit persistence. Ordinary source changes reuse init;
+provider/module dependency changes invalidate it. Existing declaration repairs
+remain generation-only; exactly two new source-preserving rewrites (D-45).
+
+**Tests:** Gate/workspace/idiom/validator/repair regression command: 63 passed,
+0 failed, 0 skipped. Strict mypy: 109 source files passed. Earlier standalone
+mypy from repository root lacked backend plugin configuration; running from
+backend resolves the unrelated Settings call-argument diagnostics.
+
+**Known gaps / follow-ups:** Prompt schema context, per-patch enforcement and
+iteration regression checking follow in sections 3–4. Full acceptance follows.
+
 ## 2026-10-16 — Phase 9e section 1 — Export offline provider schema indexes
 
 **Summary:** Add compact hash-verified indexes for every pinned version and

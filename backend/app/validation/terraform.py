@@ -2,7 +2,9 @@
 
 import json
 import re
+import time
 from pathlib import Path
+from typing import Any
 
 import hcl2
 from hcl2.utils import SerializationOptions
@@ -11,8 +13,10 @@ from lark.exceptions import LarkError
 from app.domain.paths import validate_relative_path
 from app.domain.validation import ValidationCheck
 from app.scanners.runner import CommandToolRunner, ToolFailure
-from app.validation.documents import PackageDocuments, walk
+from app.validation.documents import PackageDocuments, blocks, walk
+from app.validation.provider_schema import provider_requirements
 from app.validation.tools import DEFAULT_MIRROR, mirror_present
+from app.validation.workspace import ValidationWorkspace, current_workspace
 
 SAFE_TITLES = {
     "Cycle",
@@ -56,7 +60,7 @@ def terraform_skip(reason: str) -> ValidationCheck:
 
 
 def terraform_diagnostics(
-    raw: str, root: Path, files: set[str]
+    raw: str, root: Path, files: set[str], module: str = "terraform"
 ) -> list[ValidationCheck]:
     """Never expose source snippets, raw output, absolute paths or diagnostic detail."""
     data = json.loads(raw)
@@ -84,7 +88,7 @@ def terraform_diagnostics(
                 except ValueError:
                     raise ValueError("unsafe Terraform diagnostic location") from None
             else:
-                candidate = Path("terraform") / candidate
+                candidate = Path(module) / candidate
             path = validate_relative_path(candidate.as_posix())
             if path not in files:
                 raise ValueError("unknown Terraform diagnostic file")
@@ -152,10 +156,13 @@ def terraform_diagnostics(
 
 
 def module_preflight(
-    root: Path, files: set[str], documents: PackageDocuments | None = None
+    root: Path,
+    files: set[str],
+    documents: PackageDocuments | None = None,
+    module: str = "terraform",
 ) -> tuple[str | None, bool]:
     """Inspect every reachable local module; never fetch remote module sources."""
-    queue = [root / "terraform"]
+    queue = [root / module]
     visited: set[Path] = set()
     local = False
     while queue:
@@ -199,8 +206,8 @@ def module_preflight(
             modules = data.get("module", [])
             entries = modules if isinstance(modules, list) else [modules]
             for entry in entries:
-                for module in entry.values():
-                    source = module.get("source")
+                for module_body in entry.values():
+                    source = module_body.get("source")
                     if not isinstance(source, str) or not source.startswith(
                         ("./", "../")
                     ):
@@ -266,14 +273,15 @@ def file_input_guard(root: Path, documents: PackageDocuments) -> list[Validation
     return []
 
 
-async def validate_terraform(
+async def _validate_module(
     root: Path,
     files: set[str],
     runner: CommandToolRunner,
     mirror: Path = DEFAULT_MIRROR,
     documents: PackageDocuments | None = None,
+    module: str = "terraform",
 ) -> list[ValidationCheck]:
-    tf = root / "terraform"
+    tf = root / module
     if not tf.is_dir() or not any(tf.glob("*.tf*")):
         return [
             ValidationCheck(
@@ -294,7 +302,7 @@ async def validate_terraform(
     guarded = file_input_guard(root, indexed)
     if guarded:
         return guarded
-    reason, local = module_preflight(root, files, indexed)
+    reason, local = module_preflight(root, files, indexed, module)
     if reason in {"unsafe_local_module", "local_module_missing"}:
         path = next(
             (
@@ -317,8 +325,49 @@ async def validate_terraform(
         ]
     if not mirror_present(mirror):
         return [terraform_skip("mirror_missing")]
+    workspace = current_workspace()
+    environment = workspace.environment(module) if workspace else root
+    # Resource bodies do not require initialization. Only provider type names do.
+    dependencies: dict[str, dict[str, Any]] = {}
+    for doc in indexed.documents.values():
+        if not doc.path.endswith((".tf", ".tf.json")) or not isinstance(doc.data, dict):
+            continue
+        kinds = {
+            labels[0].split("_")[0]
+            for kind in ("resource", "data")
+            for labels, _ in blocks(doc.data, kind)
+        }
+        if not kinds and not any(k in doc.data for k in ("module", "terraform")):
+            continue
+        group = dependencies.setdefault(
+            str(Path(doc.path).parent), {"module": [], "terraform": [], "types": []}
+        )
+        for key in ("module", "terraform"):
+            value = doc.data.get(key, [])
+            group[key].extend(value if isinstance(value, list) else [value])
+        group["types"] = sorted(set(group["types"]) | kinds)
+    fingerprint = ValidationWorkspace.fingerprint(
+        {"mirror": str(mirror.resolve()), "dependencies": dependencies}
+    )
+    reused = bool(workspace and workspace.initialized.get(module) == fingerprint)
+    metrics = {
+        "module": module,
+        "init_reused": reused,
+        "init_seconds": 0.0,
+        "validate_seconds": 0.0,
+        "init_outcome": "reused" if reused else "not_started",
+    }
+    started = time.monotonic()
     try:
-        if reason is None:
+        if reason is None and not reused:
+            if workspace:
+                workspace.reset_initialization(module)
+            (environment / ".terraformrc").write_text(
+                "provider_installation { filesystem_mirror { path = "
+                + json.dumps(str(mirror.resolve()))
+                + " } }\n"
+            )
+            init_started = time.monotonic()
             init = await runner.run_command(
                 "terraform",
                 [
@@ -332,15 +381,42 @@ async def validate_terraform(
                 ],
                 root,
                 cwd=tf,
+                environment_dir=environment,
             )
+            metrics["init_seconds"] = time.monotonic() - init_started
+            metrics["init_outcome"] = (
+                "initialized"
+                if init.exit_code == 0
+                else init_failure_category(init.stdout + init.stderr, indexed, module)
+            )
+            if workspace and init.exit_code == 0:
+                workspace.initialized[module] = fingerprint
+                lock = tf / ".terraform.lock.hcl"
+                workspace.resolved[module] = (
+                    dict(
+                        re.findall(
+                            r'provider "registry.terraform.io/hashicorp/([\w-]+)" '
+                            r'\{\s*version\s*=\s*"([0-9.]+)"',
+                            lock.read_text(),
+                        )
+                    )
+                    if lock.exists()
+                    else {}
+                )
         else:
             init = None
+        validate_started = time.monotonic()
         validation = await runner.run_command(
-            "terraform", ["terraform", "validate", "-json", "-no-color"], root, cwd=tf
+            "terraform",
+            ["terraform", "validate", "-json", "-no-color"],
+            root,
+            cwd=tf,
+            environment_dir=environment,
         )
+        metrics["validate_seconds"] = time.monotonic() - validate_started
         if validation.exit_code < 0 or (init is not None and init.exit_code < 0):
             return [terraform_skip("tool_error")]
-        checks = terraform_diagnostics(validation.stdout, root, files)
+        checks = terraform_diagnostics(validation.stdout, root, files, module)
         if reason:
             # A real syntax failure must survive even when a module is remote.
             failures = [
@@ -385,3 +461,67 @@ async def validate_terraform(
         ]
     except (ValueError, TypeError, KeyError, AttributeError):
         return [terraform_skip("tool_error")]
+    finally:
+        metrics["seconds"] = time.monotonic() - started
+        if workspace:
+            workspace.terraform_metrics.append(metrics)
+
+
+def init_failure_category(output: str, documents: PackageDocuments, module: str) -> str:
+    if any(
+        d.parse_error
+        for d in documents.documents.values()
+        if str(Path(d.path).parent) == module
+    ) or any(
+        word in output
+        for word in (
+            "Invalid character",
+            "Invalid single-argument",
+            "Invalid multi-line",
+            "Unclosed",
+            "Missing newline",
+        )
+    ):
+        return "syntax"
+    if "required_providers" in output and any(
+        word in output.lower() for word in ("invalid", "duplicate", "incorrect")
+    ):
+        return "invalid_required_providers"
+    if not provider_requirements(documents, module):
+        return "missing_required_providers"
+    if any(
+        word in output
+        for word in (
+            "provider packages",
+            "available releases",
+            "Failed to query",
+            "provider registry",
+        )
+    ):
+        return "mirror_constraint_unavailable"
+    return "unknown"
+
+
+async def validate_terraform(
+    root: Path,
+    files: set[str],
+    runner: CommandToolRunner,
+    mirror: Path = DEFAULT_MIRROR,
+    documents: PackageDocuments | None = None,
+) -> list[ValidationCheck]:
+    documents = documents or PackageDocuments.parse(
+        {p: (root / p).read_text() for p in files}
+    )
+    modules = sorted(
+        {
+            str(Path(p).parent)
+            for p in files
+            if p.startswith("terraform/") and p.endswith((".tf", ".tf.json"))
+        }
+    ) or ["terraform"]
+    checks = []
+    for module in modules:
+        checks.extend(
+            await _validate_module(root, files, runner, mirror, documents, module)
+        )
+    return checks

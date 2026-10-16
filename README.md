@@ -861,3 +861,19 @@ The validator still accepts row panels nested inside a top-level panels array.
 The sampled wrapped dashboard at run 48ce2227/security instead has a top-level
 `dashboard` API envelope; the author may separately decide whether to support
 that representation. Phase 9d leaves the check unchanged.
+
+### Phase 9e syntax gates and repair budgets
+
+Generation applies declaration repairs and two narrow Terraform idiom repairs,
+then parses documents, formats Terraform and checks installed offline tools.
+One generation repair shares the original generator deadline. Gate-only checks
+never change final readiness criteria. A private package workspace preserves
+initialized providers across validation calls, with isolated per-module data;
+provider/module dependency changes trigger offline reinitialization. No shared
+writable plugin cache or runtime download is used.
+
+`SCHEMA_CONTEXT_MAX_CHARS=16000` bounds repair context.
+`POST_SECURITY_REPAIR_DEADLINE_SECONDS=60` gives the post-security round its own
+fresh budget. Initial repair keeps `VALIDATION_DEADLINE_SECONDS=120`; security
+time cannot consume the new post-security budget. All calls remain bounded by
+their enclosing stages. PR-01 is a measured threshold, not a new pipeline timer.

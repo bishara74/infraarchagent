@@ -1,7 +1,7 @@
 """Shared Retry/automatic patch merging and verification primitives."""
 
 from collections.abc import Mapping, Sequence
-from typing import Any
+from typing import Any, Protocol
 
 from app.agents.security.fix import FixProposal
 from app.core.logging import RedactingFilter
@@ -11,7 +11,12 @@ from app.domain.package_layout import package_structure_errors
 from app.domain.plan import DeploymentPlan
 from app.domain.validation import ValidationReport
 from app.scanners.scan import Scanner, ScanResult
-from app.validation.engine import ValidationEngine
+
+
+class ValidationService(Protocol):
+    async def validate(
+        self, plan: DeploymentPlan, files: dict[str, str]
+    ) -> ValidationReport: ...
 
 
 def apply_proposals(
@@ -55,7 +60,7 @@ def apply_proposals(
 
 
 async def validate_files(
-    engine: ValidationEngine, plan: DeploymentPlan, files: dict[str, str]
+    engine: ValidationService, plan: DeploymentPlan, files: dict[str, str]
 ) -> ValidationReport:
     return await engine.validate(plan, files)
 

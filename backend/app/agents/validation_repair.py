@@ -4,7 +4,7 @@ import asyncio
 from typing import Literal
 
 from app.agents.budget import AgentBudget
-from app.agents.remediation import scan_files, validate_files
+from app.agents.remediation import ValidationService, scan_files, validate_files
 from app.agents.security.agent import SecurityAgent
 from app.domain.enums import AgentName, PackageStatus, Variant
 from app.domain.models import IaCPackage, Violation
@@ -13,7 +13,6 @@ from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import ScanResult
-from app.validation.engine import ValidationEngine
 
 
 def fingerprints(scan: ScanResult) -> set[tuple[str, str, str]]:
@@ -21,7 +20,7 @@ def fingerprints(scan: ScanResult) -> set[tuple[str, str, str]]:
 
 
 class ValidationRepair:
-    def __init__(self, security: SecurityAgent, engine: ValidationEngine) -> None:
+    def __init__(self, security: SecurityAgent, engine: ValidationService) -> None:
         self.security = security
         self.engine = engine
 
@@ -33,7 +32,7 @@ class ValidationRepair:
         *,
         rounds: int,
         budget: AgentBudget,
-        phase: Literal["before_security", "after_security"],
+        phase: Literal["generation", "before_security", "after_security"],
         metadata: RemediationReport,
         report: ValidationReport | None = None,
     ) -> tuple[IaCPackage, ValidationReport, RemediationReport]:
@@ -126,7 +125,9 @@ class ValidationRepair:
             await ctx.writer.event_log.append(
                 ctx.run_id,
                 AgentName.VALIDATOR,
-                PackageStatus.VALIDATING,
+                PackageStatus.GENERATING
+                if phase == "generation"
+                else PackageStatus.VALIDATING,
                 message="validation repair round",
                 payload=stage_notice_payload(
                     variant, "validation repair round", record.model_dump()

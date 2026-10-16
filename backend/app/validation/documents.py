@@ -218,7 +218,7 @@ class PackageDocuments:
                             explicit_blocks=False,
                         ),
                     )
-                elif kind == FileType.GRAFANA:
+                elif path.endswith(".json"):
                     data = json.loads(source)
                 elif path.endswith((".yaml", ".yml")) and not (
                     kind == FileType.HELM and "/templates/" in path
