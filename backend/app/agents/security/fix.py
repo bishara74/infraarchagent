@@ -218,15 +218,33 @@ class FixAgent:
             )
         except LLMRetryExhausted as error:
             return FixProposal(
-                path, False, failure_message(error.last_category), None, {}, ()
+                path,
+                False,
+                failure_message(error.last_category),
+                None,
+                {},
+                (),
+                schema_context_chars=len(context),
             )
         except LLMPermanentError as error:
             return FixProposal(
-                path, False, failure_message(error.category), None, {}, ()
+                path,
+                False,
+                failure_message(error.category),
+                None,
+                {},
+                (),
+                schema_context_chars=len(context),
             )
         except LLMDeadlineExceeded:
             return FixProposal(
-                path, False, failure_message("unreachable"), None, {}, ()
+                path,
+                False,
+                failure_message("unreachable"),
+                None,
+                {},
+                (),
+                schema_context_chars=len(context),
             )
         proposal = validate_fix(response.data, path=path, files=files, plan=plan)
         if proposal.accepted:

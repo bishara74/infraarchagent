@@ -1,5 +1,6 @@
 """FR-V-03: security-introduced invalidity is repaired and verified durably."""
 
+from dataclasses import replace
 from types import SimpleNamespace
 
 import pytest
@@ -20,11 +21,14 @@ from tests.integration.test_security_agent import ScriptedScanner, finding, setu
 
 @pytest.mark.req("FR-V-03", "FR-V-04", "FR-S-07", "FR-S-09")
 @pytest.mark.parametrize("final_scan_fails", [False, True])
+@pytest.mark.parametrize("security_seconds", [0, 230])
 async def test_final_security_and_validation_describe_repaired_files(
-    db_engines, final_scan_fails
+    db_engines, final_scan_fails, security_seconds
 ):
     engine, _ = db_engines
     ctx, package = await setup(engine)
+    now = [0.0]
+    ctx = replace(ctx, clock=lambda: now[0])
     sessions = make_session_factory(engine)
     settings = get_settings()
     validations = []
@@ -68,7 +72,14 @@ async def test_final_security_and_validation_describe_repaired_files(
             return await super().scan(*args, **kwargs)
 
     scanner = Scanner([[finding("FIRST")], [], [], [], []])
-    security = SecurityAgent(scanner, Fix(), sessions, settings)
+
+    class TimedSecurity(SecurityAgent):
+        async def run(self, *args, **kwargs):
+            outcome = await super().run(*args, **kwargs)
+            now[0] += security_seconds
+            return outcome
+
+    security = TimedSecurity(scanner, Fix(), sessions, settings)
     orchestrator = PipelineOrchestrator(
         ctx.run_id,
         "Deploy infrastructure",
@@ -85,6 +96,7 @@ async def test_final_security_and_validation_describe_repaired_files(
     assert row.original_files == package.files
     assert any("broken" in f["terraform/main.tf"] for f in validations)
     assert len(fixes) == 2 and fixes[1]["validation_failures"]
+    assert fixes[1]["remaining"] == settings.post_security_repair_deadline_seconds
     if final_scan_fails:
         assert outcome == PackageStatus.SCAN_ERROR
     else:

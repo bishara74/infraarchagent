@@ -877,3 +877,50 @@ writable plugin cache or runtime download is used.
 fresh budget. Initial repair keeps `VALIDATION_DEADLINE_SECONDS=120`; security
 time cannot consume the new post-security budget. All calls remain bounded by
 their enclosing stages. PR-01 is a measured threshold, not a new pipeline timer.
+
+The package workspace exists from generation through final checks, is serialized
+within a package and has private module `TF_DATA_DIR`/lock files. Success,
+failure and cancellation terminate child processes before cleanup. Provider
+requirements, inferred provider dependencies and local-module graph changes
+invalidate initialization; ordinary edits reuse it. Failed initialization is
+never a successful cache entry. Engineer Retry starts a fresh workspace.
+Generation and iteration reports record safe init categories and init/reuse time.
+
+Only two new deterministic Terraform rewrites run after generation and every
+security iteration: remove empty default-security-group ingress/egress blocks,
+and escape recognized AWS flow-log field placeholders. HCL and Terraform JSON
+are supported; other expressions and nonempty rules are preserved. Declaration
+repairs remain generation-only. An iteration restores Terraform source files
+and removes added Terraform files if validation failures increase. Unavailable
+comparisons require a fully valid candidate. Retained non-Terraform edits still
+require syntax/render and security verification. Checks, fixes and rollback
+share the existing 60-second iteration / 240-second security-stage budgets.
+
+Benchmark `agents.csv` and descriptive PR-05 rows now measure gates, each repair
+round, deterministic repairs, iteration verification, final validation and final
+security scans. `validator_persistence` labels the short prepared-report write.
+Quality snapshots include gate results, bounded context sizes, repair classes
+and conservative failure origins (`unknown` for hidden or historical origins).
+The clean stub pipeline has no fix iterations; `make bench-stub` additionally
+runs a separately labelled scripted-fix rehearsal with real offline Terraform,
+three concurrent private workspaces and both AWS versions. Its times, init reuse
+and rollback/deadline counts are excluded from production-ready rates and PR
+thresholds. A deadline-only rollback says nothing about eventual candidate
+validity. Historical 9d deadline stops (four initial / nine post-security), new
+stub counts and injected-clock tests are reported separately.
+
+For the next **author-run real comparison**, retain the 9d endpoint and model
+choices (`LLM_PROVIDER=openai`, `LLM_MODEL=openai/gpt-oss-120b:nitro`,
+`SECURITY_FIX_PROVIDER=openai`,
+`SECURITY_FIX_MODEL=openai/gpt-oss-120b:nitro`), plus all generator/fixer overrides
+in the preceding 9d block. Add:
+
+```dotenv
+VALIDATION_DEADLINE_SECONDS=120
+POST_SECURITY_REPAIR_DEADLINE_SECONDS=60
+SCHEMA_CONTEXT_MAX_CHARS=16000
+```
+
+Build the seven offline schema indexes first. Stub verification does not predict
+real benchmark quality or deadline-stop improvements; the next real comparison
+must report those measured outcomes using unchanged readiness rules.

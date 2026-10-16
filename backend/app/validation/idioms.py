@@ -16,12 +16,12 @@ FLOW_FIELDS = frozenset(
         "tcp-flags type pkt-srcaddr pkt-dstaddr region az-id sublocation-type "
         "sublocation-id pkt-src-aws-service pkt-dst-aws-service flow-direction "
         "traffic-path ecs-cluster-arn ecs-cluster-name ecs-container-instance-arn "
-        "ecs-container-instance-id ecs-container-id ecs-second-container-id ecs- "
-        "service-name ecs-task-definition-arn ecs-task-arn ecs-task-id reject- "
+        "ecs-container-instance-id ecs-container-id ecs-second-container-id ecs-"
+        "service-name ecs-task-definition-arn ecs-task-arn ecs-task-id reject-"
         "reason encryption-status resource-id transit-gateway-id tgw-attachment-id "
-        "tgw-src-vpc-account-id tgw-dst-vpc-account-id tgw-src-vpc-id tgw-dst-vpc- "
-        "id tgw-src-subnet-id tgw-dst-subnet-id tgw-src-eni tgw-dst-eni tgw-src-az- "
-        "id tgw-dst-az-id tgw-pair-attachment-id packets-lost-no-route packets- "
+        "tgw-src-vpc-account-id tgw-dst-vpc-account-id tgw-src-vpc-id tgw-dst-vpc-"
+        "id tgw-src-subnet-id tgw-dst-subnet-id tgw-src-eni tgw-dst-eni tgw-src-az-"
+        "id tgw-dst-az-id tgw-pair-attachment-id packets-lost-no-route packets-"
         "lost-blackhole packets-lost-mtu-exceeded packets-lost-ttl-expired "
     ).split()
 )
@@ -30,6 +30,35 @@ FIELD = re.compile(r"(?<!\$)\$\{([a-z][a-z0-9-]*)\}")
 
 def escape_fields(value: str) -> str:
     return FIELD.sub(lambda m: "$" + m[0] if m[1] in FLOW_FIELDS else m[0], value)
+
+
+def escape_json_fields(raw: str, value: str) -> str:
+    """Insert dollar signs without normalizing unrelated JSON string escapes."""
+    positions = []
+    cursor = 1
+    while cursor < len(raw) - 1:
+        start = cursor
+        if raw[cursor] == "\\":
+            end = cursor + (6 if raw[cursor + 1] == "u" else 2)
+            if (
+                raw[cursor : cursor + 2] == "\\u"
+                and 0xD800 <= int(raw[cursor + 2 : end], 16) <= 0xDBFF
+                and raw[end : end + 2] == "\\u"
+                and 0xDC00 <= int(raw[end + 2 : end + 6], 16) <= 0xDFFF
+            ):
+                end += 6
+        else:
+            end = cursor + 1
+        decoded = json.loads('"' + raw[cursor:end] + '"')
+        positions.extend([start] * len(decoded))
+        cursor = end
+    if len(positions) != len(value):
+        return raw
+    for match in reversed(list(FIELD.finditer(value))):
+        if match[1] in FLOW_FIELDS:
+            at = positions[match.start()]
+            raw = raw[:at] + "$" + raw[at:]
+    return raw
 
 
 def json_spans(source: str) -> list[tuple[tuple[str | int, ...], int, int, Any]]:
@@ -85,11 +114,28 @@ def remove_empty_json_rules(source: str) -> str:
                         + source[end:]
                     )
             elif isinstance(value, list) and any(v == {} for v in value):
-                source = (
-                    source[:start]
-                    + json.dumps([v for v in value if v != {}])
-                    + source[end:]
-                )
+                while True:
+                    empty = next(
+                        (
+                            (a, b)
+                            for p, a, b, v in json_spans(source)
+                            if len(p) == 2 and p[0] == name and v == {}
+                        ),
+                        None,
+                    )
+                    if empty is None:
+                        break
+                    a, b = empty
+                    right = b
+                    while right < len(source) and source[right].isspace():
+                        right += 1
+                    if source[right : right + 1] == ",":
+                        source = source[:a] + source[right + 1 :]
+                    else:
+                        left = a - 1
+                        while left >= 0 and source[left].isspace():
+                            left -= 1
+                        source = source[:left] + source[b:]
             break
     return source
 
@@ -125,13 +171,13 @@ def repair_idioms(files: dict[str, str]) -> tuple[dict[str, str], list[dict[str,
                         and parts[3] == "log_format"
                         and isinstance(value, str)
                     ):
-                        replacement = escape_fields(value)
-                        if replacement != value:
+                        replacement = escape_json_fields(source[start:end], value)
+                        if replacement != source[start:end]:
                             edits.append(
                                 (
                                     start,
                                     end,
-                                    json.dumps(replacement),
+                                    replacement,
                                     "flow_log_placeholders",
                                     str(parts[2]),
                                 )
@@ -182,7 +228,30 @@ def repair_idioms(files: dict[str, str]) -> tuple[dict[str, str], list[dict[str,
                             and child.data == "attribute"
                             and re.match(r"log_format\s*=", text)
                         ):
-                            replacement = escape_fields(text)
+                            replacement = text
+                            literal_edits = []
+                            for literal in child.iter_subtrees():
+                                a, b = literal.meta.start_pos, literal.meta.end_pos
+                                value = source[a:b]
+                                if literal.data == "interpolation" and FIELD.fullmatch(
+                                    value
+                                ):
+                                    updated = escape_fields(value)
+                                elif literal.data in {
+                                    "heredoc_template",
+                                    "heredoc_template_trim",
+                                }:
+                                    updated = escape_fields(value)
+                                else:
+                                    continue
+                                if value != updated:
+                                    literal_edits.append(
+                                        (a - start, b - start, updated)
+                                    )
+                            for a, b, updated in sorted(literal_edits, reverse=True):
+                                replacement = (
+                                    replacement[:a] + updated + replacement[b:]
+                                )
                             if replacement != text:
                                 edits.append(
                                     (

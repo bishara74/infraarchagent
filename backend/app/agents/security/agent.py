@@ -354,6 +354,8 @@ class SecurityAgent:
 
         before = await checked(files)
         verification["before_failed"] = failure_count(before)
+        if budget.expired():
+            raise TimeoutError
         verification["fix_started"] = True
         candidate, fixes, _ = await self._fix_pass(
             ctx,
@@ -371,6 +373,8 @@ class SecurityAgent:
         verification["candidate_created"] = candidate != files
         verification["deterministic_repairs"] = records
         verification["deterministic_seconds"] = time.monotonic() - repair_started
+        if budget.expired():
+            raise TimeoutError
         if terraform_files(candidate) != terraform_files(files):
             after = await checked(candidate)
             count = failure_count(after)
@@ -396,6 +400,8 @@ class SecurityAgent:
                 candidate = restore_terraform(files, candidate)
         else:
             verification["after_failed"] = verification["before_failed"]
+        if budget.expired():
+            raise TimeoutError
         if candidate != files or review_target_order:
             started = time.monotonic()
             try:
@@ -416,6 +422,8 @@ class SecurityAgent:
                 candidate, scanned = dict(files), baseline_scan
         else:
             scanned = baseline_scan
+        if budget.expired():
+            raise TimeoutError
         verification["outcome"] = (
             "rolled_back"
             if verification["reasons"]
@@ -455,6 +463,9 @@ class SecurityAgent:
         metrics_start: int,
     ) -> None:
         workspace = current_workspace()
+        record["verification_seconds"] = record.get(
+            "terraform_verification_seconds", 0.0
+        ) + record.get("security_verification_seconds", 0.0)
         record.update(
             initialization_metrics(
                 workspace.terraform_metrics[metrics_start:] if workspace else []
@@ -525,6 +536,7 @@ class SecurityAgent:
         reason: str | None = None
         status = PackageStatus.SCAN_ERROR
         pending_scan: ScanResult | None = None
+        pending_error: ToolFailure | None = None
 
         if kind == "review_retry":
             paths = retry_targets(
@@ -571,6 +583,16 @@ class SecurityAgent:
                             validation_failures=validation_failures,
                             review_target_order=True,
                         )
+                except ToolFailure as error:
+                    pending_error = error
+                    verification.setdefault("reasons", []).append(
+                        "verification_unavailable"
+                    )
+                    verification.update(outcome="rolled_back", deadline_only=False)
+                    fixes, diff = [], ""
+                    if workspace:
+                        async with workspace.check(files):
+                            pass
                 except TimeoutError:
                     verification["deadline_only"] = bool(
                         verification.get("candidate_created")
@@ -637,6 +659,8 @@ class SecurityAgent:
             )
             try:
                 async with asyncio.timeout(iteration_budget.remaining()):
+                    if pending_error is not None:
+                        raise pending_error
                     scan = pending_scan or await scan_files(
                         self.scanner, files, variant, iteration=iteration_count
                     )
@@ -743,6 +767,27 @@ class SecurityAgent:
                         feedback=feedback,
                         validation_failures=validation_failures,
                     )
+            except ToolFailure as error:
+                reason = f"{error.tool} scan {error.category}"
+                outcome, status = "error", PackageStatus.SCAN_ERROR
+                verification = entry["verification"]
+                verification.setdefault("reasons", []).append(
+                    "verification_unavailable"
+                )
+                verification.update(outcome="rolled_back", deadline_only=False)
+                if verification.get("fix_started"):
+                    iteration_count = decision.next_iteration_count
+                if workspace:
+                    async with workspace.check(files):
+                        pass
+                await self._publish_iteration(
+                    ctx, variant, verification, iteration_count, metrics_start
+                )
+                if kind != "review_retry":
+                    await ctx.writer.package_transition(
+                        ctx.run_id, variant, status, message=reason, error=reason
+                    )
+                break
             except TimeoutError:
                 reason, outcome, status = (
                     "time budget",

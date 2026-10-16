@@ -160,6 +160,8 @@ class RemediationReport(BaseModel):
     gate: dict[str, Any] | None = None
     measurements: list[dict[str, Any]] = Field(default_factory=list)
     final_origins: list[dict[str, Any]] = Field(default_factory=list)
+    initialization: dict[str, Any] | None = None
+    generator_schema_context_chars: int | None = Field(default=None, ge=0)
 
 
 def check_order(

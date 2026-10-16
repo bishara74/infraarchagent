@@ -27,6 +27,56 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-16 — Phase 9e section 6 — Verify offline gates, budgets and evidence
+
+**Summary:** Complete lifecycle, cancellation, source-preservation, masked-origin,
+clock-boundary, independent-budget and safe reporting regressions. Record full
+verification and two complete stub rehearsals with unchanged thresholds.
+
+**Requirements addressed:** FR-G-02, FR-G-06, FR-S-03, FR-S-07, FR-S-09,
+FR-V-03, FR-V-04, FR-V-05, NFR-01, PR-01, PR-03, PR-04, PR-05.
+
+**Files:** README; D-45; phase9e-verification.md; lifecycle/gate/measurement/quality
+and integration regressions; security agent/fixer, validator/domain/orchestrator,
+workspace/idiom/initialization guards; strict quality summaries; new dated stub
+and secret-scan evidence. Thesis sources were not edited.
+
+**Decisions:** D-45 documents ordering, limits, offline prerequisites and private
+workspace cleanup. Final reports include package-wide initialization totals and
+actual generator context size. Masked optional-tool origins stay unknown. JSON
+repairs preserve unrelated escapes and nonempty rule source; HCL repairs leave
+comments and expressions intact. Failed init never populates validation cache.
+Retry scanner verification failures now retain durable session evidence.
+No dependencies, downloads, installs, real LLM calls, dotenv reads or pushes.
+
+**Tests:** Final make lint passed (Ruff/format, mypy 113 source files, frontend
+ESLint/TypeScript). make test: 1302 passed, 0 failed, 0 skipped, 6 perf deselected,
+129.68 s. make frontend-test: 100 passed / 15 files. make test-e2e: 6 passed,
+1.4 min. make secret-scan: 0 findings, 0 errors. make provider-schema: seven
+pinned versions exported offline. Focused new regressions: 58 passed. The first
+full run had seven failures / 1274 passes; the Retry persistence bug and old
+fixture/event/runner assumptions were corrected, then selected regressions and
+full reruns passed. No readiness assertions were weakened.
+
+**Benchmark:** Final make bench-stub completed 14 pipeline runs / 42 packages,
+42 valid gates and 42 production ready; ten ZIP measurements. PR-01/04/05 pass;
+PR-03 fails its existing concurrency ratio. Backend verification ran concurrently.
+Package totals: 42 init runs, 126 reuse events, zero reinitializations. Generator
+schema context 5689 characters. Separate scripted-fix/real-offline-Terraform
+rehearsal: six verification intervals, median 15.0201 s, p90/max 31.1578 s;
+3 init runs, 9 reuse events, no reinitializations or validity regressions,
+0 deadline-only rollbacks / 6 attempted fix iterations. The clean pipeline has
+zero fix attempts and zero initial/post-security deadline stops; this is distinct
+from the historical four/nine. Injected clocks cover one pre-candidate stop,
+one deadline-only rollback and one multiple-cause rollback; two 230-second-stage
+integration cases still get a full 60-second post-security repair budget.
+See docs/phase9e-verification.md and dated evidence for full measured tables.
+
+**Known gaps / follow-ups:** Real quality/deadline improvements remain unmeasured.
+PR-03 remains a measured failure; no threshold, model or label was changed.
+Chapter 4/6 and author-run comparison follow-ups are documented. No new open
+specification question was introduced.
+
 ## 2026-10-16 — Phase 9e section 5 — Measure validation and iteration verification
 
 **Summary:** Publish actual stage durations through EventLog; export strict,

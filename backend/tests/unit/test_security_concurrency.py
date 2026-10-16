@@ -48,10 +48,10 @@ async def test_three_file_fixes_overlap_and_limit_active_calls() -> None:
     plan = DeploymentPlan.model_validate(DEMO_PLAN)
     ctx = StageContext(uuid4(), None, plan)  # type: ignore[arg-type]
     files = {
-        "terraform/a.tf": "a\n",
-        "terraform/b.tf": "b\n",
-        "terraform/c.tf": "c\n",
-        "terraform/untouched.tf": "unchanged\n",
+        "terraform/a.tf": "# a\n",
+        "terraform/b.tf": "# b\n",
+        "terraform/c.tf": "# c\n",
+        "terraform/untouched.tf": "# unchanged\n",
     }
     targets = {path: [] for path in files if path != "terraform/untouched.tf"}
     task = asyncio.create_task(

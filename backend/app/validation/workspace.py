@@ -44,6 +44,7 @@ class ValidationWorkspace:
         self.declared_scopes: set[str] = set()
         self.observed = False
         self.terraform_complete = False
+        self.complete_tools: set[str] = set()
 
     @staticmethod
     def check_key(check: ValidationCheck) -> tuple[str, str, str]:
@@ -84,8 +85,9 @@ class ValidationWorkspace:
                 certain = stage == "generated" or (
                     self.observed
                     and (
-                        check.tool != "terraform"
-                        or self.terraform_complete
+                        check.tool == "builtin"
+                        or (check.tool == "terraform" and self.terraform_complete)
+                        or check.tool in self.complete_tools
                         or (scope is not None and scope not in self.declared_scopes)
                     )
                 )
@@ -99,6 +101,12 @@ class ValidationWorkspace:
         self.terraform_complete = not any(
             c.tool == "terraform" and c.status in {"skipped", "failed"} for c in checks
         )
+        for tool in {c.tool for c in checks}:
+            self.complete_tools.discard(tool)
+            if not any(
+                c.tool == tool and c.status in {"skipped", "failed"} for c in checks
+            ):
+                self.complete_tools.add(tool)
 
     def annotate(
         self, checks: tuple[ValidationCheck, ...]

@@ -11,7 +11,9 @@ from app.domain.enums import PackageStatus
 from app.domain.paths import validate_relative_path
 from app.domain.review import security_final
 from scripts.phase9_common import ROOT, write_json
-from scripts.phase9e_metrics import measurement, measurement_summary
+from scripts.phase9_report import statistics_for
+from scripts.phase9c_metrics import number
+from scripts.phase9e_metrics import REASONS, measurement, measurement_summary
 
 
 def safe_text(value: object, redactor: RedactingFilter, limit: int = 500) -> str:
@@ -102,8 +104,29 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         "failed_checks": checks,
         "remaining_findings": dict(sorted(findings.items())),
         "phase9e": {
+            "generator_schema_context_chars": remediation.get(
+                "generator_schema_context_chars"
+            )
+            if type(remediation.get("generator_schema_context_chars")) is int
+            and remediation["generator_schema_context_chars"] >= 0
+            else None,
+            "initialization": {
+                key: value
+                for key, raw in (remediation.get("initialization") or {}).items()
+                if key
+                in {
+                    "init_runs",
+                    "init_reused",
+                    "reinitializations",
+                    "init_seconds",
+                    "validate_seconds",
+                }
+                and (value := number(raw)) is not None
+            }
+            or None,
             "gate_outcome": gate.get("outcome")
-            if gate.get("outcome") in {"passed", "failed", "error", "valid", "invalid"}
+            if gate.get("outcome")
+            in {"passed", "failed", "error", "valid", "invalid", "deadline"}
             else "unknown",
             "gate_failed_checks": [
                 {
@@ -131,6 +154,28 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
                 for f in iteration.get("fixes", [])
                 if type(f.get("schema_context_chars")) is int
                 and f["schema_context_chars"] >= 0
+            ],
+            "security_iteration_repairs": [
+                {
+                    "outcome": v.get("outcome")
+                    if v.get("outcome")
+                    in {"accepted", "rolled_back", "no_change", "stopped"}
+                    else "unknown",
+                    "error_classes": [
+                        safe_text(c, redactor)
+                        for c in v.get("error_classes", [])
+                        if isinstance(c, str)
+                    ],
+                    "reasons": [
+                        r
+                        for r in v.get("reasons", [])
+                        if isinstance(r, str) and r in REASONS
+                    ],
+                }
+                for iteration in (package.get("security_report") or {}).get(
+                    "iterations", []
+                )
+                if isinstance(v := iteration.get("verification"), dict)
             ],
         },
         "counts": {
@@ -203,6 +248,65 @@ def quality_table(
             for k, n in sorted(outcomes.items())
         ],
     )
+    initialization = [p.get("phase9e", {}).get("initialization") for p in packages]
+    result["gate_outcomes"] = dict(
+        Counter(p.get("phase9e", {}).get("gate_outcome", "unknown") for p in packages)
+    )
+    result["init_categories"] = dict(
+        Counter(
+            c for p in packages for c in p.get("phase9e", {}).get("init_categories", [])
+        )
+    )
+    result["schema_context_chars"] = {
+        "generator": statistics_for(
+            [
+                n
+                for p in packages
+                if type(n := p.get("phase9e", {}).get("generator_schema_context_chars"))
+                is int
+            ]
+        ),
+        "repair": statistics_for(
+            [
+                r["schema_context_chars"]
+                for p in packages
+                for r in p.get("phase9e", {}).get("repair_rounds", [])
+                if r["schema_context_chars"] is not None
+            ]
+        ),
+        "security": statistics_for(
+            [
+                n
+                for p in packages
+                for n in p.get("phase9e", {}).get("security_schema_context_chars", [])
+            ]
+        ),
+    }
+    result["security_outcomes_by_class"] = [
+        {"outcome": k[0], "reason": k[1], "error_class": k[2], "count": n}
+        for k, n in sorted(
+            Counter(
+                (r["outcome"], ",".join(r["reasons"]), error)
+                for p in packages
+                for r in p.get("phase9e", {}).get("security_iteration_repairs", [])
+                for error in (r["error_classes"] or ["unknown"])
+            ).items()
+        )
+    ]
+    result["package_initialization"] = {
+        "packages_measured": sum(value is not None for value in initialization),
+        "packages_unknown": sum(value is None for value in initialization),
+        **{
+            key: sum((value or {}).get(key, 0) for value in initialization)
+            for key in (
+                "init_runs",
+                "init_reused",
+                "reinitializations",
+                "init_seconds",
+                "validate_seconds",
+            )
+        },
+    }
     rate = f"{ready}/{total} ({100 * ready / total:.2f}%)" if total else "unknown"
     lines = [
         f"Production-ready rate among generated packages: **{rate}**.",
@@ -230,7 +334,17 @@ def quality_table(
         f"| {' / '.join(k[:3])} | {k[3].replace('|', '/')} | {n} |"
         for k, n in sorted(outcomes.items())
     ]
-    lines += ["", measured_table]
+    lines += [
+        "",
+        measured_table,
+        "",
+        "Package initialization totals: " + str(result["package_initialization"]),
+        "Gate outcomes: " + str(result["gate_outcomes"]),
+        "Init categories: " + str(result["init_categories"]),
+        "Schema context sizes (characters): " + str(result["schema_context_chars"]),
+        "Security iteration outcomes by class: "
+        + str(result["security_outcomes_by_class"]),
+    ]
     return result, "\n".join(lines)
 
 
@@ -282,6 +396,10 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                                 for c in raw.get("failed_checks", [])
                             ],
                             "remediation": {
+                                "initialization": extra.get("initialization"),
+                                "generator_schema_context_chars": extra.get(
+                                    "generator_schema_context_chars"
+                                ),
                                 "rounds": extra.get("repair_rounds", []),
                                 "measurements": extra.get("measurements", []),
                                 "gate": {
@@ -298,6 +416,10 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                         },
                         "security_report": {
                             "iterations": [
+                                *[
+                                    {"verification": v}
+                                    for v in extra.get("security_iteration_repairs", [])
+                                ],
                                 {
                                     "fixes": [
                                         {"schema_context_chars": n}
@@ -305,7 +427,7 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                                             "security_schema_context_chars", []
                                         )
                                     ]
-                                }
+                                },
                             ],
                             "final": {
                                 "remaining_blocking": [

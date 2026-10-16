@@ -194,3 +194,75 @@ async def test_failed_init_is_not_reused_and_gate_records_it(tmp_path):
         )
     finally:
         workspace.close()
+
+
+def test_flow_log_comments_expressions_and_long_field_names_are_preserved():
+    source = """resource "aws_flow_log" "main" {
+ log_format = join(" ", ["${version}", # ${srcaddr} stays a comment
+   "${ecs-service-name} ${reject-reason} ${packets-lost-blackhole}",
+   "${var.version} $${account-id}"])
+}
+"""
+    fixed, records = repair_idioms({"terraform/main.tf": source})
+    content = fixed["terraform/main.tf"]
+    assert "# ${srcaddr} stays a comment" in content
+    assert (
+        "$${ecs-service-name} $${reject-reason} $${packets-lost-blackhole}" in content
+    )
+    assert "${var.version} $${account-id}" in content
+    assert len(records) == 1 and repair_idioms(fixed) == (fixed, [])
+
+
+def test_mixed_json_rules_preserve_nonempty_rule_source_bytes():
+    source = """{"resource":{"aws_default_security_group":{"main":{
+ "ingress": [ {}, { "description" : "keep\\u0020exact", "from_port" : 80 }, {} ],
+ "egress": [{"from_port":443}, {}], "vpc_id":"keep"
+}}}}"""
+    fixed, records = repair_idioms({"terraform/main.tf.json": source})
+    content = fixed["terraform/main.tf.json"]
+    assert '{ "description" : "keep\\u0020exact", "from_port" : 80 }' in content
+    resource = json.loads(content)["resource"]["aws_default_security_group"]["main"]
+    assert len(resource["ingress"]) == len(resource["egress"]) == 1
+    assert len(records) == 1 and repair_idioms(fixed) == (fixed, [])
+
+
+async def test_failed_init_diagnostics_are_not_cached_as_success(tmp_path):
+    class Failed(Runner):
+        async def run_command(self, tool, args, root, **kwargs):
+            result = await super().run_command(tool, args, root, **kwargs)
+            if args[1] == "validate":
+                return ToolResult(
+                    '{"valid":false,"diagnostics":[{"severity":"error",'
+                    '"summary":"Invalid expression"}]}',
+                    "",
+                    1,
+                    0,
+                )
+            return result
+
+    runner = Failed(fail_init=True)
+    validator = engine(tmp_path, runner)
+    workspace = ValidationWorkspace()
+    try:
+        with workspace.activate():
+            for _ in range(2):
+                await validator.validate(
+                    plan(), {"terraform/main.tf": 'resource "aws_vpc" "x" {}\n'}
+                )
+        assert not workspace.initialized and not workspace.terraform_checks
+        assert sum(args[1] == "init" for _, args, _, _ in runner.calls) == 2
+    finally:
+        workspace.close()
+
+
+def test_json_flow_log_inserts_only_dollar_signs_preserving_string_escapes():
+    source = (
+        r'{"resource":{"aws_flow_log":{"main":{"log_format":"\ud83d\ude00 '
+        r'\/ \u0024{version} $${account-id} ${var.name} ${srcaddr}"}}}}'
+    )
+    fixed, records = repair_idioms({"terraform/main.tf.json": source})
+    expected = source.replace(r"\u0024{version}", r"$\u0024{version}").replace(
+        "${srcaddr}", "$${srcaddr}"
+    )
+    assert fixed["terraform/main.tf.json"] == expected
+    assert len(records) == 1 and repair_idioms(fixed) == (fixed, [])

@@ -75,6 +75,9 @@ def measurement(raw: object) -> dict | None:
         "passed",
         "failed",
         "error",
+        "valid",
+        "invalid",
+        "deadline",
     }:
         result["outcome"] = outcome
     if raw.get("reason") in REASONS:

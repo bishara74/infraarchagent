@@ -516,10 +516,12 @@ def init_failure_category(output: str, documents: PackageDocuments, module: str)
             "Invalid multi-line",
             "Unclosed",
             "Missing newline",
+            "Invalid expression",
+            "Argument or block definition required",
         )
     ):
         return "syntax"
-    if "required_providers" in output and any(
+    if ("required_providers" in output or "provider source" in output.lower()) and any(
         word in output.lower() for word in ("invalid", "duplicate", "incorrect")
     ):
         return "invalid_required_providers"
@@ -584,6 +586,7 @@ async def validate_terraform(
         workspace is not None
         and checks
         and not any(c.status == "skipped" for c in checks)
+        and all(module in workspace.initialized for module in modules)
     ):
         workspace.terraform_checks[key] = list(checks)
         workspace.terraform_check_initialization[key] = dict(workspace.initialized)

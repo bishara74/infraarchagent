@@ -135,3 +135,28 @@ async def test_scripted_rehearsal_uses_private_workspaces_and_initialization_reu
     assert len({str(call[2]) for call in init}) == 3
     assert result["summary"]["initialization"]["init_runs"] == 3
     assert result["summary"]["initialization"]["init_reused"] >= 6
+
+
+def test_hidden_optional_tool_failures_remain_unknown():
+    workspace = ValidationWorkspace()
+    failed = ValidationCheck(
+        check_id="helm.lint",
+        category="lint",
+        tool="helm",
+        status="failed",
+        message="Helm lint failed",
+        file_path="helm/app/Chart.yaml",
+        line_start=1,
+    )
+    try:
+        workspace.observe([failed], "generated", {})
+        masked = failed.model_copy(update={"line_start": 2})
+        workspace.observe([masked], "security_fix", {})
+        assert workspace.annotate((masked,))[0].origin == "unknown"
+        workspace.observe(
+            [failed.model_copy(update={"status": "passed"})], "repair", {}
+        )
+        workspace.observe([masked], "repair", {})
+        assert workspace.annotate((masked,))[0].origin == "repair"
+    finally:
+        workspace.close()

@@ -288,6 +288,7 @@ async def test_persist_report_before_outcome_and_option_c(
                 for e in events
                 if e.agent_name == AgentName.VALIDATOR
                 and e.payload.get("kind") == ("stage_notice")
+                and "measurement" not in e.payload
             ]
         )
         == 1

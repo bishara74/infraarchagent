@@ -240,4 +240,4 @@ def test_validator_factory_needs_sessions_but_no_llm(monkeypatch):
     ).create_validator_agent()
     assert isinstance(agent, ValidatorAgent)
     assert agent.engine.max_parallel_tools == 2 and agent.engine.deadline_seconds == 42
-    assert agent.engine.runner.timeout_seconds == 7
+    assert agent.engine.runner.runner.timeout_seconds == 7

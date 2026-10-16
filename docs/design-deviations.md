@@ -1126,7 +1126,7 @@ ceiling, private initialized package workspaces, explicit timing/provenance,
 and independent initial/post-security repair budgets. Scanner-only prompts receive the same 16000-character schema cap as repair;
 the generator gets at most 6000 input characters without output-budget changes.
 Initialized provider versions take precedence; namespace mismatches are never
-grounded with unrelated schemas. Remaining implementation and verification are
+grounded with unrelated schemas. Implementation choices and verification are
 recorded in the Phase 9e section entries.
 
 Each security iteration compares Terraform failures before/after the two idiom
@@ -1136,6 +1136,32 @@ verification. No-new-blocker protection and the 60-second ceiling remain;
 rolled-back attempts consume allowance. Retry uses a fresh workspace shared
 through validation. Existing control removal is rejected; same-kind replacements
 retain control fields and still require scanner verification.
+
+Initialization is private per module and serialized per package; source sync
+preserves tool data, and provider/constraint/inferred-dependency/local-module
+changes invalidate it. Failed or cancelled initialization is never reused.
+Workspaces are cleaned after subprocess termination; Retry creates a fresh one.
+Generation gates record safe init categories rather than raw tool output and
+require mirrored-version-compatible required_providers in generator prompts.
+
+Initial repair has 120 seconds and post-security repair a fresh, configurable
+60 seconds; security does not consume either budget. Generation repair shares
+the generator deadline. PR-01 remains a measured threshold without a new
+pipeline-wide timeout. Every patch parses touched HCL/YAML/JSON and renders
+changed Helm charts. The gate also formats Terraform, runs installed offline
+validation/lint/syntax tools and records unavailable reasons. The new idiom
+repairs only remove literal empty default-SG rules and escape recognized AWS
+flow-log placeholders (HCL/JSON); existing declaration repairs remain
+generation-only.
+
+Descriptive timings include tool queue waiting. Validator persistence is labelled
+separately from actual validation. Benchmark outputs strictly project safe
+metadata; uncertain, masked and historical failure origins stay unknown.
+A separate, labelled scripted-fix/real-offline-Terraform rehearsal measures warm
+verification under three concurrent workspaces because clean stub packages have
+no scanner-fix iterations. It does not affect quality rates, PR thresholds or
+benchmark prompts. Deadline-only rollbacks, pre-candidate stops and multiple
+causes are separate; no estimate of real-run improvement is made.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

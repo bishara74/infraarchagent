@@ -136,3 +136,32 @@ def test_missing_historical_snapshots_are_unknown(tmp_path):
     report = json.loads((output / "quality.json").read_text())
     assert report["production_ready_rate"] is None
     assert report["counts"]["unavailable_runs"] == 1
+
+
+def test_phase9e_totals_and_contexts_are_allowlisted():
+    raw = package()
+    raw["validation_report"]["remediation"].update(
+        initialization={
+            "init_runs": 2,
+            "init_reused": 4,
+            "reinitializations": 1,
+            "secret": CANARY,
+        },
+        generator_schema_context_chars=5800,
+        gate={
+            "outcome": "deadline",
+            "failed_checks": [
+                {
+                    "check_id": "terraform.validate",
+                    "message": "Missing required argument",
+                    "source": CANARY,
+                }
+            ],
+        },
+    )
+    compact = quality_snapshot(raw, RedactingFilter())
+    report, table = quality_table([compact])
+    assert report["gate_outcomes"] == {"deadline": 1}
+    assert report["package_initialization"]["init_reused"] == 4
+    assert report["schema_context_chars"]["generator"]["max"] == 5800
+    assert CANARY not in json.dumps(report) + json.dumps(compact) + table

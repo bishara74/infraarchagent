@@ -19,7 +19,7 @@ from app.domain.validation import (
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.validation.engine import ValidationEngine
-from app.validation.measurement import publish_measurement
+from app.validation.measurement import initialization_metrics, publish_measurement
 from app.validation.workspace import current_workspace
 
 
@@ -92,6 +92,9 @@ class ValidatorAgent:
             metadata = report.remediation.model_copy(
                 update={
                     "measurements": list(workspace.measurements),
+                    "initialization": initialization_metrics(
+                        workspace.terraform_metrics
+                    ),
                     "final_origins": [
                         {
                             "check_id": c.check_id,
