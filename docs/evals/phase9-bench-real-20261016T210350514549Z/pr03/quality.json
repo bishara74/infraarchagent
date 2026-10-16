@@ -1,0 +1,287 @@
+{
+  "counts": {
+    "packages": 12,
+    "missing_variants": 0,
+    "unavailable_runs": 0,
+    "production_ready": 0
+  },
+  "production_ready_rate": 0.0,
+  "status_counts": {
+    "pending_review": 12
+  },
+  "review_reason_counts": {
+    "unresolved_security_findings": 12,
+    "validation_failed": 11
+  },
+  "failed_check_counts": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "count": 10
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "count": 4
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid single-argument block definition",
+      "count": 3
+    },
+    {
+      "check_id": "document.parse",
+      "message": "Document could not be parsed",
+      "count": 1
+    }
+  ],
+  "remaining_finding_counts": {
+    "AWS-0104": 32,
+    "CKV_AWS_130": 16,
+    "AWS-0164": 15,
+    "AWS-0053": 13,
+    "CKV_AWS_103": 12,
+    "CKV_AWS_260": 12,
+    "CKV_AWS_378": 12,
+    "CKV_AWS_91": 11,
+    "AWS-0176": 10,
+    "AWS-0177": 10,
+    "CKV_AWS_129": 10,
+    "CKV_AWS_161": 10,
+    "CKV_AWS_293": 10,
+    "AWS-0054": 9,
+    "CKV_AWS_2": 9,
+    "AWS-0028": 9,
+    "AWS-0131": 9,
+    "CKV2_AWS_20": 8,
+    "AWS-0178": 7,
+    "CKV_AWS_8": 7,
+    "CKV2_AWS_11": 6,
+    "CKV_AWS_118": 6,
+    "CKV_AWS_353": 6,
+    "AWS-0080": 6,
+    "CKV_AWS_16": 6,
+    "AWS-0090": 5,
+    "AWS-0132": 5,
+    "CKV_AWS_145": 5,
+    "CKV_AWS_18": 5,
+    "CKV_AWS_21": 5,
+    "TERRAFORM_SYNTAX": 4,
+    "AWS-0047": 3,
+    "AWS-0077": 3,
+    "AWS-0052": 2,
+    "CKV_AWS_144": 2,
+    "CKV_AWS_157": 2,
+    "AWS-0107": 2,
+    "CKV_AWS_24": 2
+  },
+  "final_failure_origins": {
+    "generated": 17,
+    "unknown": 1
+  },
+  "measurements": {
+    "durations": {
+      "deterministic_repairs": {
+        "count": 24,
+        "median": 0.09027547150071769,
+        "p90": 0.42976448599983996,
+        "max": 0.5446753889991669
+      },
+      "final_security_scan": {
+        "count": 12,
+        "median": 7.518553705999693,
+        "p90": 11.654964377999931,
+        "max": 12.06780247200004
+      },
+      "final_validation": {
+        "count": 12,
+        "median": 0.15821851849977975,
+        "p90": 0.392447797999921,
+        "max": 0.5115008390002913
+      },
+      "generation_gate": {
+        "count": 12,
+        "median": 70.78685723799936,
+        "p90": 82.76637349700104,
+        "max": 119.87594170400007
+      },
+      "initial_validation": {
+        "count": 12,
+        "median": 0.15866703800020332,
+        "p90": 1.1157091170007334,
+        "max": 1.3634525919987937
+      },
+      "post_security_validation": {
+        "count": 12,
+        "median": 0.1731776759997956,
+        "p90": 0.5606533040008799,
+        "max": 0.9764151370000036
+      },
+      "security_iteration_verification": {
+        "count": 12,
+        "median": 2.8103908989996853,
+        "p90": 10.676996472999235,
+        "max": 23.46391187000154
+      },
+      "validation_repair_round": {
+        "count": 22,
+        "median": 39.34236089099977,
+        "p90": 62.00010514399946,
+        "max": 69.6457880550006
+      }
+    },
+    "iterations": {
+      "attempted_fix_iterations": 12,
+      "deadline_only_rollbacks": 0,
+      "deadline_before_candidate": 0,
+      "multiple_cause_deadline_rollbacks": 0,
+      "validity_regression_rollbacks": 3
+    },
+    "initialization": {
+      "init_runs": 22,
+      "init_reused": 28,
+      "reinitializations": 5
+    },
+    "repair_deadline_stops": {}
+  },
+  "repair_outcomes_by_class": [
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Invalid single-argument block definition",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Invalid single-argument block definition",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 3
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 4
+    }
+  ],
+  "gate_outcomes": {
+    "valid": 1,
+    "invalid": 11
+  },
+  "init_categories": {
+    "initialized": 2,
+    "validation_cached": 5,
+    "reused": 4,
+    "syntax": 1
+  },
+  "schema_context_chars": {
+    "generator": {
+      "count": 12,
+      "median": 5689.0,
+      "p90": 5689,
+      "max": 5689
+    },
+    "repair": {
+      "count": 22,
+      "median": 15966.0,
+      "p90": 15996,
+      "max": 15998
+    },
+    "security": {
+      "count": 0,
+      "median": null,
+      "p90": null,
+      "max": null
+    }
+  },
+  "security_outcomes_by_class": [],
+  "package_initialization": {
+    "packages_measured": 12,
+    "packages_unknown": 0,
+    "init_runs": 28,
+    "init_reused": 68,
+    "reinitializations": 5,
+    "init_seconds": 214.27350700799798,
+    "validate_seconds": 325.24757700500777
+  }
+}

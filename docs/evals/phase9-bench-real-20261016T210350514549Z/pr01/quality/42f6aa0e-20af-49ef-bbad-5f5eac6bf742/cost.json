@@ -1,0 +1,128 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_error"
+  ],
+  "failed_checks": [],
+  "remaining_findings": {
+    "AWS-0053": 1,
+    "AWS-0054": 1,
+    "AWS-0077": 1,
+    "AWS-0080": 1,
+    "AWS-0090": 1,
+    "AWS-0104": 3,
+    "AWS-0130": 1,
+    "AWS-0132": 1,
+    "AWS-0164": 1,
+    "AWS-0176": 1,
+    "AWS-0177": 1,
+    "CKV2_AWS_20": 1,
+    "CKV_AWS_103": 1,
+    "CKV_AWS_129": 1,
+    "CKV_AWS_130": 1,
+    "CKV_AWS_145": 1,
+    "CKV_AWS_16": 1,
+    "CKV_AWS_161": 1,
+    "CKV_AWS_18": 1,
+    "CKV_AWS_2": 1,
+    "CKV_AWS_21": 1,
+    "CKV_AWS_260": 1,
+    "CKV_AWS_293": 1,
+    "CKV_AWS_378": 1,
+    "CKV_AWS_91": 1
+  },
+  "phase9e": {
+    "generator_schema_context_chars": 5689,
+    "initialization": {
+      "init_runs": 6,
+      "init_reused": 0,
+      "init_seconds": 36.94360696599961,
+      "validate_seconds": 0.45032591200106253,
+      "reinitializations": 0
+    },
+    "gate_outcome": "error",
+    "gate_failed_checks": [],
+    "init_categories": [
+      "mirror_constraint_unavailable"
+    ],
+    "repair_rounds": [],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.10729860399987956,
+        "phase": "generation",
+        "count": 13
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 6.331463946999975,
+        "phase": "generation",
+        "init_runs": 1,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 5.870910831999936,
+        "validate_seconds": 0.08768237599997519,
+        "outcome": "error"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 7.310586949000026,
+        "phase": "before_security"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.03790750900043349,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 14.866705589999583,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": null,
+        "after_failed": null,
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 14.433764584999153,
+        "validate_seconds": 0.09654752200094663,
+        "terraform_verification_seconds": 14.866705589999583,
+        "security_verification_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": [
+          "terraform_verification_unavailable"
+        ]
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 5.93382687599933,
+        "phase": "after_security"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 4.08563557800062,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 3.7108942009999737,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [],
+    "security_iteration_repairs": []
+  },
+  "counts": {
+    "failed_checks": 0,
+    "remaining_findings": 27,
+    "deterministic_repairs": 13,
+    "validation_repair_rounds": 0,
+    "security_iterations": 1
+  }
+}

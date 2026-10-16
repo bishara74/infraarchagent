@@ -1,0 +1,204 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "helm.lint",
+      "message": "helm optional lint failed",
+      "file_path": "helm/app/Chart.yaml",
+      "origin": "generated",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 235,
+      "line_end": 235
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0038": 5,
+    "AWS-0039": 1,
+    "AWS-0040": 1,
+    "AWS-0041": 1,
+    "AWS-0047": 1,
+    "AWS-0053": 1,
+    "AWS-0077": 1,
+    "AWS-0080": 1,
+    "AWS-0090": 2,
+    "AWS-0104": 1,
+    "AWS-0132": 2,
+    "AWS-0164": 2,
+    "AWS-0176": 1,
+    "AWS-0177": 1,
+    "AWS-0178": 1,
+    "CKV2_AWS_11": 1,
+    "CKV2_AWS_12": 1,
+    "CKV_AWS_103": 1,
+    "CKV_AWS_118": 1,
+    "CKV_AWS_129": 1,
+    "CKV_AWS_130": 2,
+    "CKV_AWS_145": 2,
+    "CKV_AWS_16": 1,
+    "CKV_AWS_161": 1,
+    "CKV_AWS_18": 2,
+    "CKV_AWS_21": 2,
+    "CKV_AWS_293": 1,
+    "CKV_AWS_353": 1,
+    "CKV_AWS_37": 1,
+    "CKV_AWS_38": 1,
+    "CKV_AWS_39": 1,
+    "CKV_AWS_58": 1,
+    "CKV_AWS_91": 1
+  },
+  "phase9e": {
+    "generator_schema_context_chars": 5689,
+    "initialization": {
+      "init_runs": 1,
+      "init_reused": 5,
+      "init_seconds": 12.275189607000357,
+      "validate_seconds": 6.906938920999892,
+      "reinitializations": 0
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "message": "helm optional lint failed"
+      },
+      {
+        "check_id": "gate.helm",
+        "message": "Generation syntax check failed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      }
+    ],
+    "init_categories": [
+      "validation_cached"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Generation syntax check failed",
+          "Unsupported argument",
+          "helm optional lint failed"
+        ],
+        "schema_context_chars": 16000
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Unsupported argument",
+          "helm optional lint failed"
+        ],
+        "schema_context_chars": 16000
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.5786761919998753,
+        "phase": "generation",
+        "count": 0
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 14.855469058999915,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 35.98419042900059,
+        "phase": "generation",
+        "init_runs": 1,
+        "init_reused": 1,
+        "reinitializations": 0,
+        "init_seconds": 12.275189607000357,
+        "validate_seconds": 6.906938920999892,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.44319128600000113,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 10.821541789000548,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.09438827600024524,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 0.10064846999921429,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 1,
+        "after_failed": 1,
+        "init_runs": 0,
+        "init_reused": 1,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 0.0,
+        "terraform_verification_seconds": 0.10064846999921429,
+        "security_verification_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 0.437661372000548,
+        "phase": "after_security"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 0.4744300909997037,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 8.390769371000715,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [],
+    "security_iteration_repairs": []
+  },
+  "counts": {
+    "failed_checks": 2,
+    "remaining_findings": 44,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 2,
+    "security_iterations": 1
+  }
+}

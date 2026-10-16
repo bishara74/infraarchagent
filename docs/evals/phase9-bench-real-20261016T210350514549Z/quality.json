@@ -1,0 +1,768 @@
+{
+  "counts": {
+    "packages": 40,
+    "missing_variants": 2,
+    "unavailable_runs": 0,
+    "production_ready": 1
+  },
+  "production_ready_rate": 0.025,
+  "status_counts": {
+    "pending_review": 39,
+    "production_ready": 1
+  },
+  "review_reason_counts": {
+    "unresolved_security_findings": 39,
+    "validation_failed": 31,
+    "validation_error": 1
+  },
+  "failed_check_counts": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "count": 25
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "count": 10
+    },
+    {
+      "check_id": "helm.lint",
+      "message": "helm optional lint failed",
+      "count": 7
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared input variable",
+      "count": 6
+    },
+    {
+      "check_id": "document.parse",
+      "message": "Document could not be parsed",
+      "count": 3
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid multi-line string",
+      "count": 3
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid index",
+      "count": 3
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid single-argument block definition",
+      "count": 3
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported block type",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.nginx_max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.nginx_min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.prometheus_max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.prometheus_min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.grafana_max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.grafana_min_capacity is not declared",
+      "count": 1
+    }
+  ],
+  "remaining_finding_counts": {
+    "AWS-0104": 67,
+    "CKV_AWS_130": 43,
+    "AWS-0164": 42,
+    "AWS-0038": 35,
+    "AWS-0176": 28,
+    "AWS-0177": 28,
+    "CKV_AWS_129": 28,
+    "CKV_AWS_161": 28,
+    "CKV_AWS_293": 28,
+    "AWS-0053": 27,
+    "CKV_AWS_103": 26,
+    "CKV_AWS_145": 25,
+    "AWS-0028": 24,
+    "AWS-0178": 24,
+    "CKV_AWS_91": 24,
+    "CKV2_AWS_11": 23,
+    "AWS-0132": 23,
+    "CKV_AWS_260": 22,
+    "AWS-0131": 21,
+    "CKV_AWS_378": 21,
+    "CKV_AWS_21": 21,
+    "AWS-0090": 20,
+    "CKV_AWS_118": 19,
+    "CKV_AWS_353": 19,
+    "CKV_AWS_8": 19,
+    "CKV_AWS_18": 19,
+    "AWS-0054": 18,
+    "CKV_AWS_2": 18,
+    "AWS-0080": 17,
+    "CKV2_AWS_20": 17,
+    "CKV_AWS_16": 17,
+    "AWS-0077": 12,
+    "CKV_AWS_144": 11,
+    "TERRAFORM_SYNTAX": 9,
+    "CKV_AWS_157": 8,
+    "AWS-0047": 8,
+    "AWS-0039": 7,
+    "CKV_AWS_37": 7,
+    "CKV_AWS_58": 7,
+    "AWS-0011": 7,
+    "AWS-0040": 6,
+    "AWS-0041": 6,
+    "CKV_AWS_38": 6,
+    "CKV_AWS_39": 6,
+    "CKV2_AWS_12": 5,
+    "KSV-0125": 4,
+    "AWS-0130": 2,
+    "AWS-0010": 2,
+    "CKV_K8S_40": 2,
+    "KSV-0118": 2,
+    "AWS-0052": 2,
+    "AWS-0107": 2,
+    "CKV_AWS_24": 2,
+    "CKV_AWS_111": 1,
+    "CKV_K8S_14": 1,
+    "KSV-0013": 1,
+    "KSV-0117": 1,
+    "CKV_K8S_10": 1,
+    "CKV_K8S_11": 1,
+    "CKV_K8S_12": 1,
+    "CKV_K8S_13": 1,
+    "CKV_K8S_20": 1,
+    "CKV_K8S_23": 1,
+    "KSV-0001": 1,
+    "KSV-0012": 1,
+    "KSV-0014": 1,
+    "KSV-0104": 1,
+    "AWS-0029": 1
+  },
+  "final_failure_origins": {
+    "unknown": 6,
+    "generated": 51,
+    "repair": 12
+  },
+  "measurements": {
+    "durations": {
+      "deterministic_repairs": {
+        "count": 84,
+        "median": 0.047704692000479554,
+        "p90": 0.17748659000062617,
+        "max": 0.5786761919998753
+      },
+      "final_security_scan": {
+        "count": 40,
+        "median": 4.908768710000004,
+        "p90": 9.83452876499905,
+        "max": 12.06780247200004
+      },
+      "final_validation": {
+        "count": 40,
+        "median": 0.1070776994993139,
+        "p90": 0.43471432800106413,
+        "max": 4.08563557800062
+      },
+      "generation_gate": {
+        "count": 40,
+        "median": 28.143088118000378,
+        "p90": 71.70734923399868,
+        "max": 119.87594170400007
+      },
+      "initial_validation": {
+        "count": 40,
+        "median": 0.13176282650056237,
+        "p90": 0.5245776930005377,
+        "max": 7.310586949000026
+      },
+      "post_security_validation": {
+        "count": 40,
+        "median": 0.1206731020006373,
+        "p90": 0.49826080999991973,
+        "max": 5.93382687599933
+      },
+      "security_iteration_verification": {
+        "count": 44,
+        "median": 4.181310285000109,
+        "p90": 13.72547048999877,
+        "max": 23.46391187000154
+      },
+      "validation_repair_round": {
+        "count": 71,
+        "median": 18.458363826000095,
+        "p90": 49.414774373999535,
+        "max": 69.6457880550006
+      }
+    },
+    "iterations": {
+      "attempted_fix_iterations": 44,
+      "deadline_only_rollbacks": 0,
+      "deadline_before_candidate": 0,
+      "multiple_cause_deadline_rollbacks": 0,
+      "validity_regression_rollbacks": 12
+    },
+    "initialization": {
+      "init_runs": 68,
+      "init_reused": 103,
+      "reinitializations": 14
+    },
+    "repair_deadline_stops": {}
+  },
+  "repair_outcomes_by_class": [
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "helm optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Missing required argument",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported argument",
+      "count": 3
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "helm optional lint failed",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared input variable",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 5
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "helm optional lint failed",
+      "count": 4
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.grafana_max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.grafana_min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.prometheus_max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.prometheus_min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Document could not be parsed",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Invalid multi-line string",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Invalid single-argument block definition",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 3
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Invalid index",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 5
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 13
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported block type",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "stopped",
+      "reason": "round_limit",
+      "error_class": "unknown",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Missing required argument",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported argument",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported block type",
+      "count": 3
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.api_desired_count is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.api_image is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.api_max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.api_min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.aws_region is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.db_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.db_password is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.db_username is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.grafana_desired_count is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.grafana_image is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.nginx_desired_count is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.nginx_image is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.project_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.prometheus_desired_count is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.prometheus_image is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "var.vpc_cidr is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Generation syntax check failed",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Invalid index",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Missing required argument",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 7
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "helm optional lint failed",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Invalid multi-line string",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Invalid single-argument block definition",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 6
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 11
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported block type",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "stopped",
+      "reason": "round_limit",
+      "error_class": "unknown",
+      "count": 2
+    }
+  ],
+  "gate_outcomes": {
+    "invalid": 32,
+    "valid": 7,
+    "error": 1
+  },
+  "init_categories": {
+    "syntax": 2,
+    "validation_cached": 27,
+    "missing_required_providers": 1,
+    "mirror_constraint_unavailable": 1,
+    "initialized": 4,
+    "reused": 5
+  },
+  "schema_context_chars": {
+    "generator": {
+      "count": 40,
+      "median": 5689.0,
+      "p90": 5689,
+      "max": 5689
+    },
+    "repair": {
+      "count": 74,
+      "median": 15971.5,
+      "p90": 15999,
+      "max": 23405
+    },
+    "security": {
+      "count": 0,
+      "median": null,
+      "p90": null,
+      "max": null
+    }
+  },
+  "security_outcomes_by_class": [],
+  "package_initialization": {
+    "packages_measured": 40,
+    "packages_unknown": 0,
+    "init_runs": 86,
+    "init_reused": 233,
+    "reinitializations": 17,
+    "init_seconds": 491.9059447640011,
+    "validate_seconds": 606.370899480009
+  }
+}
