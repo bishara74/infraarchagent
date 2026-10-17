@@ -217,7 +217,9 @@ def schema_context(
     declared = declarations(documents, module)
     targets = [d for d in declared if d.get("type") and d["file"] == path]
     # Finding-linked schemas take priority over other resources in the file.
-    addresses = " ".join(str(getattr(f, "resource", "")) for f in findings or [])
+    addresses = {str(getattr(f, "resource", "")) for f in findings or []}
+    if addresses and any(f"{d['type']}.{d['name']}" in addresses for d in targets):
+        targets = [d for d in targets if f"{d['type']}.{d['name']}" in addresses]
     targets.sort(
         key=lambda d: (
             f"{d['type']}.{d['name']}" not in addresses,
@@ -250,9 +252,7 @@ def schema_context(
                 "name": "schema_guidance",
             },
         )
-    if any(
-        getattr(f, "rule_id", "") in {"CKV_AWS_144", "AWS-0104"} for f in findings or []
-    ):
+    if any(getattr(f, "rule_id", "") in {"CKV_AWS_144"} for f in findings or []):
         targets.insert(
             0,
             {

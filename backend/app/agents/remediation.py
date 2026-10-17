@@ -3,7 +3,7 @@
 from collections.abc import Mapping, Sequence
 from typing import Any, Protocol
 
-from app.agents.security.fix import FixProposal
+from app.agents.security.fix import FixProposal, content_hash
 from app.core.logging import RedactingFilter
 from app.domain.enums import Variant
 from app.domain.models import Violation
@@ -32,17 +32,27 @@ def apply_proposals(
     results = []
     for proposal in sorted(proposals, key=lambda item: item.path):
         accepted, reason = proposal.accepted, proposal.reason
+        if accepted and any(
+            name not in current or content_hash(current[name]) != expected
+            for name, expected in proposal.edit_bases.items()
+        ):
+            accepted, reason = False, "stale_edit_base"
+        if accepted and any(name not in proposal.edit_bases for name in proposal.edits):
+            accepted, reason = False, "edit_base_missing"
         if accepted:
             candidate = dict(current)
             assert proposal.content is not None
             candidate[proposal.path] = proposal.content
+            candidate.update(proposal.edits)
             if any(path in candidate for path in proposal.new_files):
                 accepted, reason = False, "new_file_conflict"
             else:
                 candidate.update(proposal.new_files)
                 if package_structure_errors(candidate, plan.file_types):
                     accepted, reason = False, "invalid_merged_structure"
-                elif syntax_checks(candidate, {proposal.path, *proposal.new_files}):
+                elif syntax_checks(
+                    candidate, {proposal.path, *proposal.edits, *proposal.new_files}
+                ):
                     accepted, reason = False, "invalid_merged_syntax"
                 else:
                     current = candidate
@@ -54,6 +64,9 @@ def apply_proposals(
                 "reason": reason,
                 "summaries": [redactor.redact(text) for text in proposal.summaries],
                 "new_files": sorted(proposal.new_files) if accepted else [],
+                "edits": sorted(proposal.edits) if accepted else [],
+                "normalized_existing_paths": list(proposal.normalized_existing_paths),
+                "conflicting_paths": list(proposal.conflicting_paths),
                 "input_tokens": proposal.input_tokens,
                 "output_tokens": proposal.output_tokens,
                 "cached_input_tokens": proposal.cached_input_tokens,

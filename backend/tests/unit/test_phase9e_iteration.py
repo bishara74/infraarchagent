@@ -50,11 +50,13 @@ def checks(count):
 class Verifier:
     def __init__(self, counts):
         self.counts = iter(counts)
+        self.last = None
         self.inputs = []
 
     async def checks(self, files):
         self.inputs.append(dict(files))
-        return checks(next(self.counts))
+        self.last = next(self.counts, self.last)
+        return checks(self.last)
 
 
 class Fix:
@@ -133,7 +135,9 @@ async def test_regression_restores_terraform_and_new_files_but_keeps_verified_ya
     assert record["reasons"] == ["terraform_regression"]
     assert not record["deadline_only"]
     assert "terraform/main.tf" not in diff
-    assert len(verifier.inputs) == 2
+    # The added locals block receives one independent fallback evaluation.
+    assert len(verifier.inputs) == 3
+    assert record["retained_failed"] == 0
 
 
 @pytest.mark.parametrize(

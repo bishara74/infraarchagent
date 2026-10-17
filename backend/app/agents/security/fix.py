@@ -1,11 +1,12 @@
 """Generate and validate an atomic fix proposal for one existing file."""
 
 import asyncio
+import hashlib
 import re
 import time
 from collections import Counter
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from pathlib import PurePosixPath
 from typing import Any
 
@@ -24,6 +25,7 @@ from app.llm.errors import (
     LLMRetryExhausted,
     failure_message,
 )
+from app.security.catalogue import guidance
 from app.validation.documents import PackageDocuments
 from app.validation.gate import patch_syntax_failure, syntax_checks
 from app.validation.schema_context import schema_context
@@ -58,6 +60,7 @@ class FixOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     file: FixFile
     new_files: dict[str, str] = Field(default_factory=dict)
+    edits: dict[str, str] = Field(default_factory=dict)
     fixes: Any = None
 
 
@@ -81,8 +84,8 @@ def _schema_reason(error: ValidationError) -> str:
     if root == "file":
         field = location[1] if len(location) > 1 else None
         path = f"file.{field}" if field in {"path", "content"} else "file"
-    elif root == "new_files":
-        path = "new_files.value" if len(location) > 1 else "new_files"
+    elif root in {"new_files", "edits"}:
+        path = f"{root}.value" if len(location) > 1 else str(root)
     elif root == "fixes":
         index = location[1] if len(location) > 1 else None
         path = f"fixes[{index}]" if isinstance(index, int) else "fixes"
@@ -112,6 +115,27 @@ class FixProposal:
     cached_input_tokens: int | None = None
     schema_context_chars: int = 0
     schema_context_reason: str | None = None
+    edits: dict[str, str] = field(default_factory=dict)
+    edit_bases: dict[str, str] = field(default_factory=dict)
+    normalized_existing_paths: tuple[str, ...] = ()
+    conflicting_paths: tuple[str, ...] = ()
+
+
+def content_hash(source: str) -> str:
+    return hashlib.sha256(source.encode()).hexdigest()
+
+
+def editable_paths(files: Mapping[str, str], path: str) -> set[str]:
+    return {
+        name
+        for name in files
+        if name == path
+        or (
+            path.startswith("terraform/")
+            and PurePosixPath(name).parent == PurePosixPath(path).parent
+            and name.endswith((".tf", ".tf.json"))
+        )
+    }
 
 
 def validate_fix(
@@ -120,6 +144,7 @@ def validate_fix(
     path: str,
     files: Mapping[str, str],
     plan: DeploymentPlan,
+    context_paths: set[str] | None = None,
 ) -> FixProposal:
     try:
         output = FixOutput.model_validate(raw)
@@ -129,35 +154,111 @@ def validate_fix(
         return FixProposal(path, False, "path_mismatch", None, {}, ())
     if not output.file.content:
         return FixProposal(path, False, "empty_content", None, {}, ())
-    if len(output.new_files) > 3:
+    if len((set(output.new_files) | set(output.edits)) - {path}) > 3:
         return FixProposal(path, False, "too_many_new_files", None, {}, ())
     try:
-        for new_path in output.new_files:
+        for new_path in {*output.new_files, *output.edits}:
             validate_relative_path(new_path)
     except UnsafePathError:
         return FixProposal(path, False, "unsafe_new_path", None, {}, ())
-    if any(new_path in files for new_path in output.new_files):
-        return FixProposal(path, False, "new_file_exists", None, {}, ())
-    current = suppression_comments(files[path])
-    proposed = suppression_comments(output.file.content)
-    if proposed - current or any(
-        suppression_comments(content) for content in output.new_files.values()
-    ):
+    context_paths = (
+        editable_paths(files, path) if context_paths is None else context_paths
+    )
+    edits = {path: output.file.content}
+    new_files = {}
+    normalized = []
+    for name, text in output.edits.items():
+        if name not in files:
+            return FixProposal(
+                path,
+                False,
+                "edit_file_missing",
+                None,
+                {},
+                (),
+                conflicting_paths=(name,),
+            )
+        if name not in context_paths:
+            return FixProposal(
+                path,
+                False,
+                "existing_file_context_missing",
+                None,
+                {},
+                (),
+                conflicting_paths=(name,),
+            )
+        if name in edits and edits[name] != text:
+            return FixProposal(
+                path,
+                False,
+                "conflicting_edits",
+                None,
+                {},
+                (),
+                conflicting_paths=(name,),
+            )
+        edits[name] = text
+    for name, text in output.new_files.items():
+        if name in files:
+            if name not in context_paths:
+                return FixProposal(
+                    path,
+                    False,
+                    "existing_file_context_missing",
+                    None,
+                    {},
+                    (),
+                    conflicting_paths=(name,),
+                )
+            if name in edits and edits[name] != text:
+                return FixProposal(
+                    path,
+                    False,
+                    "conflicting_edits",
+                    None,
+                    {},
+                    (),
+                    conflicting_paths=(name,),
+                )
+            edits[name] = text
+            normalized.append(name)
+        else:
+            if name.casefold() in {p.casefold() for p in files}:
+                return FixProposal(
+                    path,
+                    False,
+                    "existing_path_case_conflict",
+                    None,
+                    {},
+                    (),
+                    conflicting_paths=(name,),
+                )
+            new_files[name] = text
+    if any(not text for text in edits.values()):
+        return FixProposal(path, False, "empty_edit", None, {}, ())
+    if any(
+        suppression_comments(text) - suppression_comments(files[name])
+        for name, text in edits.items()
+    ) or any(suppression_comments(content) for content in new_files.values()):
         return FixProposal(path, False, "new_suppression", None, {}, ())
     candidate = dict(files)
-    candidate[path] = output.file.content
-    candidate.update(output.new_files)
+    candidate.update(edits)
+    candidate.update(new_files)
     if package_structure_errors(candidate, plan.file_types):
         return FixProposal(path, False, "invalid_structure", None, {}, ())
-    if syntax_checks(candidate, {path, *output.new_files}):
+    if syntax_checks(candidate, {*edits, *new_files}):
         return FixProposal(path, False, "invalid_syntax", None, {}, ())
     return FixProposal(
         path,
         True,
         None,
         output.file.content,
-        dict(output.new_files),
+        dict(new_files),
         _safe_summaries(output.fixes),
+        edits={name: text for name, text in edits.items() if name != path},
+        edit_bases={name: content_hash(files[name]) for name in edits},
+        normalized_existing_paths=tuple(sorted(normalized)),
     )
 
 
@@ -218,6 +319,10 @@ class FixAgent:
                     validation_failures=validation_failures,
                     schema_context=context,
                     previous_attempt=RedactingFilter().redact(previous_attempt)[:4000],
+                    existing_paths=sorted(files),
+                    catalogue_guidance=guidance(
+                        {f.resource.split(".")[0] for f in findings}
+                    ),
                     related_files={
                         name: text
                         for name, text in files.items()
@@ -268,29 +373,31 @@ class FixAgent:
         proposal = validate_fix(response.data, path=path, files=files, plan=plan)
         if proposal.accepted:
             assert proposal.content is not None
-            candidate = {**files, path: proposal.content, **proposal.new_files}
+            candidate = {
+                **files,
+                path: proposal.content,
+                **proposal.edits,
+                **proposal.new_files,
+            }
             try:
                 async with asyncio.timeout(
                     max(0.001, remaining - (time.monotonic() - started))
                 ):
                     if await patch_syntax_failure(
-                        dict(files), candidate, {path, *proposal.new_files}
+                        dict(files),
+                        candidate,
+                        {path, *proposal.edits, *proposal.new_files},
                     ):
                         proposal = FixProposal(
                             path, False, "invalid_syntax", None, {}, ()
                         )
             except TimeoutError:
                 proposal = FixProposal(path, False, "time_budget", None, {}, ())
-        return FixProposal(
-            proposal.path,
-            proposal.accepted,
-            proposal.reason,
-            proposal.content,
-            proposal.new_files,
-            proposal.summaries,
-            response.response.input_tokens,
-            response.response.output_tokens,
-            response.response.cached_input_tokens,
-            len(context),
-            context_reason,
+        return replace(
+            proposal,
+            input_tokens=response.response.input_tokens,
+            output_tokens=response.response.output_tokens,
+            cached_input_tokens=response.response.cached_input_tokens,
+            schema_context_chars=len(context),
+            schema_context_reason=context_reason,
         )

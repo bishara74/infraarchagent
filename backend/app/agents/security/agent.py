@@ -16,7 +16,7 @@ from app.agents.generators.security import SecurityGeneratorAgent
 from app.agents.prompts.security_fix import SECURITY_FIX_PROMPT_VERSION
 from app.agents.remediation import apply_proposals, scan_files
 from app.agents.security.feedback import attempt_feedback
-from app.agents.security.fix import FixAgent, FixProposal
+from app.agents.security.fix import FixAgent, FixProposal, editable_paths
 from app.agents.security.verification import (
     TerraformVerifier,
     failure_count,
@@ -39,6 +39,7 @@ from app.scanners.scan import Scanner, ScanResult
 from app.security.acceptance import CandidateGuard
 from app.security.catalogue import autofix
 from app.security.diff import package_diff
+from app.security.focus import RANK, focused_findings
 from app.security.partial import RetainedCandidate, accept_groups
 from app.security.policy import SECURITY_POLICY_VERSION
 from app.security.templates import build_template
@@ -149,10 +150,24 @@ class SecurityAgent:
         validation_failures: Sequence[dict[str, Any]],
         review_target_order: bool = False,
         previous_attempt: str = "",
+        iteration_index: int = 0,
     ) -> tuple[dict[str, str], list[dict[str, Any]], str]:
         snapshot = dict(files)
+        selected = {
+            path: focused_findings(
+                entries,
+                self.settings.security_fix_max_resources,
+                self.settings.security_fix_max_findings,
+                iteration_index,
+            )
+            for path, entries in targets.items()
+            if path in files
+        }
+        current = dict(files)
+        results: list[dict[str, Any]] = []
+        all_proposals: list[FixProposal] = []
 
-        async def one(path: str) -> FixProposal:
+        async def one(path: str, source: dict[str, str]) -> FixProposal:
             async with self.semaphore:
                 remaining = budget.remaining()
                 if remaining < 1:
@@ -165,15 +180,11 @@ class SecurityAgent:
                         (),
                         schema_context_reason="not_attempted",
                     )
-                linked = [
-                    failure
-                    for failure in validation_failures
-                    if failure.get("file_path") == path
-                ]
+                linked = [f for f in validation_failures if f.get("file_path") == path]
                 return await self.fix_agent.propose(
                     path=path,
-                    files=snapshot,
-                    findings=targets[path],
+                    files=source,
+                    findings=selected[path],
                     plan=ctx.plan,
                     directive=DIRECTIVES[variant],
                     remaining=remaining,
@@ -182,15 +193,47 @@ class SecurityAgent:
                     previous_attempt=previous_attempt,
                 )
 
-        paths = targets if review_target_order else sorted(targets)
-        proposals = await asyncio.gather(*(one(path) for path in paths))
-        current, results = apply_proposals(
-            snapshot, proposals, targets, ctx.plan, self.redactor
+        paths = (
+            list(selected)
+            if review_target_order
+            else sorted(
+                selected,
+                key=lambda p: (
+                    min((RANK[f.severity.value] for f in selected[p]), default=4),
+                    p,
+                ),
+            )
         )
+        # Calls sharing editable context run sequentially with refreshed content.
+        # Independent files still share the existing bounded semaphore.
+        waves: list[list[str]] = []
+        for path in paths:
+            scope = editable_paths(files, path)
+            for wave in waves:
+                if all(not scope.intersection(editable_paths(files, p)) for p in wave):
+                    wave.append(path)
+                    break
+            else:
+                waves.append([path])
+        for wave in waves:
+            source = dict(current)
+            proposals = await asyncio.gather(*(one(path, source) for path in wave))
+            all_proposals.extend(proposals)
+            current, records = apply_proposals(
+                source, proposals, selected, ctx.plan, self.redactor
+            )
+            for record in records:
+                sent = selected[record["file"]]
+                record.update(
+                    findings_sent=len(sent),
+                    resources_sent=len({f.resource for f in sent}),
+                    findings_deferred=len(targets[record["file"]]) - len(sent),
+                )
+            results.extend(records)
         for reason in sorted(
             {
                 proposal.reason
-                for proposal in proposals
+                for proposal in all_proposals
                 if isinstance(proposal.reason, str)
                 and proposal.reason in SAFE_MESSAGES.values()
             }
@@ -330,6 +373,7 @@ class SecurityAgent:
         review_target_order: bool = False,
         previous_attempt: str = "",
         checkpoint: RetainedCandidate | None = None,
+        iteration_index: int = 0,
     ) -> tuple[dict[str, str], list[dict[str, Any]], str, ScanResult]:
         iteration_original = dict(files)
         checkpoint = checkpoint or RetainedCandidate(dict(files), baseline_scan)
@@ -444,6 +488,7 @@ class SecurityAgent:
             validation_failures=validation_failures,
             review_target_order=review_target_order,
             previous_attempt=previous_attempt,
+            iteration_index=iteration_index,
         )
         started = time.monotonic()
         candidate, records = repair_idioms(candidate)
@@ -487,7 +532,7 @@ class SecurityAgent:
         else:
             after, scanned = result.checks, result.scan
             checkpoint.files, checkpoint.scan = dict(candidate), scanned
-        verification["after_failed"] = failure_count(after)
+        verification["retained_failed"] = failure_count(after)
         verification["outcome"] = (
             "rolled_back"
             if verification["reasons"]
@@ -502,6 +547,10 @@ class SecurityAgent:
         )
         for fix in fixes:
             paths = [fix["file"], *fix.get("edits", []), *fix.get("new_files", [])]
+            fix["recovered_existing_proposal"] = fix["accepted"] and any(
+                candidate.get(path) != files.get(path)
+                for path in fix.get("normalized_existing_paths", [])
+            )
             fix["retained"] = fix["accepted"] and any(
                 candidate.get(path) != files.get(path) for path in paths
             )
@@ -835,6 +884,7 @@ class SecurityAgent:
                         validation_failures=validation_failures,
                         previous_attempt=previous_attempt,
                         checkpoint=checkpoint,
+                        iteration_index=iteration_count,
                     )
             except ToolFailure as error:
                 files = dict(checkpoint.files)

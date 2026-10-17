@@ -55,7 +55,6 @@ class CandidateGuard:
                 self.record["terraform_verification_seconds"] += (
                     time.monotonic() - started
                 )
-        self.time_left()
         return self.check_cache[key]
 
     async def evaluate(
@@ -95,6 +94,12 @@ class CandidateGuard:
             and (count is None or (previous is None and count != 0))
             else None
         )
+        if self.budget.expired() and reason:
+            self.record.setdefault("reasons", []).append(reason)
+            self.record["error_classes"] = sorted(
+                {c.message for c in after if c.status == "failed"}
+            )
+        self.time_left()
         if reason:
             return CandidateResult(reason, after, scan, [])
         key = ValidationWorkspace.fingerprint(candidate)

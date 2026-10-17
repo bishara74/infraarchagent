@@ -950,3 +950,9 @@ files or Terraform blocks; dependent declarations stay together. Existing 60 s
 iteration and 240 s stage ceilings remain. Only fully verified groups survive a
 timeout; unchanged review retries still rescan. Reports retain rejection reasons
 and newly introduced findings without exposing discarded source.
+
+`SECURITY_FIX_MAX_RESOURCES=2` and `SECURITY_FIX_MAX_FINDINGS=12` bound each
+security fixer call. Equal-severity resources rotate between attempts. The fixer
+receives existing paths and editable current content; existing-path creations
+can be normalized into validated edits. Reports distinguish normalized proposals
+from those retained after every guard. Overlapping editable files are serialized.

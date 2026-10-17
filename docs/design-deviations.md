@@ -1279,6 +1279,33 @@ force a scan even when a proposed edit makes no change. Verification tool errors
 settle through existing remediating -> scanning -> scan_error transitions.
 
 
+#### D-46 focused calls and existing-file recovery (section 4)
+
+SECURITY_FIX_MAX_RESOURCES=2 and SECURITY_FIX_MAX_FINDINGS=12 bound each fixer
+call. Severity precedes deterministic rotation among equal-severity resources;
+findings from equally severe resources are interleaved to avoid starvation.
+Schema context selects flagged resources, and AWS-0104 no longer injects unrelated
+S3 replication schemas. Catalogue guidance and 4000-character rejection feedback
+remain separate from untrusted source data.
+
+Fix prompt v5 supplies an existing-path inventory and full current content for
+editable files. Optional `edits` maps existing paths to complete replacement
+content; the old file/new_files shape remains supported. Existing paths returned
+in new_files normalize to edits only when their current content was supplied.
+Conflicting primary/secondary edits, missing context, stale source hashes, unsafe
+paths, new suppressions and invalid syntax reject explicitly. Additional paths
+remain capped at three. Calls sharing editable context run sequentially with
+fresh source; independent calls retain bounded parallelism. Public reports retain
+only paths, reasons, counts and recovery outcomes, never source hashes/content.
+
+A scripted four-proposal collision corpus normalized all four proposals; three
+survived all guards, and one introducing a new blocker remained rejected. This
+is test evidence, not an estimate of recovery among the historical 47 rejections.
+Candidate after_failed remains the rejected candidate count; retained_failed
+separately describes the verified retained baseline. A verification regression
+completed at the deadline remains a regression-plus-deadline observation.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

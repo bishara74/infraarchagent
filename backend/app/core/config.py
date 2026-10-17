@@ -66,6 +66,8 @@ class Settings(BaseSettings):
     fix_max_output_tokens: int = Field(default=16000, ge=1)
     security_max_parallel_fixes: int = Field(default=4, ge=1)
     security_partial_max_groups: int = Field(default=6, ge=1, le=64)
+    security_fix_max_resources: int = Field(default=2, ge=1, le=16)
+    security_fix_max_findings: int = Field(default=12, ge=1, le=128)
     package_retention_days: int = Field(default=30, ge=1)
     log_level: str = "INFO"
 

@@ -27,6 +27,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 4 — Focused calls and existing-file recovery
+
+**Summary:** Bound resource/findings input, rotate equal-severity targets, supply
+existing paths/content and normalize valid existing-path creations into edits.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-04, FR-S-09, NFR-01, PR-05.
+
+**Files:** fixer/prompt/feedback, shared merge, security agent, focus helper,
+settings, schema context, recovery and iteration tests, README, D-46, this log.
+
+**Decisions:** D-46; 2 resources / 12 findings per call, optional backward-compatible
+edits, per-file stale-base checks and existing three-additional-path bound.
+Preserve candidate failure counts separately from retained counts and capture
+regression-plus-deadline evidence before aborting. AWS-0104 schema alias corrected.
+
+**Tests:** Focus/recovery, fixer, legacy iteration/lifecycle, schema context and
+security-agent integration: 63 passed / 0 failed. Scripted collisions: 4 normalized,
+3 retained, 1 guard-rejected. Focused Ruff/mypy passed. Unit exploration exposed
+legacy fixed-length verifier mocks; they now repeat their final scenario result
+and assert the added independent group evaluation rather than exhausting early.
+
+**Known gaps / follow-ups:** Historical 47-rejection recovery remains unknown.
+Secure generation and full benchmark/reporting verification follow.
+
+
 ## 2026-10-17 — Phase 9f section 2 — Bounded partial acceptance
 
 **Summary:** Keep independently verified files/blocks from failed combined

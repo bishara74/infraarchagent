@@ -19,7 +19,11 @@ def attempt_feedback(
         (
             "rejected_patches",
             [
-                {"file": f.get("file"), "reason": f.get("reason")}
+                {
+                    "file": f.get("file"),
+                    "reason": f.get("reason"),
+                    "conflicting_paths": ", ".join(f.get("conflicting_paths", [])),
+                }
                 for f in fixes
                 if not f.get("accepted")
             ],
