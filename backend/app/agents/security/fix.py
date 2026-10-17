@@ -12,6 +12,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from app.agents.prompts.security_fix import system_prompt, user_prompt
+from app.core.logging import RedactingFilter
 from app.domain.models import Violation
 from app.domain.package_layout import package_structure_errors
 from app.domain.paths import UnsafePathError, validate_relative_path
@@ -23,6 +24,7 @@ from app.llm.errors import (
     LLMRetryExhausted,
     failure_message,
 )
+from app.validation.documents import PackageDocuments
 from app.validation.gate import patch_syntax_failure, syntax_checks
 from app.validation.schema_context import schema_context
 
@@ -109,6 +111,7 @@ class FixProposal:
     output_tokens: int | None = None
     cached_input_tokens: int | None = None
     schema_context_chars: int = 0
+    schema_context_reason: str | None = None
 
 
 def validate_fix(
@@ -183,6 +186,7 @@ class FixAgent:
         remaining: float,
         feedback: str | None = None,
         validation_failures: Sequence[dict[str, Any]] = (),
+        previous_attempt: str = "",
     ) -> FixProposal:
         started = time.monotonic()
         context = schema_context(
@@ -192,6 +196,17 @@ class FixAgent:
             findings=list(findings),
             limit=self.schema_context_max_chars,
         )
+        if not path.startswith("terraform/"):
+            context_reason = "not_terraform"
+        elif context and '"schema":' in context:
+            context_reason = "schema_available"
+        else:
+            docs = PackageDocuments.parse(dict(files))
+            context_reason = (
+                "unparseable_document"
+                if docs.documents.get(path) and docs.documents[path].parse_error
+                else "no_schema_entries"
+            )
         try:
             response = await self.adapter.complete_json(
                 user_prompt(
@@ -202,6 +217,7 @@ class FixAgent:
                     feedback=feedback,
                     validation_failures=validation_failures,
                     schema_context=context,
+                    previous_attempt=RedactingFilter().redact(previous_attempt)[:4000],
                     related_files={
                         name: text
                         for name, text in files.items()
@@ -225,6 +241,7 @@ class FixAgent:
                 {},
                 (),
                 schema_context_chars=len(context),
+                schema_context_reason=context_reason,
             )
         except LLMPermanentError as error:
             return FixProposal(
@@ -235,6 +252,7 @@ class FixAgent:
                 {},
                 (),
                 schema_context_chars=len(context),
+                schema_context_reason=context_reason,
             )
         except LLMDeadlineExceeded:
             return FixProposal(
@@ -245,6 +263,7 @@ class FixAgent:
                 {},
                 (),
                 schema_context_chars=len(context),
+                schema_context_reason=context_reason,
             )
         proposal = validate_fix(response.data, path=path, files=files, plan=plan)
         if proposal.accepted:
@@ -273,4 +292,5 @@ class FixAgent:
             response.response.output_tokens,
             response.response.cached_input_tokens,
             len(context),
+            context_reason,
         )

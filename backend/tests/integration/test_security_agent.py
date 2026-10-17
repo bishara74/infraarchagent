@@ -1,6 +1,5 @@
 """FR-S-03/05/06/09: real database state and report audit through the loop."""
 
-import asyncio
 import json
 from copy import deepcopy
 from dataclasses import replace
@@ -36,16 +35,13 @@ async def test_iteration_deadline_preserves_unmodified_files(db_engines):
     now = [0.0]
     ctx = replace(ctx, clock=lambda: now[0])
 
-    class SlowScan(ScriptedScanner):
-        async def scan(self, *args, **kwargs):
-            now[0] = 61.0
-            return await super().scan(*args, **kwargs)
+    class SlowVerifier:
+        async def checks(self, files):
+            now[0] += 61
+            return []
 
-    class WaitingFix(ScriptedFix):
-        async def propose(self, **kwargs):
-            await asyncio.Event().wait()
-
-    security = agent(engine, SlowScan([[finding("RULE")]]), WaitingFix())
+    security = agent(engine, ScriptedScanner([[finding("RULE")]]), ScriptedFix())
+    security.terraform_verifier = SlowVerifier()
     assert (
         await security.run(ctx, Variant.SECURITY, package)
         == PackageStatus.SCAN_EXHAUSTED
@@ -284,7 +280,7 @@ async def test_safe_fix_rejection_reason_is_persisted(
         await agent(engine, scanner, fixer).run(ctx, Variant.SECURITY, package)
         == PackageStatus.SCAN_EXHAUSTED
     )
-    assert len(fixer.calls) == 1
+    assert len(fixer.calls) == ctx.max_iterations
     async with make_session_factory(engine)() as session:
         row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
         assert row is not None and row.security_report is not None
@@ -294,25 +290,25 @@ async def test_safe_fix_rejection_reason_is_persisted(
 
 
 @pytest.mark.req("FR-S-05", "FR-S-07", "FR-S-09")
-async def test_no_progress_then_retry_appends_session_and_keeps_baseline(
+async def test_repeated_findings_exhaust_limit_and_retry_preserves_history(
     db_engines: tuple[AsyncEngine, AsyncEngine],
 ) -> None:
     engine, _ = db_engines
     ctx, package = await setup(engine)
-    scanner = ScriptedScanner([[finding("CKV_AWS_16")], [finding("CKV_AWS_16")]])
+    scanner = ScriptedScanner([[finding("CKV_AWS_16")]] * 4)
     fix = ScriptedFix()
     security = agent(engine, scanner, fix)
     assert (
         await security.run(ctx, Variant.SECURITY, package)
         == PackageStatus.SCAN_EXHAUSTED
     )
-    assert scanner.calls == 2
-    assert len(fix.calls) == 1
+    assert scanner.calls == 4
+    assert len(fix.calls) == 3
     async with make_session_factory(engine)() as session:
         row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
         assert row is not None and row.security_report is not None
         old_session = deepcopy(row.security_report["sessions"][0])
-        assert old_session["final"]["reason"] == "no progress"
+        assert old_session["final"]["reason"] == "iteration limit"
         current = IaCPackage(variant=Variant.SECURITY, files=dict(row.files))
     for target in (
         PackageStatus.VALIDATING,
@@ -596,7 +592,13 @@ async def test_loop_with_recorded_trivy_and_terraform(
         current = IaCPackage(variant=Variant.SECURITY, files=row.files)
     assert report["policy_version"] == "2"
     assert report["sessions"][0]["fix_passes"] == (
-        0 if scenario == "clean" else 2 if scenario == "two_passes" else 1
+        0
+        if scenario == "clean"
+        else 2
+        if scenario == "two_passes"
+        else 3
+        if scenario in {"no_progress", "historical_retry"}
+        else 1
     )
     if scenario == "historical_retry":
         # Persist an old tfsec finding as an existing report, then prove review

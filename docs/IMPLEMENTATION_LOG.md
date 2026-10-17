@@ -27,6 +27,44 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9e follow-up — Continue bounded security attempts
+
+**Summary:** Remove the repeated-fingerprint terminal shortcut so rejected,
+unchanged and rolled-back candidates can use the remaining attempt allowance.
+Retain validity comparison, selective Terraform rollback, security-control
+protection and no-new-blocker checks; send bounded previous-attempt feedback.
+
+**Requirements addressed:** FR-S-03, FR-S-04, FR-S-05, FR-S-09, FR-V-03,
+NFR-01, PR-05.
+
+**Files:** security agent/fixer/new feedback helper, security-fix prompt v4,
+remediation metadata, continuation and scanner-loop grounding integration tests,
+existing security/schema tests, README and D-45/CL-01.
+
+**Decisions:** D-45 records the approved policy. Started attempts consume the
+allowance; terminal scans and baseline-only deadline stops do not. Discard
+unverified timed-out candidates and continue only within the 60-second iteration,
+240-second stage and configured attempt limits. Retained sources and verified
+mixed-file changes are the next baseline. Separate redacted rejection feedback
+is capped at 4,000 characters, labels candidate diagnostics and keeps engineer
+feedback separate. Existing version-correct schema grounding and caps remain;
+proposal metadata now records safe context reasons.
+
+**Tests:** make lint passed (Ruff/format, mypy 114 source files, frontend lint).
+Final make test: 1322 passed, 0 failed, 0 skipped, 6 perf deselected, 435.31 s.
+make frontend-test: 100 passed / 15 files. make test-e2e: 6 passed, 3.9 min.
+The 12-case continuation matrix covers regression, repeated findings, rejected
+patches, four-attempt exhaustion, clean exit, mixed edits, deadline continuation,
+stage exhaustion and three Retry variants. Two real FixAgent loop cases prove
+AWS 5/6 fixture schemas survive rollback and reach the next prompt. Additional
+schema tests cover malformed input and missing indexes; feedback canaries and
+caps remain enforced. The independent unit run passed 1121 tests in 177.72 s.
+
+**Known gaps / follow-ups:** No real benchmark was run; stub measurements cannot
+predict real quality. The final verification report records the separate audit,
+all command outcomes and measured benchmark/deadline counts. No dependencies,
+installs, downloads, dotenv reads, migrations, thesis edits or pushes.
+
 ## 2026-10-16 — Phase 9e section 6 — Verify offline gates, budgets and evidence
 
 **Summary:** Complete lifecycle, cancellation, source-preservation, masked-origin,

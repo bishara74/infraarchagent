@@ -176,3 +176,45 @@ async def test_scanner_only_fix_receives_schema_and_size(schemas, monkeypatch):
     prompt = adapter.complete_json.call_args.args[0]
     assert "<provider_schema" in prompt and "5.100.0" in prompt
     assert 0 < proposal.schema_context_chars <= 1500
+
+
+@pytest.mark.parametrize(
+    "case,expected",
+    [
+        ("malformed", "unparseable_document"),
+        ("missing", "no_schema_entries"),
+        ("other", "not_terraform"),
+    ],
+)
+async def test_fixer_records_safe_degraded_context_reason(
+    case, expected, schemas, monkeypatch
+):
+    from app.agents.security import fix
+    from app.llm.errors import LLMPermanentError
+
+    original = fix.schema_context
+    directory = schemas / "absent" if case == "missing" else schemas
+    monkeypatch.setattr(
+        fix,
+        "schema_context",
+        lambda *args, **kwargs: original(*args, **kwargs, directory=directory),
+    )
+    path = "ansible/play.yaml" if case == "other" else "terraform/main.tf"
+    source = {
+        path: "resource {"
+        if case == "malformed"
+        else 'resource "aws_widget" "main" {}\n'
+    }
+    adapter = SimpleNamespace(
+        complete_json=AsyncMock(side_effect=LLMPermanentError("auth_failed"))
+    )
+    proposal = await FixAgent(adapter).propose(
+        path=path,
+        files=source,
+        findings=[],
+        plan=DeploymentPlan.model_validate(DEMO_PLAN),
+        directive="security",
+        remaining=30,
+    )
+    assert not proposal.accepted and proposal.schema_context_reason == expected
+    assert proposal.schema_context_chars <= 16000

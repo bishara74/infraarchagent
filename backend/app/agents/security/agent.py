@@ -15,6 +15,7 @@ from app.agents.generators.performance import PerformanceGeneratorAgent
 from app.agents.generators.security import SecurityGeneratorAgent
 from app.agents.prompts.security_fix import SECURITY_FIX_PROMPT_VERSION
 from app.agents.remediation import apply_proposals, scan_files
+from app.agents.security.feedback import attempt_feedback
 from app.agents.security.fix import FixAgent, FixProposal
 from app.agents.security.verification import (
     TerraformVerifier,
@@ -145,6 +146,7 @@ class SecurityAgent:
         feedback: str | None,
         validation_failures: Sequence[dict[str, Any]],
         review_target_order: bool = False,
+        previous_attempt: str = "",
     ) -> tuple[dict[str, str], list[dict[str, Any]], str]:
         snapshot = dict(files)
 
@@ -152,7 +154,15 @@ class SecurityAgent:
             async with self.semaphore:
                 remaining = budget.remaining()
                 if remaining < 1:
-                    return FixProposal(path, False, "time_budget", None, {}, ())
+                    return FixProposal(
+                        path,
+                        False,
+                        "time_budget",
+                        None,
+                        {},
+                        (),
+                        schema_context_reason="not_attempted",
+                    )
                 linked = [
                     failure
                     for failure in validation_failures
@@ -167,6 +177,7 @@ class SecurityAgent:
                     remaining=remaining,
                     feedback=feedback,
                     validation_failures=linked,
+                    previous_attempt=previous_attempt,
                 )
 
         paths = targets if review_target_order else sorted(targets)
@@ -332,6 +343,7 @@ class SecurityAgent:
         feedback: str | None,
         validation_failures: Sequence[dict[str, Any]],
         review_target_order: bool = False,
+        previous_attempt: str = "",
     ) -> tuple[dict[str, str], list[dict[str, Any]], str, ScanResult]:
         if budget.remaining() < 0.001:
             raise TimeoutError
@@ -366,6 +378,7 @@ class SecurityAgent:
             feedback=feedback,
             validation_failures=validation_failures,
             review_target_order=review_target_order,
+            previous_attempt=previous_attempt,
         )
         verification["candidate_created"] = candidate != files
         repair_started = time.monotonic()
@@ -528,7 +541,7 @@ class SecurityAgent:
         started_at = datetime.now(UTC).isoformat()
         budget = AgentBudget(self.settings.security_deadline_seconds, clock=ctx.clock)
         iterations: list[dict[str, Any]] = []
-        seen: set[frozenset[tuple[str, str, str]]] = set()
+        previous_attempt = ""
         iteration_count = 0
         first_counts: dict[str, int] | None = None
         last_blocking: list[Violation] = list(initial_findings)
@@ -612,8 +625,11 @@ class SecurityAgent:
                         list(initial_findings),
                         {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
                     )
-                    reason = "time budget"
-                iteration_count = 1
+                    if workspace:
+                        async with workspace.check(files):
+                            pass
+                iteration_count = int(bool(verification.get("fix_started")))
+                previous_attempt = attempt_feedback(verification, fixes, self.redactor)
                 await self._publish_iteration(
                     ctx, variant, verification, iteration_count, metrics_start
                 )
@@ -661,6 +677,8 @@ class SecurityAgent:
                 async with asyncio.timeout(iteration_budget.remaining()):
                     if pending_error is not None:
                         raise pending_error
+                    if pending_scan is None and budget.remaining() < 1:
+                        raise TimeoutError
                     scan = pending_scan or await scan_files(
                         self.scanner, files, variant, iteration=iteration_count
                     )
@@ -722,11 +740,8 @@ class SecurityAgent:
                 message="blocking security findings found",
             )
             decision = remediation_budget_decision(iteration_count, ctx.max_iterations)
-            fingerprints = frozenset(item.fingerprint() for item in blocking)
             if not decision.apply_fix:
                 reason = "iteration limit"
-            elif fingerprints in seen:
-                reason = "no progress"
             elif budget.remaining() < 1:
                 reason = "time budget"
             if reason is not None:
@@ -747,7 +762,6 @@ class SecurityAgent:
                     ctx.run_id, variant, status, message=reason
                 )
                 break
-            seen.add(fingerprints)
             targets = defaultdict(list)
             for item in blocking:
                 targets[item.file_path].append(item)
@@ -766,6 +780,7 @@ class SecurityAgent:
                         entry["verification"],
                         feedback=feedback,
                         validation_failures=validation_failures,
+                        previous_attempt=previous_attempt,
                     )
             except ToolFailure as error:
                 reason = f"{error.tool} scan {error.category}"
@@ -789,11 +804,6 @@ class SecurityAgent:
                     )
                 break
             except TimeoutError:
-                reason, outcome, status = (
-                    "time budget",
-                    "exhausted",
-                    PackageStatus.SCAN_EXHAUSTED,
-                )
                 entry["stop_reason"] = "iteration_deadline"
                 verification = entry.get("verification", {})
                 reasons = verification.setdefault("reasons", [])
@@ -818,10 +828,29 @@ class SecurityAgent:
                 await self._publish_iteration(
                     ctx, variant, verification, iteration_count, metrics_start
                 )
+                previous_attempt = attempt_feedback(verification, [], self.redactor)
+                if budget.remaining() >= 1 and iteration_count < ctx.max_iterations:
+                    pending_scan = scan
+                    await ctx.writer.package_transition(
+                        ctx.run_id,
+                        variant,
+                        PackageStatus.SCANNING,
+                        message="security iteration rolled back; retrying",
+                    )
+                    continue
+                reason = (
+                    "iteration limit"
+                    if iteration_count >= ctx.max_iterations
+                    else "time budget"
+                )
+                outcome, status = "exhausted", PackageStatus.SCAN_EXHAUSTED
                 await ctx.writer.package_transition(
                     ctx.run_id, variant, status, message=reason
                 )
                 break
+            previous_attempt = attempt_feedback(
+                entry["verification"], fixes, self.redactor
+            )
             entry["fixes"] = fixes
             await self._publish_iteration(
                 ctx,

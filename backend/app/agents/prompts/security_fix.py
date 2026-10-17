@@ -9,7 +9,7 @@ from app.agents.prompts.quality import DOCUMENT_GUIDANCE, PROVIDER_GUIDANCE, S3_
 from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
 
-SECURITY_FIX_PROMPT_VERSION = "3"
+SECURITY_FIX_PROMPT_VERSION = "4"
 
 
 def system_prompt(directive: str) -> str:
@@ -46,6 +46,7 @@ def user_prompt(
     nonce: str | None = None,
     related_files: Mapping[str, str] | None = None,
     schema_context: str = "",
+    previous_attempt: str = "",
 ) -> str:
     marker = nonce or token_hex(16)
     numbered = "\n".join(
@@ -71,6 +72,14 @@ def user_prompt(
         related = json.dumps(dict(related_files), ensure_ascii=False)
         parts.append(
             f'<related_files id="{marker}">\n{related}\n</related_files id="{marker}">'
+        )
+    if previous_attempt:
+        parts.append(
+            "Previous attempt data describes a rejected or partially retained "
+            "candidate, not failures in the current file. Correct the cause; "
+            "do not repeat that rejected change.\n"
+            f'<previous_attempt id="{marker}">\n{previous_attempt}\n'
+            f'</previous_attempt id="{marker}">'
         )
     if feedback is not None:
         parts.append(

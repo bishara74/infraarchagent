@@ -1137,6 +1137,29 @@ rolled-back attempts consume allowance. Retry uses a fresh workspace shared
 through validation. Existing control removal is rejected; same-kind replacements
 retain control fields and still require scanner verification.
 
+The approved 17 October follow-up removes repeated findings as a terminal
+condition: started fix attempts, including rejected or rolled-back candidates,
+consume the configured allowance, but unchanged findings do not stop remaining
+attempts. Iteration deadlines discard pending changes and permit continuation
+only within the remaining stage budget and allowance; fatal scanner failures
+still stop verification. Retained files and their verified scan form the next
+baseline. Separate redacted previous-attempt feedback is capped at 4,000
+characters and labels candidate diagnostics explicitly. No validity comparison,
+security-control protection, readiness condition or budget was relaxed.
+
+The former `fingerprints in seen` / `no progress` exit originated in Phase 5,
+commit `91633dc` (1 October 2026). Phase 9e's rollback/baseline reuse (`5584316`)
+returned unchanged findings after rejection and exposed that shortcut. Saved
+9e JSON proves scanner schema context was sent: 52 proposal measurements,
+44 positive, including 11,689 and 15,452 characters for run `12a0fcfb…`.
+The zero summary was a reporting-only error: the reader used top-level
+iterations instead of nested sessions. A shared canonical session reader now
+supports legacy reports without double counting; context coverage distinguishes
+positive, zero and absent measurements and safe degraded reasons. Historical
+reasons remain unknown. The separate sanitized audit preserves original reports
+and read-only cached source JSON. Chapter 4/6 follow-ups include this corrected
+diagnosis and measured continuation results; no real-run improvement is inferred.
+
 Initialization is private per module and serialized per package; source sync
 preserves tool data, and provider/constraint/inferred-dependency/local-module
 changes invalidate it. Failed or cancelled initialization is never reused.
@@ -1175,8 +1198,10 @@ causes are separate; no estimate of real-run improvement is made.
   the package enters `remediating`. There, if the iteration budget is used
   up, it moves to `scan_exhausted` without applying a fix; otherwise it
   applies a fix pass, increments `iteration_count` and returns to
-  `scanning`. `iteration_count` therefore counts completed fix passes, and
-  it never exceeds `max_iterations`.
+  `scanning`. Following the approved Phase 9e follow-up, `iteration_count`
+  counts started fix passes, including rejected, rolled-back or timed-out
+  attempts; baseline verification and terminal scans do not consume an attempt.
+  It never exceeds `max_iterations`.
 - **Implemented in Phase 0:** pure remediation-budget decision and transition
   tests; actual fix application follows in the SecurityAgent phase.
 

@@ -896,6 +896,23 @@ comparisons require a fully valid candidate. Retained non-Terraform edits still
 require syntax/render and security verification. Checks, fixes and rollback
 share the existing 60-second iteration / 240-second security-stage budgets.
 
+Repeated findings, rejected patches and validity rollbacks do not end the loop.
+Each started fix attempt consumes the configured allowance
+(`MAX_REMEDIATION_ITERATIONS`, default 4); terminal scans do not. A timed-out
+candidate is discarded, and another attempt may start while the stage budget
+and allowance remain. Fatal scanner failures still stop verification. The
+retained package is always the next baseline, including verified non-Terraform
+edits after a Terraform rollback. A separate, redacted previous-attempt prompt
+field (at most 4,000 characters) explains rejections without treating candidate
+diagnostics as failures in the retained files. Engineer feedback stays separate.
+
+Security context measurements read canonical `security_report.sessions` history,
+with a legacy top-level fallback and no double counting. Reports distinguish
+positive, zero and missing measurements, Terraform versus other files, and
+safe degraded-context reasons; historical reasons remain `unknown`. The
+[sanitized 9e follow-up audit](docs/evals/phase9e-security-loop-audit-20261017/audit.md)
+corrects the historical zero-context summary without modifying original evidence.
+
 Benchmark `agents.csv` and descriptive PR-05 rows now measure gates, each repair
 round, deterministic repairs, iteration verification, final validation and final
 security scans. `validator_persistence` labels the short prepared-report write.
