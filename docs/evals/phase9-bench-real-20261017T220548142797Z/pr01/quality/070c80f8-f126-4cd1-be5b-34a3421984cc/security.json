@@ -1,0 +1,548 @@
+{
+  "status": "pending_review",
+  "validation_result": "invalid",
+  "phase9f": {
+    "measured": true,
+    "catalogue": [
+      {
+        "control": "ebs",
+        "resource": "aws_instance.grafana",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "CKV_AWS_8"
+        ]
+      },
+      {
+        "control": "ebs",
+        "resource": "aws_instance.nginx",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "CKV_AWS_8"
+        ]
+      },
+      {
+        "control": "ebs",
+        "resource": "aws_instance.prometheus",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "CKV_AWS_8"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: public subnet",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: public subnet",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: public subnet",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: public subnet",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      }
+    ],
+    "templates": [
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "retained",
+        "reason": "supporting_resources",
+        "introduced_rules": {}
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "reason": "already_secure",
+        "introduced_rules": {}
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "reason": "already_secure",
+        "introduced_rules": {}
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "reason": "already_secure",
+        "introduced_rules": {}
+      }
+    ],
+    "partial_groups": {},
+    "existing_file_proposals": {
+      "normalized": 0,
+      "retained": 0
+    },
+    "fixer_calls": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 2,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      }
+    ],
+    "fixer_configurations": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "reasoning": "low",
+        "fix_attempt_timeout_seconds": 45.0,
+        "iteration_timeout_seconds": 60.0,
+        "security_stage_timeout_seconds": 240.0,
+        "fix_max_resources": 2,
+        "fix_max_findings": 12,
+        "partial_max_groups": 6
+      }
+    ],
+    "generator_checklist_chars": 820,
+    "generator_context_truncated": true
+  },
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid single-argument block definition",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 153,
+      "line_end": 153
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "origin": "unknown",
+      "line_start": 445,
+      "line_end": 445
+    }
+  ],
+  "remaining_findings": {
+    "CKV2_AWS_20": 1,
+    "CKV_AWS_103": 1,
+    "CKV_AWS_130": 1,
+    "CKV_AWS_144": 1,
+    "CKV_AWS_145": 1,
+    "CKV_AWS_157": 1,
+    "CKV_AWS_18": 1,
+    "CKV_AWS_2": 1,
+    "CKV_AWS_21": 1,
+    "CKV_AWS_260": 1,
+    "CKV_AWS_378": 1,
+    "CKV_AWS_91": 1,
+    "TERRAFORM_SYNTAX": 1
+  },
+  "phase9e": {
+    "security_context_measurements": [
+      {
+        "file_type": "terraform",
+        "chars": 12219,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 11959,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 12578,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 12219,
+        "reason": "schema_available"
+      }
+    ],
+    "generator_schema_context_chars": 5313,
+    "initialization": {
+      "init_runs": 15,
+      "init_reused": 0,
+      "init_seconds": 4.992769065989705,
+      "validate_seconds": 0.9309623849985655,
+      "reinitializations": 0
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "message": "Invalid single-argument block definition"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "init_categories": [
+      "syntax"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Invalid single-argument block definition",
+          "Terraform configuration diagnostic"
+        ],
+        "schema_context_chars": 15960
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Invalid single-argument block definition",
+          "Terraform configuration diagnostic"
+        ],
+        "schema_context_chars": 15960
+      },
+      {
+        "phase": "after_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Invalid single-argument block definition",
+          "Terraform configuration diagnostic"
+        ],
+        "schema_context_chars": 15960
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.07961867999983951,
+        "phase": "generation",
+        "count": 12
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 7.94423264299985,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 10.024321032004082,
+        "phase": "generation",
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.9233616040000925,
+        "validate_seconds": 0.11894368199864402,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.24873449900042033,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 6.6786982549965614,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.07440502600366017,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 21.71383879399218,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 4,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 2.3871633489980013,
+        "validate_seconds": 0.2731221679932787,
+        "terraform_verification_seconds": 2.971960578994185,
+        "security_verification_seconds": 18.741878214997996,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "accepted",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.04261732299346477,
+        "phase": "security",
+        "iteration": 2,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 6.649810619986965,
+        "phase": "security",
+        "iteration": 2,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.8257893749978393,
+        "validate_seconds": 0.1399347199985641,
+        "terraform_verification_seconds": 1.1524491579912137,
+        "security_verification_seconds": 5.497361461995752,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.05566662699857261,
+        "phase": "security",
+        "iteration": 3,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 8.457359215004544,
+        "phase": "security",
+        "iteration": 3,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.10829388599086087,
+        "validate_seconds": 0.11114160100260051,
+        "terraform_verification_seconds": 0.37699639100173954,
+        "security_verification_seconds": 8.080362824002805,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.05594344099517912,
+        "phase": "security",
+        "iteration": 4,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 5.526846880005905,
+        "phase": "security",
+        "iteration": 4,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.19254879700019956,
+        "validate_seconds": 0.10105677200772334,
+        "terraform_verification_seconds": 0.4311684080021223,
+        "security_verification_seconds": 5.095678472003783,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 0.9659065080049913,
+        "phase": "after_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 7.663483545999043,
+        "phase": "after_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 0.1544378320031683,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 4.0651839100028155,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [
+      12219,
+      11959,
+      12578,
+      12219
+    ],
+    "security_iteration_repairs": [
+      {
+        "outcome": "accepted",
+        "error_classes": [
+          "Invalid single-argument block definition",
+          "Terraform configuration diagnostic"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Invalid single-argument block definition",
+          "Terraform configuration diagnostic"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Invalid single-argument block definition",
+          "Terraform configuration diagnostic"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Invalid single-argument block definition",
+          "Terraform configuration diagnostic"
+        ],
+        "reasons": []
+      }
+    ]
+  },
+  "counts": {
+    "failed_checks": 2,
+    "remaining_findings": 13,
+    "deterministic_repairs": 12,
+    "validation_repair_rounds": 3,
+    "security_iterations": 4
+  }
+}

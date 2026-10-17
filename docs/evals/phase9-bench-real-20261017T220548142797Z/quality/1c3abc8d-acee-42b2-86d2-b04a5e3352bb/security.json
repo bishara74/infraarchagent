@@ -1,0 +1,160 @@
+{
+  "status": "scan_error",
+  "validation_result": "invalid",
+  "phase9f": {
+    "measured": true,
+    "catalogue": [],
+    "templates": [],
+    "partial_groups": {},
+    "existing_file_proposals": {
+      "normalized": 0,
+      "retained": 0
+    },
+    "fixer_calls": [],
+    "fixer_configurations": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "reasoning": "low",
+        "fix_attempt_timeout_seconds": 45.0,
+        "iteration_timeout_seconds": 60.0,
+        "security_stage_timeout_seconds": 240.0,
+        "fix_max_resources": 2,
+        "fix_max_findings": 12,
+        "partial_max_groups": 6
+      }
+    ],
+    "generator_checklist_chars": 798,
+    "generator_context_truncated": false
+  },
+  "review_reasons": [],
+  "failed_checks": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Missing required argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 167,
+      "line_end": 167
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 170,
+      "line_end": 170
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 244,
+      "line_end": 244
+    }
+  ],
+  "remaining_findings": {},
+  "phase9e": {
+    "security_context_measurements": [],
+    "generator_schema_context_chars": 3244,
+    "initialization": {
+      "init_runs": 1,
+      "init_reused": 2,
+      "init_seconds": 5.740899115997308,
+      "validate_seconds": 4.615186816998175,
+      "reinitializations": 0
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "message": "Missing required argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      }
+    ],
+    "init_categories": [
+      "validation_cached"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "verification_unavailable",
+        "error_classes": [
+          "Missing required argument",
+          "Unsupported argument"
+        ],
+        "schema_context_chars": 0
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "verification_unavailable",
+        "error_classes": [
+          "Missing required argument",
+          "Unsupported argument"
+        ],
+        "schema_context_chars": 0
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.07888642000034451,
+        "phase": "generation",
+        "count": 1
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 13.966198111003905,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "verification_unavailable"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 26.032912509996095,
+        "phase": "generation",
+        "init_runs": 1,
+        "init_reused": 1,
+        "reinitializations": 0,
+        "init_seconds": 5.740899115997308,
+        "validate_seconds": 4.615186816998175,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.3888019250007346,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 13.835615465002775,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "verification_unavailable"
+      }
+    ],
+    "security_schema_context_chars": [],
+    "security_iteration_repairs": []
+  },
+  "counts": {
+    "failed_checks": 3,
+    "remaining_findings": 0,
+    "deterministic_repairs": 1,
+    "validation_repair_rounds": 2,
+    "security_iterations": 0
+  }
+}

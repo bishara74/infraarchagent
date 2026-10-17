@@ -1,0 +1,558 @@
+{
+  "status": "pending_review",
+  "validation_result": "invalid",
+  "phase9f": {
+    "measured": true,
+    "catalogue": [
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: resource instance unresolved",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public[0]",
+        "status": "skipped",
+        "reason": "context: resource unresolved",
+        "rules": [
+          "AWS-0164"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: resource instance unresolved",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public[0]",
+        "status": "skipped",
+        "reason": "context: resource unresolved",
+        "rules": [
+          "AWS-0164"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: resource instance unresolved",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public[0]",
+        "status": "skipped",
+        "reason": "context: resource unresolved",
+        "rules": [
+          "AWS-0164"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: resource instance unresolved",
+        "rules": [
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public[0]",
+        "status": "skipped",
+        "reason": "context: resource unresolved",
+        "rules": [
+          "AWS-0164"
+        ]
+      }
+    ],
+    "templates": [
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0132": 1
+        }
+      }
+    ],
+    "partial_groups": {
+      "kept": 6,
+      "discarded": 2
+    },
+    "existing_file_proposals": {
+      "normalized": 0,
+      "retained": 0
+    },
+    "fixer_calls": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 4,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 4,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 4,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 2,
+        "resources": 2
+      }
+    ],
+    "fixer_configurations": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "reasoning": "low",
+        "fix_attempt_timeout_seconds": 45.0,
+        "iteration_timeout_seconds": 60.0,
+        "security_stage_timeout_seconds": 240.0,
+        "fix_max_resources": 2,
+        "fix_max_findings": 12,
+        "partial_max_groups": 6
+      }
+    ],
+    "generator_checklist_chars": 820,
+    "generator_context_truncated": true
+  },
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 267,
+      "line_end": 267
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "origin": "unknown",
+      "line_start": 308,
+      "line_end": 308
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0053": 1,
+    "AWS-0077": 1,
+    "AWS-0090": 1,
+    "AWS-0104": 1,
+    "AWS-0132": 1,
+    "CKV2_AWS_12": 1,
+    "CKV_AWS_145": 1,
+    "CKV_AWS_18": 1,
+    "CKV_AWS_21": 1,
+    "CKV_AWS_260": 1,
+    "CKV_AWS_354": 1,
+    "CKV_AWS_91": 1
+  },
+  "phase9e": {
+    "security_context_measurements": [
+      {
+        "file_type": "terraform",
+        "chars": 12485,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 12485,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 12485,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 10304,
+        "reason": "schema_available"
+      }
+    ],
+    "generator_schema_context_chars": 5313,
+    "initialization": {
+      "init_runs": 1,
+      "init_reused": 23,
+      "init_seconds": 7.660450048999337,
+      "validate_seconds": 37.57095403101266,
+      "reinitializations": 0
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "init_categories": [
+      "validation_cached"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Terraform configuration diagnostic",
+          "Unsupported argument"
+        ],
+        "schema_context_chars": 15972
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "no_improvement",
+        "error_classes": [
+          "Terraform configuration diagnostic",
+          "Unsupported argument"
+        ],
+        "schema_context_chars": 15972
+      },
+      {
+        "phase": "after_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Terraform configuration diagnostic",
+          "Unsupported argument"
+        ],
+        "schema_context_chars": 15972
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.07463183499930892,
+        "phase": "generation",
+        "count": 15
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 6.703844780000509,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 18.675616829998035,
+        "phase": "generation",
+        "init_runs": 1,
+        "init_reused": 1,
+        "reinitializations": 0,
+        "init_seconds": 7.660450048999337,
+        "validate_seconds": 3.6959628500044346,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.06114625099871773,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 17.654637369996635,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "no_improvement"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.036342901999887545,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 17.35155442899122,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 0,
+        "init_reused": 3,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 7.222783425997477,
+        "terraform_verification_seconds": 7.507016215000476,
+        "security_verification_seconds": 9.844538213990745,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.02623656600189861,
+        "phase": "security",
+        "iteration": 2,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 6.131186377009726,
+        "phase": "security",
+        "iteration": 2,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 0,
+        "init_reused": 3,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 0.0,
+        "terraform_verification_seconds": 0.1361271440036944,
+        "security_verification_seconds": 5.995059233006032,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.024112696999509353,
+        "phase": "security",
+        "iteration": 3,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 39.315632216996164,
+        "phase": "security",
+        "iteration": 3,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 0,
+        "init_reused": 8,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 14.233163145006984,
+        "terraform_verification_seconds": 14.868879259003734,
+        "security_verification_seconds": 24.44675295799243,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.02442002000316279,
+        "phase": "security",
+        "iteration": 4,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 18.761396326990507,
+        "phase": "security",
+        "iteration": 4,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 0,
+        "init_reused": 4,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 8.41828866200376,
+        "terraform_verification_seconds": 8.60449047399743,
+        "security_verification_seconds": 10.156905852993077,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": []
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 0.10005837200151291,
+        "phase": "after_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 4.6445408840008895,
+        "phase": "after_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 0.04467920800379943,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 2.8114267839991953,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [
+      12485,
+      12485,
+      12485,
+      10304
+    ],
+    "security_iteration_repairs": [
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Terraform configuration diagnostic",
+          "Unsupported argument"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Terraform configuration diagnostic",
+          "Unsupported argument"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "rolled_back",
+        "error_classes": [
+          "Terraform configuration diagnostic",
+          "Unsupported argument"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "rolled_back",
+        "error_classes": [
+          "Terraform configuration diagnostic",
+          "Unsupported argument"
+        ],
+        "reasons": []
+      }
+    ]
+  },
+  "counts": {
+    "failed_checks": 2,
+    "remaining_findings": 12,
+    "deterministic_repairs": 15,
+    "validation_repair_rounds": 3,
+    "security_iterations": 4
+  }
+}

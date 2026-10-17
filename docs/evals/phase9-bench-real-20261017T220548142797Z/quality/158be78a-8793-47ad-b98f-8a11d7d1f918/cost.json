@@ -1,0 +1,569 @@
+{
+  "status": "pending_review",
+  "validation_result": "invalid",
+  "phase9f": {
+    "measured": true,
+    "catalogue": [],
+    "templates": [
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "reason": "context: existing KMS key incompatible",
+        "introduced_rules": {}
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "reason": "context: existing KMS key incompatible",
+        "introduced_rules": {}
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "reason": "context: existing KMS key incompatible",
+        "introduced_rules": {}
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "AWS-0090": 1,
+          "AWS-0132": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "reason": "context: existing KMS key incompatible",
+        "introduced_rules": {}
+      }
+    ],
+    "partial_groups": {
+      "discarded": 3,
+      "kept": 3
+    },
+    "existing_file_proposals": {
+      "normalized": 0,
+      "retained": 0
+    },
+    "fixer_calls": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 12,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 12,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 12,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 12,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      }
+    ],
+    "fixer_configurations": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "reasoning": "low",
+        "fix_attempt_timeout_seconds": 45.0,
+        "iteration_timeout_seconds": 60.0,
+        "security_stage_timeout_seconds": 240.0,
+        "fix_max_resources": 2,
+        "fix_max_findings": 12,
+        "partial_max_groups": 6
+      }
+    ],
+    "generator_checklist_chars": 798,
+    "generator_context_truncated": false
+  },
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "helm.lint",
+      "message": "helm optional lint failed",
+      "file_path": "helm/eks-cluster/Chart.yaml",
+      "origin": "generated",
+      "line_start": 1,
+      "line_end": null
+    },
+    {
+      "check_id": "document.parse",
+      "message": "Document could not be parsed",
+      "file_path": "monitoring/grafana/dashboard.json",
+      "origin": "unknown",
+      "line_start": 13,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Missing required argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 159,
+      "line_end": 159
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 162,
+      "line_end": 162
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 205,
+      "line_end": 205
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 206,
+      "line_end": 206
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0039": 1,
+    "AWS-0065": 1,
+    "AWS-0079": 1,
+    "AWS-0132": 1,
+    "CKV2_AWS_12": 1,
+    "CKV_AWS_18": 1,
+    "CKV_AWS_58": 1,
+    "CKV_K8S_10": 1,
+    "CKV_K8S_11": 1,
+    "CKV_K8S_12": 1,
+    "CKV_K8S_13": 1,
+    "CKV_K8S_20": 1,
+    "CKV_K8S_23": 1,
+    "CKV_K8S_40": 1,
+    "KSV-0001": 1,
+    "KSV-0012": 1,
+    "KSV-0014": 1,
+    "KSV-0104": 1,
+    "KSV-0117": 1,
+    "KSV-0118": 2
+  },
+  "phase9e": {
+    "security_context_measurements": [
+      {
+        "file_type": "other",
+        "chars": 0,
+        "reason": "not_terraform"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 10528,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "other",
+        "chars": 0,
+        "reason": "not_terraform"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 10307,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "other",
+        "chars": 0,
+        "reason": "not_terraform"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 10528,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "other",
+        "chars": 0,
+        "reason": "not_terraform"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 10307,
+        "reason": "schema_available"
+      }
+    ],
+    "generator_schema_context_chars": 3244,
+    "initialization": {
+      "init_runs": 1,
+      "init_reused": 18,
+      "init_seconds": 5.267862348999188,
+      "validate_seconds": 26.05497789200308,
+      "reinitializations": 0
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "message": "helm optional lint failed"
+      },
+      {
+        "check_id": "gate.helm",
+        "message": "Generation syntax check failed"
+      },
+      {
+        "check_id": "document.parse",
+        "message": "Document could not be parsed"
+      },
+      {
+        "check_id": "document.parse",
+        "message": "Document could not be parsed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Missing required argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      }
+    ],
+    "init_categories": [
+      "validation_cached"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Document could not be parsed",
+          "Generation syntax check failed",
+          "Missing required argument",
+          "Unsupported argument",
+          "helm optional lint failed"
+        ],
+        "schema_context_chars": 15960
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Document could not be parsed",
+          "Missing required argument",
+          "Unsupported argument",
+          "helm optional lint failed"
+        ],
+        "schema_context_chars": 15960
+      },
+      {
+        "phase": "after_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Document could not be parsed",
+          "Missing required argument",
+          "Unsupported argument",
+          "helm optional lint failed"
+        ],
+        "schema_context_chars": 15960
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.06102586100314511,
+        "phase": "generation",
+        "count": 1
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 8.81024259300466,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 19.195397739997134,
+        "phase": "generation",
+        "init_runs": 1,
+        "init_reused": 1,
+        "reinitializations": 0,
+        "init_seconds": 5.267862348999188,
+        "validate_seconds": 3.179764659005741,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.27905181399546564,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 8.445505616997252,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.025168650994601194,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 8.978808482992463,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 4,
+        "after_failed": 4,
+        "init_runs": 0,
+        "init_reused": 2,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 3.329396770997846,
+        "terraform_verification_seconds": 3.4923154909920413,
+        "security_verification_seconds": 5.4864929920004215,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.027591783000389114,
+        "phase": "security",
+        "iteration": 2,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 30.091948401997797,
+        "phase": "security",
+        "iteration": 2,
+        "before_failed": 4,
+        "after_failed": 4,
+        "init_runs": 0,
+        "init_reused": 5,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 9.097569678997388,
+        "terraform_verification_seconds": 9.447584762994666,
+        "security_verification_seconds": 20.64436363900313,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.025565859003108926,
+        "phase": "security",
+        "iteration": 3,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 7.52014435599267,
+        "phase": "security",
+        "iteration": 3,
+        "before_failed": 4,
+        "after_failed": 4,
+        "init_runs": 0,
+        "init_reused": 2,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 2.557434275004198,
+        "terraform_verification_seconds": 2.879740091993881,
+        "security_verification_seconds": 4.640404263998789,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.03408694200334139,
+        "phase": "security",
+        "iteration": 4,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 25.426633245981066,
+        "phase": "security",
+        "iteration": 4,
+        "before_failed": 4,
+        "after_failed": 4,
+        "init_runs": 0,
+        "init_reused": 5,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 7.890812507997907,
+        "terraform_verification_seconds": 8.16783499099256,
+        "security_verification_seconds": 17.258798254988506,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": [
+          "new_blocking_findings"
+        ]
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 0.20801334900170332,
+        "phase": "after_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 5.3517062939936295,
+        "phase": "after_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 0.2316189929988468,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 3.2638611250004033,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [
+      0,
+      10528,
+      0,
+      10307,
+      0,
+      10528,
+      0,
+      10307
+    ],
+    "security_iteration_repairs": [
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Missing required argument",
+          "Unsupported argument"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "rolled_back",
+        "error_classes": [
+          "Missing required argument",
+          "Unsupported argument"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Missing required argument",
+          "Unsupported argument"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "rolled_back",
+        "error_classes": [
+          "Missing required argument",
+          "Unsupported argument"
+        ],
+        "reasons": [
+          "new_blocking_findings"
+        ]
+      }
+    ]
+  },
+  "counts": {
+    "failed_checks": 6,
+    "remaining_findings": 21,
+    "deterministic_repairs": 1,
+    "validation_repair_rounds": 3,
+    "security_iterations": 4
+  }
+}
