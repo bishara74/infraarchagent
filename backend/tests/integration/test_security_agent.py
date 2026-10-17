@@ -590,7 +590,7 @@ async def test_loop_with_recorded_trivy_and_terraform(
         row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
         report = deepcopy(row.security_report)
         current = IaCPackage(variant=Variant.SECURITY, files=row.files)
-    assert report["policy_version"] == "2"
+    assert report["policy_version"] == "3"
     assert report["sessions"][0]["fix_passes"] == (
         0
         if scenario == "clean"

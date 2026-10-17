@@ -1186,6 +1186,21 @@ no scanner-fix iterations. It does not affect quality rates, PR thresholds or
 benchmark prompts. Deadline-only rollbacks, pre-candidate stops and multiple
 causes are separate; no estimate of real-run improvement is made.
 
+### D-46 — Secure construction and guarded partial remediation (Phase 9f)
+
+FR-S-02/03/04/09 and NFR-01: resource-specific AES256 evidence replaces the
+package-wide substring exemption (R2). Parsed, uniquely associated bucket
+configuration is required; ambiguous evidence stays blocking. Policy version 3
+preserves all severities and the seven other explicit variant exemptions.
+The saved final-file rescan found three old exemptions, all three resource-proven;
+zero become blocking. Historical truncated advisory totals remain unknown.
+
+Approved extensions: flagged-resource attribute catalogue and supporting-resource
+templates, partial acceptance, bounded resource-focused fixing and existing-file
+recovery. Their implementation details and thesis appendix follow below as each
+section is verified. Readiness and all acceptance guards remain unchanged.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

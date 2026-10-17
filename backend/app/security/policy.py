@@ -4,8 +4,9 @@ from collections.abc import Mapping, Sequence
 
 from app.domain.enums import Severity, Variant
 from app.domain.models import Violation
+from app.security.encryption import aes256_buckets, bucket_is_aes256
 
-SECURITY_POLICY_VERSION = "2"
+SECURITY_POLICY_VERSION = "3"
 BLOCKING_SEVERITIES = frozenset({Severity.CRITICAL, Severity.HIGH, Severity.MEDIUM})
 
 # Sources: Checkov 3.3.21 `--list` check names and the equivalent tfsec
@@ -100,8 +101,12 @@ def classify(
     files: Mapping[str, str] | None = None,
 ) -> list[Violation]:
     """Classify every scanner record without dropping cross-tool duplicates."""
-    has_aes256 = files is not None and any(
-        "AES256" in content for content in files.values()
+    proven = (
+        aes256_buckets(files)
+        if files
+        and variant == Variant.COST
+        and any(v.rule_id == "CKV_AWS_145" for v in violations)
+        else set()
     )
     result: list[Violation] = []
     for violation in violations:
@@ -111,7 +116,9 @@ def classify(
             else violation.severity
         )
         exemption = VARIANT_EXEMPTIONS.get((variant, violation.rule_id))
-        if violation.rule_id == "CKV_AWS_145" and not has_aes256:
+        if violation.rule_id == "CKV_AWS_145" and not bucket_is_aes256(
+            violation, proven
+        ):
             exemption = None
         reason = (
             "external_module_not_scanned"

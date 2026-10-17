@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 0b — Resource-specific encryption evidence
+
+**Summary:** Remove the package-wide AES256 substring exemption and require a
+unique parsed configuration for the exact flagged bucket, including cross-file
+and Terraform JSON associations. Unknown/conflicting evidence remains blocking.
+
+**Requirements addressed:** FR-S-02, NFR-01.
+
+**Files:** security/encryption.py, security/policy.py, policy unit tests,
+integration security policy-version assertion, design-deviations.md, this log.
+
+**Decisions:** D-46; policy version 3. Seven other variant entries contain no text
+search and retain their existing explicit policy decisions. Positive assertions
+are preserved using a genuine associated-encryption fixture.
+
+**Tests:** Policy regressions: 12 passed / 0 failed. Focused Ruff checks passed.
+Full lint and suites run after remaining sections.
+
+**Known gaps / follow-ups:** No new real benchmark. Final-file offline rescan
+shows no old exemption becoming blocking; synthetic counterexamples remain fixed.
+
+
 ## 2026-10-17 — Phase 9f section 0 — Saved-evidence investigation
 
 **Summary:** Record rule classification, exact iteration outcomes, R2 rescan and
