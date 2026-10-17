@@ -1232,6 +1232,33 @@ routing remains unresolved. Public skips use `context: public subnet`; no Phase
 9g exception profile is implemented.
 
 
+#### D-46 supporting-resource templates (section 1b)
+
+| Template | Resources and linkage | Required context / limits |
+|---|---|---|
+| KMS | One rotating symmetric aws_kms_key, 30-day deletion window, aws_kms_alias; linked S3 encryption, Performance Insights, EBS or CloudWatch encryption | Preserve existing keys and bucket-key options; literal/resolvable association; scoped log-service key permissions |
+| Access logs | One SSE-S3 bucket, public-access block, enabled versioning, TLS-only bucket policy and scoped service delivery; source-specific S3/LB prefixes | Same default provider/module; no self-logging; incompatible/custom existing logging skips |
+| VPC flow logs | Encrypted CloudWatch log group (365-day retention), scoped role/inline policy and linked aws_flow_log resources | Reuse generated compatible support; log delivery role needs DescribeLogGroups on * because that API has no resource-level permission |
+| RDS monitoring | Role trusted by monitoring.rds.amazonaws.com, AmazonRDSEnhancedMonitoringRole attachment and linked instance interval=60 | Reuse compatible generated role; preserve existing custom role choices |
+
+Every template validates emitted fields and required structure against both
+pinned AWS schemas. Dependencies stay together during acceptance. New resources
+are added at most once per module; subsequent flagged targets reuse supporting
+resources. Aliased/dynamic/unresolvable context skips with a reason. Every
+candidate passes syntax, preservation, Terraform non-regression and no-new-blocker
+guards. Introduced rule/resource findings are recorded even when rejected; no
+Phase 9g exception profile is implemented. The access-log destination may itself
+trigger logging/KMS findings and therefore remain rejected under current policy.
+
+AWS requires SSE-S3 for direct S3 server access logging and ALB access-log
+destinations; the author approved AES256 for the shared destination while KMS
+protects application storage and CloudWatch logs. No self-logging loop is added.
+Sources: https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-server-access-logging.html
+and https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html.
+Network LB logging requires a TLS listener and its own delivery.logs.amazonaws.com
+permissions (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/enable-access-logs.html).
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 1b — Supporting-resource templates
+
+**Summary:** Add linked KMS, access logging, encrypted VPC flow logs and RDS
+monitoring support with schema checks, reuse, safe skips and introduced findings.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-04, FR-V-03, NFR-01.
+
+**Files:** security/templates.py, terraform.py, security agent, template tests,
+design-deviations.md, this log.
+
+**Decisions:** D-46; approved SSE-S3 access-log destination due to AWS delivery
+constraints. All new blockers still reject templates; no exception profile or
+recursive logging. Existing keys and bucket-key options are preserved.
+
+**Tests:** Template tests: 20 passed / 0 failed. Eight offline Terraform checks
+(four template families x two AWS versions) had zero failed/skipped checks;
+AWS v6 KMS/flow templates emitted provider deprecation warnings only. Focused
+Ruff and mypy passed before the final combined section verification.
+
+**Known gaps / follow-ups:** No AWS deployment or real model calls. Supporting
+resources can introduce blockers and remain rejected until separately reviewed.
+
+
 ## 2026-10-17 — Phase 9f section 1 — Schema-checked security catalogue
 
 **Summary:** Add twelve scanner-targeted controls, source-preserving Terraform

@@ -110,6 +110,9 @@ def render_fields(
 ) -> str:
     result = []
     for name, value in body.items():
+        if name == "depends_on":
+            result.append(f"{indent}depends_on = [" + ", ".join(value) + "]\n")
+            continue
         if name in schema.get("block_types", {}):
             nested = schema["block_types"][name]["block"]
             for item in objects(value):
@@ -128,6 +131,15 @@ def render_fields(
 def fields_supported(body: dict[str, Any], schema: dict[str, Any]) -> bool:
     """Check emitted fields recursively; provider validation remains authoritative."""
     for name, value in body.items():
+        if (
+            name == "depends_on"
+            and isinstance(value, list)
+            and all(
+                isinstance(v, str) and re.fullmatch(r"aws_[\w]+\.[\w-]+", v)
+                for v in value
+            )
+        ):
+            continue
         if name in schema.get("attributes", {}):
             attr = schema["attributes"][name]
             if not (attr.get("optional") or attr.get("required")):

@@ -41,6 +41,8 @@ from app.security.acceptance import CandidateGuard
 from app.security.catalogue import autofix
 from app.security.diff import package_diff
 from app.security.policy import SECURITY_POLICY_VERSION
+from app.security.templates import build_template
+from app.security.templates import requests as template_requests
 from app.validation.gate import patch_syntax_failure
 from app.validation.idioms import repair_idioms
 from app.validation.measurement import initialization_metrics, publish_measurement
@@ -403,6 +405,37 @@ class SecurityAgent:
                         package_diff(iteration_original, files),
                         baseline_scan,
                     )
+        verification["templates"] = []
+        for module, kind in template_requests(files, list(baseline_scan.violations)):
+            automatic, record = build_template(
+                files, list(baseline_scan.violations), module, kind
+            )
+            verification["templates"].append(record)
+            if automatic == files:
+                continue
+            verification.update(fix_started=True, candidate_created=True)
+            guard = CandidateGuard(
+                self.terraform_verifier, self.scanner, variant, budget, verification
+            )
+            result = await guard.evaluate(files, automatic, before, baseline_scan)
+            record.update(
+                status="rejected" if result.reason else "retained",
+                reason=result.reason or "supporting_resources",
+                introduced_findings=result.introduced,
+            )
+            if not result.reason:
+                files, before, baseline_scan = automatic, result.checks, result.scan
+                targets = defaultdict(list)
+                for item in baseline_scan.violations:
+                    if item.blocking:
+                        targets[item.file_path].append(item)
+        if files != iteration_original and not targets:
+            verification.update(
+                outcome="accepted",
+                deadline_only=False,
+                after_failed=failure_count(before),
+            )
+            return files, [], package_diff(iteration_original, files), baseline_scan
         verification["fix_started"] = True
         candidate, fixes, _ = await self._fix_pass(
             ctx,
