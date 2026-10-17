@@ -496,7 +496,7 @@ async def test_scan_error_has_no_first_scan_counts(
     ],
 )
 async def test_loop_with_recorded_trivy_and_terraform(
-    db_engines: tuple[AsyncEngine, AsyncEngine], scenario: str
+    db_engines: tuple[AsyncEngine, AsyncEngine], scenario: str, monkeypatch
 ) -> None:
     from pathlib import Path
 
@@ -504,6 +504,16 @@ async def test_loop_with_recorded_trivy_and_terraform(
     from app.scanners.scan import Scanner
     from scripts.normalize_security_fixture import RECORDED_ROOT
     from tests.unit.test_scanners import FIXTURES, files
+
+    # These fixed scanner recordings describe LLM-only iterations. Automatic
+    # candidates have their own scanner/guard tests; preserve this sequence's
+    # original loop, exhaustion, retry and assertion coverage.
+    monkeypatch.setattr(
+        "app.agents.security.agent.autofix", lambda files, findings: (files, [])
+    )
+    monkeypatch.setattr(
+        "app.agents.security.agent.template_requests", lambda files, findings: []
+    )
 
     engine, _ = db_engines
     states = {

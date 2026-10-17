@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 2 — Bounded partial acceptance
+
+**Summary:** Keep independently verified files/blocks from failed combined
+candidates, group changed dependencies and preserve verified checkpoints on
+cancellation. Reuse cached checks/scans and existing private workspaces.
+
+**Requirements addressed:** FR-S-03, FR-S-04, FR-S-09, FR-V-03, PR-05, NFR-01.
+
+**Files:** security/partial.py, acceptance.py, security agent, settings, partial
+unit and recorded-loop integration tests, README, D-46 and this log.
+
+**Decisions:** D-46; six evaluations per iteration, clipped to existing budgets.
+Recorded LLM-only scanner sequences isolate automatic candidates without changing
+assertions. Review retries retain forced rescan. Verification errors use existing
+state arrows rather than attempting remediating -> scan_error directly.
+
+**Tests:** Partial acceptance plus security-agent integration: 24 passed / 0
+failed (real isolated PostgreSQL). Focused Ruff and mypy passed. Interim failures
+identified fixture rescan sequencing and unchanged review rescans; both corrected.
+
+**Known gaps / follow-ups:** Full suite and focused/model/reporting additions
+follow. Tests use synthetic clocks and mocked scanner outcomes, not real LLMs.
+
+
 ## 2026-10-17 — Phase 9f section 1b — Supporting-resource templates
 
 **Summary:** Add linked KMS, access logging, encrypted VPC flow logs and RDS

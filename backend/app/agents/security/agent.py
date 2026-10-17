@@ -20,7 +20,6 @@ from app.agents.security.fix import FixAgent, FixProposal
 from app.agents.security.verification import (
     TerraformVerifier,
     failure_count,
-    restore_terraform,
     terraform_files,
 )
 from app.core.config import Settings
@@ -40,13 +39,12 @@ from app.scanners.scan import Scanner, ScanResult
 from app.security.acceptance import CandidateGuard
 from app.security.catalogue import autofix
 from app.security.diff import package_diff
+from app.security.partial import RetainedCandidate, accept_groups
 from app.security.policy import SECURITY_POLICY_VERSION
 from app.security.templates import build_template
 from app.security.templates import requests as template_requests
-from app.validation.gate import patch_syntax_failure
 from app.validation.idioms import repair_idioms
 from app.validation.measurement import initialization_metrics, publish_measurement
-from app.validation.preservation import removes_security_controls
 from app.validation.workspace import ValidationWorkspace, current_workspace
 
 DIRECTIVES = {
@@ -189,23 +187,6 @@ class SecurityAgent:
         current, results = apply_proposals(
             snapshot, proposals, targets, ctx.plan, self.redactor
         )
-        touched = {p for p in current if current.get(p) != snapshot.get(p)}
-        if touched and (
-            removes_security_controls(snapshot, current)
-            or await patch_syntax_failure(snapshot, current, touched)
-        ):
-            reason = (
-                "security_control_removed"
-                if removes_security_controls(snapshot, current)
-                else "invalid_merged_syntax"
-            )
-            current = snapshot
-            results = [
-                {**r, "accepted": False, "reason": reason, "new_files": []}
-                if r["accepted"]
-                else r
-                for r in results
-            ]
         for reason in sorted(
             {
                 proposal.reason
@@ -348,8 +329,10 @@ class SecurityAgent:
         validation_failures: Sequence[dict[str, Any]],
         review_target_order: bool = False,
         previous_attempt: str = "",
+        checkpoint: RetainedCandidate | None = None,
     ) -> tuple[dict[str, str], list[dict[str, Any]], str, ScanResult]:
         iteration_original = dict(files)
+        checkpoint = checkpoint or RetainedCandidate(dict(files), baseline_scan)
         if budget.remaining() < 0.001:
             raise TimeoutError
         verification.update(
@@ -389,10 +372,17 @@ class SecurityAgent:
                     )
             if not result.reason:
                 files, before, baseline_scan = automatic, result.checks, result.scan
-                targets = defaultdict(list)
-                for item in baseline_scan.violations:
-                    if item.blocking:
-                        targets[item.file_path].append(item)
+                checkpoint.files, checkpoint.scan = dict(files), baseline_scan
+                targets = {
+                    path: [
+                        v
+                        for v in baseline_scan.violations
+                        if v.blocking and v.file_path == path
+                    ]
+                    for path in sorted(
+                        {v.file_path for v in baseline_scan.violations if v.blocking}
+                    )
+                }
                 if not targets:
                     verification.update(
                         outcome="accepted",
@@ -425,10 +415,17 @@ class SecurityAgent:
             )
             if not result.reason:
                 files, before, baseline_scan = automatic, result.checks, result.scan
-                targets = defaultdict(list)
-                for item in baseline_scan.violations:
-                    if item.blocking:
-                        targets[item.file_path].append(item)
+                checkpoint.files, checkpoint.scan = dict(files), baseline_scan
+                targets = {
+                    path: [
+                        v
+                        for v in baseline_scan.violations
+                        if v.blocking and v.file_path == path
+                    ]
+                    for path in sorted(
+                        {v.file_path for v in baseline_scan.violations if v.blocking}
+                    )
+                }
         if files != iteration_original and not targets:
             verification.update(
                 outcome="accepted",
@@ -448,68 +445,54 @@ class SecurityAgent:
             review_target_order=review_target_order,
             previous_attempt=previous_attempt,
         )
-        verification["candidate_created"] = candidate != files
-        repair_started = time.monotonic()
+        started = time.monotonic()
         candidate, records = repair_idioms(candidate)
-        verification["candidate_created"] = candidate != files
-        verification["deterministic_repairs"] = records
-        verification["deterministic_seconds"] = time.monotonic() - repair_started
-        if budget.expired():
-            raise TimeoutError
-        if terraform_files(candidate) != terraform_files(files):
-            after = await checked(candidate)
-            count = failure_count(after)
-            verification["after_failed"] = count
-            verification["error_classes"] = sorted(
-                {c.message for c in after if c.status == "failed"}
+        verification.update(
+            candidate_created=candidate != iteration_original,
+            deterministic_repairs=records,
+            deterministic_seconds=time.monotonic() - started,
+        )
+        guard = CandidateGuard(
+            self.terraform_verifier, self.scanner, variant, budget, verification
+        )
+        guard.check_cache[ValidationWorkspace.fingerprint(terraform_files(files))] = (
+            before
+        )
+        result = await guard.evaluate(
+            files, candidate, before, baseline_scan, force_scan=review_target_order
+        )
+        verification["after_failed"] = failure_count(result.checks)
+        verification["error_classes"] = sorted(
+            {c.message for c in result.checks if c.status == "failed"}
+        )
+        verification["partial_groups"] = []
+        if result.reason:
+            verification["reasons"].append(result.reason)
+            verification["introduced_findings"] = result.introduced
+            verification["rolled_back_files"] = sorted(
+                p
+                for p in files.keys() | candidate.keys()
+                if files.get(p) != candidate.get(p)
             )
-            baseline = verification["before_failed"]
-            reason = (
-                "terraform_regression"
-                if count is not None and baseline is not None and count > baseline
-                else "terraform_verification_unavailable"
-                if count is None or (baseline is None and count != 0)
-                else None
+            candidate, after, scanned = await accept_groups(
+                guard,
+                files,
+                candidate,
+                before,
+                baseline_scan,
+                self.settings.security_partial_max_groups,
+                verification["partial_groups"],
+                checkpoint,
             )
-            if reason:
-                verification["reasons"].append(reason)
-                verification["rolled_back_files"] = sorted(
-                    p
-                    for p in files.keys() | candidate.keys()
-                    if p.startswith("terraform/") and files.get(p) != candidate.get(p)
-                )
-                candidate = restore_terraform(files, candidate)
         else:
-            verification["after_failed"] = verification["before_failed"]
-        if budget.expired():
-            raise TimeoutError
-        if candidate != files or review_target_order:
-            started = time.monotonic()
-            try:
-                scanned = await scan_files(self.scanner, candidate, variant)
-            finally:
-                verification["security_verification_seconds"] += (
-                    time.monotonic() - started
-                )
-            if {v.fingerprint() for v in scanned.violations if v.blocking} - {
-                v.fingerprint() for v in baseline_scan.violations if v.blocking
-            }:
-                verification["reasons"].append("new_blocking_findings")
-                verification["rolled_back_files"] = sorted(
-                    p
-                    for p in files.keys() | candidate.keys()
-                    if files.get(p) != candidate.get(p)
-                )
-                candidate, scanned = dict(files), baseline_scan
-        else:
-            scanned = baseline_scan
-        if budget.expired():
-            raise TimeoutError
+            after, scanned = result.checks, result.scan
+            checkpoint.files, checkpoint.scan = dict(candidate), scanned
+        verification["after_failed"] = failure_count(after)
         verification["outcome"] = (
             "rolled_back"
             if verification["reasons"]
             else "accepted"
-            if verification["candidate_created"]
+            if candidate != iteration_original
             else "no_change"
         )
         verification["deadline_only"] = False
@@ -518,19 +501,13 @@ class SecurityAgent:
             + verification["security_verification_seconds"]
         )
         for fix in fixes:
-            fix["retained"] = fix["accepted"] and candidate.get(
-                fix["file"]
-            ) != files.get(fix["file"])
+            paths = [fix["file"], *fix.get("edits", []), *fix.get("new_files", [])]
+            fix["retained"] = fix["accepted"] and any(
+                candidate.get(path) != files.get(path) for path in paths
+            )
         workspace = current_workspace()
         if workspace:
-            workspace.observe(
-                after
-                if terraform_files(candidate) != terraform_files(files)
-                else before,
-                "security_fix",
-                candidate,
-                partial=True,
-            )
+            workspace.observe(after, "security_fix", candidate, partial=True)
             async with workspace.check(candidate):
                 pass
         return candidate, fixes, package_diff(iteration_original, candidate), scanned
@@ -642,6 +619,13 @@ class SecurityAgent:
             }
             if targets and budget.remaining() >= 1:
                 verification: dict[str, Any] = {}
+                checkpoint = RetainedCandidate(
+                    dict(files),
+                    ScanResult(
+                        list(initial_findings),
+                        {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
+                    ),
+                )
                 iteration_budget = AgentBudget(
                     max(0.001, min(60.0, budget.remaining())), clock=ctx.clock
                 )
@@ -663,8 +647,10 @@ class SecurityAgent:
                             feedback=feedback,
                             validation_failures=validation_failures,
                             review_target_order=True,
+                            checkpoint=checkpoint,
                         )
                 except ToolFailure as error:
+                    files = dict(checkpoint.files)
                     pending_error = error
                     verification.setdefault("reasons", []).append(
                         "verification_unavailable"
@@ -675,6 +661,7 @@ class SecurityAgent:
                         async with workspace.check(files):
                             pass
                 except TimeoutError:
+                    files = dict(checkpoint.files)
                     verification["deadline_only"] = bool(
                         verification.get("candidate_created")
                         and not verification.get("reasons")
@@ -689,10 +676,7 @@ class SecurityAgent:
                         "terraform_verification_seconds", 0.0
                     ) + verification.get("security_verification_seconds", 0.0)
                     fixes, diff = [], ""
-                    pending_scan = ScanResult(
-                        list(initial_findings),
-                        {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
-                    )
+                    pending_scan = checkpoint.scan
                     if workspace:
                         async with workspace.check(files):
                             pass
@@ -833,6 +817,7 @@ class SecurityAgent:
             targets = defaultdict(list)
             for item in blocking:
                 targets[item.file_path].append(item)
+            checkpoint = RetainedCandidate(dict(files), scan)
             try:
                 entry["verification"] = {}
                 workspace = current_workspace()
@@ -849,8 +834,11 @@ class SecurityAgent:
                         feedback=feedback,
                         validation_failures=validation_failures,
                         previous_attempt=previous_attempt,
+                        checkpoint=checkpoint,
                     )
             except ToolFailure as error:
+                files = dict(checkpoint.files)
+                last_blocking = [v for v in checkpoint.scan.violations if v.blocking]
                 reason = f"{error.tool} scan {error.category}"
                 outcome, status = "error", PackageStatus.SCAN_ERROR
                 verification = entry["verification"]
@@ -868,10 +856,18 @@ class SecurityAgent:
                 )
                 if kind != "review_retry":
                     await ctx.writer.package_transition(
+                        ctx.run_id,
+                        variant,
+                        PackageStatus.SCANNING,
+                        message="security verification failed",
+                    )
+                    await ctx.writer.package_transition(
                         ctx.run_id, variant, status, message=reason, error=reason
                     )
                 break
             except TimeoutError:
+                files = dict(checkpoint.files)
+                last_blocking = [v for v in checkpoint.scan.violations if v.blocking]
                 entry["stop_reason"] = "iteration_deadline"
                 verification = entry.get("verification", {})
                 reasons = verification.setdefault("reasons", [])
@@ -898,7 +894,7 @@ class SecurityAgent:
                 )
                 previous_attempt = attempt_feedback(verification, [], self.redactor)
                 if budget.remaining() >= 1 and iteration_count < ctx.max_iterations:
-                    pending_scan = scan
+                    pending_scan = checkpoint.scan
                     await ctx.writer.package_transition(
                         ctx.run_id,
                         variant,

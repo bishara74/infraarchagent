@@ -64,6 +64,8 @@ class CandidateGuard:
         candidate: dict[str, str],
         checks: list[ValidationCheck],
         scan: ScanResult,
+        *,
+        force_scan: bool = False,
     ) -> CandidateResult:
         self.time_left()
         touched = {
@@ -81,17 +83,22 @@ class CandidateGuard:
             else checks
         )
         previous, count = failure_count(checks), failure_count(after)
+        changed_terraform = terraform_files(before) != terraform_files(candidate)
         reason = (
             "terraform_regression"
-            if count is not None and previous is not None and count > previous
+            if changed_terraform
+            and count is not None
+            and previous is not None
+            and count > previous
             else "terraform_verification_unavailable"
-            if count is None or (previous is None and count != 0)
+            if changed_terraform
+            and (count is None or (previous is None and count != 0))
             else None
         )
         if reason:
             return CandidateResult(reason, after, scan, [])
         key = ValidationWorkspace.fingerprint(candidate)
-        if candidate == before:
+        if candidate == before and not force_scan:
             scanned = scan
         elif key in self.scan_cache:
             scanned = self.scan_cache[key]

@@ -65,6 +65,7 @@ class Settings(BaseSettings):
     fix_attempt_timeout_seconds: float = Field(default=90.0, gt=0)
     fix_max_output_tokens: int = Field(default=16000, ge=1)
     security_max_parallel_fixes: int = Field(default=4, ge=1)
+    security_partial_max_groups: int = Field(default=6, ge=1, le=64)
     package_retention_days: int = Field(default=30, ge=1)
     log_level: str = "INFO"
 

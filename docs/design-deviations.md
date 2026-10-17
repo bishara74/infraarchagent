@@ -1259,6 +1259,26 @@ Network LB logging requires a TLS listener and its own delivery.logs.amazonaws.c
 permissions (https://docs.aws.amazon.com/elasticloadbalancing/latest/network/enable-access-logs.html).
 
 
+#### D-46 partial acceptance (section 2)
+
+Combined candidates remain subject to the existing guards. On failure, private
+source snapshots are split by file and, where parseable, Terraform top-level
+block. Changed declarations and their changed references form dependency groups
+within a module. Each group is evaluated in deterministic path/block order
+against the latest verified retained files, Terraform checks and scanner result.
+SECURITY_PARTIAL_MAX_GROUPS defaults to 6 (range 1–64); the existing 60-second
+iteration and 240-second stage ceilings take precedence. Validation and scans
+are cached by complete source fingerprints inside an iteration; initialized
+private workspaces remain reused.
+
+Only completed, verified groups update a private checkpoint. Cancellation or
+timeout preserves that checkpoint and discards pending edits; no source enters
+public metadata. Reports distinguish kept, discarded and unevaluated groups and
+record introduced findings and guard reasons. Existing review retries still
+force a scan even when a proposed edit makes no change. Verification tool errors
+settle through existing remediating -> scanning -> scan_error transitions.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

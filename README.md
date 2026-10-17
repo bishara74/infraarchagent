@@ -941,3 +941,12 @@ SCHEMA_CONTEXT_MAX_CHARS=16000
 Build the seven offline schema indexes first. Stub verification does not predict
 real benchmark quality or deadline-stop improvements; the next real comparison
 must report those measured outcomes using unchanged readiness rules.
+
+### Phase 9f guarded partial acceptance
+
+`SECURITY_PARTIAL_MAX_GROUPS=6` bounds fallback group evaluations per security
+iteration (1–64). Failed combined candidates may retain independent verified
+files or Terraform blocks; dependent declarations stay together. Existing 60 s
+iteration and 240 s stage ceilings remain. Only fully verified groups survive a
+timeout; unchanged review retries still rescan. Reports retain rejection reasons
+and newly introduced findings without exposing discarded source.
