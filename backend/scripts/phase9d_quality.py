@@ -9,7 +9,7 @@ from uuid import UUID
 from app.core.logging import REDACTED, RedactingFilter
 from app.domain.enums import PackageStatus
 from app.domain.paths import validate_relative_path
-from app.domain.review import security_final
+from app.domain.review import security_final, security_iterations
 from scripts.phase9_common import ROOT, write_json
 from scripts.phase9_report import statistics_for
 from scripts.phase9c_metrics import number
@@ -58,6 +58,31 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         safe_text(item.get("rule_id", "unknown"), redactor, 100)
         for item in final.get("remaining_blocking", [])
     )
+    proposal_contexts = [
+        {
+            "file_type": "terraform"
+            if str(f.get("file") or "").startswith("terraform/")
+            else "other"
+            if f.get("file")
+            else "unknown",
+            "chars": f.get("schema_context_chars")
+            if type(f.get("schema_context_chars")) is int
+            and f["schema_context_chars"] >= 0
+            else None,
+            "reason": f.get("schema_context_reason")
+            if f.get("schema_context_reason")
+            in {
+                "not_terraform",
+                "schema_available",
+                "unparseable_document",
+                "no_schema_entries",
+                "not_attempted",
+            }
+            else "unknown",
+        }
+        for iteration in security_iterations(package.get("security_report"))
+        for f in iteration.get("fixes", [])
+    ]
     remediation = validation.get("remediation") or {}
     gate = remediation.get("gate") or {}
     rounds = [
@@ -104,6 +129,7 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         "failed_checks": checks,
         "remaining_findings": dict(sorted(findings.items())),
         "phase9e": {
+            "security_context_measurements": proposal_contexts,
             "generator_schema_context_chars": remediation.get(
                 "generator_schema_context_chars"
             )
@@ -148,9 +174,7 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
             ],
             "security_schema_context_chars": [
                 f["schema_context_chars"]
-                for iteration in (package.get("security_report") or {}).get(
-                    "iterations", []
-                )
+                for iteration in security_iterations(package.get("security_report"))
                 for f in iteration.get("fixes", [])
                 if type(f.get("schema_context_chars")) is int
                 and f["schema_context_chars"] >= 0
@@ -172,9 +196,7 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
                         if isinstance(r, str) and r in REASONS
                     ],
                 }
-                for iteration in (package.get("security_report") or {}).get(
-                    "iterations", []
-                )
+                for iteration in security_iterations(package.get("security_report"))
                 if isinstance(v := iteration.get("verification"), dict)
             ],
         },
@@ -257,6 +279,22 @@ def quality_table(
             c for p in packages for c in p.get("phase9e", {}).get("init_categories", [])
         )
     )
+    context_records = [
+        r
+        for p in packages
+        for r in p.get("phase9e", {}).get("security_context_measurements", [])
+    ]
+    result["security_context_coverage"] = {
+        kind: {
+            "total": len(selected),
+            "positive": sum((r["chars"] or 0) > 0 for r in selected),
+            "zero": sum(r["chars"] == 0 for r in selected),
+            "missing": sum(r["chars"] is None for r in selected),
+            "reasons": dict(Counter(r["reason"] for r in selected)),
+        }
+        for kind in ("terraform", "other", "unknown")
+        for selected in [[r for r in context_records if r["file_type"] == kind]]
+    }
     result["schema_context_chars"] = {
         "generator": statistics_for(
             [
@@ -342,6 +380,7 @@ def quality_table(
         "Gate outcomes: " + str(result["gate_outcomes"]),
         "Init categories: " + str(result["init_categories"]),
         "Schema context sizes (characters): " + str(result["schema_context_chars"]),
+        "Security context coverage: " + str(result["security_context_coverage"]),
         "Security iteration outcomes by class: "
         + str(result["security_outcomes_by_class"]),
     ]
@@ -422,6 +461,21 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                                 ],
                                 {
                                     "fixes": [
+                                        {
+                                            "schema_context_chars": r.get("chars"),
+                                            "schema_context_reason": r.get("reason"),
+                                            "file": "terraform/context.tf"
+                                            if r.get("file_type") == "terraform"
+                                            else "other"
+                                            if r.get("file_type") == "other"
+                                            else None,
+                                        }
+                                        for r in extra.get(
+                                            "security_context_measurements", []
+                                        )
+                                    ]
+                                    if "security_context_measurements" in extra
+                                    else [
                                         {"schema_context_chars": n}
                                         for n in extra.get(
                                             "security_schema_context_chars", []

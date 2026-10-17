@@ -1,0 +1,230 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "document.parse",
+      "message": "Document could not be parsed",
+      "file_path": "terraform/main.tf",
+      "origin": "unknown",
+      "line_start": 216,
+      "line_end": null
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid multi-line string",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 216,
+      "line_end": 217
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 216,
+      "line_end": 217
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid multi-line string",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 217,
+      "line_end": 218
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid multi-line string",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 218,
+      "line_end": 219
+    }
+  ],
+  "remaining_findings": {
+    "TERRAFORM_SYNTAX": 4
+  },
+  "phase9e": {
+    "security_context_measurements": [
+      {
+        "file_type": "terraform",
+        "chars": 768,
+        "reason": "unknown"
+      }
+    ],
+    "generator_schema_context_chars": 5689,
+    "initialization": {
+      "init_runs": 9,
+      "init_reused": 0,
+      "init_seconds": 18.72835774000123,
+      "validate_seconds": 10.501370502999634,
+      "reinitializations": 3
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "document.parse",
+        "message": "Document could not be parsed"
+      },
+      {
+        "check_id": "document.parse",
+        "message": "Document could not be parsed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Invalid multi-line string"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Terraform configuration diagnostic"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Invalid multi-line string"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Invalid multi-line string"
+      }
+    ],
+    "init_categories": [
+      "syntax"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "new_blocking_findings",
+        "error_classes": [
+          "Document could not be parsed",
+          "Invalid multi-line string",
+          "Terraform configuration diagnostic"
+        ],
+        "schema_context_chars": 768
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "new_blocking_findings",
+        "error_classes": [
+          "Document could not be parsed",
+          "Invalid multi-line string",
+          "Terraform configuration diagnostic"
+        ],
+        "schema_context_chars": 768
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.036796202000004996,
+        "phase": "generation",
+        "count": 0
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 25.05756268999994,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "new_blocking_findings"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 25.695316807999916,
+        "phase": "generation",
+        "init_runs": 3,
+        "init_reused": 0,
+        "reinitializations": 1,
+        "init_seconds": 5.879605379001077,
+        "validate_seconds": 3.6544646019992797,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.5412004139998317,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 24.44396070000039,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "new_blocking_findings"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.024636165999254445,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 13.904215132999525,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 4,
+        "after_failed": 1,
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 1,
+        "init_seconds": 6.61620961799963,
+        "validate_seconds": 3.4052440699997533,
+        "terraform_verification_seconds": 10.189687877000324,
+        "security_verification_seconds": 3.714527255999201,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": [
+          "new_blocking_findings"
+        ]
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 0.14069199499954266,
+        "phase": "after_security"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 0.08762793300047633,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 3.0560265529993558,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [
+      768
+    ],
+    "security_iteration_repairs": [
+      {
+        "outcome": "rolled_back",
+        "error_classes": [
+          "Unsupported argument"
+        ],
+        "reasons": [
+          "new_blocking_findings"
+        ]
+      }
+    ]
+  },
+  "counts": {
+    "failed_checks": 5,
+    "remaining_findings": 4,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 2,
+    "security_iterations": 1
+  }
+}

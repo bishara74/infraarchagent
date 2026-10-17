@@ -1,6 +1,6 @@
 """Pure Phase 7 package presentation and ordered remediation targets."""
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from typing import Any
 
 from app.domain.enums import PackageStatus, RunStatus
@@ -10,6 +10,22 @@ TERMINAL_RUNS = frozenset(
     {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}
 )
 RETRY_ABORT_PREFIX = "review retry "
+
+
+def security_iterations(
+    report: Mapping[str, Any] | None,
+) -> Iterator[Mapping[str, Any]]:
+    """Canonical retained sessions take precedence over a legacy top-level alias."""
+    if not report:
+        return
+    sessions = report.get("sessions")
+    containers = sessions if isinstance(sessions, list) else [report]
+    for session in containers:
+        if not isinstance(session, Mapping):
+            continue
+        for iteration in session.get("iterations", []):
+            if isinstance(iteration, Mapping):
+                yield iteration
 
 
 def security_final(report: Mapping[str, Any] | None) -> Mapping[str, Any]:

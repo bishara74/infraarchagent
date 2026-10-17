@@ -27,6 +27,51 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9e follow-up — Correct nested security evidence reporting
+
+**Summary:** Use a shared canonical security-session iteration reader for context
+and rollback summaries, with legacy fallback and no duplicate aliases. Preserve
+original real-run evidence and publish a separate sanitized historical audit.
+
+**Requirements addressed:** FR-S-03, FR-S-09, FR-V-04, NFR-01, PR-01, PR-03,
+PR-04, PR-05.
+
+**Files:** domain/review.py, scripts/phase9d_quality.py, unit follow-up reporting/
+feedback tests, phase9e-followup-verification.md, dated sanitized audit, stub and
+secret-scan evidence. D-45 and README were updated in the preceding loop commit.
+
+**Decisions:** Positive, zero and missing context measurements remain distinct;
+file categories and safe degraded reasons survive compact round trips. Historical
+reasons stay unknown. Saved JSON proves grounding was present (52 proposals,
+44 positive; run 12a0fcfb… lengths 11689 and 15452 exactly regenerate); the old
+zero summary read top-level iterations instead of nested sessions. The stopping
+condition originated in Phase 5 commit 91633dc on 1 October; Phase 9e rollback/
+baseline reuse in 5584316 exposed it. All 14 raw evidence hashes remain unchanged.
+Original readiness totals stay 1/40, with two missing variants.
+
+**Tests:** Final make lint passed; make test 1322 passed / 6 perf deselected
+(435.31 s), make frontend-test 100 passed / 15 files, make test-e2e 6 passed
+(3.9 min). make provider-schema exported seven versions offline. make secret-scan
+reported 0 findings / 0 errors. New tests cover canonical/legacy session reading,
+missing measurements, compact round trips, unchanged readiness and safe bounded
+feedback. Earlier legacy assertions and Docker-only setup errors are documented
+in the verification report; final checks have no test failures.
+
+**Benchmark:** make bench-stub completed 14 pipeline runs / 42 generated packages,
+42 valid gates and 42 ready, plus ten ZIP measurements. PR-01/05 pass; PR-03/04
+fail unchanged thresholds under concurrent verification load. The separate
+scripted real-offline-Terraform rehearsal measured six iteration verifications:
+median 14.8905 s, p90/max 31.4790 s, including initialization/queue waiting;
+three init runs / nine reuses / zero reinitializations; zero validity rollbacks;
+0 deadline-only rollbacks / 6 attempts, zero pre-candidate and multiple-cause
+stops. Normal clean stub packages attempted zero fixes, with 42 init runs /
+126 reuses and initial/post-security deadline stops 0/0. Historical four/nine
+stops and injected-clock outcomes are reported separately.
+
+**Known gaps / follow-ups:** PR-03 concurrency and PR-04 latency remain measured
+failures. No new real benchmark, readiness change or quality prediction. Author
+comparison and Chapter 4/6 follow-ups remain; no new specification ambiguity.
+
 ## 2026-10-17 — Phase 9e follow-up — Continue bounded security attempts
 
 **Summary:** Remove the repeated-fingerprint terminal shortcut so rejected,
