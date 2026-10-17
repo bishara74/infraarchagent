@@ -1306,6 +1306,18 @@ separately describes the verified retained baseline. A verification regression
 completed at the deadline remains a regression-plus-deadline observation.
 
 
+#### D-46 secure generation (section 3)
+
+Generator prompt v7 selects resource types from plan services/storage, adds the
+catalogue and frequent supporting-resource requirements, and preserves the
+existing combined 6000-character schema/checklist cap (schema <=4500, checklist
+<=1500). Type selection uses fixed service tokens and storage kinds, never a
+benchmark-prompt match or raw plan text in security guidance. Input truncation
+and checklist lengths are explicit remediation metadata; output tokens and
+provider pins are unchanged. Shared system prompts remain variant-independent
+apart from their existing optimisation directive.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

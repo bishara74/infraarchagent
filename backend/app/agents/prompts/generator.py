@@ -5,15 +5,20 @@ import json
 from app.agents.prompts.quality import DOCUMENT_GUIDANCE, PROVIDER_GUIDANCE, S3_GUIDANCE
 from app.domain.package_layout import LAYOUT, layout_guidance
 from app.domain.plan import DeploymentPlan, FileType
+from app.security.generation import generation_context
 from app.validation.schema_context import generator_schema_context
 
-GENERATOR_PROMPT_VERSION = "6"
+GENERATOR_PROMPT_VERSION = "7"
 DIRECTIVE_START = "<optimisation_directive>"
 DIRECTIVE_END = "</optimisation_directive>"
 
 
 def build_system_prompt(
-    directive: str, *, max_output_tokens: int = 8000, wire_files: bool = False
+    directive: str,
+    *,
+    max_output_tokens: int = 8000,
+    wire_files: bool = False,
+    plan: DeploymentPlan | None = None,
 ) -> str:
     return "\n".join(
         (
@@ -45,7 +50,7 @@ def build_system_prompt(
             layout_guidance(),
             PROVIDER_GUIDANCE,
             "Version-labelled required arguments and blocks (compact reference):\n"
-            + generator_schema_context(),
+            + (generation_context(plan).text if plan else generator_schema_context()),
             S3_GUIDANCE,
             DOCUMENT_GUIDANCE,
             DIRECTIVE_START,

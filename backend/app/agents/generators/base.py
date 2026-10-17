@@ -174,6 +174,7 @@ class GeneratorAgent(ABC):
                     self.optimisation_directive,
                     max_output_tokens=self.max_output_tokens,
                     wire_files=self.wire_files,
+                    plan=plan,
                 )
                 remaining = budget.remaining()
                 if remaining < 1:

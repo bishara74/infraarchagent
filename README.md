@@ -956,3 +956,8 @@ security fixer call. Equal-severity resources rotate between attempts. The fixer
 receives existing paths and editable current content; existing-path creations
 can be normalized into validated edits. Reports distinguish normalized proposals
 from those retained after every guard. Overlapping editable files are serialized.
+
+Generator prompt v7 adds plan-specific security/support guidance inside the
+existing 6000-character input context cap (4500 schema / 1500 checklist).
+Validation remediation metadata records security-context length and truncation.
+Generator and fixer output-token defaults remain unchanged.

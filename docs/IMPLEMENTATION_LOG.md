@@ -27,6 +27,27 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 3 — Secure generator checklist
+
+**Summary:** Select resource schemas and security/support requirements from the
+plan while keeping the existing generator context and output-token budgets.
+
+**Requirements addressed:** FR-G-02, FR-S-02, FR-V-03, NFR-01, PR-05.
+
+**Files:** security/generation.py, generator prompt/base, schema context,
+orchestrator metadata, domain validation report, generation tests, README/D-46/log.
+
+**Decisions:** D-46; input <=6000 characters (4500 schemas / 1500 checklist),
+explicit truncation and checklist length, prompt version 7. No model/default
+output-budget change or benchmark-specific matching.
+
+**Tests:** Secure generation, generator prompt/agent and schema context:
+30 passed / 0 failed. Focused Ruff passed. Final full lint/suites follow section 7.
+
+**Known gaps / follow-ups:** Prompt guidance is not proof of generated security;
+all scans and acceptance guards remain authoritative.
+
+
 ## 2026-10-17 — Phase 9f section 4 — Focused calls and existing-file recovery
 
 **Summary:** Bound resource/findings input, rotate equal-severity targets, supply

@@ -46,11 +46,11 @@ from app.events.kinds import (
 from app.pipeline.stages import SecurityStage, StageContext, ValidationStage
 from app.pipeline.state import PipelineStateWriter
 from app.scanners.runner import ToolFailure
+from app.security.generation import generation_context
 from app.validation.gate import GateRepairEngine, GenerationGate
 from app.validation.idioms import repair_idioms
 from app.validation.measurement import initialization_metrics, publish_measurement
 from app.validation.repairs import repair_terraform
-from app.validation.schema_context import generator_schema_context
 from app.validation.workspace import ValidationWorkspace, current_workspace
 
 logger = logging.getLogger(__name__)
@@ -117,8 +117,11 @@ class PipelineOrchestrator:
         deterministic_started = self.clock()
         files, records = repair_terraform(package.files)
         files, idioms = repair_idioms(files)
+        context = generation_context(plan)
         metadata = RemediationReport(
-            generator_schema_context_chars=len(generator_schema_context()),
+            generator_schema_context_chars=len(context.text),
+            generator_security_context_chars=context.checklist_chars,
+            generator_context_truncated=context.truncated,
             deterministic_repairs=[
                 DeterministicRepair.model_validate(r) for r in [*records, *idioms]
             ],

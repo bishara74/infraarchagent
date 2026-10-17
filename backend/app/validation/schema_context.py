@@ -326,7 +326,12 @@ def schema_context(
     return bounded_entries(entries, limit)
 
 
-def generator_schema_context(limit: int = 6000, directory: Path = DEFAULT_INDEX) -> str:
+def generator_schema_context(
+    limit: int = 6000,
+    directory: Path = DEFAULT_INDEX,
+    *,
+    resource_types: tuple[str, ...] | None = None,
+) -> str:
     entries: list[dict[str, Any]] = []
     names = (
         "aws_vpc",
@@ -338,7 +343,7 @@ def generator_schema_context(limit: int = 6000, directory: Path = DEFAULT_INDEX)
         "aws_lb",
         "aws_ecs_service",
     )
-    for name in names:
+    for name in resource_types if resource_types is not None else names:
         profiles: dict[str, list[str]] = {}
         for version in ("5.100.0", "6.68.0"):
             index = index_for("aws", version, directory)
