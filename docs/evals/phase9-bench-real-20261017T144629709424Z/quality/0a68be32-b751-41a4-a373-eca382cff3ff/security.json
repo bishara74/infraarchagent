@@ -1,0 +1,271 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings"
+  ],
+  "failed_checks": [],
+  "remaining_findings": {
+    "AWS-0028": 4,
+    "AWS-0047": 1,
+    "AWS-0053": 1,
+    "AWS-0077": 1,
+    "AWS-0104": 3,
+    "AWS-0164": 1,
+    "AWS-0176": 1,
+    "AWS-0177": 1,
+    "AWS-0178": 1,
+    "CKV2_AWS_11": 1,
+    "CKV_AWS_103": 1,
+    "CKV_AWS_118": 1,
+    "CKV_AWS_129": 1,
+    "CKV_AWS_130": 1,
+    "CKV_AWS_157": 1,
+    "CKV_AWS_161": 1,
+    "CKV_AWS_260": 1,
+    "CKV_AWS_293": 1,
+    "CKV_AWS_353": 1,
+    "CKV_AWS_91": 1
+  },
+  "phase9e": {
+    "security_context_measurements": [
+      {
+        "file_type": "other",
+        "chars": 0,
+        "reason": "not_terraform"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 15984,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "other",
+        "chars": 0,
+        "reason": "not_terraform"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 15984,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 15984,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 15984,
+        "reason": "schema_available"
+      }
+    ],
+    "generator_schema_context_chars": 5689,
+    "initialization": {
+      "init_runs": 5,
+      "init_reused": 5,
+      "init_seconds": 23.96790792900174,
+      "validate_seconds": 18.396709024998927,
+      "reinitializations": 4
+    },
+    "gate_outcome": "valid",
+    "gate_failed_checks": [],
+    "init_categories": [
+      "initialized"
+    ],
+    "repair_rounds": [],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.06954338200011989,
+        "phase": "generation",
+        "count": 0
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 8.485647909999898,
+        "phase": "generation",
+        "init_runs": 1,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 5.07514992400138,
+        "validate_seconds": 3.1832017959986842,
+        "outcome": "valid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.1489703159986675,
+        "phase": "before_security"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.03306438400068146,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 0.043548345998715376,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 0,
+        "after_failed": 0,
+        "init_runs": 0,
+        "init_reused": 1,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 0.0,
+        "terraform_verification_seconds": 0.043548345998715376,
+        "security_verification_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.03216742499898828,
+        "phase": "security",
+        "iteration": 2,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 5.181094105000739,
+        "phase": "security",
+        "iteration": 2,
+        "before_failed": 0,
+        "after_failed": 0,
+        "init_runs": 0,
+        "init_reused": 1,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 0.0,
+        "terraform_verification_seconds": 0.054086811000161106,
+        "security_verification_seconds": 5.1270072940005775,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "accepted",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.07166809800037299,
+        "phase": "security",
+        "iteration": 3,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 12.427507971999148,
+        "phase": "security",
+        "iteration": 3,
+        "before_failed": 0,
+        "after_failed": 2,
+        "init_runs": 1,
+        "init_reused": 1,
+        "reinitializations": 1,
+        "init_seconds": 4.958334274000663,
+        "validate_seconds": 7.210834323001109,
+        "terraform_verification_seconds": 12.427507971999148,
+        "security_verification_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": [
+          "terraform_regression"
+        ]
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.03505925399986154,
+        "phase": "security",
+        "iteration": 4,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 19.535220629000833,
+        "phase": "security",
+        "iteration": 4,
+        "before_failed": 0,
+        "after_failed": 0,
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 2,
+        "init_seconds": 9.866149661000236,
+        "validate_seconds": 5.32273055800033,
+        "terraform_verification_seconds": 15.513733206000325,
+        "security_verification_seconds": 4.021487423000508,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "rolled_back",
+        "reasons": [
+          "new_blocking_findings"
+        ]
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 6.860377191000225,
+        "phase": "after_security"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 0.0964930820009613,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 4.052383374000783,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [
+      0,
+      15984,
+      0,
+      15984,
+      15984,
+      15984
+    ],
+    "security_iteration_repairs": [
+      {
+        "outcome": "no_change",
+        "error_classes": [],
+        "reasons": []
+      },
+      {
+        "outcome": "accepted",
+        "error_classes": [],
+        "reasons": []
+      },
+      {
+        "outcome": "rolled_back",
+        "error_classes": [
+          "Terraform configuration diagnostic"
+        ],
+        "reasons": [
+          "terraform_regression"
+        ]
+      },
+      {
+        "outcome": "rolled_back",
+        "error_classes": [],
+        "reasons": [
+          "new_blocking_findings"
+        ]
+      }
+    ]
+  },
+  "counts": {
+    "failed_checks": 0,
+    "remaining_findings": 25,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 0,
+    "security_iterations": 4
+  }
+}

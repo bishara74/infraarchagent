@@ -1,0 +1,856 @@
+{
+  "counts": {
+    "packages": 40,
+    "missing_variants": 2,
+    "unavailable_runs": 0,
+    "production_ready": 1
+  },
+  "production_ready_rate": 0.025,
+  "status_counts": {
+    "pending_review": 39,
+    "production_ready": 1
+  },
+  "review_reason_counts": {
+    "unresolved_security_findings": 35,
+    "validation_failed": 33
+  },
+  "failed_check_counts": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "count": 27
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "count": 8
+    },
+    {
+      "check_id": "helm.lint",
+      "message": "helm optional lint failed",
+      "count": 8
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared resource",
+      "count": 8
+    },
+    {
+      "check_id": "ansible-lint.lint",
+      "message": "ansible-lint optional lint failed",
+      "count": 3
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid resource type",
+      "count": 3
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Missing required argument",
+      "count": 2
+    },
+    {
+      "check_id": "document.parse",
+      "message": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "check_id": "k8s.configmap_ref",
+      "message": "ConfigMap reference must resolve in its namespace",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported attribute",
+      "count": 1
+    }
+  ],
+  "remaining_finding_counts": {
+    "AWS-0104": 50,
+    "CKV_AWS_130": 41,
+    "AWS-0164": 40,
+    "AWS-0038": 35,
+    "AWS-0028": 30,
+    "AWS-0132": 24,
+    "CKV_AWS_103": 23,
+    "CKV_AWS_129": 23,
+    "CKV_AWS_161": 23,
+    "CKV_AWS_293": 23,
+    "AWS-0176": 22,
+    "AWS-0177": 22,
+    "CKV_AWS_8": 22,
+    "CKV_AWS_145": 21,
+    "CKV_AWS_91": 20,
+    "AWS-0131": 19,
+    "CKV_AWS_18": 19,
+    "CKV_AWS_118": 19,
+    "CKV_AWS_353": 19,
+    "AWS-0178": 17,
+    "CKV2_AWS_11": 17,
+    "AWS-0053": 16,
+    "CKV_AWS_378": 15,
+    "AWS-0090": 15,
+    "CKV_AWS_21": 15,
+    "CKV_AWS_260": 14,
+    "AWS-0077": 13,
+    "AWS-0054": 11,
+    "CKV_AWS_16": 11,
+    "CKV_AWS_2": 11,
+    "KSV-0125": 11,
+    "AWS-0080": 10,
+    "CKV2_AWS_20": 10,
+    "AWS-0047": 10,
+    "CKV_AWS_144": 10,
+    "CKV_AWS_157": 9,
+    "AWS-0010": 9,
+    "AWS-0011": 9,
+    "AWS-0039": 7,
+    "AWS-0040": 7,
+    "AWS-0041": 7,
+    "CKV_AWS_37": 7,
+    "CKV_AWS_38": 7,
+    "CKV_AWS_39": 7,
+    "CKV_AWS_58": 7,
+    "CKV_K8S_40": 6,
+    "KSV-0118": 6,
+    "AWS-0130": 4,
+    "CKV_K8S_10": 3,
+    "CKV_K8S_11": 3,
+    "CKV_K8S_12": 3,
+    "CKV_K8S_13": 3,
+    "CKV_K8S_14": 3,
+    "CKV_K8S_20": 3,
+    "CKV_K8S_23": 3,
+    "KSV-0001": 3,
+    "KSV-0012": 3,
+    "KSV-0013": 3,
+    "KSV-0014": 3,
+    "KSV-0104": 3,
+    "CKV2_AWS_12": 2,
+    "KSV-0117": 2,
+    "CKV_AWS_133": 2,
+    "AWS-0052": 1,
+    "AWS-0079": 1,
+    "AWS-0343": 1,
+    "TERRAFORM_SYNTAX": 1,
+    "AWS-0029": 1,
+    "AWS-0026": 1,
+    "CKV_AWS_3": 1
+  },
+  "final_failure_origins": {
+    "generated": 56,
+    "unknown": 7
+  },
+  "measurements": {
+    "durations": {
+      "deterministic_repairs": {
+        "count": 194,
+        "median": 0.037618906500938465,
+        "p90": 0.10966694899980212,
+        "max": 0.6657897969998885
+      },
+      "final_security_scan": {
+        "count": 40,
+        "median": 4.461502938999729,
+        "p90": 7.8274434249997284,
+        "max": 14.330641795000702
+      },
+      "final_validation": {
+        "count": 40,
+        "median": 0.10006491300100606,
+        "p90": 0.564634489999662,
+        "max": 9.119828795001013
+      },
+      "generation_gate": {
+        "count": 40,
+        "median": 25.370663541499198,
+        "p90": 61.52644023100038,
+        "max": 82.31395736599916
+      },
+      "initial_validation": {
+        "count": 40,
+        "median": 0.1134167330001219,
+        "p90": 0.37911554200036335,
+        "max": 9.249846120999791
+      },
+      "post_security_validation": {
+        "count": 40,
+        "median": 0.12344601950007927,
+        "p90": 5.589288845998453,
+        "max": 12.54974291200051
+      },
+      "security_iteration_verification": {
+        "count": 154,
+        "median": 3.9419845355005236,
+        "p90": 15.027524714001629,
+        "max": 37.2485766389982
+      },
+      "validation_repair_round": {
+        "count": 87,
+        "median": 14.769448056000329,
+        "p90": 31.323414275000687,
+        "max": 75.50719103099982
+      }
+    },
+    "iterations": {
+      "attempted_fix_iterations": 154,
+      "deadline_only_rollbacks": 0,
+      "deadline_before_candidate": 0,
+      "multiple_cause_deadline_rollbacks": 0,
+      "validity_regression_rollbacks": 48
+    },
+    "initialization": {
+      "init_runs": 77,
+      "init_reused": 260,
+      "reinitializations": 19
+    },
+    "repair_deadline_stops": {}
+  },
+  "repair_outcomes_by_class": [
+    {
+      "phase": "after_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "ConfigMap reference must resolve in its namespace",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Invalid resource type",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "helm optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "ConfigMap reference must resolve in its namespace",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared resource",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 5
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "ansible-lint optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "helm optional lint failed",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 8
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "ansible-lint optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "helm optional lint failed",
+      "count": 3
+    },
+    {
+      "phase": "after_security",
+      "outcome": "stopped",
+      "reason": "round_limit",
+      "error_class": "unknown",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported argument",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "helm optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "ConfigMap reference must resolve in its namespace",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Invalid resource type",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Missing required argument",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared resource",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 11
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "ansible-lint optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "helm optional lint failed",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "helm optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Reference to undeclared resource",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 5
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 14
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "ansible-lint optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "helm optional lint failed",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported argument",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported block type",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "ConfigMap reference must resolve in its namespace",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Document could not be parsed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Generation syntax check failed",
+      "count": 8
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Invalid resource type",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared resource",
+      "count": 3
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 13
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "ansible-lint optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "helm optional lint failed",
+      "count": 8
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings",
+      "error_class": "Missing required argument",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Generation syntax check failed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Invalid resource type",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 5
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 10
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "ansible-lint optional lint failed",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "stopped",
+      "reason": "round_limit",
+      "error_class": "unknown",
+      "count": 4
+    }
+  ],
+  "gate_outcomes": {
+    "invalid": 34,
+    "valid": 6
+  },
+  "init_categories": {
+    "validation_cached": 33,
+    "unknown": 1,
+    "syntax": 1,
+    "initialized": 4,
+    "reused": 1
+  },
+  "security_context_coverage": {
+    "terraform": {
+      "total": 155,
+      "positive": 155,
+      "zero": 0,
+      "missing": 0,
+      "reasons": {
+        "schema_available": 154,
+        "no_schema_entries": 1
+      }
+    },
+    "other": {
+      "total": 32,
+      "positive": 0,
+      "zero": 32,
+      "missing": 0,
+      "reasons": {
+        "not_terraform": 32
+      }
+    },
+    "unknown": {
+      "total": 0,
+      "positive": 0,
+      "zero": 0,
+      "missing": 0,
+      "reasons": {}
+    }
+  },
+  "schema_context_chars": {
+    "generator": {
+      "count": 40,
+      "median": 5689.0,
+      "p90": 5689,
+      "max": 5689
+    },
+    "repair": {
+      "count": 92,
+      "median": 15960.0,
+      "p90": 15999,
+      "max": 23909
+    },
+    "security": {
+      "count": 187,
+      "median": 15957,
+      "p90": 15999,
+      "max": 16000
+    }
+  },
+  "security_outcomes_by_class": [
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Invalid single-argument block definition",
+      "count": 1
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Unsupported argument",
+      "count": 7
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "unknown",
+      "count": 8
+    },
+    {
+      "outcome": "no_change",
+      "reason": "",
+      "error_class": "unknown",
+      "count": 61
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Cycle",
+      "count": 3
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Reference to undeclared resource",
+      "count": 4
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 8
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Unsupported argument",
+      "count": 13
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "unknown",
+      "count": 6
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Invalid index",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Invalid resource type",
+      "count": 7
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Missing required argument",
+      "count": 4
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Reference to undeclared input variable",
+      "count": 7
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Reference to undeclared resource",
+      "count": 8
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 27
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Unsupported argument",
+      "count": 30
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Unsupported block type",
+      "count": 10
+    }
+  ],
+  "package_initialization": {
+    "packages_measured": 40,
+    "packages_unknown": 0,
+    "init_runs": 97,
+    "init_reused": 391,
+    "reinitializations": 30,
+    "init_seconds": 547.3873252990052,
+    "validate_seconds": 947.6695932400071
+  }
+}

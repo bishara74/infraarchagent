@@ -1,0 +1,323 @@
+{
+  "status": "pending_review",
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Invalid single-argument block definition",
+      "file_path": "terraform/main.tf",
+      "origin": "generated",
+      "line_start": 196,
+      "line_end": 196
+    }
+  ],
+  "remaining_findings": {
+    "CKV2_AWS_12": 1,
+    "CKV_AWS_103": 1,
+    "CKV_AWS_118": 1,
+    "CKV_AWS_129": 1,
+    "CKV_AWS_130": 1,
+    "CKV_AWS_16": 1,
+    "CKV_AWS_161": 1,
+    "CKV_AWS_293": 1,
+    "CKV_AWS_353": 1,
+    "CKV_AWS_8": 3,
+    "CKV_AWS_91": 1,
+    "TERRAFORM_SYNTAX": 1
+  },
+  "phase9e": {
+    "security_context_measurements": [
+      {
+        "file_type": "terraform",
+        "chars": 15998,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 7969,
+        "reason": "no_schema_entries"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 15998,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 15998,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 15998,
+        "reason": "schema_available"
+      }
+    ],
+    "generator_schema_context_chars": 5689,
+    "initialization": {
+      "init_runs": 10,
+      "init_reused": 0,
+      "init_seconds": 0.520780268998351,
+      "validate_seconds": 0.5207721810002113,
+      "reinitializations": 0
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "message": "Invalid single-argument block definition"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Invalid single-argument block definition"
+      }
+    ],
+    "init_categories": [
+      "syntax"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Invalid single-argument block definition"
+        ],
+        "schema_context_chars": 23909
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Invalid single-argument block definition"
+        ],
+        "schema_context_chars": 23909
+      },
+      {
+        "phase": "after_security",
+        "outcome": "rejected",
+        "reason": "invalid_patch",
+        "error_classes": [
+          "Invalid single-argument block definition"
+        ],
+        "schema_context_chars": 15940
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.06645574400135956,
+        "phase": "generation",
+        "count": 0
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 7.417947498001013,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 8.23464299799889,
+        "phase": "generation",
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.10299527999995917,
+        "validate_seconds": 0.11000654900090012,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.14288513499923283,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 9.714761121000265,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.03322096899864846,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 5.340222188999178,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 2,
+        "after_failed": 1,
+        "init_runs": 2,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.1130084659998829,
+        "validate_seconds": 0.11126644199975999,
+        "terraform_verification_seconds": 0.3793080639989057,
+        "security_verification_seconds": 4.960914125000272,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "accepted",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.058314951000284054,
+        "phase": "security",
+        "iteration": 2,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 0.15231155100082105,
+        "phase": "security",
+        "iteration": 2,
+        "before_failed": 1,
+        "after_failed": 1,
+        "init_runs": 1,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.0478750169986597,
+        "validate_seconds": 0.04467976599880785,
+        "terraform_verification_seconds": 0.15231155100082105,
+        "security_verification_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.04689218699968478,
+        "phase": "security",
+        "iteration": 3,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 0.21052591999978176,
+        "phase": "security",
+        "iteration": 3,
+        "before_failed": 1,
+        "after_failed": 1,
+        "init_runs": 1,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.06290782100040815,
+        "validate_seconds": 0.05569266800011974,
+        "terraform_verification_seconds": 0.21052591999978176,
+        "security_verification_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.024222677000580006,
+        "phase": "security",
+        "iteration": 4,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 0.2108515769996302,
+        "phase": "security",
+        "iteration": 4,
+        "before_failed": 1,
+        "after_failed": 1,
+        "init_runs": 1,
+        "init_reused": 0,
+        "reinitializations": 0,
+        "init_seconds": 0.0653885169995192,
+        "validate_seconds": 0.0708863649997511,
+        "terraform_verification_seconds": 0.2108515769996302,
+        "security_verification_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 0.12311129500085372,
+        "phase": "after_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 8.794115591999798,
+        "phase": "after_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "invalid_patch"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 0.4332284369993431,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 5.704858311999487,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [
+      15998,
+      7969,
+      15998,
+      15998,
+      15998
+    ],
+    "security_iteration_repairs": [
+      {
+        "outcome": "accepted",
+        "error_classes": [
+          "Invalid single-argument block definition"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [],
+        "reasons": []
+      }
+    ]
+  },
+  "counts": {
+    "failed_checks": 1,
+    "remaining_findings": 14,
+    "deterministic_repairs": 0,
+    "validation_repair_rounds": 3,
+    "security_iterations": 4
+  }
+}
