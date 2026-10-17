@@ -9,10 +9,12 @@ from pathlib import Path
 from urllib.parse import urlparse
 from uuid import uuid4
 
-from app.core.config import Settings
+from pydantic import SecretStr, ValidationError
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
-from app.db.session import make_app_engine, make_session_factory
+from app.db.session import make_database_engine, make_session_factory
 from app.domain.archive import package_zip, readiness_document
 from app.domain.enums import AgentName, LLMProvider, PackageStatus, RunStatus, Variant
 from app.events.kinds import run_status_payload
@@ -25,10 +27,30 @@ from scripts.phase9_report import summary
 SYNTHETIC = "benchmark synthetic package"
 
 
-def require_dev_database(settings: Settings) -> None:
+class SeedSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=None, extra="ignore")
+    database_url: SecretStr
+
+
+class SeedConfigurationError(ValueError):
+    """Fixed safe prerequisite message, never validation input or credentials."""
+
+
+def load_seed_settings() -> SeedSettings:
+    try:
+        settings = SeedSettings()
+    except ValidationError:
+        raise SeedConfigurationError(
+            "PR-04 seed requires exported DATABASE_URL for the development app role."
+        ) from None
+    require_dev_database(settings)
+    return settings
+
+
+def require_dev_database(settings: SeedSettings) -> None:
     url = urlparse(settings.database_url.get_secret_value())
     if url.path != "/infraarch" or url.username != "infraarch_app":
-        raise ValueError(
+        raise SeedConfigurationError(
             "Seeding requires the development infraarch database and app role."
         )
 
@@ -130,8 +152,7 @@ async def seed_package(
 
 
 async def run(args) -> None:
-    settings = Settings(_env_file=None)
-    require_dev_database(settings)
+    settings = load_seed_settings()
     directory = evidence_directory(
         "seed", args.output_dir, mode="synthetic", provider="stub", model="stub"
     )
@@ -141,7 +162,7 @@ async def run(args) -> None:
         "INCOMPLETE",
         ["Seeding started."],
     )
-    engine = make_app_engine(settings)
+    engine = make_database_engine(settings.database_url)
     try:
         report = await seed_package(make_session_factory(engine), seed=args.seed)
         write_json(directory / "seed.json", report)
@@ -165,7 +186,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed", type=int, default=704)
     parser.add_argument("--output-dir", type=Path)
-    asyncio.run(run(parser.parse_args()))
+    try:
+        asyncio.run(run(parser.parse_args()))
+    except SeedConfigurationError as error:
+        raise SystemExit(str(error)) from None
 
 
 if __name__ == "__main__":

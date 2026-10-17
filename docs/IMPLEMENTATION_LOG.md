@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 6 — Minimal PR-04 seed configuration
+
+**Summary:** Seed with only a development app URL, preflight before pipeline
+submissions, and verify the full-size rejected synthetic ZIP through PostgreSQL/HTTP.
+
+**Requirements addressed:** PR-04, FR-S-10, NFR-01.
+
+**Files:** db/session.py, seed_benchmark_package.py, run_phase9_benchmarks.py,
+unit seed settings and integration seed HTTP tests, README, D-46 and this log.
+
+**Decisions:** The reproducible prerequisite defect was full Settings requiring
+three unrelated migration/test URLs even when a valid app URL was available;
+PostgreSQL running alone is insufficient. SeedSettings reads only exported
+DATABASE_URL and never dotenv. Public commands still refuse test DB/owner role.
+No new required package/report fields, migration or privilege changes were needed.
+
+**Tests:** Seed configuration, calibration, schedule/preflight and full-size
+PostgreSQL/HTTP tests: 10 passed / 0 failed. The downloaded rejected ZIP is under
+10 MB with unavailable scan/validation explicitly labelled. The initial test
+module basename collision was corrected by naming the integration file uniquely.
+
+**Known gaps / follow-ups:** The author's original process environment cannot be
+reconstructed without prohibited dotenv access; no claim is made about it. Final
+bench-stub verification follows section 7 on a separate isolated database.
+
+
 ## 2026-10-17 — Phase 9f section 5 — Alternate fixer end-to-end verification
 
 **Summary:** Persist effective fixer timing/batching limits and verify gpt-oss

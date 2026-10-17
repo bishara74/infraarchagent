@@ -990,3 +990,9 @@ LLM_RESPONSE_FORMAT=json_object; local FixOutput validation remains mandatory.
 Reports distinguish each fixer model and its effective attempt timeout; the
 iteration/stage ceilings remain 60/240 seconds. The default attempt remains 90
 seconds; 45 is the comparison override, clipped to remaining iteration time.
+
+PR-04 seeding now requires only exported `DATABASE_URL`, pointing to development
+`infraarch` as `infraarch_app`. It never loads dotenv or requires migration/test
+URLs. `make bench-stub` preflights this setting before submitting any runs and
+reports a specific configuration failure. The backend itself still requires its
+normal four database settings; no owner-role privileges are granted to the seed.

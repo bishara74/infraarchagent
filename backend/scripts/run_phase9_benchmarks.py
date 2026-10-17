@@ -13,6 +13,7 @@ import httpx
 from scripts.benchmark import Harness, configured_harness
 from scripts.phase9_common import evidence_directory, safe_main, write_json
 from scripts.phase9_report import summary
+from scripts.seed_benchmark_package import SeedConfigurationError, load_seed_settings
 
 
 def schedule(runs: int = 10) -> list[int]:
@@ -94,16 +95,14 @@ async def run(args) -> None:
         harness = await configured_harness(args, directory, client)
 
         async def seed():
-            from app.core.config import Settings
-            from app.db.session import make_app_engine, make_session_factory
+            from app.db.session import make_database_engine, make_session_factory
             from scripts.seed_benchmark_package import (
-                require_dev_database,
+                load_seed_settings,
                 seed_package,
             )
 
-            settings = Settings(_env_file=None)
-            require_dev_database(settings)
-            engine = make_app_engine(settings)
+            settings = load_seed_settings()
+            engine = make_database_engine(settings.database_url)
             try:
                 return await seed_package(make_session_factory(engine))
             finally:
@@ -112,6 +111,7 @@ async def run(args) -> None:
         try:
             # Do not submit a rehearsal to a backend lacking its local tool chain.
             if args.mode == "stub":
+                load_seed_settings()
                 response = await client.get(args.base_url.rstrip("/") + "/api/health")
                 health = response.json()
                 if (
@@ -146,6 +146,8 @@ async def run(args) -> None:
                                 "evidence_scope": "scripted_verification_rehearsal",
                             }
                         )
+        except SeedConfigurationError as error:
+            harness.stop_reason = str(error)
         except (OSError, ValueError, RuntimeError, httpx.HTTPError):
             harness.stop_reason = (
                 "Benchmark prerequisite or fixture preparation failed."

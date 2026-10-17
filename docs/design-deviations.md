@@ -1330,6 +1330,21 @@ both model selections; a 45-second attempt clips to a 20-second remaining budget
 These tests establish wiring and format handling, not real model reliability.
 
 
+#### D-46 PR-04 seed prerequisites (section 6)
+
+The seed command previously constructed the full dotenv-disabled application
+Settings, requiring migration/test URLs unrelated to its app-role database work.
+A running PostgreSQL service does not supply those process settings. Reproduction
+with a development app URL alone fails old Settings before database access;
+minimal SeedSettings needs only DATABASE_URL. Missing/wrong role/database settings
+now produce fixed safe prerequisite messages and bench-stub preflights before
+submitting pipeline runs. Shared engine construction preserves SecretStr handling.
+No new package/report fields or privilege/migration changes are required.
+A real PostgreSQL regression creates the full-size rejected synthetic package and
+downloads its labelled ZIP. This verifies the isolated stack, not the author's
+unobserved environment; no .env or original credentials were inspected.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

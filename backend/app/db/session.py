@@ -1,5 +1,6 @@
 """Async database engines, sessions, and health probing."""
 
+from pydantic import SecretStr
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -13,6 +14,11 @@ from app.core.config import Settings
 
 def make_app_engine(settings: Settings, *, test: bool = False) -> AsyncEngine:
     url = settings.test_database_url if test else settings.database_url
+    return make_database_engine(url)
+
+
+def make_database_engine(url: SecretStr) -> AsyncEngine:
+    """Construct an engine without requiring unrelated application settings."""
     return create_async_engine(url.get_secret_value(), echo=False)
 
 
