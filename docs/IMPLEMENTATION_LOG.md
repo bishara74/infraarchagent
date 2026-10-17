@@ -27,6 +27,26 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 0 — Saved-evidence investigation
+
+**Summary:** Record rule classification, exact iteration outcomes, R2 rescan and
+partial-acceptance evidence without copying source or discarded candidates.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-04, NFR-01.
+
+**Files:** docs/phase9f-investigation.md, docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Approved plan; no policy or readiness changes in this section.
+Unknown historical exemption and additional salvage totals remain unknown.
+
+**Tests:** Investigation checks: 3 passed / 0 failed (policy and seed-file tests).
+Offline Checkov rescan: 13 cost packages, 7 CKV_AWS_145 findings, 3 resource-proven
+old exemptions, 0 of those 3 newly blocking. Full suites deferred to implementation.
+
+**Known gaps / follow-ups:** Implement R2 first; author database failure is not
+reproduced. Discarded candidate source was not saved.
+
+
 ## 2026-10-17 — Phase 9e follow-up — Correct nested security evidence reporting
 
 **Summary:** Use a shared canonical security-session iteration reader for context
