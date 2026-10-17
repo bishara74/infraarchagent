@@ -996,3 +996,20 @@ PR-04 seeding now requires only exported `DATABASE_URL`, pointing to development
 URLs. `make bench-stub` preflights this setting before submitting any runs and
 reports a specific configuration failure. The backend itself still requires its
 normal four database settings; no owner-role privileges are granted to the seed.
+
+### Phase 9f quality evidence
+
+The catalogue and supporting templates are documented in D-46 in
+`docs/design-deviations.md`; investigation is in `docs/phase9f-investigation.md`.
+Every change still requires syntax, control-preservation, Terraform non-regression
+and no-new-blocker verification. Public subnets are recorded as `context: public
+subnet`; unresolved routing skips. Template-introduced blockers are reported and
+rejected. No exception profile or self-logging destination is added.
+
+Per-package `phase9f` quality metadata includes retained catalogue changes,
+template outcomes/introduced rules, partial groups, existing-file recovery,
+findings per call and effective fixer configurations. Near-miss tables require
+final valid validation and group remaining blockers as 1, 2–3 or 4+; historical
+missing measurements remain unknown. The authenticated benchmark settings endpoint
+also records effective numeric security limits. Final verification and measured
+stub results are recorded in `docs/phase9f-verification.md`.

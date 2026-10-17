@@ -332,7 +332,7 @@ class Builder:
 
     def grant_log_key(self, key: str, name: str) -> None:
         self.identity()
-        existing = self.package.get(self.module, key)
+        existing = TerraformPackage(self.files).get(self.module, key)
         body = (
             existing.body if existing else self.new["aws_kms_key"]["infraarch_security"]
         )
@@ -377,11 +377,42 @@ class Builder:
             # Reusing the generated destination is safe only when its complete
             # configuration remains available; never overwrite modified support.
             bucket = existing_logs[0].address
+            if any(
+                k in existing_logs[0].body for k in ("count", "for_each", "provider")
+            ):
+                raise TemplateUnavailable("context: log bucket instance unresolved")
+            for typ, required in (
+                (
+                    "aws_s3_bucket_public_access_block",
+                    {
+                        "block_public_acls": True,
+                        "block_public_policy": True,
+                        "ignore_public_acls": True,
+                        "restrict_public_buckets": True,
+                    },
+                ),
+                (
+                    "aws_s3_bucket_versioning",
+                    {"versioning_configuration": [{"status": "Enabled"}]},
+                ),
+            ):
+                matched = [
+                    r
+                    for r in self.existing(typ)
+                    if r.body.get("bucket") == "${" + bucket + ".id}"
+                ]
+                if len(matched) != 1 or any(
+                    matched[0].body.get(k) != v for k, v in required.items()
+                ):
+                    raise TemplateUnavailable(
+                        "context: log bucket protections unresolved"
+                    )
             configs = self.existing(
                 "aws_s3_bucket_server_side_encryption_configuration"
             )
             if not any(
                 r.name == "infraarch_access_logs"
+                and r.body.get("bucket") == "${" + bucket + ".id}"
                 and objects(r.body.get("rule", []))
                 == [
                     {
@@ -600,9 +631,10 @@ class Builder:
             ):
                 raise TemplateUnavailable("context: flow-log support incompatible")
             trust = json.loads(existing_role.body.get("assume_role_policy", "{}"))
-            if not any(
+            if len(trust.get("Statement", [])) != 1 or not any(
                 s.get("Principal") == {"Service": "vpc-flow-logs.amazonaws.com"}
                 and s.get("Action") == "sts:AssumeRole"
+                and s.get("Effect") == "Allow"
                 for s in trust.get("Statement", [])
             ):
                 raise TemplateUnavailable("context: flow-log trust unresolved")
@@ -713,10 +745,21 @@ class Builder:
                 self.module, "aws_iam_role_policy_attachment.infraarch_rds_monitoring"
             )
             trust = json.loads(roles[0].body.get("assume_role_policy", "{}"))
-            if existing_attachment is None or not any(
-                s.get("Principal") == {"Service": "monitoring.rds.amazonaws.com"}
-                and s.get("Action") == "sts:AssumeRole"
-                for s in trust.get("Statement", [])
+            if (
+                existing_attachment is None
+                or existing_attachment.body.get("role") != "${" + role + ".name}"
+                or existing_attachment.body.get("policy_arn")
+                != (
+                    "arn:${data.aws_partition.infraarch_security.partition}:"
+                    "iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole"
+                )
+                or len(trust.get("Statement", [])) != 1
+                or not any(
+                    s.get("Principal") == {"Service": "monitoring.rds.amazonaws.com"}
+                    and s.get("Action") == "sts:AssumeRole"
+                    and s.get("Effect") == "Allow"
+                    for s in trust.get("Statement", [])
+                )
             ):
                 raise TemplateUnavailable("context: monitoring role incompatible")
             for target in targets:
@@ -840,7 +883,7 @@ def build_template(
     except TemplateUnavailable as error:
         record["reason"] = str(error)
         return files, record
-    except (ValueError, TypeError, KeyError):
+    except (ValueError, TypeError, KeyError, AttributeError):
         # Never expose raw parser/configuration exceptions.
         record["reason"] = "context: supporting template unavailable"
         return files, record

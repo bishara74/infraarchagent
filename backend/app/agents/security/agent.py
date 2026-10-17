@@ -40,7 +40,7 @@ from app.security.acceptance import CandidateGuard
 from app.security.catalogue import autofix
 from app.security.diff import package_diff
 from app.security.focus import RANK, focused_findings
-from app.security.partial import RetainedCandidate, accept_groups
+from app.security.partial import RetainedCandidate, accept_groups, retained_metrics
 from app.security.policy import SECURITY_POLICY_VERSION
 from app.security.templates import build_template
 from app.security.templates import requests as template_requests
@@ -224,10 +224,13 @@ class SecurityAgent:
             )
             for record in records:
                 sent = selected[record["file"]]
+                attempted = record.get("schema_context_reason") != "not_attempted"
+                sent_count = len(sent) if attempted else 0
                 record.update(
-                    findings_sent=len(sent),
-                    resources_sent=len({f.resource for f in sent}),
-                    findings_deferred=len(targets[record["file"]]) - len(sent),
+                    call_attempted=attempted,
+                    findings_sent=sent_count,
+                    resources_sent=len({f.resource for f in sent}) if attempted else 0,
+                    findings_deferred=len(targets[record["file"]]) - sent_count,
                 )
             results.extend(records)
         for reason in sorted(
@@ -240,7 +243,11 @@ class SecurityAgent:
         ):
             assert reason is not None
             await self._notice(ctx, variant, reason)
-        return current, results, package_diff(snapshot, current)
+        return (
+            current,
+            sorted(results, key=lambda r: r["file"]),
+            package_diff(snapshot, current),
+        )
 
     async def run(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
@@ -478,6 +485,7 @@ class SecurityAgent:
             )
             return files, [], package_diff(iteration_original, files), baseline_scan
         verification["fix_started"] = True
+        verification["candidate_created"] = False
         candidate, fixes, _ = await self._fix_pass(
             ctx,
             variant,
@@ -490,10 +498,12 @@ class SecurityAgent:
             previous_attempt=previous_attempt,
             iteration_index=iteration_index,
         )
+        checkpoint.fixes = fixes
+        retained_metrics(fixes, files, files)
         started = time.monotonic()
         candidate, records = repair_idioms(candidate)
         verification.update(
-            candidate_created=candidate != iteration_original,
+            candidate_created=candidate != files,
             deterministic_repairs=records,
             deterministic_seconds=time.monotonic() - started,
         )
@@ -545,15 +555,7 @@ class SecurityAgent:
             verification["terraform_verification_seconds"]
             + verification["security_verification_seconds"]
         )
-        for fix in fixes:
-            paths = [fix["file"], *fix.get("edits", []), *fix.get("new_files", [])]
-            fix["recovered_existing_proposal"] = fix["accepted"] and any(
-                candidate.get(path) != files.get(path)
-                for path in fix.get("normalized_existing_paths", [])
-            )
-            fix["retained"] = fix["accepted"] and any(
-                candidate.get(path) != files.get(path) for path in paths
-            )
+        retained_metrics(fixes, files, candidate)
         workspace = current_workspace()
         if workspace:
             workspace.observe(after, "security_fix", candidate, partial=True)
@@ -570,6 +572,27 @@ class SecurityAgent:
         metrics_start: int,
     ) -> None:
         workspace = current_workspace()
+        for change in record.get("catalogue", []):
+            await self._notice(
+                ctx,
+                variant,
+                "deterministic security control evaluated",
+                rule_ids=change["rule_ids"],
+                resource=change["resource"],
+                control=change["control"],
+                outcome=change["status"],
+                reason=change.get("reason"),
+            )
+        for template in record.get("templates", []):
+            await self._notice(
+                ctx,
+                variant,
+                "supporting security template evaluated",
+                template=template["template"],
+                outcome=template["status"],
+                reason=template.get("reason"),
+                introduced_findings=template.get("introduced_findings", []),
+            )
         record["verification_seconds"] = record.get(
             "terraform_verification_seconds", 0.0
         ) + record.get("security_verification_seconds", 0.0)
@@ -668,6 +691,7 @@ class SecurityAgent:
             }
             if targets and budget.remaining() >= 1:
                 verification: dict[str, Any] = {}
+                iteration_source = dict(files)
                 checkpoint = RetainedCandidate(
                     dict(files),
                     ScanResult(
@@ -705,7 +729,10 @@ class SecurityAgent:
                         "verification_unavailable"
                     )
                     verification.update(outcome="rolled_back", deadline_only=False)
-                    fixes, diff = [], ""
+                    fixes, diff = (
+                        checkpoint.fixes,
+                        package_diff(iteration_source, files),
+                    )
                     if workspace:
                         async with workspace.check(files):
                             pass
@@ -724,7 +751,10 @@ class SecurityAgent:
                     verification["verification_seconds"] = verification.get(
                         "terraform_verification_seconds", 0.0
                     ) + verification.get("security_verification_seconds", 0.0)
-                    fixes, diff = [], ""
+                    fixes, diff = (
+                        checkpoint.fixes,
+                        package_diff(iteration_source, files),
+                    )
                     pending_scan = checkpoint.scan
                     if workspace:
                         async with workspace.check(files):
@@ -866,6 +896,7 @@ class SecurityAgent:
             targets = defaultdict(list)
             for item in blocking:
                 targets[item.file_path].append(item)
+            iteration_source = dict(files)
             checkpoint = RetainedCandidate(dict(files), scan)
             try:
                 entry["verification"] = {}
@@ -888,6 +919,10 @@ class SecurityAgent:
                     )
             except ToolFailure as error:
                 files = dict(checkpoint.files)
+                entry["fixes"] = checkpoint.fixes
+                entry["diff"], entry["diff_omitted_chars"] = _capped_diff(
+                    package_diff(iteration_source, files)
+                )
                 last_blocking = [v for v in checkpoint.scan.violations if v.blocking]
                 reason = f"{error.tool} scan {error.category}"
                 outcome, status = "error", PackageStatus.SCAN_ERROR
@@ -917,6 +952,10 @@ class SecurityAgent:
                 break
             except TimeoutError:
                 files = dict(checkpoint.files)
+                entry["fixes"] = checkpoint.fixes
+                entry["diff"], entry["diff_omitted_chars"] = _capped_diff(
+                    package_diff(iteration_source, files)
+                )
                 last_blocking = [v for v in checkpoint.scan.violations if v.blocking]
                 entry["stop_reason"] = "iteration_deadline"
                 verification = entry.get("verification", {})

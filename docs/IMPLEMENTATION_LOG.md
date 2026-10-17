@@ -27,6 +27,57 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 7 — Quality measurement and final verification
+
+**Summary:** Add allowlisted per-package catalogue/template/group/recovery/call/model
+metrics, final-validity near misses, effective benchmark security limits and
+complete offline/full-stack evidence. Preserve introduced blockers and unknowns.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-04, FR-S-09, FR-G-02, FR-V-03,
+NFR-01, PR-01, PR-03, PR-04, PR-05.
+
+**Files:** phase9f_metrics.py, phase9d_quality.py, generator_settings.py, final
+security guard/checkpoint reporting fixes, automatic/offline-template/metrics and
+legacy regression fixtures, README, D-46/thesis follow-ups, phase9f-verification.md,
+new dated stub/secret-scan evidence directories and this log.
+
+**Decisions:** D-46. Reports exclude source/diffs/model summaries and retain
+historical missing metrics as unknown. Unstarted calls do not claim sent findings.
+Verified checkpoint diffs/proposal metrics survive cancellation. Provider changes
+stay with their module dependencies; malformed resource/policy shapes skip safely.
+Legacy regression fixtures use genuinely invalid supporting declarations, preserving
+rejection assertions while allowing independent valid groups. Shared context is
+serialized; independent modules remain concurrent and result metadata stays sorted.
+No defaults/models/severities/readiness/thresholds or dependencies are weakened.
+
+**Tests:** Final make lint PASS (Ruff/format, mypy 122 sources, frontend ESLint/TS).
+make test: 1451 passed / 0 failed / 0 skipped / 6 perf deselected (167.51 s).
+make frontend-test: 100 passed / 15 files. make test-e2e: 6 passed (1.5 min).
+make provider-schema: all 7 pinned versions exported offline. make secret-scan:
+0 findings / 0 errors. The first full run's 1428 passes / 7 failures and corrected
+fixture/concurrency assumptions are documented in phase9f-verification.md.
+Scripted collision corpus: 4 normalized / 3 retained / 1 new-blocker rejection.
+Mocked model switching and 45 -> 20 s timeout clipping pass; no real calls.
+
+**Benchmark:** make bench-stub completed 14 pipeline runs / 42 generated and ready
+packages plus 10 ZIP downloads. PR-01 median 13.1708 s; PR-04 median 1.0733 s,
+maximum 1.3643 s (9,989,867-byte ZIP); PR-01/04/05 PASS. PR-03 FAIL, unchanged
+1.5x threshold, measured cohort ratios 2.6226–2.6698x. Clean packages made zero fix
+calls; their zero catalogue/template/recovery counts are not quality gains. Separate
+six-attempt scripted real-offline verification: median 14.3084 s, max 30.1389 s,
+3 init runs / 9 reuses / 0 reinitializations and zero deadline-only/regression
+rollbacks. Evidence: phase9-bench-stub-20261017T213158569704Z and
+phase9-secret-scan-20261017T213555936855Z.
+
+**Known gaps / follow-ups:** Author-run gpt-oss then stronger-fixer real comparison
+remains; historical 1/40 readiness and unreconstructable discarded candidates are
+unchanged evidence. Template-introduced blockers remain rejected; no Phase 9g
+profile is implemented. PR-03 remains a measured failure. Original author seed
+environment remains unverified; only the reproduced exported-settings defect and
+isolated full-stack fix are claimed. No new open questions beyond these explicit
+limits; no source specification was edited.
+
+
 ## 2026-10-17 — Phase 9f section 6 — Minimal PR-04 seed configuration
 
 **Summary:** Seed with only a development app URL, preflight before pipeline

@@ -63,6 +63,8 @@ def test_strict_projection_redacts_allowed_text_and_counts_findings():
         "remaining_findings",
         "counts",
         "phase9e",
+        "phase9f",
+        "validation_result",
     }
     assert set(snapshot["failed_checks"][0]) == {
         "check_id",

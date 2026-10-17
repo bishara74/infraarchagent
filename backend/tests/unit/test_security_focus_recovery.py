@@ -172,3 +172,24 @@ def test_edits_are_backward_compatible_and_stale_bases_reject():
         FILES, [no_base], {"terraform/main.tf": []}, PLAN, RedactingFilter()
     )
     assert records[0]["reason"] == "edit_base_missing"
+
+
+@pytest.mark.req("FR-S-04", "PR-05")
+async def test_budget_skip_does_not_claim_findings_were_sent():
+    class Fix:
+        async def propose(self, **kwargs):
+            raise AssertionError("no fixer call allowed after budget cutoff")
+
+    security = SecurityAgent(None, Fix(), None, get_settings())
+    _, records, _ = await security._fix_pass(
+        SimpleNamespace(plan=PLAN),
+        Variant.SECURITY,
+        FILES,
+        {"terraform/main.tf": [finding("original.target")]},
+        AgentBudget(0.5),
+        feedback=None,
+        validation_failures=[],
+    )
+    assert records[0]["call_attempted"] is False
+    assert records[0]["findings_sent"] == records[0]["resources_sent"] == 0
+    assert records[0]["findings_deferred"] == 1

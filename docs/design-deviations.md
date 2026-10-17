@@ -1345,6 +1345,28 @@ downloads its labelled ZIP. This verifies the isolated stack, not the author's
 unobserved environment; no .env or original credentials were inspected.
 
 
+#### D-46 measured reporting and final guard checks (section 7)
+
+Benchmark snapshots explicitly project catalogue controls, template outcomes and
+introduced rule counts, kept/discarded/unevaluated groups, normalized/retained
+existing-file proposals, findings/resources per call and fixer configurations.
+Missing historical fields remain unknown; canonical sessions avoid duplicate
+aliases. Near misses count only packages whose final validation result is valid,
+with 1, 2–3 or 4+ blocking findings. Per-rule remaining counts remain unchanged.
+Authenticated benchmark settings add numeric security limits without exposing
+model strings, credentials or arbitrary configuration.
+
+Verified checkpoints preserve both per-iteration diffs and proposal-retention
+metrics on cancellation. Changed provider configuration stays with other module
+changes. Public catalogue/template notices go through EventLog with safe
+rule/resource/outcome metadata. Independently valid unrelated declarations can
+be retained; legacy tests now use genuinely invalid supporting declarations when
+asserting rejection, while keeping their original security assertions.
+
+No Phase 9g exception profile, real model benchmark, readiness/severity change,
+new dependency or migration is introduced. New template findings remain blocking.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -1514,6 +1536,16 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+- Chapter 4 / D-46: append the schema-versioned attribute and supporting-template
+  tables, configuration-derived subnet intent, focused calls, existing-file edit
+  recovery and dependency-group partial acceptance under unchanged guards/budgets.
+- Chapter 6 / D-46: compare the preserved 9e real baseline (1/40 ready; 35 with
+  blockers; 16 accepted / 61 unchanged / 77 rolled-back iterations) with separate
+  author-run 9f gpt-oss and Haiku-class fixer measurements. Keep stub/rehearsal,
+  scripted recovery (4 normalized / 3 retained) and real quality evidence distinct;
+  include near misses, introduced template blockers, timings and model settings.
+
 
 - Chapter 4 / D-45: tool-grounded generation, scanner fixes and repair; offline
   versioned schemas, syntax/validity ordering and bounded workspace reuse.

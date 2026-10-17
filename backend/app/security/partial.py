@@ -3,7 +3,7 @@
 import asyncio
 import json
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Any
 
@@ -23,6 +23,21 @@ class RetainedCandidate:
 
     files: dict[str, str]
     scan: ScanResult
+    fixes: list[dict[str, Any]] = field(default_factory=list)
+
+
+def retained_metrics(
+    fixes: list[dict[str, Any]], before: dict[str, str], after: dict[str, str]
+) -> None:
+    for fix in fixes:
+        paths = [fix["file"], *fix.get("edits", []), *fix.get("new_files", [])]
+        fix["retained"] = fix["accepted"] and any(
+            after.get(p) != before.get(p) for p in paths
+        )
+        fix["recovered_existing_proposal"] = fix["accepted"] and any(
+            after.get(p) != before.get(p)
+            for p in fix.get("normalized_existing_paths", [])
+        )
 
 
 @dataclass(frozen=True)
@@ -201,6 +216,8 @@ def change_groups(
             ).parent and (
                 change_a.definitions & change_b.references
                 or change_b.definitions & change_a.references
+                or (change_a.key and change_a.key[0] in {"terraform", "provider"})
+                or (change_b.key and change_b.key[0] in {"terraform", "provider"})
             ):
                 parent[root(i)] = root(j)
     groups: dict[int, list[Change]] = {}
@@ -250,4 +267,5 @@ async def accept_groups(
         if not result.reason:
             retained, checks, scan = proposed, result.checks, result.scan
             checkpoint.files, checkpoint.scan = dict(retained), scan
+            retained_metrics(checkpoint.fixes, before, retained)
     return retained, checks, scan

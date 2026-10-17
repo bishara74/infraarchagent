@@ -48,9 +48,9 @@ async def test_three_file_fixes_overlap_and_limit_active_calls() -> None:
     plan = DeploymentPlan.model_validate(DEMO_PLAN)
     ctx = StageContext(uuid4(), None, plan)  # type: ignore[arg-type]
     files = {
-        "terraform/a.tf": "# a\n",
-        "terraform/b.tf": "# b\n",
-        "terraform/c.tf": "# c\n",
+        "terraform/module-a/a.tf": "# a\n",
+        "terraform/module-b/b.tf": "# b\n",
+        "terraform/module-c/c.tf": "# c\n",
         "terraform/untouched.tf": "# unchanged\n",
     }
     targets = {path: [] for path in files if path != "terraform/untouched.tf"}
@@ -74,6 +74,49 @@ async def test_three_file_fixes_overlap_and_limit_active_calls() -> None:
     assert all(item["accepted"] for item in results)
     assert final["terraform/untouched.tf"] == files["terraform/untouched.tf"]
     assert "untouched.tf" not in diff
+
+
+@pytest.mark.req("FR-S-02", "FR-S-09")
+async def test_shared_editable_context_is_serialized_and_refreshed():
+    entered, release = asyncio.Event(), asyncio.Event()
+    calls = []
+
+    class Fix:
+        async def propose(self, **kwargs):
+            calls.append(kwargs)
+            if len(calls) == 1:
+                entered.set()
+                await release.wait()
+            else:
+                assert kwargs["files"]["terraform/a.tf"].endswith("# fixed\n")
+            return FixProposal(
+                kwargs["path"],
+                True,
+                None,
+                kwargs["files"][kwargs["path"]] + "# fixed\n",
+                {},
+                (),
+            )
+
+    files = {"terraform/a.tf": "# a\n", "terraform/b.tf": "# b\n"}
+    security = SecurityAgent(None, Fix(), None, get_settings())
+    ctx = StageContext(uuid4(), None, DeploymentPlan.model_validate(DEMO_PLAN))
+    task = asyncio.create_task(
+        security._fix_pass(
+            ctx,
+            Variant.SECURITY,
+            files,
+            dict.fromkeys(files, []),
+            AgentBudget(30),
+            feedback=None,
+            validation_failures=[],
+        )
+    )
+    await asyncio.wait_for(entered.wait(), 2)
+    assert len(calls) == 1
+    release.set()
+    await asyncio.wait_for(task, 2)
+    assert len(calls) == 2
 
 
 @pytest.mark.req("FR-S-02", "FR-S-09")

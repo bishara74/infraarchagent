@@ -73,7 +73,10 @@ async def test_full_loop_retains_baseline_and_uses_available_allowance(
             )
             if mode == "repeated":
                 violations = [finding("RULE")]
-            if mode == "new_blocker" and "# bad" in files["terraform/main.tf"]:
+            if mode == "new_blocker" and (
+                "# bad" in files["terraform/main.tf"]
+                or "missing.invalid" in files.get("terraform/added.tf", "")
+            ):
                 violations = [finding("NEW")]
             if mode == "mixed" and "# fixed" not in files["ansible/play.yaml"]:
                 violations.append(
@@ -107,7 +110,9 @@ async def test_full_loop_retains_baseline_and_uses_available_allowance(
                 True,
                 None,
                 kwargs["files"][path] + ("# bad\n" if bad else "# fixed\n"),
-                {"terraform/added.tf": "locals { candidate = true }\n"} if bad else {},
+                {"terraform/added.tf": "locals { candidate = missing.invalid }\n"}
+                if bad
+                else {},
                 (),
             )
 
@@ -120,7 +125,13 @@ async def test_full_loop_retains_baseline_and_uses_available_allowance(
             if mode == "baseline_timeout":
                 now[0] += 61
             return checks(
-                int("# bad" in files["terraform/main.tf"] and mode != "new_blocker")
+                int(
+                    (
+                        "# bad" in files["terraform/main.tf"]
+                        or "missing.invalid" in files.get("terraform/added.tf", "")
+                    )
+                    and mode != "new_blocker"
+                )
             )
 
     scanner, fixer, verifier = Scanner(), Fix(), Verifier()
@@ -201,8 +212,15 @@ async def test_full_loop_retains_baseline_and_uses_available_allowance(
     )
     if mode in {"regression", "always_regress", "mixed"}:
         assert all(
-            "# bad" not in verifier.inputs[i]["terraform/main.tf"]
-            for i in range(0, len(verifier.inputs), 2)
+            "# bad" not in call["files"]["terraform/main.tf"]
+            and "terraform/added.tf" not in call["files"]
+            for call in fixer.calls
+            if call["path"].startswith("terraform/")
+        )
+        assert all(
+            i["verification"]["before_failed"] == 0
+            for i in report["iterations"]
+            if "verification" in i
         )
         assert report["iterations"][0]["verification"]["reasons"] == [
             "terraform_regression"

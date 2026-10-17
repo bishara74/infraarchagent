@@ -198,6 +198,13 @@ async def test_cancellation_keeps_verified_checkpoint():
         )
     }
     guard, checkpoint = setup(files)
+    checkpoint.fixes = [
+        {
+            "file": "terraform/main.tf",
+            "accepted": True,
+            "normalized_existing_paths": ["terraform/main.tf"],
+        }
+    ]
     original = guard.scanner.scan
 
     async def cancelled(source, variant):
@@ -212,6 +219,26 @@ async def test_cancellation_keeps_verified_checkpoint():
         )
     assert '"a"' in checkpoint.files["terraform/main.tf"]
     assert '"b"' not in checkpoint.files["terraform/main.tf"]
+    assert checkpoint.fixes[0]["retained"]
+    assert checkpoint.fixes[0]["recovered_existing_proposal"]
+
+
+@pytest.mark.req("FR-S-03", "FR-V-03")
+def test_changed_provider_configuration_stays_with_module_changes():
+    files = {
+        "terraform/main.tf": """terraform {
+  required_providers { aws = { source = "hashicorp/aws", version = "5.100.0" } }
+}
+resource "aws_s3_bucket" "target" {}
+"""
+    }
+    candidate = {
+        "terraform/main.tf": files["terraform/main.tf"]
+        .replace("5.100.0", "6.68.0")
+        .replace('"target" {}', '"target" { bucket_prefix = "secure-" }')
+    }
+    groups = change_groups(files, candidate)
+    assert len(groups) == 1 and len(groups[0]) == 2
 
 
 @pytest.mark.req("FR-S-03")

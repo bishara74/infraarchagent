@@ -14,6 +14,12 @@ from scripts.phase9_common import ROOT, write_json
 from scripts.phase9_report import statistics_for
 from scripts.phase9c_metrics import number
 from scripts.phase9e_metrics import REASONS, measurement, measurement_summary
+from scripts.phase9f_metrics import (
+    snapshot as phase9f_snapshot,
+)
+from scripts.phase9f_metrics import (
+    summary as phase9f_summary,
+)
 
 
 def safe_text(value: object, redactor: RedactingFilter, limit: int = 500) -> str:
@@ -120,6 +126,10 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
     ]
     return {
         "status": status,
+        "validation_result": validation.get("summary", {}).get("result")
+        if validation.get("summary", {}).get("result") in {"valid", "invalid", "error"}
+        else None,
+        "phase9f": phase9f_snapshot(package, redactor),
         "review_reasons": sorted(
             {
                 safe_text(reason, redactor, 100)
@@ -384,6 +394,8 @@ def quality_table(
         "Security iteration outcomes by class: "
         + str(result["security_outcomes_by_class"]),
     ]
+    result["phase9f"], phase9f_table = phase9f_summary(packages)
+    lines.append(phase9f_table)
     return result, "\n".join(lines)
 
 

@@ -156,8 +156,10 @@ def test_route_derived_subnet_intent(target, standalone):
     "name,body",
     [
         ("iam_auth", {"engine": "oracle-ee"}),
+        ("iam_auth", {"engine": {"unresolved": True}}),
         ("insights", {"engine": "${var.engine}"}),
         ("tls", {"protocol": "HTTP"}),
+        ("tls", {"protocol": ["HTTPS"]}),
         ("monitoring", {}),
         ("storage", {"storage_encrypted": "${var.encrypt}"}),
         ("imds", {"metadata_options": [{"http_tokens": "${var.tokens}"}]}),

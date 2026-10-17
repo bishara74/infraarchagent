@@ -143,7 +143,7 @@ def test_support_file_name_conflict_is_safe():
 
 
 @pytest.mark.req("FR-S-02")
-@pytest.mark.parametrize("kind", ["kms", "flow_logs", "monitoring"])
+@pytest.mark.parametrize("kind", ["kms", "access_logs", "flow_logs", "monitoring"])
 def test_template_support_reused_for_second_flagged_resource(kind):
     files, findings = template_input("6.68.0", kind)
     candidate, _ = build_template(files, findings, "terraform", kind)
@@ -167,6 +167,75 @@ def test_template_support_reused_for_second_flagged_resource(kind):
             "aws_cloudwatch_log_group",
         )
     )
+
+
+@pytest.mark.req("FR-S-02", "FR-V-03")
+@pytest.mark.parametrize("version", ["5.100.0", "6.68.0"])
+@pytest.mark.parametrize(
+    "typ,body,rule,field",
+    [
+        (
+            "aws_cloudwatch_log_group",
+            {"name": "/app/service", "retention_in_days": 365},
+            "AWS-0017",
+            "kms_key_id",
+        ),
+        (
+            "aws_db_instance",
+            {"engine": "postgres", "performance_insights_enabled": True},
+            "CKV_AWS_354",
+            "performance_insights_kms_key_id",
+        ),
+        (
+            "aws_ebs_volume",
+            {"availability_zone": "us-east-1a", "encrypted": True},
+            "AWS-0027",
+            "kms_key_id",
+        ),
+        (
+            "aws_s3_bucket_server_side_encryption_configuration",
+            {
+                "bucket": "${aws_s3_bucket.source.id}",
+                "rule": [
+                    {
+                        "apply_server_side_encryption_by_default": [
+                            {"sse_algorithm": "AES256"}
+                        ]
+                    }
+                ],
+            },
+            "AWS-0132",
+            "rule",
+        ),
+    ],
+)
+def test_kms_links_all_supported_resource_types(version, typ, body, rule, field):
+    files, _ = template_input(version, "kms")
+    data = json.loads(files["terraform/main.tf.json"])
+    data["resource"] = {typ: {"target": body}}
+    if typ == "aws_s3_bucket_server_side_encryption_configuration":
+        data["resource"]["aws_s3_bucket"] = {"source": {}}
+    files["terraform/main.tf.json"] = json.dumps(data)
+    findings = [
+        Violation(
+            rule_id=rule,
+            resource=typ + ".target",
+            file_path="terraform/main.tf.json",
+            message="synthetic",
+            tool="trivy",
+            blocking=True,
+        )
+    ]
+    candidate, record = build_template(files, findings, "terraform", "kms")
+    assert record["status"] == "proposed", record
+    target = json.loads(candidate["terraform/main.tf.json"])["resource"][typ]["target"]
+    assert "aws_kms_key.infraarch_security.arn" in json.dumps(target[field])
+    assert build_template(candidate, findings, "terraform", "kms")[0] == candidate
+    if typ == "aws_cloudwatch_log_group":
+        policy = json.loads(candidate["terraform/security_support.tf.json"])[
+            "resource"
+        ]["aws_kms_key"]["infraarch_security"]["policy"]
+        assert "/app/service" in policy and "ArnEquals" in policy
 
 
 @pytest.mark.req("FR-S-02", "NFR-01")

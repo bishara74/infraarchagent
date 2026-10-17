@@ -127,9 +127,8 @@ def _literal(value: Any) -> bool:
 
 
 def _updates(name: str, body: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
-    if (
-        name in {"iam_auth", "db_logs", "insights"}
-        and body.get("engine") not in DB_LOGS
+    if name in {"iam_auth", "db_logs", "insights"} and (
+        not isinstance(body.get("engine"), str) or body["engine"] not in DB_LOGS
     ):
         return {}, "context: unsupported or unresolved database engine"
     booleans = {
@@ -171,12 +170,17 @@ def _updates(name: str, body: dict[str, Any]) -> tuple[dict[str, Any], str | Non
             return {}, "context: unresolved expression"
         return {"monitoring_interval": interval if interval > 0 else 60}, None
     if name == "tls":
-        if body.get("protocol") not in {"HTTPS", "TLS"}:
+        if not isinstance(body.get("protocol"), str) or body["protocol"] not in {
+            "HTTPS",
+            "TLS",
+        }:
             return {}, "context: TLS listener and certificate required"
         old = body.get("ssl_policy", "")
         if not _literal(old):
             return {}, "context: unresolved expression"
-        if isinstance(old, str) and ("TLS13" in old or "TLS-1-2" in old):
+        if isinstance(old, str) and (
+            "TLS13-1-2" in old or "TLS13-1-3" in old or "TLS-1-2" in old
+        ):
             return {}, "already_secure"
         return {"ssl_policy": "ELBSecurityPolicy-TLS13-1-2-2021-06"}, None
     if name == "imds":
@@ -222,7 +226,16 @@ def autofix(
             module = str(PurePosixPath(finding.file_path).parent)
             resource = package.get(module, finding.resource)
             record: dict[str, Any] = {
-                "rule_ids": list(control.rules),
+                "rule_ids": sorted(
+                    {
+                        f.rule_id
+                        for f in findings
+                        if f.blocking
+                        and f.resource == finding.resource
+                        and f.file_path == finding.file_path
+                        and f.rule_id in control.rules
+                    }
+                ),
                 "resource": finding.resource,
                 "file": finding.file_path,
                 "control": control.name,
