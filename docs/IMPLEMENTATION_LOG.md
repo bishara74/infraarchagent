@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 1 — Schema-checked security catalogue
+
+**Summary:** Add twelve scanner-targeted controls, source-preserving Terraform
+edits, route-derived subnet intent and guard verification before LLM fixing.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-V-03, NFR-01.
+
+**Files:** security/catalogue.py, terraform.py, acceptance.py, security agent,
+catalogue/policy tests, design-deviations.md, this log.
+
+**Decisions:** D-46 appendix records rules, edits and conflicts. Public subnet
+intent is preserved; unresolved routes/engines/expressions skip. Automatic
+changes must pass syntax, preservation, validity and no-new-blocker checks.
+
+**Tests:** Catalogue and policy: 62 passed / 0 failed; focused Ruff passed.
+Initial mypy found a local list annotation, corrected before the section commit.
+An attempted multiline fixture-line formatting change caused three temporary
+policy failures; the valid single-line header was restored before 62 passes.
+
+**Known gaps / follow-ups:** Supporting resources and partial acceptance follow
+in separate sections. Full-stack verification follows section 7.
+
+
 ## 2026-10-17 — Phase 9f section 0b — Resource-specific encryption evidence
 
 **Summary:** Remove the package-wide AES256 substring exemption and require a
@@ -42,7 +65,8 @@ integration security policy-version assertion, design-deviations.md, this log.
 search and retain their existing explicit policy decisions. Positive assertions
 are preserved using a genuine associated-encryption fixture.
 
-**Tests:** Policy regressions: 12 passed / 0 failed. Focused Ruff checks passed.
+**Tests:** Policy regressions: 12 passed / 0 failed. Initial focused Ruff check found
+one E501 fixture line; corrected in section 1 before final verification.
 Full lint and suites run after remaining sections.
 
 **Known gaps / follow-ups:** No new real benchmark. Final-file offline rescan

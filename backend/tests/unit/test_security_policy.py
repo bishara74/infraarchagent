@@ -7,7 +7,7 @@ from app.domain.models import Violation
 from app.security.policy import CHECKOV_SEVERITY, classify
 
 BUCKET = 'resource "aws_s3_bucket" "example" {}\n'
-ENCRYPTION = """resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
+ENCRYPTION = """resource "aws_s3_bucket_server_side_encryption_configuration" "enc" {
   bucket = aws_s3_bucket.example.id
   rule {
     apply_server_side_encryption_by_default {

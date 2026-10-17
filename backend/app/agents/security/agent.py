@@ -37,6 +37,8 @@ from app.llm.errors import SAFE_MESSAGES
 from app.pipeline.stages import StageContext
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import Scanner, ScanResult
+from app.security.acceptance import CandidateGuard
+from app.security.catalogue import autofix
 from app.security.diff import package_diff
 from app.security.policy import SECURITY_POLICY_VERSION
 from app.validation.gate import patch_syntax_failure
@@ -345,6 +347,7 @@ class SecurityAgent:
         review_target_order: bool = False,
         previous_attempt: str = "",
     ) -> tuple[dict[str, str], list[dict[str, Any]], str, ScanResult]:
+        iteration_original = dict(files)
         if budget.remaining() < 0.001:
             raise TimeoutError
         verification.update(
@@ -368,6 +371,38 @@ class SecurityAgent:
         verification["before_failed"] = failure_count(before)
         if budget.expired():
             raise TimeoutError
+        automatic, records = autofix(files, list(baseline_scan.violations))
+        verification["catalogue"] = records
+        if automatic != files:
+            verification.update(fix_started=True, candidate_created=True)
+            guard = CandidateGuard(
+                self.terraform_verifier, self.scanner, variant, budget, verification
+            )
+            result = await guard.evaluate(files, automatic, before, baseline_scan)
+            for record in records:
+                if record["status"] == "proposed":
+                    record.update(
+                        status="rejected" if result.reason else "retained",
+                        reason=result.reason or "secure_default",
+                    )
+            if not result.reason:
+                files, before, baseline_scan = automatic, result.checks, result.scan
+                targets = defaultdict(list)
+                for item in baseline_scan.violations:
+                    if item.blocking:
+                        targets[item.file_path].append(item)
+                if not targets:
+                    verification.update(
+                        outcome="accepted",
+                        deadline_only=False,
+                        after_failed=failure_count(before),
+                    )
+                    return (
+                        files,
+                        [],
+                        package_diff(iteration_original, files),
+                        baseline_scan,
+                    )
         verification["fix_started"] = True
         candidate, fixes, _ = await self._fix_pass(
             ctx,
@@ -465,7 +500,7 @@ class SecurityAgent:
             )
             async with workspace.check(candidate):
                 pass
-        return candidate, fixes, package_diff(files, candidate), scanned
+        return candidate, fixes, package_diff(iteration_original, candidate), scanned
 
     async def _publish_iteration(
         self,

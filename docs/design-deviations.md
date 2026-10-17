@@ -1201,6 +1201,37 @@ recovery. Their implementation details and thesis appendix follow below as each
 section is verified. Readiness and all acceptance guards remain unchanged.
 
 
+#### D-46 attribute catalogue (section 1)
+
+All entries are checked against AWS 5.100.0 and 6.68.0 before emission and use
+only scanner-flagged resources. No insecure-expression guessing, public-network
+redesign, suppression or severity change is permitted. Provider validation and
+no-new-blocker verification precede retention. Terraform source edits preserve
+unrelated attributes/comments; JSON is parsed and rewritten structurally.
+
+| Rules | Resource | Exact change | Preconditions / conflict | Justification |
+|---|---|---|---|---|
+| CKV_AWS_293 / AWS-0177 | aws_db_instance | deletion_protection=true | Literal/missing value | Prevent accidental deletion |
+| CKV_AWS_161 / AWS-0176 | aws_db_instance | iam_database_authentication_enabled=true | Supported literal engine | Add IAM authentication |
+| CKV_AWS_16 / AWS-0080 | aws_db_instance | storage_encrypted=true | Preserve KMS key; literal/missing | Encrypt storage |
+| CKV_AWS_129 | aws_db_instance | enabled_cloudwatch_logs_exports union engine logs | Known postgres/mysql/mariadb; literal collection | Export audit/engine logs |
+| CKV_AWS_353 / AWS-0133 | aws_db_instance | performance_insights_enabled=true | Known supported engine; cost variant remains exempt | Add diagnostics |
+| CKV_AWS_118 | aws_db_instance | monitoring_interval=60 | Existing monitoring role; positive interval preserved | Enhanced monitoring |
+| CKV_AWS_79 / AWS-0028 / AWS-0130 | aws_instance | metadata_options.http_tokens=required | Preserve other options; unresolved block skips | Require IMDSv2 |
+| CKV_AWS_8 / AWS-0131 | aws_instance, aws_launch_configuration | root/ebs_block_device.encrypted=true | Preserve devices and keys; unresolved flag skips | Encrypt volumes |
+| CKV_AWS_3 / AWS-0026 | aws_ebs_volume | encrypted=true | Literal/missing flag | Encrypt standalone volume |
+| CKV_AWS_130 / AWS-0164 | aws_subnet | map_public_ip_on_launch=false | Proven private routing only | Avoid unintended public addresses |
+| CKV_AWS_103 | aws_lb_listener | ssl_policy=ELBSecurityPolicy-TLS13-1-2-2021-06 | Existing HTTPS/TLS; preserve TLS1.2/1.3 policies | Require modern TLS |
+| CKV_AWS_38 / AWS-0038 | aws_eks_cluster | enabled_cluster_log_types union all five streams | Literal collection | Capture control-plane logs |
+
+Subnet intent resolves module-local explicit subnet/table associations, inline
+and standalone routes and configured main/default tables. An Internet Gateway
+route proves public intent; NAT routes do not. A fully resolved table without a
+direct Internet Gateway route proves private intent. Missing/ambiguous/dynamic
+routing remains unresolved. Public skips use `context: public subnet`; no Phase
+9g exception profile is implemented.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
