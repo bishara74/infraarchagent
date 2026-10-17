@@ -961,3 +961,32 @@ Generator prompt v7 adds plan-specific security/support guidance inside the
 existing 6000-character input context cap (4500 schema / 1500 checklist).
 Validation remediation metadata records security-context length and truncation.
 Generator and fixer output-token defaults remain unchanged.
+
+### Phase 9f author fixer comparison
+
+Keep Architect/Generators and prompts identical for both runs. Restart the backend
+between configurations and supply the same exported settings to the benchmark.
+No implementation verification makes real model calls.
+
+```sh
+export SECURITY_FIX_PROVIDER=openai
+export SECURITY_FIX_MODEL='openai/gpt-oss-120b:nitro'
+export SECURITY_FIX_REASONING_EFFORT=low
+export FIX_ATTEMPT_TIMEOUT_SECONDS=45
+export SECURITY_DEADLINE_SECONDS=240 MAX_REMEDIATION_ITERATIONS=4
+export SECURITY_FIX_MAX_RESOURCES=2 SECURITY_FIX_MAX_FINDINGS=12
+export SECURITY_PARTIAL_MAX_GROUPS=6
+export GENERATOR_MAX_OUTPUT_TOKENS=16000 GENERATOR_ATTEMPT_TIMEOUT_SECONDS=140
+export GENERATOR_DEADLINE_SECONDS=150 LLM_DEADLINE_SECONDS=150
+# Start/restart the configured backend, then run:
+make bench-real BASE_URL=http://127.0.0.1:8765 BUDGET=2 MAX_RUNS=14
+```
+
+For the second run, set SECURITY_FIX_MODEL to the author's selected OpenRouter
+Haiku-class model ID and SECURITY_FIX_REASONING_EFFORT=off, restart, and repeat.
+Keep the existing OpenRouter base URL and externally supplied credentials; never
+copy them into evidence. JSON-object fixer requests are available through
+LLM_RESPONSE_FORMAT=json_object; local FixOutput validation remains mandatory.
+Reports distinguish each fixer model and its effective attempt timeout; the
+iteration/stage ceilings remain 60/240 seconds. The default attempt remains 90
+seconds; 45 is the comparison override, clipped to remaining iteration time.

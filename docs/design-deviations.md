@@ -1318,6 +1318,18 @@ provider pins are unchanged. Shared system prompts remain variant-independent
 apart from their existing optimisation directive.
 
 
+#### D-46 configurable fixer verification (section 5)
+
+No default model or attempt timeout changes. OpenRouter Anthropic-family fixers
+use the existing OpenAI-compatible adapter, local FixOutput validation and optional
+JSON-object mode. Fix-only reasoning off maps to reasoning.enabled=false; the
+gpt-oss baseline uses effort=low. Session reports now record effective fix attempt,
+60-second iteration, stage and batching/group limits alongside model/provider.
+Mocked HTTP through the factory, proposal, guards and PostgreSQL report proves
+both model selections; a 45-second attempt clips to a 20-second remaining budget.
+These tests establish wiring and format handling, not real model reliability.
+
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

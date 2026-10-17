@@ -1004,6 +1004,16 @@ class SecurityAgent:
             "fixing_provider": self.fixing_provider,
             "fixing_model": self.fixing_model,
             "fixing_reasoning_effort": self.fixing_reasoning_effort,
+            "fix_attempt_timeout_seconds": getattr(
+                self.fix_agent,
+                "attempt_timeout",
+                self.settings.fix_attempt_timeout_seconds,
+            ),
+            "iteration_timeout_seconds": 60.0,
+            "security_stage_timeout_seconds": self.settings.security_deadline_seconds,
+            "fix_max_resources": self.settings.security_fix_max_resources,
+            "fix_max_findings": self.settings.security_fix_max_findings,
+            "partial_max_groups": self.settings.security_partial_max_groups,
             "fix_passes": iteration_count,
             "iterations": iterations,
             "final": {

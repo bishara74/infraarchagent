@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-17 — Phase 9f section 5 — Alternate fixer end-to-end verification
+
+**Summary:** Persist effective fixer timing/batching limits and verify gpt-oss
+and an Anthropic-family OpenRouter fixer through mocked HTTP and stored reports.
+
+**Requirements addressed:** FR-S-02, FR-S-04, FR-S-09, NFR-01, PR-05.
+
+**Files:** security agent session metadata, integration/test_phase9f_fixer_model.py,
+README, D-46 and this log.
+
+**Decisions:** Existing adapter/model defaults retained. Author override 45 s;
+60 s iteration / 240 s stage retained; model-specific reasoning and JSON format
+reach the request. Haiku test identifier is synthetic, not a provider availability
+claim. Author chooses the actual model for a separately executed comparison.
+
+**Tests:** Model HTTP/report integration plus factory tests: 16 passed / 0 failed.
+Both requests clip to 20 s when only 20 s remains. No real LLM calls or keys.
+
+**Known gaps / follow-ups:** No real latency/quality comparison is claimed; final
+benchmark projection of this metadata follows section 7.
+
+
 ## 2026-10-17 — Phase 9f section 3 — Secure generator checklist
 
 **Summary:** Select resource schemas and security/support requirements from the
