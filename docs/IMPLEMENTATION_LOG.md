@@ -27,6 +27,60 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f corrective — Offline replay, reports and verification
+
+**Summary:** Preserve benchmark-A evidence and report deterministic syntax recovery
+separately from scripted repair/regeneration. Project allowlisted recovery/timing
+metadata and document the concrete syntax, provenance, deadline and scan failure
+investigation with file/line evidence.
+
+**Requirements addressed:** FR-G-02, FR-S-03, FR-S-04, FR-S-09, FR-V-03, NFR-01,
+PR-01, PR-03, PR-04, PR-05.
+
+**Files:** scripts/phase9c_metrics.py, phase9e_metrics.py, phase9f_metrics.py,
+phase9f_syntax_replay.py, test_phase9f_metrics.py, README, D-46 and Chapter 4/6
+follow-ups, phase9f-corrective-verification.md, dated replay/Helm JSON and stub/
+secret-scan evidence directories.
+
+**Decisions:** D-46. All 20 final Terraform syntax findings existed in original
+generation. One retained variable deletion was a separate dependency defect.
+Duplicate/unstable observations and incomplete native baselines explain unknown
+origins. PR-05's two security overruns were 65.530602 and 60.375424 seconds;
+the first reached no fixer/partial evaluation. Helm path mapping caused the sole
+scan_error before templates. Historical exact timing remains unknown. No cached
+JSON, original benchmark evidence, readiness rules or source specifications changed.
+
+**Tests:** Final make lint PASS (Ruff/format, mypy 124 application sources,
+frontend ESLint/TS). make test against isolated Docker PostgreSQL 16: 1,481 passed /
+0 failed / 0 skipped / 6 performance deselected (199.43 s). Six final targeted
+Helm/report checks also passed (2.29 s), including three Helm cases added after
+full-suite collection. make frontend-test: 100 passed / 15 files. make test-e2e:
+6 passed (1.6 min), Docker PostgreSQL with repository initialization/normal roles.
+make provider-schema: all seven pinned versions exported offline. make secret-scan
+previous working-tree run: 0 findings / 0 errors; post-commit scan follows.
+No dotenv reads, real model calls, dependencies, installs, downloads or pushes.
+
+**Replay:** 11 affected original files/packages: 3 deterministic recoveries,
+7 additional scripted syntax repairs and 1 scripted regeneration. Native
+diagnostics 24 -> 21 -> 0; all 14 input JSON hashes unchanged. Scripted results
+are test oracles, not real-model reliability or an updated readiness rate.
+Native Checkov preserved 107/107 findings, including all 21 mapped Helm findings.
+
+**Benchmark:** make bench-stub completed 14 pipeline runs / 42 ready generated
+packages and 10 separately labelled synthetic PR-04 downloads. PR-01 PASS, median
+14.703493 s / maximum 18.832189 s; PR-04 PASS, median 1.415957 s / max 1.695589 s;
+PR-05 PASS at unchanged limits. PR-03 FAIL, ratios 2.444690–2.458220 against 1.5x.
+Benchmark overlapped verification; stub timings do not establish model performance.
+The first launch stopped at authentication preflight; its evidence is retained.
+
+**Known gaps / follow-ups:** Docker/5432 temporarily disappeared after a session
+pause; installed local PostgreSQL supplied an isolated fallback, then recovered
+Docker supported the final checks on task-owned port 55441. The application
+container was untouched. Both author fixer configurations should run on the
+corrected commit/prompt v8 to isolate fixer differences from benchmark A's v7.
+Real Haiku/corrected benchmarks remain author work. No new open question or
+Phase 9g exception behavior is introduced.
+
 ## 2026-10-18 — Phase 9f corrective — Checkov Helm source mapping
 
 **Summary:** Resolve rendered chart-name paths through validated chart metadata

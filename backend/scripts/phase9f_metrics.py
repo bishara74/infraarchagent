@@ -6,6 +6,7 @@ from app.core.logging import REDACTED, RedactingFilter
 from app.domain.review import security_iterations
 from scripts.phase9_common import ROOT
 from scripts.phase9_report import statistics_for
+from scripts.phase9c_metrics import number
 
 LIMITS = (
     "fix_attempt_timeout_seconds",
@@ -115,6 +116,18 @@ def snapshot(package: dict, redactor: RedactingFilter) -> dict:
             normalized += bool(fix.get("normalized_existing_paths"))
             recovered += fix.get("recovered_existing_proposal") is True
     remediation = (package.get("validation_report") or {}).get("remediation") or {}
+    raw_syntax = remediation.get("generation_syntax")
+    syntax = raw_syntax if isinstance(raw_syntax, dict) else {}
+    syntax_path = syntax.get("path")
+    syntax_paths = {
+        "unchanged",
+        "normalization",
+        "syntax_round_1",
+        "syntax_round_2",
+        "regeneration",
+        "unresolved",
+        "deadline",
+    }
     return {
         "measured": measured,
         "catalogue": catalogue,
@@ -131,6 +144,41 @@ def snapshot(package: dict, redactor: RedactingFilter) -> dict:
         "generator_context_truncated": remediation.get("generator_context_truncated")
         if type(remediation.get("generator_context_truncated")) is bool
         else None,
+        "generation_syntax": {
+            "path": syntax_path
+            if isinstance(syntax_path, str) and syntax_path in syntax_paths
+            else None,
+            "normalizations": len(syntax.get("normalizations", [])) if syntax else None,
+            "rounds": len(syntax.get("rounds", [])) if syntax else None,
+            "regeneration": syntax.get("regeneration")
+            if isinstance(syntax.get("regeneration"), str)
+            and syntax.get("regeneration")
+            in {
+                "not_needed",
+                "attempted",
+                "accepted",
+                "unparsable",
+                "deadline",
+                "failed",
+            }
+            else None,
+        },
+        "iteration_timings": [
+            {
+                key: number((it.get("verification") or {}).get(key))
+                for key in (
+                    "scan_seconds",
+                    "construction_seconds",
+                    "syntax_verification_seconds",
+                    "terraform_verification_seconds",
+                    "security_verification_seconds",
+                    "cancellation_seconds",
+                    "restoration_seconds",
+                    "publication_seconds",
+                )
+            }
+            for it in security_iterations(report)
+        ],
     }
 
 
@@ -187,6 +235,13 @@ def summary(packages: list[dict]) -> tuple[dict, str]:
             }
         )
     result = {
+        "generation_syntax_paths": dict(
+            Counter(
+                p.get("phase9f", {}).get("generation_syntax", {}).get("path")
+                or "unknown"
+                for p in packages
+            )
+        ),
         "packages_measured": len(measured),
         "packages_unknown": len(packages) - len(measured),
         "near_misses": near_misses,
@@ -215,6 +270,7 @@ def summary(packages: list[dict]) -> tuple[dict, str]:
         "Template introduced rules: " + str(dict(introduced)),
         "Partial groups: " + str(dict(partial)),
         "Existing-file proposal recovery: " + str(result["existing_file_proposals"]),
+        "Generation syntax recovery: " + str(result["generation_syntax_paths"]),
         "Fixer model limits and calls: " + str(model_rows),
     ]
     return result, "\n".join(lines)

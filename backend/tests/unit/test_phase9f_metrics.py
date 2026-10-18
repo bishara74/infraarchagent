@@ -83,14 +83,33 @@ def package(n=1, result="valid"):
 
 @pytest.mark.req("FR-S-04", "NFR-01")
 def test_safe_metrics_round_trip_and_model_limits():
-    value = quality_snapshot(package(), RedactingFilter())
+    source = package()
+    source["validation_report"]["remediation"]["generation_syntax"] = {
+        "path": "syntax_round_2",
+        "normalizations": [{"source": "SOURCE_CANARY"}],
+        "rounds": [{"diagnostic": "SOURCE_CANARY"}] * 2,
+        "regeneration": "not_needed",
+        "excerpt": "SOURCE_CANARY",
+    }
+    source["security_report"]["sessions"][0]["iterations"][0]["verification"].update(
+        publication_seconds=0.25, cancellation_seconds=0.1
+    )
+    value = quality_snapshot(source, RedactingFilter())
     assert "SOURCE_CANARY" not in json.dumps(value)
+    assert value["phase9f"]["generation_syntax"] == {
+        "path": "syntax_round_2",
+        "normalizations": 1,
+        "rounds": 2,
+        "regeneration": "not_needed",
+    }
+    assert value["phase9f"]["iteration_timings"][0]["publication_seconds"] == 0.25
     result, text = quality_table([json.loads(json.dumps(value))])
     metrics = result["phase9f"]
     assert metrics["catalogue_retained_by_rule"] == {"AWS-0177": 1}
     assert metrics["template_introduced_rules"] == {"CKV_AWS_18": 1}
     assert metrics["partial_groups"] == {"kept": 1, "discarded": 1}
     assert metrics["existing_file_proposals"] == {"normalized": 1, "retained": 1}
+    assert metrics["generation_syntax_paths"] == {"syntax_round_2": 1}
     model = metrics["fixer_models"][0]
     assert model["model"] == "anthropic/haiku-scripted"
     assert model["fix_attempt_timeout_seconds"] == [45]
@@ -108,8 +127,10 @@ def test_near_misses_require_final_validity_and_historical_metrics_stay_unknown(
     }
     values = [quality_snapshot(p, RedactingFilter()) for p in [*inputs, old]]
     assert values[-1]["phase9f"]["existing_file_proposals"] is None
+    assert values[-1]["phase9f"]["generation_syntax"]["path"] is None
     result, text = quality_table(values)
     assert result["phase9f"]["near_misses"] == {"1": 1, "2-3": 2, "4+": 1}
     assert result["phase9f"]["packages_unknown"] == 1
     assert result["phase9f"]["validation_unknown"] == 1
+    assert result["phase9f"]["generation_syntax_paths"] == {"unknown": 6}
     assert "Valid package remaining blockers" in text

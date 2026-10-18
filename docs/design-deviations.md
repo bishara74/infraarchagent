@@ -1345,6 +1345,53 @@ downloads its labelled ZIP. This verifies the isolated stack, not the author's
 unobserved environment; no .env or original credentials were inspected.
 
 
+#### D-46 corrective generation and acceptance (2026-10-18)
+
+FR-G-02, FR-S-03/04/09, FR-V-03/04, NFR-01 and PR-05: native Terraform parsing is
+authoritative for changed Terraform files. The Python HCL parser accepts some
+Terraform-invalid compact blocks and strings, so failure counts and scanner
+fingerprints alone cannot prove syntax non-regression. Cache native checks by
+file/content; reject invalid edits before retaining any checkpoint. Expanding a
+single-line resource also inserts a newline after its opening brace. Declaration
+deletions are checked against unchanged consumers, preventing the observed retained
+deletion of variable.eks_name. No readiness, severity or blocker rule is weakened.
+
+The author approved generation-only syntax recovery before its first parsable
+baseline. The lexer/grammar normalizer only inserts newlines at unambiguous
+argument boundaries in complete single-line blocks. Nontrivia token signatures
+must match and normalization must be idempotent; ambiguous files, semicolons,
+missing quotes and policies remain for LLM repair. Hashes/locations are logged.
+At most two syntax-only rounds use exact private diagnostics/excerpts after secret
+redaction. Scope, identities and existing control literals are preserved; syntax
+is checked before retention. One regeneration may follow using the original
+generator, feedback and output-token settings, without restarting recovery.
+Initial generation, recovery and finalization share the original 150-second
+deadline and reserve five seconds for finalization. Exhausted paths are explicit.
+Previously hidden findings revealed during provisional generation stay blocking;
+the no-new-blocker rule applies after that baseline is established.
+
+Provenance deduplicates identical observations and carries unique unchanged source
+anchors across line movement, while retaining unknown origins for genuinely
+unresolved/incomplete evidence. Reports distinguish observed stage, action and
+content hash. Final builtin checks are observed too. Security iterations allocate
+55 seconds to work within their existing 60 seconds, clip publication to remaining
+time, bound subprocess cleanup and batch event notices through EventLog. Reports
+separate scan/construction/syntax/verification/cleanup/restoration/publication.
+Interrupted template actions become explicit deadline/unavailability rejections.
+
+Checkov's Helm chart-name path segment is resolved through package Chart.yaml
+metadata to a unique exact source path. Traversal/ambiguity remains rejected;
+mapping errors have their own category. Rendered line numbers are omitted when
+their original source positions cannot be proved. No findings are discarded.
+
+The saved A corpus remains read-only. Native replay repairs 3/11 affected files
+and packages deterministically; scripted syntax fixes/regeneration repair the
+remaining 8, reaching 11/11 with 24 -> 21 -> 0 native diagnostics. These are offline
+test-oracle results, not real-model success or a new production-ready rate.
+See phase9f-corrective-verification.md and the dated JSON replay artifact.
+Benchmark A/prompt v7 remains historical evidence. Both author configurations
+should use the corrected commit/prompt v8 to isolate fixer differences.
+
 #### D-46 measured reporting and final guard checks (section 7)
 
 Benchmark snapshots explicitly project catalogue controls, template outcomes and
@@ -1540,11 +1587,15 @@ metadata or semantic naming inference is a later design decision.
 - Chapter 4 / D-46: append the schema-versioned attribute and supporting-template
   tables, configuration-derived subnet intent, focused calls, existing-file edit
   recovery and dependency-group partial acceptance under unchanged guards/budgets.
+  Include native syntax acceptance, lexer normalization, provisional generation
+  recovery, deletion checks against unchanged consumers and stage/action provenance.
 - Chapter 6 / D-46: compare the preserved 9e real baseline (1/40 ready; 35 with
   blockers; 16 accepted / 61 unchanged / 77 rolled-back iterations) with separate
   author-run 9f gpt-oss and Haiku-class fixer measurements. Keep stub/rehearsal,
   scripted recovery (4 normalized / 3 retained) and real quality evidence distinct;
   include near misses, introduced template blockers, timings and model settings.
+  Add the benchmark-A corrective replay separately (3 deterministic + 8 scripted
+  recoveries); disclose prompt v7/v8 and recovery changes in any real comparison.
 
 
 - Chapter 4 / D-45: tool-grounded generation, scanner fixes and repair; offline

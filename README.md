@@ -957,16 +957,30 @@ receives existing paths and editable current content; existing-path creations
 can be normalized into validated edits. Reports distinguish normalized proposals
 from those retained after every guard. Overlapping editable files are serialized.
 
-Generator prompt v7 adds plan-specific security/support guidance inside the
+Generator prompt v8 adds plan-specific security/support and quoting guidance inside the
 existing 6000-character input context cap (4500 schema / 1500 checklist).
 Validation remediation metadata records security-context length and truncation.
 Generator and fixer output-token defaults remain unchanged.
+
+Generation first normalizes unambiguous compact HCL blocks by inserting newlines
+without changing tokens. Native Terraform/JSON/YAML syntax failures then receive
+up to two syntax-only fixer rounds and, if needed, one regeneration using the
+original variant generator. All steps share the original 150-second allowance,
+including a five-second finalization reserve. Reports identify normalization,
+repair round, regeneration, unresolved errors and steps skipped for deadlines.
+Generation stays provisional until parsing succeeds: newly visible security
+findings remain blocking. Later remediation retains its no-new-blocker guard.
+Security iterations reserve five of their existing 60 seconds for cleanup,
+restoration and publication; the public iteration/stage limits remain 60/240.
 
 ### Phase 9f author fixer comparison
 
 Keep Architect/Generators and prompts identical for both runs. Restart the backend
 between configurations and supply the same exported settings to the benchmark.
 No implementation verification makes real model calls.
+Run both configurations on the corrected commit/prompt v8 for a fixer-only
+comparison. The preserved benchmark A used prompt v7; comparing it directly with
+a corrected Haiku run also measures generation/recovery/code changes.
 
 ```sh
 export SECURITY_FIX_PROVIDER=openai
@@ -1013,3 +1027,8 @@ final valid validation and group remaining blockers as 1, 2–3 or 4+; historica
 missing measurements remain unknown. The authenticated benchmark settings endpoint
 also records effective numeric security limits. Final verification and measured
 stub results are recorded in `docs/phase9f-verification.md`.
+
+Corrective verification and the benchmark-A syntax replay are in
+`docs/phase9f-corrective-verification.md`. Replay the read-only saved corpus with
+`cd backend && .venv/bin/python -m scripts.phase9f_syntax_replay`; this calls no
+models and reports deterministic recovery separately from scripted test oracles.

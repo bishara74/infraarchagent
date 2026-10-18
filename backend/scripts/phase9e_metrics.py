@@ -27,6 +27,8 @@ REASONS = {
     "deadline",
     "round_limit",
     "no_targets",
+    "invalid_syntax",
+    "reference_regression",
 }
 
 
@@ -59,6 +61,12 @@ def measurement(raw: object) -> dict | None:
         "validate_seconds",
         "terraform_verification_seconds",
         "security_verification_seconds",
+        "scan_seconds",
+        "construction_seconds",
+        "syntax_verification_seconds",
+        "cancellation_seconds",
+        "restoration_seconds",
+        "publication_seconds",
     ):
         if key in raw:
             result[key] = number(raw[key])

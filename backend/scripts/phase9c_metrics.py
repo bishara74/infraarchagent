@@ -5,7 +5,12 @@ from collections import Counter
 
 from app.llm.errors import SAFE_MESSAGES, LLMResponseFormatError
 
-FAILURES = set(SAFE_MESSAGES) | {"deadline", "incomplete_package", "generator_error"}
+FAILURES = set(SAFE_MESSAGES) | {
+    "deadline",
+    "incomplete_package",
+    "generator_error",
+    "path_mapping",
+}
 OUTCOMES = FAILURES | {"success", "cancelled", "invalid_json", "truncated", "timeout"}
 
 
