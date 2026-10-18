@@ -15,13 +15,16 @@ from app.scanners.runner import ToolFailure, ToolName
 from app.validation.documents import PackageDocuments
 from app.validation.engine import ValidationEngine
 from app.validation.linters import linter_targets
+from app.validation.syntax import native_syntax
 from app.validation.workspace import ValidationWorkspace, current_workspace
 
 
 def syntax_checks(
     files: dict[str, str], touched: set[str] | None = None
 ) -> list[ValidationCheck]:
-    documents = PackageDocuments.parse(files)
+    documents = PackageDocuments.parse(
+        {p: source for p, source in files.items() if touched is None or p in touched}
+    )
     return [
         ValidationCheck(
             check_id="document.parse",
@@ -205,7 +208,12 @@ class GenerationGate:
         files, extra, formatted = await self.extra_checks(files, formatting=True)
         checked = await self.engine.validate(plan, files)
         report = ValidationReport.build(
-            [*checked.checks, *extra],
+            list(
+                {
+                    (c.check_id, c.file_path, c.line_start, c.message): c
+                    for c in [*checked.checks, *extra]
+                }.values()
+            ),
             terraform_required=checked.terraform_required,
             tool_versions=checked.tool_versions,
             abort_reason=checked.abort_reason,
@@ -241,6 +249,8 @@ async def patch_syntax_failure(
     before: dict[str, str], candidate: dict[str, str], touched: set[str]
 ) -> bool:
     if syntax_checks(candidate, touched):
+        return True
+    if await native_syntax(candidate, touched):
         return True
     if not any(path.startswith("helm/") for path in touched):
         return False

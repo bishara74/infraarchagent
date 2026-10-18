@@ -183,6 +183,11 @@ def edit_resource(
         if body is None:
             return files
         edits = []
+        # Expanding a formerly single-line resource requires the first argument
+        # to start on a new line too (Terraform rejects a mixed single-line body).
+        if node.meta.line == node.meta.end_line:
+            opening = node.meta.start_pos + header.end()
+            edits.append((opening, opening, "\n"))
         for child in body.children:
             if not isinstance(child, Tree) or child.data not in {"attribute", "block"}:
                 continue

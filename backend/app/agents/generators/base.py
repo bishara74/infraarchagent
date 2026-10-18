@@ -1,10 +1,12 @@
 """Template Method for one complete package, with bounded structural correction."""
 
 import asyncio
+import json
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass, replace
+from typing import Any
 
 from pydantic import ValidationError
 
@@ -142,10 +144,86 @@ class GeneratorAgent(ABC):
     def last_run(self) -> GeneratorRunInfo | None:
         return self._last_run
 
-    async def generate(self, plan: DeploymentPlan) -> IaCPackage:
+    async def regenerate(
+        self, plan: DeploymentPlan, feedback: list[dict[str, Any]], budget: AgentBudget
+    ) -> IaCPackage:
+        """One replacement candidate; reuse the caller's absolute deadline."""
+        previous = self._last_run
+        details: list[LLMAttempt] = []
+        result = None
+        try:
+            async with asyncio.timeout(max(0.001, budget.remaining())):
+                result = await self.llm_adapter.complete_json(
+                    build_user_prompt(plan, [json.dumps(item) for item in feedback]),
+                    system=build_system_prompt(
+                        self.optimisation_directive,
+                        max_output_tokens=self.max_output_tokens,
+                        wire_files=self.wire_files,
+                        plan=plan,
+                    ),
+                    deadline=budget.remaining(),
+                    attempt_timeout=self.attempt_timeout,
+                    max_output_tokens=self.max_output_tokens,
+                    attempt_observer=details.append,
+                    response_validator=self.output_validator,
+                )
+            output = GeneratorOutput.model_validate(result.data)
+            errors = package_structure_errors(output.files, plan.file_types)
+            if errors:
+                raise GeneratorIncompletePackage(self.variant, [], errors)
+            return IaCPackage(variant=self.variant, files=output.files)
+        except (
+            LLMDeadlineExceeded,
+            LLMRetryExhausted,
+            LLMPermanentError,
+            TimeoutError,
+            ValidationError,
+        ):
+            raise GeneratorError(
+                self.variant, "syntax regeneration unavailable"
+            ) from None
+        finally:
+            if previous is not None:
+
+                def total(name: str) -> int | None:
+                    old = getattr(previous, name)
+                    value = getattr(result.response, name) if result else None
+                    return (
+                        old + value if old is not None and value is not None else None
+                    )
+
+                self._last_run = replace(
+                    previous,
+                    elapsed_seconds=max(previous.elapsed_seconds, budget.elapsed()),
+                    deadline_exceeded=budget.expired(),
+                    overrun_seconds=max(0.0, budget.elapsed() - self.deadline_seconds),
+                    package_attempts=previous.package_attempts + 1,
+                    total_llm_attempts=(
+                        previous.total_llm_attempts + result.attempts
+                        if previous.total_llm_attempts is not None and result
+                        else None
+                    ),
+                    input_tokens=total("input_tokens"),
+                    output_tokens=total("output_tokens"),
+                    cached_input_tokens=total("cached_input_tokens"),
+                    attempt_details=previous.attempt_details
+                    + tuple(
+                        replace(
+                            d,
+                            attempt=len(previous.attempt_details) + i,
+                            package_attempt=previous.package_attempts + 1,
+                        )
+                        for i, d in enumerate(details, 1)
+                    ),
+                )
+
+    async def generate(
+        self, plan: DeploymentPlan, *, budget: AgentBudget | None = None
+    ) -> IaCPackage:
         if not isinstance(plan, DeploymentPlan):
             raise TypeError("generate requires a DeploymentPlan")
-        budget = AgentBudget(self.deadline_seconds, clock=self._clock)
+        local_started = self._clock()
+        budget = budget or AgentBudget(self.deadline_seconds, clock=self._clock)
         self._last_run = None
         previous_errors: list[str] | None = None
         previous_paths: list[str] | None = None
@@ -271,7 +349,7 @@ class GeneratorAgent(ABC):
                 previous_errors or [],
             )
         finally:
-            elapsed = budget.elapsed()
+            elapsed = max(budget.elapsed(), self._clock() - local_started)
             deadline_exceeded = elapsed >= self.deadline_seconds
             overrun_seconds = max(0.0, elapsed - self.deadline_seconds)
             if attempt_details and deadline_exceeded:

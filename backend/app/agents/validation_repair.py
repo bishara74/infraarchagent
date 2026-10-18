@@ -14,6 +14,7 @@ from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import ScanResult
+from app.validation.gate import patch_syntax_failure
 from app.validation.measurement import publish_measurement
 from app.validation.workspace import current_workspace
 
@@ -155,7 +156,16 @@ class ValidationRepair:
                             )
                         }
                     )
-                    if not proposals or any(not p["accepted"] for p in proposals):
+                    touched = {
+                        p
+                        for p in files.keys() | candidate.keys()
+                        if files.get(p) != candidate.get(p)
+                    }
+                    if (
+                        not proposals
+                        or any(not p["accepted"] for p in proposals)
+                        or await patch_syntax_failure(files, candidate, touched)
+                    ):
                         record = record.model_copy(
                             update={"outcome": "rejected", "reason": "invalid_patch"}
                         )

@@ -8,7 +8,7 @@ from app.domain.plan import DeploymentPlan, FileType
 from app.security.generation import generation_context
 from app.validation.schema_context import generator_schema_context
 
-GENERATOR_PROMPT_VERSION = "7"
+GENERATOR_PROMPT_VERSION = "8"
 DIRECTIVE_START = "<optimisation_directive>"
 DIRECTIVE_END = "</optimisation_directive>"
 

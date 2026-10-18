@@ -41,7 +41,9 @@ async def test_generator_metrics_persist_without_raw_output(
         if case == "failure":
             return LLMResponse("PRIVATE_INVALID_RESPONSE {bad}", 10, 8000)
         result = await original(prompt, **kwargs)
-        now[0] = 149.0
+        # Return inside the 145-second work window; validation below still
+        # deliberately overruns the full deadline to test truthful metrics.
+        now[0] = 144.0
         return result
 
     monkeypatch.setattr(cost.llm_adapter, "send_prompt", send)
@@ -50,7 +52,7 @@ async def test_generator_metrics_persist_without_raw_output(
         cost.llm_adapter._clock = lambda: now[0]
 
         def validate(files, required):
-            if now[0] == 149.0:
+            if now[0] == 144.0:
                 now[0] = 151.0
             return package_structure_errors(files, required)
 

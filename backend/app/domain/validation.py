@@ -125,9 +125,12 @@ class DeterministicRepair(BaseModel):
         "missing_data_source",
         "empty_default_security_group_rule",
         "flow_log_placeholders",
+        "multiline_arguments",
     ]
     name: str
     line: int | None = None
+    before_hash: str | None = None
+    after_hash: str | None = None
 
 
 class RepairRound(BaseModel):
@@ -164,6 +167,8 @@ class RemediationReport(BaseModel):
     generator_schema_context_chars: int | None = Field(default=None, ge=0)
     generator_security_context_chars: int | None = Field(default=None, ge=0)
     generator_context_truncated: bool | None = None
+    generation_syntax: dict[str, Any] | None = None
+    provenance_observations: list[dict[str, Any]] = Field(default_factory=list)
 
 
 def check_order(

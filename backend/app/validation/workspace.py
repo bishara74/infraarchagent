@@ -45,6 +45,9 @@ class ValidationWorkspace:
         self.observed = False
         self.terraform_complete = False
         self.complete_tools: set[str] = set()
+        self.syntax_cache: dict[tuple[str, str], list[Any]] = {}
+        self.failure_anchors: dict[tuple[str, ...], list[tuple[str, int | None]]] = {}
+        self.observations: list[dict[str, Any]] = []
 
     @staticmethod
     def check_key(check: ValidationCheck) -> tuple[str, str, str]:
@@ -61,10 +64,16 @@ class ValidationWorkspace:
         files: dict[str, str],
         *,
         partial: bool = False,
+        action: str | None = None,
     ) -> None:
         from app.validation.documents import PackageDocuments, blocks
 
+        self.stage = stage
+        checks = list(
+            {json.dumps(c.model_dump(), sort_keys=True): c for c in checks}.values()
+        )
         counts = Counter(self.check_key(c) for c in checks if c.status == "failed")
+        anchors: dict[tuple[str, ...], list[tuple[str, int | None]]] = {}
         scopes = {
             f"{Path(doc.path).parent}:{kind}.{'.'.join(labels)}"
             for doc in PackageDocuments.parse(files).documents.values()
@@ -76,6 +85,19 @@ class ValidationWorkspace:
             if check.status != "failed":
                 continue
             key = self.check_key(check)
+            lines = files.get(check.file_path or "", "").splitlines()
+            text = (
+                lines[check.line_start - 1].strip()
+                if check.line_start and check.line_start <= len(lines)
+                else ""
+            )
+            anchor = (
+                check.check_id,
+                check.file_path or "",
+                check.message,
+                check._origin_scope or "",
+                hashlib.sha256(text.encode()).hexdigest(),
+            )
             scope = (
                 f"{Path(check.file_path).parent}:{check._origin_scope}"
                 if check.file_path and check._origin_scope
@@ -91,7 +113,29 @@ class ValidationWorkspace:
                         or (scope is not None and scope not in self.declared_scopes)
                     )
                 )
-                self.origins[key] = stage if certain and counts[key] == 1 else "unknown"
+                inherited = self.failure_anchors.get(anchor, []) if text else []
+                self.origins[key] = (
+                    inherited[0][0]
+                    if len(inherited) == 1 and inherited[0][1] != check.line_start
+                    else stage
+                    if certain and counts[key] == 1
+                    else "unknown"
+                )
+            anchors.setdefault(anchor, []).append((self.origins[key], check.line_start))
+            self.observations.append(
+                {
+                    "check_id": check.check_id,
+                    "file": check.file_path,
+                    "observed_stage": stage,
+                    "action": action,
+                    "line": check.line_start,
+                    "origin": self.origins[key],
+                    "content_hash": hashlib.sha256(
+                        files.get(check.file_path or "", "").encode()
+                    ).hexdigest(),
+                }
+            )
+        self.failure_anchors = anchors
         current = set(counts)
         if partial:
             current |= {k for k in self.last_failures if k[0] != "terraform.validate"}

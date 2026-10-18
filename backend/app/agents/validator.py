@@ -69,6 +69,7 @@ class ValidatorAgent:
             report = prepared_report
         workspace = current_workspace()
         if workspace is not None:
+            workspace.observe(list(report.checks), workspace.stage, package.files)
             annotated_checks = workspace.annotate(report.checks)
             report = report.model_copy(
                 update={
@@ -92,6 +93,7 @@ class ValidatorAgent:
             metadata = report.remediation.model_copy(
                 update={
                     "measurements": list(workspace.measurements),
+                    "provenance_observations": workspace.observations[-200:],
                     "initialization": initialization_metrics(
                         workspace.terraform_metrics
                     ),

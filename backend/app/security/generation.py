@@ -91,7 +91,11 @@ def generation_context(plan: DeploymentPlan) -> GenerationContext:
     types = plan_resource_types(plan)
     schema = generator_schema_context(4500, resource_types=tuple(sorted(types)))
     header = "\nSecurity checklist:\n"
-    lines = supporting_guidance(types)
+    lines = [
+        "Syntax: close quoted strings; use one block argument per line, no semicolons. "
+        "Encode IAM policies with jsonencode() or a valid heredoc. "
+        "Escape quotes (including PromQL) inside JSON strings."
+    ] + supporting_guidance(types)
     supporting = "\n".join(lines)
     controls = guidance(types, max(0, 1500 - len(header) - len(supporting) - 1))
     checklist = header + supporting + ("\n" + controls if controls else "")

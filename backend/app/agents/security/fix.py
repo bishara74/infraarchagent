@@ -119,6 +119,7 @@ class FixProposal:
     edit_bases: dict[str, str] = field(default_factory=dict)
     normalized_existing_paths: tuple[str, ...] = ()
     conflicting_paths: tuple[str, ...] = ()
+    llm_attempts: int | None = None
 
 
 def content_hash(source: str) -> str:
@@ -288,14 +289,19 @@ class FixAgent:
         feedback: str | None = None,
         validation_failures: Sequence[dict[str, Any]] = (),
         previous_attempt: str = "",
+        syntax_only: bool = False,
     ) -> FixProposal:
         started = time.monotonic()
-        context = schema_context(
-            path,
-            dict(files),
-            failures=list(validation_failures),
-            findings=list(findings),
-            limit=self.schema_context_max_chars,
+        context = (
+            ""
+            if syntax_only
+            else schema_context(
+                path,
+                dict(files),
+                failures=list(validation_failures),
+                findings=list(findings),
+                limit=self.schema_context_max_chars,
+            )
         )
         if not path.startswith("terraform/"):
             context_reason = "not_terraform"
@@ -332,7 +338,7 @@ class FixAgent:
                         and name.endswith((".tf", ".tf.json"))
                     },
                 ),
-                system=system_prompt(directive),
+                system=system_prompt(directive, syntax_only=syntax_only),
                 deadline=remaining,
                 attempt_timeout=self.attempt_timeout,
                 max_output_tokens=self.max_output_tokens,
@@ -395,6 +401,7 @@ class FixAgent:
                 proposal = FixProposal(path, False, "time_budget", None, {}, ())
         return replace(
             proposal,
+            llm_attempts=getattr(response, "attempts", None),
             input_tokens=response.response.input_tokens,
             output_tokens=response.response.output_tokens,
             cached_input_tokens=response.response.cached_input_tokens,

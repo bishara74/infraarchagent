@@ -27,6 +27,41 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f corrective — Native generation syntax recovery
+
+**Summary:** Establish native syntax checks before accepting Terraform edits and
+recover provisional generation with whitespace-only normalization, two syntax-only
+fixer rounds and one diagnostic-fed regeneration. Share the original generator
+deadline through publication, retaining model/output limits and blocking rules.
+
+**Requirements addressed:** FR-G-02, FR-S-03, FR-V-03, FR-V-04, NFR-01, PR-05.
+
+**Files:** agents/generation_syntax.py, generators/base.py, generator/security-fix
+prompts, security/fix.py and generation.py, validation/syntax.py, gate.py and
+workspace.py, agents/validation_repair.py and validator.py, domain/validation.py,
+pipeline/orchestrator.py, security/terraform.py, corrective unit/generation
+integration tests and existing generator/event fixtures.
+
+**Decisions:** D-46. Native Terraform rejects compact blocks accepted by Python
+HCL; lexer normalization inserts only newlines and verifies token equivalence.
+Scope/control checks constrain model repairs. Generation stays provisional until
+parsing succeeds; newly exposed findings remain blocking. Record source-free
+recovery paths, redacted diagnostic feedback, usage and attempt totals. Deduplicate
+observations and preserve unique source anchors across line movement. The complete
+generation workflow has an outer deadline, with five seconds reserved for
+finalization; timeout recovery follows existing legal status transitions.
+
+**Tests:** make test completed 1,479 passed / 0 failed / 0 skipped / 6 performance
+deselected (213.81 s) before the final outer-publication follow-up. Its two added
+deadline cases pass within the five-test acceptance follow-up. Native checks,
+normalization/token/idempotence, two rejected/accepted rounds, regeneration limits,
+scope, redaction, clocks and newly revealed blockers are covered. Final combined
+verification is recorded in the concluding corrective entry.
+
+**Known gaps / follow-ups:** No real model success rate is measured. Native tools
+must be available; unavailable verification fails closed. The preserved benchmark
+A used prompt v7; corrected generation uses v8, requiring matched author runs.
+
 ## 2026-10-17 — Phase 9f section 7 — Quality measurement and final verification
 
 **Summary:** Add allowlisted per-package catalogue/template/group/recovery/call/model

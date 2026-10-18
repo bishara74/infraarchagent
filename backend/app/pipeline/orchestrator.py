@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.agents.architect import ArchitectError
 from app.agents.budget import AgentBudget
 from app.agents.factory import AgentFactory
+from app.agents.generation_syntax import recover_generation_syntax
 from app.agents.generators.base import GeneratorAgent, GeneratorError
 from app.agents.remediation import validate_files
 from app.agents.security.agent import SecurityAgent
@@ -51,6 +52,7 @@ from app.validation.gate import GateRepairEngine, GenerationGate
 from app.validation.idioms import repair_idioms
 from app.validation.measurement import initialization_metrics, publish_measurement
 from app.validation.repairs import repair_terraform
+from app.validation.syntax import native_syntax
 from app.validation.workspace import ValidationWorkspace, current_workspace
 
 logger = logging.getLogger(__name__)
@@ -95,7 +97,60 @@ class PipelineOrchestrator:
         workspace = ValidationWorkspace()
         self.workspaces[generator.variant] = workspace
         with workspace.activate():
-            return await self._generate_inside(generator, plan)
+            if not isinstance(generator, GeneratorAgent):
+                return await self._generate_inside(generator, plan)
+            started = self.clock()
+            try:
+                async with asyncio.timeout(generator.deadline_seconds):
+                    return await self._generate_inside(generator, plan)
+            except TimeoutError:
+                # The work reserve is not an additional publication allowance:
+                # slow database/event writes share the same absolute deadline.
+                if generator.last_run is not None:
+                    elapsed = max(
+                        generator.last_run.elapsed_seconds, self.clock() - started
+                    )
+                    generator._last_run = replace(
+                        generator.last_run,
+                        elapsed_seconds=elapsed,
+                        deadline_exceeded=True,
+                        overrun_seconds=max(0.0, elapsed - generator.deadline_seconds),
+                    )
+                current = await self._package_status(generator.variant)
+                if current == PackageStatus.GENERATING:
+                    await self._generation_failed(
+                        generator.variant,
+                        "package generation exceeded its time limit",
+                        generator,
+                        "deadline",
+                    )
+                else:
+                    # Publication may already have committed GENERATED. Follow
+                    # existing legal arrows rather than reverting that state.
+                    await self.writer.package_transition(
+                        self.run_id,
+                        generator.variant,
+                        PackageStatus.SCANNING,
+                        message="generation publication exceeded its time limit",
+                    )
+                    await self.writer.package_transition(
+                        self.run_id,
+                        generator.variant,
+                        PackageStatus.SCAN_ERROR,
+                        message="generation publication exceeded its time limit",
+                        error="generation deadline exceeded",
+                    )
+                    await self.writer.agent_state(
+                        self.run_id,
+                        GENERATOR_NAMES[generator.variant],
+                        AgentState.FAILED,
+                        previous=AgentState.RUNNING,
+                        message="generator publication timed out",
+                        variant=generator.variant,
+                        metrics=self._generator_metrics(generator),
+                        failure_category="deadline",
+                    )
+                return generator.variant, None
 
     async def _prepare_generation(
         self,
@@ -103,6 +158,7 @@ class PipelineOrchestrator:
         plan: DeploymentPlan,
         package: IaCPackage,
         started: float,
+        generation_budget: AgentBudget | None = None,
     ) -> IaCPackage:
         if not isinstance(self.validation_stage, ValidatorAgent):
             return package
@@ -140,8 +196,27 @@ class PipelineOrchestrator:
             self.clock() - started,
             generator.last_run.elapsed_seconds if generator.last_run else 0,
         )
+        if generation_budget is not None:
+            remaining = min(remaining, generation_budget.remaining())
+        # Publication and restoration share the original generator allowance.
+        remaining = max(0.0, remaining - 5.0)
         gate = GenerationGate(self.validation_stage.engine)
         if remaining <= 0:
+            metadata = metadata.model_copy(
+                update={
+                    "generation_syntax": {
+                        "path": "deadline",
+                        "normalizations": [],
+                        "rounds": [],
+                        "regeneration": "deadline",
+                        "skipped_steps": [
+                            "syntax_round_1",
+                            "syntax_round_2",
+                            "regeneration",
+                        ],
+                    }
+                }
+            )
             workspace.gate = {
                 "outcome": "deadline",
                 "duration_seconds": 0.0,
@@ -151,8 +226,69 @@ class PipelineOrchestrator:
         else:
             budget = AgentBudget(remaining, clock=self.clock)
             gate_started = self.clock()
+            workspace.gate = {
+                "outcome": "deadline",
+                "duration_seconds": 0.0,
+                "failed_checks": [],
+                "skipped_checks": [],
+            }
             try:
                 async with asyncio.timeout(budget.remaining()):
+                    security = (
+                        self.security_stage
+                        or self.factory.create_security_agent(self.run_config)
+                    )
+                    if isinstance(security, SecurityAgent):
+
+                        async def regenerate(
+                            feedback: list[dict[str, Any]],
+                        ) -> dict[str, str]:
+                            return (
+                                await generator.regenerate(plan, feedback, budget)
+                            ).files
+
+                        recovered, recovery = await recover_generation_syntax(
+                            package.files,
+                            plan,
+                            security.fix_agent,
+                            budget,
+                            redact=self.safety.value
+                            if self.safety
+                            else lambda value: value,
+                            regenerate=regenerate,
+                        )
+                        recovery.update(
+                            fixing_model=security.fixing_model,
+                            fixing_provider=security.fixing_provider,
+                            fixing_reasoning_effort=security.fixing_reasoning_effort,
+                        )
+                        metadata = metadata.model_copy(
+                            update={"generation_syntax": recovery}
+                        )
+                        package = package.model_copy(update={"files": recovered})
+                        actions = [a for r in recovery["rounds"] for a in r["actions"]]
+                        if generator.last_run and actions:
+                            updates: dict[str, Any] = {}
+                            old_attempts = generator.last_run.total_llm_attempts
+                            updates["total_llm_attempts"] = (
+                                old_attempts + sum(a["llm_attempts"] for a in actions)
+                                if old_attempts is not None
+                                and all(a["llm_attempts"] is not None for a in actions)
+                                else None
+                            )
+                            for field in (
+                                "input_tokens",
+                                "output_tokens",
+                                "cached_input_tokens",
+                            ):
+                                old = getattr(generator.last_run, field)
+                                updates[field] = (
+                                    old + sum(a[field] for a in actions)
+                                    if old is not None
+                                    and all(a[field] is not None for a in actions)
+                                    else None
+                                )
+                            generator._last_run = replace(generator.last_run, **updates)
                     result = await gate.run(plan, package.files)
                     package = package.model_copy(update={"files": result.files})
                     workspace.gate = result.metrics
@@ -169,6 +305,7 @@ class PipelineOrchestrator:
                         result.report.summary.result == "invalid"
                         and budget.remaining() >= 1
                         and not demo
+                        and not await native_syntax(package.files)
                     ):
                         security = (
                             self.security_stage
@@ -224,6 +361,11 @@ class PipelineOrchestrator:
         variant = generator.variant
         name = GENERATOR_NAMES[variant]
         started = self.clock()
+        generation_budget = (
+            AgentBudget(generator.deadline_seconds, clock=self.clock)
+            if isinstance(generator, GeneratorAgent)
+            else None
+        )
         await self.writer.agent_state(
             self.run_id,
             name,
@@ -232,12 +374,21 @@ class PipelineOrchestrator:
             variant=variant,
         )
         try:
-            package = await generator.generate(plan)  # type: ignore[arg-type]
+            if isinstance(generator, GeneratorAgent) and isinstance(
+                plan, DeploymentPlan
+            ):
+                assert generation_budget is not None
+                work_budget = AgentBudget(
+                    max(0.001, generation_budget.remaining() - 5.0), clock=self.clock
+                )
+                package = await generator.generate(plan, budget=work_budget)
+            else:
+                package = await generator.generate(plan)  # type: ignore[arg-type]
             if isinstance(generator, GeneratorAgent) and isinstance(
                 plan, DeploymentPlan
             ):
                 package = await self._prepare_generation(
-                    generator, plan, package, started
+                    generator, plan, package, started, generation_budget
                 )
                 if generator.last_run is not None:
                     elapsed = max(
@@ -311,9 +462,11 @@ class PipelineOrchestrator:
         return (
             {
                 "attempts": info.package_attempts,
-                "llm_attempts": len(info.attempt_details)
+                "llm_attempts": info.total_llm_attempts
+                if info.total_llm_attempts is not None
+                else len(info.attempt_details)
                 if info.attempt_details
-                else info.total_llm_attempts,
+                else None,
                 "elapsed_seconds": info.elapsed_seconds,
                 "input_tokens": info.input_tokens,
                 "output_tokens": info.output_tokens,
