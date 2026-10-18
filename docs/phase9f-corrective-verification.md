@@ -92,7 +92,8 @@ not a new production-ready rate; all semantic/security criteria still apply.
 - `make provider-schema`: all seven pinned versions exported offline, including
   AWS 5.100.0 and 6.68.0; no provider installation/download.
 - `make secret-scan`: 0 findings / 0 scan errors; dated evidence under
-  `evals/phase9-secret-scan-20261018T145121046655Z/`.
+  `evals/phase9-secret-scan-20261018T150931250888Z/` (working tree and all
+  refs/reflogs through corrective implementation/evidence commit 26ed06a).
 
 The first backend run had four failures (1,462 passed): the new native guard
 caught expansion of single-line resources without a newline after `{`; review
@@ -135,3 +136,7 @@ evaluations. Default models/output limits and all readiness/blocking rules are
 unchanged. Prompt v8 and generation recovery differ from preserved benchmark A's
 v7: use the same corrected commit for both author fixer configurations, or
 explicitly report this confounder. Haiku and corrected real benchmarks were not run.
+
+Task-owned PostgreSQL containers were removed and the temporary local server
+was stopped after verification. The existing PostgreSQL container on
+5432 remains available; only pre-existing untracked workspace files remain.

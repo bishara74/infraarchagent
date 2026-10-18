@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f corrective — Final history audit and cleanup
+
+**Summary:** Record the post-implementation secret scan and close task-owned test
+services. All fourteen benchmark-A JSON input hashes still match replay evidence.
+
+**Requirements addressed:** NFR-01, PR-05.
+
+**Files:** this log, phase9f-corrective-verification.md and
+evals/phase9-secret-scan-20261018T150931250888Z/.
+
+**Decisions:** D-46 remains the corrective design record; no new open question.
+The audit covers the working tree and all refs/reflogs through implementation/
+evidence commit 26ed06a. This final commit contains documentation/audit output only.
+
+**Tests:** make secret-scan PASS: 0 findings / 0 scan errors. Final lint and
+backend/frontend/E2E/schema/stub results are recorded in the preceding entry.
+Task-owned Docker containers were removed and the fallback PostgreSQL stopped;
+the original application PostgreSQL on 5432 still accepts connections.
+
+**Known gaps / follow-ups:** Real author benchmarks were not run. PR-03 remains
+FAIL in the stub evidence; model comparisons require matched corrected commits.
+
 ## 2026-10-18 — Phase 9f corrective — Offline replay, reports and verification
 
 **Summary:** Preserve benchmark-A evidence and report deterministic syntax recovery
