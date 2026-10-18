@@ -1,0 +1,1147 @@
+{
+  "counts": {
+    "packages": 12,
+    "missing_variants": 0,
+    "unavailable_runs": 0,
+    "production_ready": 0
+  },
+  "production_ready_rate": 0.0,
+  "status_counts": {
+    "pending_review": 12
+  },
+  "review_reason_counts": {
+    "unresolved_security_findings": 12,
+    "validation_failed": 9
+  },
+  "failed_check_counts": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "count": 5
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "count": 5
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.acm_certificate_arn is not declared",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.api_image is not declared",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.db_name is not declared",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.db_username is not declared",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.db_instance_class is not declared",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.db_password is not declared",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.nginx_instance_type is not declared",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared input variable",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported attribute",
+      "count": 2
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.region is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.vpc_cidr is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.project_name is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.public_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.private_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.container_port is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.ecs_task_cpu is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.ecs_task_memory is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.desired_count is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.nginx_ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.aws_region is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.key_pair_name is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.monitor_instance_type is not declared",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.var_ref",
+      "message": "var.log_bucket_name is not declared",
+      "count": 1
+    }
+  ],
+  "remaining_finding_counts": {
+    "AWS-0104": 32,
+    "AWS-0164": 14,
+    "CKV_AWS_130": 14,
+    "CKV_AWS_260": 10,
+    "AWS-0053": 9,
+    "CKV2_AWS_12": 9,
+    "CKV_AWS_91": 9,
+    "CKV_AWS_378": 9,
+    "AWS-0054": 6,
+    "CKV2_AWS_20": 6,
+    "CKV_AWS_103": 6,
+    "CKV_AWS_2": 6,
+    "CKV_AWS_18": 5,
+    "AWS-0077": 4,
+    "CKV2_AWS_11": 4,
+    "CKV_AWS_157": 4,
+    "AWS-0132": 3,
+    "CKV_AWS_145": 3,
+    "CKV_AWS_354": 3,
+    "AWS-0090": 3,
+    "CKV_AWS_144": 3,
+    "CKV_AWS_21": 3,
+    "DS-0002": 3,
+    "AWS-0079": 2,
+    "AWS-0052": 2,
+    "AWS-0031": 1
+  },
+  "final_failure_origins": {
+    "generated": 24,
+    "security_fix": 22
+  },
+  "measurements": {
+    "durations": {
+      "deterministic_repairs": {
+        "count": 50,
+        "median": 0.08108470100160048,
+        "p90": 0.1605347860022448,
+        "max": 0.5190514140012965
+      },
+      "final_security_scan": {
+        "count": 12,
+        "median": 5.9993591554994055,
+        "p90": 10.483691075001843,
+        "max": 16.105378233998636
+      },
+      "final_validation": {
+        "count": 12,
+        "median": 0.12279307350036106,
+        "p90": 0.9935631600019406,
+        "max": 11.91665338799794
+      },
+      "generation_gate": {
+        "count": 12,
+        "median": 53.642715109001074,
+        "p90": 81.83369561099971,
+        "max": 81.96561143999861
+      },
+      "initial_validation": {
+        "count": 12,
+        "median": 0.22804608399928838,
+        "p90": 0.7437710160011193,
+        "max": 2.102375608999864
+      },
+      "post_security_validation": {
+        "count": 12,
+        "median": 0.17188697150049848,
+        "p90": 1.919585855997866,
+        "max": 2.2340280070020526
+      },
+      "security_iteration_verification": {
+        "count": 43,
+        "median": 16.84630167599971,
+        "p90": 34.88133416799246,
+        "max": 43.87429754199911
+      },
+      "validation_repair_round": {
+        "count": 26,
+        "median": 13.224329559499893,
+        "p90": 24.422198224001477,
+        "max": 39.67673861200092
+      }
+    },
+    "iterations": {
+      "attempted_fix_iterations": 43,
+      "deadline_only_rollbacks": 5,
+      "deadline_before_candidate": 1,
+      "multiple_cause_deadline_rollbacks": 0,
+      "validity_regression_rollbacks": 0
+    },
+    "initialization": {
+      "init_runs": 13,
+      "init_reused": 107,
+      "reinitializations": 1
+    },
+    "repair_deadline_stops": {}
+  },
+  "repair_outcomes_by_class": [
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared input variable",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 3
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.acm_certificate_arn is not declared",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.api_image is not declared",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.aws_region is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.container_port is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_instance_class is not declared",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_name is not declared",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_password is not declared",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_username is not declared",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.desired_count is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ecs_task_cpu is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ecs_task_memory is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.key_pair_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.log_bucket_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.monitor_instance_type is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_instance_type is not declared",
+      "count": 2
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.private_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.project_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.public_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.region is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.vpc_cidr is not declared",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared input variable",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 4
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.acm_certificate_arn is not declared",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.api_image is not declared",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.aws_region is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.container_port is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_instance_class is not declared",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_name is not declared",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_password is not declared",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_username is not declared",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.desired_count is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ecs_task_cpu is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ecs_task_memory is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.key_pair_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.log_bucket_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.monitor_instance_type is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_instance_type is not declared",
+      "count": 2
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.private_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.project_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.public_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.region is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.vpc_cidr is not declared",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Reference to undeclared input variable",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 4
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.acm_certificate_arn is not declared",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.api_image is not declared",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.aws_region is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.container_port is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_instance_class is not declared",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_name is not declared",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_password is not declared",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.db_username is not declared",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.desired_count is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ecs_task_cpu is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ecs_task_memory is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.key_pair_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.log_bucket_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.max_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.min_capacity is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.monitor_instance_type is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_instance_type is not declared",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.nginx_ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.private_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.project_name is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.public_subnet_cidrs is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.region is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.ssh_public_key is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "var.vpc_cidr is not declared",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 1
+    }
+  ],
+  "gate_outcomes": {
+    "invalid": 9,
+    "valid": 3
+  },
+  "init_categories": {
+    "validation_cached": 9,
+    "initialized": 3
+  },
+  "security_context_coverage": {
+    "terraform": {
+      "total": 39,
+      "positive": 39,
+      "zero": 0,
+      "missing": 0,
+      "reasons": {
+        "schema_available": 39
+      }
+    },
+    "other": {
+      "total": 10,
+      "positive": 0,
+      "zero": 10,
+      "missing": 0,
+      "reasons": {
+        "not_terraform": 10
+      }
+    },
+    "unknown": {
+      "total": 0,
+      "positive": 0,
+      "zero": 0,
+      "missing": 0,
+      "reasons": {}
+    }
+  },
+  "schema_context_chars": {
+    "generator": {
+      "count": 12,
+      "median": 5503.0,
+      "p90": 5503,
+      "max": 5503
+    },
+    "repair": {
+      "count": 26,
+      "median": 15971.0,
+      "p90": 15998,
+      "max": 15998
+    },
+    "security": {
+      "count": 49,
+      "median": 9640,
+      "p90": 13179,
+      "max": 14994
+    }
+  },
+  "security_outcomes_by_class": [
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Reference to undeclared input variable",
+      "count": 2
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Reference to undeclared resource",
+      "count": 2
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Unsupported argument",
+      "count": 4
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "unknown",
+      "count": 4
+    },
+    {
+      "outcome": "no_change",
+      "reason": "",
+      "error_class": "Reference to undeclared input variable",
+      "count": 4
+    },
+    {
+      "outcome": "no_change",
+      "reason": "",
+      "error_class": "Reference to undeclared resource",
+      "count": 1
+    },
+    {
+      "outcome": "no_change",
+      "reason": "",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 4
+    },
+    {
+      "outcome": "no_change",
+      "reason": "",
+      "error_class": "Unsupported argument",
+      "count": 12
+    },
+    {
+      "outcome": "no_change",
+      "reason": "",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "outcome": "no_change",
+      "reason": "",
+      "error_class": "unknown",
+      "count": 7
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "iteration_deadline",
+      "error_class": "unknown",
+      "count": 9
+    },
+    {
+      "outcome": "stopped",
+      "reason": "iteration_deadline",
+      "error_class": "unknown",
+      "count": 1
+    }
+  ],
+  "package_initialization": {
+    "packages_measured": 12,
+    "packages_unknown": 0,
+    "init_runs": 14,
+    "init_reused": 160,
+    "reinitializations": 2,
+    "init_seconds": 183.4436853960069,
+    "validate_seconds": 493.3423944360111
+  },
+  "phase9f": {
+    "generation_syntax_paths": {
+      "unchanged": 8,
+      "syntax_round_1": 3,
+      "normalization": 1
+    },
+    "packages_measured": 12,
+    "packages_unknown": 0,
+    "near_misses": {
+      "1": 0,
+      "2-3": 0,
+      "4+": 3
+    },
+    "validation_unknown": 0,
+    "catalogue_retained_by_rule": {
+      "CKV_AWS_103": 4,
+      "AWS-0028": 3,
+      "AWS-0131": 3,
+      "CKV_AWS_8": 3
+    },
+    "template_outcomes": [
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "count": 39
+      },
+      {
+        "template": "flow_logs",
+        "status": "rejected",
+        "count": 1
+      },
+      {
+        "template": "flow_logs",
+        "status": "retained",
+        "count": 5
+      },
+      {
+        "template": "flow_logs",
+        "status": "skipped",
+        "count": 10
+      },
+      {
+        "template": "kms",
+        "status": "rejected",
+        "count": 6
+      },
+      {
+        "template": "kms",
+        "status": "retained",
+        "count": 5
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "count": 7
+      }
+    ],
+    "template_introduced_rules": {
+      "AWS-0090": 37,
+      "AWS-0132": 39
+    },
+    "partial_groups": {},
+    "existing_file_proposals": {
+      "normalized": 0,
+      "retained": 0
+    },
+    "fixer_models": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "sessions": 12,
+        "fix_attempt_timeout_seconds": [
+          45.0
+        ],
+        "iteration_timeout_seconds": [
+          60.0
+        ],
+        "security_stage_timeout_seconds": [
+          240.0
+        ],
+        "fix_max_resources": [
+          2
+        ],
+        "fix_max_findings": [
+          12
+        ],
+        "partial_max_groups": [
+          6
+        ],
+        "findings_per_call": {
+          "count": 49,
+          "median": 2,
+          "p90": 5,
+          "max": 5
+        },
+        "calls_missing_measurements": 0
+      }
+    ]
+  }
+}
