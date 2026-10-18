@@ -1637,6 +1637,9 @@ metadata or semantic naming inference is a later design decision.
   recovery and dependency-group partial acceptance under unchanged guards/budgets.
   Include native syntax acceptance, lexer normalization, provisional generation
   recovery, deletion checks against unchanged consumers and stage/action provenance.
+  Add content-specific declaration completion after syntax recovery, cached parsing,
+  complete iteration deadlines and source-free completeness diagnostics (default
+  three package attempts; prompt v9).
 - Chapter 6 / D-46: compare the preserved 9e real baseline (1/40 ready; 35 with
   blockers; 16 accepted / 61 unchanged / 77 rolled-back iterations) with separate
   author-run 9f gpt-oss and Haiku-class fixer measurements. Keep stub/rehearsal,
@@ -1644,6 +1647,10 @@ metadata or semantic naming inference is a later design decision.
   include near misses, introduced template blockers, timings and model settings.
   Add the benchmark-A corrective replay separately (3 deterministic + 8 scripted
   recoveries); disclose prompt v7/v8 and recovery changes in any real comparison.
+  Keep A2's 1/36 generated / six missing variants and five concurrent-cohort PR-05
+  failures distinct from the 31-variable offline repair replay. Report isolated
+  and concurrent PR-05 views without changing the aggregate verdict, and disclose
+  the subsequent v9/three-attempt setting change in matched author comparisons.
 
 
 - Chapter 4 / D-45: tool-grounded generation, scanner fixes and repair; offline

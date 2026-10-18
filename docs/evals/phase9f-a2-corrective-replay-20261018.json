@@ -1,0 +1,165 @@
+{
+  "mode": "offline_native_no_llm",
+  "input_hashes": {
+    "1fd12b99-3b86-4ec3-9e2c-1d7f97c00ebb.json": "10219b6b77ab1dd1056550d9400bea632636346f9f78fdba1154656e79fbab27",
+    "31c7c780-c6c2-46d1-9f31-c799ffa954b6.json": "c207658c6d44853c22d50015b316c3b417f24e9447408006a756eada34f3f232",
+    "52b11be8-e7c9-4339-b163-6745c06671fc.json": "989d423021e9be005cf58e94bae55980b0854a22062198f725925b8dbfd5dbee",
+    "82064b80-610d-44f6-b5cd-87612220bd2f.json": "f2ab1cf2636bfa8bc72cd737242bc03657f494d6836d3b9a7b55c53bed5b7083",
+    "8614c9e9-087b-454b-ade7-70f430673262.json": "2f504b0879b67c9346bb0a045938dc3611dc39ffd7640a723486100d0479eae7",
+    "8b00bf87-fd3c-4389-9193-a8ac36f6b114.json": "35c0646c6f0324243084b485b72e4bf7a9a113b34c30cba6c1bbe4dd587a2211",
+    "9a6cfc31-2999-4917-959a-92ebddf48542.json": "e6302883d4af311f9b7eb0afa47c2d6abf6ec284b61a46fb0544273d0c03c137",
+    "a2ef9d64-d3a9-4153-9375-810e635a4f35.json": "d1c8a2d242c08a9cadc92df05c6e311f8645e7a88c50647fd61dbfd54c3a313e",
+    "a92bafec-184a-4643-8a68-e14b41ddc247.json": "7b85e2913a5a8efaccd282e9dd8eb855aee4094053627508c46fffda1b551954",
+    "b256d947-603b-4a72-88cd-a7b560eef1cb.json": "b1acf0fce33141b9adf8918abc889524c607fd43ca26d3ad2bba106b1a40d7ac",
+    "b8f9536f-d4f2-4ddc-a1fd-974e0ce2d97f.json": "a4e8dd17247ee31449ceb525d8e1bb2d4f30c82f5d8ea14850e36e8787180a46",
+    "dc7ec97f-f230-43cb-a9a1-a2976c20ba13.json": "89b9ed3185e867c73dd8c0f5932fe91992f261195a73eee600fe3fb11a4a6647",
+    "e0f47a31-f2d3-414d-a1a8-f938300911df.json": "4f5b98baa944b12be20daae95e4e05965ab67a922ff35eaa5225fb21133742eb",
+    "f8a2a37b-3ccc-4ef0-ad5f-2fc7c4bc8193.json": "7e4598fd0704036d56cf68eac529df6fc961209b77380f9997cf00ce51e0a1c7"
+  },
+  "input_files_unchanged": true,
+  "cases": [
+    {
+      "run_id": "9a6cfc31-2999-4917-959a-92ebddf48542",
+      "variant": "performance",
+      "checkpoint": "saved parsable final files; no syntax model replay",
+      "original_declaration_actions": 0,
+      "before_variable_failures": 19,
+      "added_declarations": 19,
+      "after_variable_failures": 0,
+      "native_syntax_errors": 0,
+      "idempotent": true
+    },
+    {
+      "run_id": "dc7ec97f-f230-43cb-a9a1-a2976c20ba13",
+      "variant": "security",
+      "checkpoint": "saved parsable final files; no syntax model replay",
+      "original_declaration_actions": 0,
+      "before_variable_failures": 12,
+      "added_declarations": 12,
+      "after_variable_failures": 0,
+      "native_syntax_errors": 0,
+      "idempotent": true
+    }
+  ],
+  "variable_failures_before": 31,
+  "variable_failures_after": 0,
+  "pr05_workloads": {
+    "isolated_pr01": {
+      "verdict": "PASS",
+      "observations": 159,
+      "failures": 0,
+      "missing_measurements": 0,
+      "agents": {
+        "architect": 10,
+        "generator_performance": 10,
+        "generator_cost": 10,
+        "generator_security": 10,
+        "security_iteration": 119
+      },
+      "durations": {
+        "count": 159,
+        "median": 9.352386,
+        "p90": 30.717515,
+        "max": 55.049596
+      },
+      "failed_observations": []
+    },
+    "isolated_pr03_baseline": {
+      "verdict": "PASS",
+      "observations": 19,
+      "failures": 0,
+      "missing_measurements": 0,
+      "agents": {
+        "architect": 1,
+        "generator_cost": 1,
+        "generator_performance": 1,
+        "generator_security": 1,
+        "security_iteration": 15
+      },
+      "durations": {
+        "count": 19,
+        "median": 9.586806,
+        "p90": 32.880684,
+        "max": 41.16405
+      },
+      "failed_observations": []
+    },
+    "concurrent_pr03_cohort": {
+      "verdict": "FAIL",
+      "observations": 57,
+      "failures": 5,
+      "missing_measurements": 0,
+      "agents": {
+        "architect": 3,
+        "generator_cost": 3,
+        "generator_performance": 3,
+        "generator_security": 3,
+        "security_iteration": 45
+      },
+      "durations": {
+        "count": 57,
+        "median": 43.474078,
+        "p90": 63.661117,
+        "max": 87.542488
+      },
+      "failed_observations": [
+        {
+          "run_id": "e0f47a31-f2d3-414d-a1a8-f938300911df",
+          "agent": "security_iteration",
+          "variant": "cost",
+          "iteration": 2,
+          "seconds": 68.900529,
+          "threshold_seconds": 60
+        },
+        {
+          "run_id": "a2ef9d64-d3a9-4153-9375-810e635a4f35",
+          "agent": "security_iteration",
+          "variant": "performance",
+          "iteration": 0,
+          "seconds": 60.057306,
+          "threshold_seconds": 60
+        },
+        {
+          "run_id": "a2ef9d64-d3a9-4153-9375-810e635a4f35",
+          "agent": "security_iteration",
+          "variant": "security",
+          "iteration": 2,
+          "seconds": 62.703118,
+          "threshold_seconds": 60
+        },
+        {
+          "run_id": "dc7ec97f-f230-43cb-a9a1-a2976c20ba13",
+          "agent": "security_iteration",
+          "variant": "cost",
+          "iteration": 0,
+          "seconds": 61.718622,
+          "threshold_seconds": 60
+        },
+        {
+          "run_id": "dc7ec97f-f230-43cb-a9a1-a2976c20ba13",
+          "agent": "security_iteration",
+          "variant": "performance",
+          "iteration": 1,
+          "seconds": 61.506421,
+          "threshold_seconds": 60
+        }
+      ]
+    },
+    "unclassified": {
+      "verdict": "INCOMPLETE",
+      "observations": 0,
+      "failures": 0,
+      "missing_measurements": 0,
+      "agents": {},
+      "durations": {
+        "count": 0,
+        "median": null,
+        "p90": null,
+        "max": null
+      },
+      "failed_observations": []
+    }
+  },
+  "aggregate_pr05": "FAIL",
+  "readiness_recomputed": false
+}

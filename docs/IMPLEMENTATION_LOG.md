@@ -27,6 +27,59 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f A2 — Final replay and full verification evidence
+
+**Summary:** Record preserved A2 investigation/replay, final full-stack checks and
+both actual stub benchmark outcomes. Finish the source/history secret audit and
+clean task-owned services without touching the application database.
+
+**Requirements addressed:** FR-G-02, FR-S-03, FR-S-04, FR-S-09, FR-V-03, NFR-01,
+PR-01, PR-03, PR-04, PR-05.
+
+**Files:** phase9f-a2-corrective-verification.md, D-46 Chapter 4/6 follow-ups,
+dated A2 replay JSON, both new stub evidence directories, secret-scan evidence
+and this implementation log. README/settings changes were committed separately.
+
+**Decisions:** D-46. Preserve all fourteen A2 input hashes and original A/A2 reports.
+Replay the saved parsable final checkpoints, not real model syntax calls: 19 + 12
+declarations remove 31 variable failures; native checks/idempotence pass. Do not
+recompute readiness. Original six completeness candidate details remain unknown.
+Additional historical PR-05 workload views keep aggregate FAIL: isolated PR-01
+159/0, isolated PR-03 baseline 19/0, concurrent cohort 57/5 observations/failures.
+The readiness difference's Fisher p=0.618259407733092 is descriptive, not causal.
+
+**Tests:** Final make lint PASS (Ruff/format, mypy 125 app sources, frontend
+ESLint/TS). Final make test: **1,507 passed / 0 failed / 0 skipped / 6 perf
+deselected (210.11 s)**, including the last acceptance-expiry guard. Earlier full
+checkpoints passed 1,502, 1,505 and 1,506 tests; interrupted iterations and the
+corrected phase-entry watchdog race are documented in the verification report.
+make frontend-test: **100 passed / 15 files**. make test-e2e: **6 passed (2.1 min)**.
+make provider-schema: all **7** pinned versions exported offline. make secret-scan:
+**0 findings / 0 scan errors**, all refs/reflogs and working tree through d5a1857;
+this final commit contains only documentation and sanitized evidence.
+
+**Benchmark:** Both make bench-stub runs completed 14 pipeline runs / 42 ready
+packages and 10 separately labelled synthetic 9,989,867-byte downloads. First run
+overlapped verification: PR-01/05 PASS, PR-03 FAIL, PR-04 FAIL (1/10 above 2 s;
+median 1.606764 s, maximum 2.141344 s). After other verification jobs finished,
+the fresh-backend run recorded PR-01 PASS (median 13.778885 s / max 16.177687 s),
+PR-04 PASS (median 1.100812 s / max 1.295116 s), PR-05 PASS, and PR-03 FAIL
+(ratios 2.798020–2.830299 vs unchanged 1.5x). Workload views for that run show
+70/0 isolated PR-01, 7/0 isolated baseline and 21/0 concurrent observations/failures.
+Both failures and successful repeats remain evidence; no thresholds were changed.
+Clean packages did not exercise fixer acceptance; the last post-provenance guard
+was separately tested and included in the final full backend run. Scripted native
+rehearsals remain descriptive and excluded from quality/PR thresholds.
+
+**Known gaps / follow-ups:** Author real benchmarks were not run. Stub numbers
+do not measure real-model reliability; discarded historical candidates/timing
+remain unknown. Cooperative scheduling cannot provide hard real-time guarantees;
+deadline faults fail closed and actual tails remain visible. No new open question,
+readiness exception, migration, dependency, installation, download, dotenv read,
+real key/LLM use or push. Task servers and both PostgreSQL containers were removed;
+the original PostgreSQL on 5432 remains available. Next author comparisons need
+matched corrected code/prompt v9 and explicit consistent attempt settings.
+
 ## 2026-10-18 — Phase 9f A2 — Reject expiry during provenance recording
 
 **Summary:** Recheck the candidate's work budget after provenance observation,
