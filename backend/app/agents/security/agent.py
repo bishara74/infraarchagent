@@ -261,9 +261,17 @@ class SecurityAgent:
             variant=variant,
         )
         iteration_started = ctx.clock()
-        await ctx.writer.package_transition(
-            ctx.run_id, variant, PackageStatus.SCANNING, message="security scan started"
-        )
+        async with iteration_window(
+            iteration_started + min(60.0, self.settings.security_deadline_seconds),
+            ctx.clock,
+            {},
+        ):
+            await ctx.writer.package_transition(
+                ctx.run_id,
+                variant,
+                PackageStatus.SCANNING,
+                message="security scan started",
+            )
         return await self._loop(
             ctx, variant, package, kind="automated", iteration_started=iteration_started
         )

@@ -3,6 +3,8 @@
 import math
 from collections import Counter
 
+from app.domain.package_layout import LAYOUT, classify_path
+from app.domain.plan import FileType
 from app.llm.errors import SAFE_MESSAGES, LLMResponseFormatError
 
 FAILURES = set(SAFE_MESSAGES) | {
@@ -64,6 +66,61 @@ def attempt_details(value):
     return rows
 
 
+def completeness_details(value):
+    if not isinstance(value, list):
+        return None
+    rows = []
+    for item in value[:20]:
+        if not isinstance(item, dict):
+            continue
+        types = [
+            v for v in item.get("missing_types", []) if v in {t.value for t in FileType}
+        ]
+        paths = []
+        for path in item.get("missing_paths", []):
+            if not isinstance(path, dict) or path.get("type") not in types:
+                continue
+            kind = FileType(path["type"])
+            suggestion = path.get("suggested_path")
+            if path.get("pattern") not in LAYOUT[kind].required or not isinstance(
+                suggestion, str
+            ):
+                continue
+            if classify_path(suggestion) == kind:
+                paths.append(
+                    {
+                        "type": kind.value,
+                        "pattern": path["pattern"],
+                        "suggested_path": suggestion,
+                    }
+                )
+        categories = item.get("categories") or {}
+        rows.append(
+            {
+                "attempt": integer(item.get("attempt")),
+                "error_count": integer(item.get("error_count")),
+                "missing_types": types,
+                "missing_paths": paths,
+                "categories": {
+                    k: integer(v)
+                    for k, v in categories.items()
+                    if k
+                    in {
+                        "missing_type",
+                        "unsafe_path",
+                        "empty_file",
+                        "unrequested_type",
+                        "disallowed_path",
+                        "size_limit",
+                        "schema",
+                        "no_candidate",
+                    }
+                },
+            }
+        )
+    return rows
+
+
 def generator_evidence(events):
     """Prefer terminal metrics per variant, falling back to older success events."""
     chosen = {}
@@ -82,8 +139,10 @@ def generator_evidence(events):
     known = len(chosen) == 3
     failures = {}
     deadlines = {}
+    completeness = {}
     for variant, event in chosen.items():
         metrics = event.get("metrics", {})
+        completeness[variant] = completeness_details(metrics.get("completeness"))
         attempts = metrics.get("llm_attempt_details")
         if attempts is None:
             known = False
@@ -108,5 +167,6 @@ def generator_evidence(events):
         else None,
         "generator_attempt_details": details if details else None,
         "generator_deadlines": deadlines,
+        "generator_completeness": completeness,
         "failure_categories": failures,
     }

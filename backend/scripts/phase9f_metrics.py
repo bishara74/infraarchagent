@@ -175,6 +175,23 @@ def snapshot(package: dict, redactor: RedactingFilter) -> dict:
                     "cancellation_seconds",
                     "restoration_seconds",
                     "publication_seconds",
+                    "iteration_elapsed_seconds",
+                    "deadline_overrun_seconds",
+                    "fault_recovery_seconds",
+                )
+            }
+            for it in security_iterations(report)
+        ],
+        "deadline_phases": [
+            {
+                key: number(
+                    (it.get("verification", {}).get("deadline_timings") or {}).get(key)
+                )
+                for key in (
+                    "complete_iteration",
+                    "workspace",
+                    "event_publication",
+                    "closing_state_event",
                 )
             }
             for it in security_iterations(report)

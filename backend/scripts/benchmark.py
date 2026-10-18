@@ -35,12 +35,14 @@ from scripts.phase9_report import statistics_for, summary, write_csv
 from scripts.phase9c_metrics import (
     FAILURES,
     attempt_details,
+    completeness_details,
     generator_evidence,
     number,
 )
 from scripts.phase9d_quality import quality_snapshot, quality_table, recompute_quality
 from scripts.phase9e_metrics import measurement as safe_measurement
 from scripts.phase9e_metrics import measurement_summary
+from scripts.phase9f_workloads import pr05_workloads
 
 TERMINAL = {"success", "partial_success", "failed"}
 SETTLED = {"pending_review", "production_ready", "not_production_ready", "scan_error"}
@@ -111,6 +113,8 @@ def normalized_event(item: dict) -> dict:
         safe_metrics["llm_attempt_details"] = attempt_details(
             metrics["llm_attempt_details"]
         )
+    if "completeness" in metrics:
+        safe_metrics["completeness"] = completeness_details(metrics["completeness"])
     failure = payload.get("failure_category")
     return {
         "seq": item["seq"],
@@ -342,6 +346,7 @@ class Harness:
                 "cohorts": self.cohorts,
                 "runner_capacity": self.capacity,
                 "stop_reason": self.stop_reason,
+                "pr05_workloads": pr05_workloads(self.rows, self.agent_rows),
             },
         )
         write_json(self.output / "events.json", self.events)
@@ -534,6 +539,10 @@ class Harness:
             lines.append(
                 f"PR-05 individual thresholds: {verdict}. "
                 "Missing metrics unknown; Validator descriptive."
+            )
+        for workload, data in pr05_workloads(self.rows, self.agent_rows).items():
+            lines.append(
+                f"PR-05 workload {workload} (additional view): " + json.dumps(data)
             )
         generator_rows = [
             row for row in self.rows if row["measurement"] in {"pr01", "pr03"}

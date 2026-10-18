@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 import pytest
 from sqlalchemy import text
 
-from app.core.deadlines import iteration_window
+from app.core.deadlines import active_deadline, bounded_phase, iteration_window
 from app.db.repositories.packages import PackageRepository
 from app.db.session import make_session_factory
 from app.domain.enums import AgentName, PackageStatus, Variant
@@ -56,10 +56,11 @@ async def test_complete_iteration_bounds_finalization_and_settles_legally(
     ctx, package = await setup(engine)
     security = agent(engine, ScriptedScanner([[finding("RULE")]]), ScriptedFix())
 
-    # Scale only this iteration's wall-clock bound; production remains 60 s.
+    # Expire only after the phase under test is reached. Setup work must not
+    # race a short timer under concurrent verification CPU contention.
     @asynccontextmanager
     async def short_window(end, clock, record):
-        async with iteration_window(time.monotonic() + 0.15, time.monotonic, record):
+        async with iteration_window(time.monotonic() + 60, time.monotonic, record):
             yield
 
     monkeypatch.setattr("app.agents.security.agent.iteration_window", short_window)
@@ -67,17 +68,17 @@ async def test_complete_iteration_bounds_finalization_and_settles_legally(
 
     async def blocked():
         entered.set()
-        await asyncio.Event().wait()
+        window = active_deadline.get()
+        window.end = window.clock()
+        async with bounded_phase("blocked_finalization"):
+            await asyncio.Event().wait()
 
     async def fix(*args, **kwargs):
         kwargs["checkpoint"].fixes = []
         if blocked_phase == "restoration":
             # The restoration phase runs inside the complete iteration window.
-            from app.validation.workspace import current_workspace
-
-            workspace = current_workspace()
-            await workspace.lock.acquire()
-            asyncio.get_running_loop().call_later(0.2, workspace.lock.release)
+            window = active_deadline.get()
+            window.end = window.clock()
             raise TimeoutError
         return args[2], [], "", args[5]
 
@@ -123,7 +124,7 @@ async def test_committed_clean_transition_with_interrupted_publication_fails_clo
 
     @asynccontextmanager
     async def short_window(end, clock, record):
-        async with iteration_window(time.monotonic() + 0.15, time.monotonic, record):
+        async with iteration_window(time.monotonic() + 60, time.monotonic, record):
             yield
 
     monkeypatch.setattr("app.agents.security.agent.iteration_window", short_window)
@@ -133,7 +134,10 @@ async def test_committed_clean_transition_with_interrupted_publication_fails_clo
     async def slow_publish(record):
         if record.new_state == "scan_clean":
             entered.set()
-            await asyncio.Event().wait()
+            window = active_deadline.get()
+            window.end = window.clock()
+            async with bounded_phase("blocked_publication"):
+                await asyncio.Event().wait()
         await publish(record)
 
     monkeypatch.setattr(ctx.writer.event_log.publisher, "publish", slow_publish)

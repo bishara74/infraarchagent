@@ -27,6 +27,40 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f A2 — Workload reporting and final boundary checks
+
+**Summary:** Add source-free completeness projections and separate PR-05 workload
+views while preserving the aggregate calculation. Bound the initial scanning
+write by the same iteration deadline and synchronize finalization fault tests.
+
+**Requirements addressed:** FR-G-02, FR-S-04, FR-S-09, NFR-01, PR-01, PR-03, PR-05.
+
+**Files:** scripts/benchmark.py, phase9c_metrics.py, phase9f_metrics.py,
+phase9f_workloads.py, phase9f_a2_replay.py, agents/security/agent.py,
+test_phase9f_a2.py and integration/test_phase9f_a2_deadlines.py.
+
+**Decisions:** D-46. Workloads distinguish isolated PR-01, isolated PR-03 baseline,
+concurrent PR-03 cohort and unclassified historical observations. Their descriptive
+verdicts never enter the existing aggregate checks. Report original thresholded
+observations, failures, missing measurements, maxima and affected identifiers.
+Completeness reports project only allowed diagnostic categories/types/patterns/
+suggested paths. The replay reads preserved A2 inputs and computes no readiness rate.
+Deadline fixtures now expire only after reaching the intended blocked phase,
+avoiding a 150 ms setup race under verification CPU contention; separate timer
+tests exercise real cancellation. The initial state write shares the same absolute
+horizon rather than waiting outside the iteration bound.
+
+**Tests:** Release checkpoint make test: 1,505 passed / 0 failed / 0 skipped /
+6 performance deselected (231.84 s). Final focused unit suite: 15 passed (3.09 s);
+final PostgreSQL/generation integration: 8 passed (6.80 s). A final full run includes
+the added initial-boundary case; its result is recorded in the evidence entry.
+Historical A2 projection remains aggregate FAIL: isolated counts 159/0 and 19/0,
+concurrent 57/5. All fourteen source JSON hashes remain unchanged.
+
+**Known gaps / follow-ups:** Six real completeness failures remain un-replayable
+without discarded candidates. No fabricated recovery or missing historical timing
+is supplied. Real author model comparisons remain separate work.
+
 ## 2026-10-18 — Phase 9f A2 — Repair declarations and explain package completeness
 
 **Summary:** Retry declaration repair after syntax recovery using module content
