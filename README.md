@@ -487,7 +487,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `GENERATOR_DEADLINE_SECONDS` | Budget per generator | `150` |
 | `GENERATOR_ATTEMPT_TIMEOUT_SECONDS` | Per-call attempt limit for full packages | `120` |
 | `GENERATOR_MAX_OUTPUT_TOKENS` | Generator-only output token limit (~60 seconds at observed throughput) | `8000` |
-| `GENERATOR_MAX_PACKAGE_ATTEMPTS` | Full-package attempts, including correction | `2` |
+| `GENERATOR_MAX_PACKAGE_ATTEMPTS` | Full-package attempts, including correction | `3` |
 | `LLM_BACKOFF_BASE_SECONDS` | Exponential retry backoff base | `1.0` |
 | `LLM_MAX_OUTPUT_TOKENS` | Output token limit per request | `16000` |
 | `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `3` |
@@ -770,7 +770,7 @@ GENERATOR_ATTEMPT_TIMEOUT_SECONDS=90
 GENERATOR_DEADLINE_SECONDS=150
 LLM_DEADLINE_SECONDS=150
 LLM_MAX_ATTEMPTS=3
-GENERATOR_MAX_PACKAGE_ATTEMPTS=2
+GENERATOR_MAX_PACKAGE_ATTEMPTS=3
 ```
 
 At ~140 tokens/second, 8,000 tokens take ~57–60 seconds. A 90-second attempt adds
@@ -788,7 +788,7 @@ Changing the shared LLM deadline also affects other completion callers.
 | `GENERATOR_DEADLINE_SECONDS` | One shared budget across package attempts, adapter retries and backoff |
 | `LLM_DEADLINE_SECONDS` | Each completion uses min(this limit, remaining generator budget) |
 | `LLM_MAX_ATTEMPTS` | Adapter attempts per completion, default 3 |
-| `GENERATOR_MAX_PACKAGE_ATTEMPTS` | Schema/layout package corrections, default 2; exhausted format retries stop generation |
+| `GENERATOR_MAX_PACKAGE_ATTEMPTS` | Schema/layout package corrections, default 3; exhausted format retries stop generation |
 | `LLM_BACKOFF_BASE_SECONDS` | Jittered exponential retry delay, consuming the same budget |
 | `LLM_STRUCTURED_OUTPUT` | Generator-only format; overrides inherited `LLM_RESPONSE_FORMAT`, including `off` |
 
@@ -957,7 +957,7 @@ receives existing paths and editable current content; existing-path creations
 can be normalized into validated edits. Reports distinguish normalized proposals
 from those retained after every guard. Overlapping editable files are serialized.
 
-Generator prompt v8 adds plan-specific security/support and quoting guidance inside the
+Generator prompt v9 adds plan-specific security/support and quoting guidance inside the
 existing 6000-character input context cap (4500 schema / 1500 checklist).
 Validation remediation metadata records security-context length and truncation.
 Generator and fixer output-token defaults remain unchanged.
@@ -978,7 +978,7 @@ restoration and publication; the public iteration/stage limits remain 60/240.
 Keep Architect/Generators and prompts identical for both runs. Restart the backend
 between configurations and supply the same exported settings to the benchmark.
 No implementation verification makes real model calls.
-Run both configurations on the corrected commit/prompt v8 for a fixer-only
+Run both configurations on the corrected commit/prompt v9 for a fixer-only
 comparison. The preserved benchmark A used prompt v7; comparing it directly with
 a corrected Haiku run also measures generation/recovery/code changes.
 
@@ -1032,3 +1032,24 @@ Corrective verification and the benchmark-A syntax replay are in
 `docs/phase9f-corrective-verification.md`. Replay the read-only saved corpus with
 `cd backend && .venv/bin/python -m scripts.phase9f_syntax_replay`; this calls no
 models and reports deterministic recovery separately from scripted test oracles.
+
+
+Phase 9f A2 correction raises only the default full-package attempt count from
+2 to 3; explicit overrides remain authoritative. Missing required types, layout
+patterns and concrete suggested paths are sent explicitly to the next attempt
+and recorded as source-free per-attempt diagnostics. Syntax repair still has two
+rounds and regeneration one; all generation shares the original 150 seconds.
+Declaration repair runs again after syntax recovery, with completion tracked by
+module content rather than gate presence.
+
+Security iterations share one absolute 60-second deadline through restoration,
+notices and closing state/event persistence, reserving five seconds for that
+finalization. Parsed documents and derived indexes are cached within each package;
+there are no parsing workers. A failure to finish mandatory finalization fails
+closed; any legal fault-recovery tail and actual overrun remain visible.
+PR-05 additionally reports isolated PR-01, isolated PR-03 baseline and concurrent
+PR-03 cohort workloads. The aggregate verdict and thresholds are unchanged.
+
+A2 verification and the preserved-corpus replay are documented in
+`docs/phase9f-a2-corrective-verification.md`. To replay without model calls:
+`cd backend && .venv/bin/python -m scripts.phase9f_a2_replay --output /tmp/phase9f-a2-replay.json`.

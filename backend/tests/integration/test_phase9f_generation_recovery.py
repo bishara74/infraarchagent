@@ -25,8 +25,12 @@ from tests.unit.test_phase9e_gate import Runner
 
 
 @pytest.mark.req("FR-G-02", "FR-S-03", "FR-V-03", "NFR-01")
+@pytest.mark.parametrize(
+    "recovery_path", ["syntax_round_1", "regeneration", "normalization"]
+)
 async def test_generation_syntax_recovery_keeps_newly_revealed_findings_blocking(
     db_engines,
+    recovery_path,
 ):
     engine, _ = db_engines
     ctx, _ = await setup(engine, max_iterations=1)
@@ -39,13 +43,22 @@ async def test_generation_syntax_recovery_keeps_newly_revealed_findings_blocking
             }
         ),
     )
-    original = {"terraform/main.tf": 'locals { a = "missing }'}
+    original = {"terraform/main.tf": 'output "x" { value = [var.name var.other] }'}
+    valid = {"terraform/main.tf": 'output "x" { value = [var.name, var.other] }'}
+    if recovery_path == "normalization":
+        original = {
+            "terraform/main.tf": 'output "x" { value = var.name description = "keep" }'
+        }
 
     class Fixer:
         async def propose(self, **kwargs):
             if kwargs.get("syntax_only"):
+                if recovery_path == "regeneration":
+                    return FixProposal(
+                        kwargs["path"], False, "invalid_syntax", None, {}, ()
+                    )
                 return FixProposal(
-                    kwargs["path"], True, None, 'locals { a = "missing" }', {}, ()
+                    kwargs["path"], True, None, valid["terraform/main.tf"], {}, ()
                 )
             return FixProposal(kwargs["path"], False, "invalid_patch", None, {}, ())
 
@@ -61,7 +74,7 @@ async def test_generation_syntax_recovery_keeps_newly_revealed_findings_blocking
     settings = get_settings()
     sessions = make_session_factory(engine)
     generator = SecurityGeneratorAgent(
-        StubAdapter(script=[reply(original)]),
+        StubAdapter(script=[reply(original), reply(valid)]),
         deadline_seconds=150,
         attempt_timeout=140,
         max_output_tokens=16000,
@@ -88,8 +101,9 @@ async def test_generation_syntax_recovery_keeps_newly_revealed_findings_blocking
             )
             assert (
                 recovered.validation_report["remediation"]["generation_syntax"]["path"]
-                == "syntax_round_1"
+                == recovery_path
             )
+            assert 'variable "name"' in recovered.files["terraform/variables.tf"]
             assert scanner.calls == 0
             async with sessions() as session:
                 async with session.begin():

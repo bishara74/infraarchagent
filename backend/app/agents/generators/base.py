@@ -24,7 +24,11 @@ from app.agents.prompts.generator import (
 from app.core.config import StructuredOutput
 from app.domain.enums import Variant
 from app.domain.models import IaCPackage
-from app.domain.package_layout import package_structure_errors, required_types_missing
+from app.domain.package_layout import (
+    completeness_diagnostics,
+    package_structure_errors,
+    required_types_missing,
+)
 from app.domain.plan import DeploymentPlan, FileType
 from app.llm.base import LLMAdapter, LLMAttempt
 from app.llm.errors import (
@@ -99,6 +103,7 @@ class GeneratorRunInfo:
     attempt_details: tuple[LLMAttempt, ...] = ()
     deadline_exceeded: bool = False
     overrun_seconds: float = 0.0
+    completeness: tuple[dict[str, Any], ...] = ()
 
 
 class GeneratorAgent(ABC):
@@ -215,6 +220,29 @@ class GeneratorAgent(ABC):
                         )
                         for i, d in enumerate(details, 1)
                     ),
+                    completeness=previous.completeness
+                    + (
+                        {
+                            "attempt": previous.package_attempts + 1,
+                            "phase": "regeneration",
+                            **completeness_diagnostics(
+                                result.data["files"],
+                                plan.file_types,
+                                plan.services[0].name,
+                            ),
+                        },
+                    )
+                    if result
+                    else previous.completeness
+                    + (
+                        {
+                            "attempt": previous.package_attempts + 1,
+                            "error_count": None,
+                            "categories": {"no_candidate": 1},
+                            "missing_types": [],
+                            "missing_paths": [],
+                        },
+                    ),
                 )
 
     async def generate(
@@ -237,6 +265,7 @@ class GeneratorAgent(ABC):
         notes: str | None = None
         file_count = total_characters = 0
         attempt_details: list[LLMAttempt] = []
+        completeness: list[dict[str, Any]] = []
 
         def observe(attempt: LLMAttempt) -> None:
             attempt_details.append(
@@ -247,7 +276,12 @@ class GeneratorAgent(ABC):
 
         try:
             for _ in range(self.max_package_attempts):
-                prompt = build_user_prompt(plan, previous_errors, previous_paths)
+                prompt = build_user_prompt(
+                    plan,
+                    previous_errors,
+                    previous_paths,
+                    completeness[-1] if completeness else None,
+                )
                 system = build_system_prompt(
                     self.optimisation_directive,
                     max_output_tokens=self.max_output_tokens,
@@ -328,6 +362,12 @@ class GeneratorAgent(ABC):
                         else []
                     )
                     previous_files = {}
+                    diagnostic = completeness_diagnostics(
+                        {}, plan.file_types, plan.services[0].name
+                    )
+                    diagnostic["categories"]["schema"] = len(previous_errors)
+                    diagnostic["error_count"] = len(previous_errors)
+                    completeness.append({"attempt": attempts, **diagnostic})
                 else:
                     previous_files = output.files
                     previous_paths = list(output.files)
@@ -337,6 +377,14 @@ class GeneratorAgent(ABC):
                     )
                     previous_errors = package_structure_errors(
                         output.files, plan.file_types
+                    )
+                    completeness.append(
+                        {
+                            "attempt": attempts,
+                            **completeness_diagnostics(
+                                output.files, plan.file_types, plan.services[0].name
+                            ),
+                        }
                     )
                     if not previous_errors:
                         notes = output.notes
@@ -349,6 +397,16 @@ class GeneratorAgent(ABC):
                 previous_errors or [],
             )
         finally:
+            if len(completeness) < attempts:
+                completeness.append(
+                    {
+                        "attempt": attempts,
+                        "error_count": None,
+                        "categories": {"no_candidate": 1},
+                        "missing_types": [],
+                        "missing_paths": [],
+                    }
+                )
             elapsed = max(budget.elapsed(), self._clock() - local_started)
             deadline_exceeded = elapsed >= self.deadline_seconds
             overrun_seconds = max(0.0, elapsed - self.deadline_seconds)
@@ -374,4 +432,5 @@ class GeneratorAgent(ABC):
                 attempt_details=tuple(attempt_details),
                 deadline_exceeded=deadline_exceeded,
                 overrun_seconds=overrun_seconds,
+                completeness=tuple(completeness),
             )

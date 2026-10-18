@@ -1392,6 +1392,54 @@ See phase9f-corrective-verification.md and the dated JSON replay artifact.
 Benchmark A/prompt v7 remains historical evidence. Both author configurations
 should use the corrected commit/prompt v8 to isolate fixer differences.
 
+#### D-46 A2 declaration, deadline and completeness correction (2026-10-18)
+
+FR-G-02, FR-S-03/04/09, FR-V-03, NFR-01 and PR-05. The six missing A2 variants
+failed structural completeness after two successful model responses, in 2.97–4.81
+seconds, before syntax recovery. Rejected file maps and detailed structure errors
+were not saved; their exact defects remain unknown. New per-attempt metadata
+records only categories/counts, missing types, authoritative layout patterns and
+concrete suggested paths. The next attempt receives that missing inventory outside
+the ten-error general-feedback truncation. Alternative allowed layouts still pass.
+The author explicitly changed GENERATOR_MAX_PACKAGE_ATTEMPTS's default from 2 to
+3, including the initial call. Explicit overrides remain effective. Prompt v9
+records the feedback change; A2 used v8/two attempts. Generator model/output-token
+limits, the shared 150 seconds, two syntax rounds and one regeneration are unchanged.
+
+Declaration repair previously skipped two syntax-invalid originals and was not
+retried after syntax repair because the generation gate existed. Completion now
+tracks module content fingerprints, and repair runs after syntax recovery and
+accepted generation changes before establishing the baseline. Native checks remain
+mandatory; unresolved syntax stays blocking. Replay against the saved parsable
+final checkpoints adds 19 and 12 declarations, removes all 31 builtin variable
+failures, passes native parsing and is idempotent. This is not a new readiness rate
+or a replay of real syntax-model calls. All fourteen A2 JSON inputs remain unchanged.
+
+One absolute security-iteration window now includes scanning, verification,
+cancellation, restoration, notices and closing state/event persistence. Work stops
+with five seconds reserved. Child shutdown, PostgreSQL statement/lock waits,
+connection/transaction acquisition, EventLog publication and workspace locking use
+remaining time. Parsed documents/trees and reference/declaration indexes have bounded,
+content-keyed caches within each package; no parsing workers or new dependencies
+are added. Cooperative checkpoints permit deadline handling between analysis passes.
+If mandatory finalization itself cannot finish, the iteration fails closed. Its
+legal stage-fault settlement is bounded by the original remaining stage budget;
+that tail and any actual overrun remain visible rather than becoming a new fix
+allowance or a passing PR-05 measurement. CPU work remains cooperative, so no hard
+real-time scheduling guarantee is claimed under external contention.
+
+Variable-reference provenance uses file/module/rule/reference identity independent
+of line movement, preserving first observation across partial checks. Metadata
+distinguishes first observation from a conservatively proven introduction.
+Additional PR-05 workload views separate isolated PR-01, isolated PR-03 baseline
+and concurrent PR-03 cohort observations; historical unclassified rows stay unknown.
+The existing aggregate verdict, timestamp boundaries and 150/60-second thresholds
+are unchanged. A2 remains FAIL: 0/159 isolated PR-01 failures, 0/19 isolated baseline
+failures and 5/57 concurrent failures. The observed 3/41 to 1/36 readiness change
+has two-sided Fisher exact p=0.618259407733092; correlated variants and changed
+prompts prevent causal attribution. No readiness, severity, blocking, privilege or
+state-transition rule changes; no migration or Phase 9g exception profile.
+
 #### D-46 measured reporting and final guard checks (section 7)
 
 Benchmark snapshots explicitly project catalogue controls, template outcomes and

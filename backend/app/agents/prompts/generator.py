@@ -1,6 +1,7 @@
 """Versioned generator prompts built from shared layout and variant directive."""
 
 import json
+from typing import Any
 
 from app.agents.prompts.quality import DOCUMENT_GUIDANCE, PROVIDER_GUIDANCE, S3_GUIDANCE
 from app.domain.package_layout import LAYOUT, layout_guidance
@@ -8,7 +9,7 @@ from app.domain.plan import DeploymentPlan, FileType
 from app.security.generation import generation_context
 from app.validation.schema_context import generator_schema_context
 
-GENERATOR_PROMPT_VERSION = "8"
+GENERATOR_PROMPT_VERSION = "9"
 DIRECTIVE_START = "<optimisation_directive>"
 DIRECTIVE_END = "</optimisation_directive>"
 
@@ -97,6 +98,7 @@ def build_user_prompt(
     plan: DeploymentPlan,
     errors: list[str] | None = None,
     previous_paths: list[str] | None = None,
+    completeness: dict[str, Any] | None = None,
 ) -> str:
     safe_plan = json.dumps(
         plan.model_dump(mode="json"), ensure_ascii=False, sort_keys=True
@@ -106,6 +108,13 @@ def build_user_prompt(
         + required_file_checklist(plan)
         + "\nReturn the complete package JSON."
     )
+    if completeness and completeness.get("missing_types"):
+        prompt += (
+            "\nMissing required types and paths from the previous package:\n"
+            + json.dumps(completeness, ensure_ascii=True).replace("<", "‹")
+            + "\nInclude every missing type. Suggested paths illustrate the required "
+            "patterns; other paths matching the permitted layout remain valid."
+        )
     if errors:
         numbered = "\n".join(
             f"{index}. {error.replace('<', '‹')}"

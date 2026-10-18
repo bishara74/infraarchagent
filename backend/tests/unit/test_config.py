@@ -37,7 +37,7 @@ def test_defaults_and_secret_representations() -> None:
     assert settings.generator_deadline_seconds == 150
     assert settings.generator_attempt_timeout_seconds == 120
     assert settings.generator_max_output_tokens == 8000
-    assert settings.generator_max_package_attempts == 2
+    assert settings.generator_max_package_attempts == 3
     assert settings.llm_backoff_base_seconds == 1.0
     assert settings.llm_max_output_tokens == 16000
     assert settings.llm_base_url is None

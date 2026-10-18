@@ -27,6 +27,43 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f A2 — Repair declarations and explain package completeness
+
+**Summary:** Retry declaration repair after syntax recovery using module content
+fingerprints. Feed exact missing-type/layout inventories into subsequent package
+attempts and raise the configured default from two attempts to three.
+
+**Requirements addressed:** FR-G-02, FR-V-03, FR-S-04, NFR-01, PR-05.
+
+**Files:** domain/package_layout.py, agents/generators/base.py,
+agents/prompts/generator.py, core/config.py, pipeline/orchestrator.py,
+generation-recovery/config/prompt tests, .env.example, README and D-46.
+
+**Decisions:** D-46 records the explicitly approved default setting change;
+overrides remain effective. Prompt v9 adds missing paths/types outside truncated
+general feedback. Per-attempt metadata contains categories/counts and layout
+patterns/suggested paths, never generated contents. Alternate permitted paths are
+still accepted. No-candidate attempts remain explicitly unknown. Regeneration
+retains its separate one-replacement limit and aggregate attempt/usage evidence.
+All generation still shares 150 seconds; model/output defaults remain unchanged.
+
+**Tests:** Fourteen focused A2 unit tests passed (6.39 s), covering third-attempt
+success/exhaustion, two-attempt override, explicit missing feedback despite more
+than ten other errors, source canaries, shared-budget exhaustion, cache/context
+isolation and provenance. Actual generation integration covers normalization,
+syntax round one and regeneration before declaration repair while newly revealed
+findings remain blocking. Final combined results follow in the release entry.
+
+**Replay:** Native offline replay of the two saved parsable A2 final checkpoints
+adds 19 and 12 variable declarations, reducing all 31 variable-reference failures
+to zero, with native syntax and idempotence passing. Original syntax-invalid input
+repair skips remain reproduced. No real model replay or new readiness rate is
+claimed; discarded completeness-candidate details remain historically unknown.
+
+**Known gaps / follow-ups:** A2 used prompt v8 and two attempts. Subsequent author
+fixer comparisons must use matched corrected code/prompt/settings. The third-attempt
+scripted success is not an extrapolated recovery of the six missing real variants.
+
 ## 2026-10-18 — Phase 9f A2 — Complete iteration deadlines and cached indexes
 
 **Summary:** Enclose automated and review iteration work/finalization in one

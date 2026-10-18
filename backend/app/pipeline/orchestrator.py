@@ -51,7 +51,7 @@ from app.security.generation import generation_context
 from app.validation.gate import GateRepairEngine, GenerationGate
 from app.validation.idioms import repair_idioms
 from app.validation.measurement import initialization_metrics, publish_measurement
-from app.validation.repairs import repair_terraform
+from app.validation.repairs import repair_declarations
 from app.validation.syntax import native_syntax
 from app.validation.workspace import ValidationWorkspace, current_workspace
 
@@ -171,7 +171,7 @@ class PipelineOrchestrator:
         )
         package = package.model_copy(update={"files": dict(workspace.original_files)})
         deterministic_started = self.clock()
-        files, records = repair_terraform(package.files)
+        files, records = await repair_declarations(package.files)
         files, idioms = repair_idioms(files)
         context = generation_context(plan)
         metadata = RemediationReport(
@@ -289,6 +289,19 @@ class PipelineOrchestrator:
                                     else None
                                 )
                             generator._last_run = replace(generator.last_run, **updates)
+                    repaired, declarations = await repair_declarations(package.files)
+                    metadata = metadata.model_copy(
+                        update={
+                            "deterministic_repairs": [
+                                *metadata.deterministic_repairs,
+                                *(
+                                    DeterministicRepair.model_validate(r)
+                                    for r in declarations
+                                ),
+                            ]
+                        }
+                    )
+                    package = package.model_copy(update={"files": repaired})
                     result = await gate.run(plan, package.files)
                     package = package.model_copy(update={"files": result.files})
                     workspace.gate = result.metrics
@@ -326,6 +339,21 @@ class PipelineOrchestrator:
                                 metadata=metadata,
                                 report=result.report,
                             )
+                            repaired, declarations = await repair_declarations(
+                                package.files
+                            )
+                            metadata = metadata.model_copy(
+                                update={
+                                    "deterministic_repairs": [
+                                        *metadata.deterministic_repairs,
+                                        *(
+                                            DeterministicRepair.model_validate(r)
+                                            for r in declarations
+                                        ),
+                                    ]
+                                }
+                            )
+                            package = package.model_copy(update={"files": repaired})
                             result = await gate.run(plan, package.files)
                             package = package.model_copy(update={"files": result.files})
                             workspace.gate = result.metrics
@@ -472,6 +500,7 @@ class PipelineOrchestrator:
                 "output_tokens": info.output_tokens,
                 "cached_input_tokens": info.cached_input_tokens,
                 "prompt_version": info.prompt_version,
+                "completeness": list(info.completeness),
                 "llm_attempt_details": [asdict(item) for item in info.attempt_details],
                 "deadline_exceeded": info.deadline_exceeded,
                 "overrun_seconds": info.overrun_seconds,
@@ -597,11 +626,7 @@ class PipelineOrchestrator:
             repair_budget = AgentBudget(
                 self.factory.settings.validation_deadline_seconds, clock=ctx.clock
             )
-            files, records = (
-                (dict(package.files), [])
-                if workspace and workspace.gate is not None
-                else repair_terraform(package.files)
-            )
+            files, records = await repair_declarations(package.files)
             metadata = metadata.model_copy(
                 update={
                     "deterministic_repairs": [

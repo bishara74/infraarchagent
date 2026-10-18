@@ -1,8 +1,10 @@
 """One path contract for generator prompts and structural completeness checks."""
 
 import re
+from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from typing import Any
 
 from app.domain.paths import UnsafePathError, validate_file_map, validate_relative_path
 from app.domain.plan import FileType
@@ -154,3 +156,53 @@ def package_structure_errors(
         patterns = " or ".join(LAYOUT[kind].required)
         errors.append(f"missing {kind.value} files: expected at least one {patterns}")
     return errors
+
+
+def completeness_diagnostics(
+    files: Mapping[str, str], required: Sequence[FileType], service: str
+) -> dict[str, Any]:
+    """Source-free structural evidence; path suggestions do not narrow the layout."""
+    errors = package_structure_errors(files, required)
+    categories: Counter[str] = Counter()
+    for error in errors:
+        category = (
+            "missing_type"
+            if error.startswith("missing ")
+            else "unsafe_path"
+            if "unsafe" in error or error.startswith("file map:")
+            else "empty_file"
+            if "file is empty" in error
+            else "unrequested_type"
+            if "not in plan.file_types" in error
+            else "disallowed_path"
+            if "outside the allowed" in error
+            else "size_limit"
+        )
+        categories[category] += 1
+    names = {
+        FileType.TERRAFORM: "main.tf",
+        FileType.KUBERNETES: "workloads.yaml",
+        FileType.NGINX: "nginx.conf",
+        FileType.ANSIBLE: "playbook.yaml",
+        FileType.PROMETHEUS: "prometheus.yaml",
+        FileType.GRAFANA: "dashboard.json",
+    }
+    missing = required_types_missing(files, required)
+    paths = []
+    for kind in missing:
+        pattern = LAYOUT[kind].required[0]
+        example = pattern.replace("<chart>", service)
+        example = example.replace(
+            "**/", service + "/" if kind == FileType.DOCKERFILE else ""
+        )
+        if "*" in example:
+            example = example.rsplit("/", 1)[0] + "/" + names[kind]
+        paths.append(
+            {"type": kind.value, "pattern": pattern, "suggested_path": example}
+        )
+    return {
+        "error_count": len(errors),
+        "categories": dict(categories),
+        "missing_types": [kind.value for kind in missing],
+        "missing_paths": paths,
+    }
