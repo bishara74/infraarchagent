@@ -6,11 +6,29 @@ import shutil
 import signal
 import subprocess
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Literal, Protocol
+
+cleanup_times: ContextVar[list[float] | None] = ContextVar(
+    "scanner_cleanup", default=None
+)
+
+
+@contextmanager
+def measure_cleanup() -> Iterator[list[float]]:
+    measurements: list[float] = []
+    token = cleanup_times.set(measurements)
+    try:
+        yield measurements
+    finally:
+        cleanup_times.reset(token)
+
 
 ToolName = Literal[
     "checkov",
@@ -116,18 +134,23 @@ class ProcessToolRunner:
 
     async def _terminate(self, process: asyncio.subprocess.Process) -> None:
         """Kill inherited workers as well as their parent; bound pipe cleanup."""
+        started = time.monotonic()
         try:
             os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
         try:
-            await asyncio.wait_for(process.communicate(), timeout=5)
+            await asyncio.wait_for(process.communicate(), timeout=1)
         except TimeoutError:
             # asyncio exposes no public subprocess pipe-close API. Closing the
             # transport prevents a pipe-owning descendant from blocking exit.
             transport = getattr(process, "_transport", None)
             if transport is not None:
                 transport.close()
+        finally:
+            measurements = cleanup_times.get()
+            if measurements is not None:
+                measurements.append(time.monotonic() - started)
 
     async def run(self, tool: ToolName, workdir: Path) -> ToolResult:
         if tool == "checkov":

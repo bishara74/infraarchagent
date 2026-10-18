@@ -1,7 +1,9 @@
 """Reusable candidate checks; never retain unverified security changes."""
 
+import re
 import time
 from dataclasses import dataclass
+from pathlib import PurePosixPath
 from typing import Any
 
 from app.agents.budget import AgentBudget
@@ -13,9 +15,11 @@ from app.agents.security.verification import (
 from app.domain.enums import Variant
 from app.domain.validation import ValidationCheck
 from app.scanners.scan import Scanner, ScanResult
+from app.validation.documents import PackageDocuments, blocks, code_text
 from app.validation.gate import patch_syntax_failure
 from app.validation.preservation import removes_security_controls
-from app.validation.workspace import ValidationWorkspace
+from app.validation.references import reference_checks
+from app.validation.workspace import ValidationWorkspace, current_workspace
 
 
 @dataclass
@@ -74,8 +78,49 @@ class CandidateGuard:
         }
         if removes_security_controls(before, candidate):
             return CandidateResult("security_control_removed", checks, scan, [])
-        if await patch_syntax_failure(before, candidate, touched):
+        syntax_started = time.monotonic()
+        try:
+            invalid_syntax = await patch_syntax_failure(before, candidate, touched)
+        finally:
+            self.record["syntax_verification_seconds"] = (
+                self.record.get("syntax_verification_seconds", 0.0)
+                + time.monotonic()
+                - syntax_started
+            )
+        if invalid_syntax:
             return CandidateResult("invalid_syntax", checks, scan, [])
+
+        def broken_references(
+            files: dict[str, str],
+        ) -> set[tuple[str, str | None, str]]:
+            return {
+                (c.check_id, c.file_path, c.message)
+                for c in reference_checks(PackageDocuments.parse(files))
+                if c.status == "failed"
+            }
+
+        if broken_references(candidate) - broken_references(before):
+            return CandidateResult("reference_regression", checks, scan, [])
+
+        def declarations(files: dict[str, str]) -> set[tuple[str, str]]:
+            return {
+                (str(PurePosixPath(doc.path).parent), ".".join(labels))
+                for doc in PackageDocuments.parse(files).documents.values()
+                if not doc.parse_error
+                for labels, _ in blocks(doc.data, "resource")
+            }
+
+        for module, removed in declarations(before) - declarations(candidate):
+            if any(
+                str(PurePosixPath(p).parent) == module
+                and re.search(
+                    r"(?<![\w.])" + re.escape(removed) + r"(?:\.|\[|\b)",
+                    code_text(text, hash_comments=True, mask_strings=False),
+                )
+                for p, text in candidate.items()
+                if p.endswith((".tf", ".tf.json"))
+            ):
+                return CandidateResult("reference_regression", checks, scan, [])
         after = (
             await self.checks(candidate)
             if terraform_files(before) != terraform_files(candidate)
@@ -123,6 +168,15 @@ class CandidateGuard:
             for v in scanned.violations
             if v.blocking and v.fingerprint() not in baseline
         ]
+        workspace = current_workspace()
+        if workspace and not introduced:
+            workspace.observe(
+                after,
+                "security_fix",
+                candidate,
+                partial=True,
+                action=self.record.get("verification_action", "focused_fixer"),
+            )
         return CandidateResult(
             "new_blocking_findings" if introduced else None, after, scanned, introduced
         )

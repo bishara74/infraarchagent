@@ -34,7 +34,7 @@ from app.domain.validation import ValidationCheck
 from app.events.kinds import stage_notice_payload
 from app.llm.errors import SAFE_MESSAGES
 from app.pipeline.stages import StageContext
-from app.scanners.runner import ToolFailure
+from app.scanners.runner import ToolFailure, cleanup_times, measure_cleanup
 from app.scanners.scan import Scanner, ScanResult
 from app.security.acceptance import CandidateGuard
 from app.security.catalogue import autofix
@@ -259,10 +259,13 @@ class SecurityAgent:
             message="security scan started",
             variant=variant,
         )
+        iteration_started = ctx.clock()
         await ctx.writer.package_transition(
             ctx.run_id, variant, PackageStatus.SCANNING, message="security scan started"
         )
-        return await self._loop(ctx, variant, package, kind="automated")
+        return await self._loop(
+            ctx, variant, package, kind="automated", iteration_started=iteration_started
+        )
 
     async def confirm_final(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
@@ -356,14 +359,15 @@ class SecurityAgent:
         package: IaCPackage,
         **kwargs: Any,
     ) -> PackageStatus:
-        if current_workspace() is not None:
-            return await self._loop_inside(ctx, variant, package, **kwargs)
-        workspace = ValidationWorkspace()
-        try:
-            with workspace.activate():
+        with measure_cleanup():
+            if current_workspace() is not None:
                 return await self._loop_inside(ctx, variant, package, **kwargs)
-        finally:
-            workspace.close()
+            workspace = ValidationWorkspace()
+            try:
+                with workspace.activate():
+                    return await self._loop_inside(ctx, variant, package, **kwargs)
+            finally:
+                workspace.close()
 
     async def _fix_iteration(
         self,
@@ -392,6 +396,8 @@ class SecurityAgent:
             reasons=[],
             terraform_verification_seconds=0.0,
             security_verification_seconds=0.0,
+            cancellation_seconds=0.0,
+            restoration_seconds=0.0,
         )
 
         async def checked(source: dict[str, str]) -> list[ValidationCheck]:
@@ -407,14 +413,28 @@ class SecurityAgent:
         verification["before_failed"] = failure_count(before)
         if budget.expired():
             raise TimeoutError
+        construction_started = time.monotonic()
         automatic, records = autofix(files, list(baseline_scan.violations))
+        verification["construction_seconds"] = time.monotonic() - construction_started
         verification["catalogue"] = records
+        verification["verification_action"] = "catalogue"
         if automatic != files:
             verification.update(fix_started=True, candidate_created=True)
             guard = CandidateGuard(
                 self.terraform_verifier, self.scanner, variant, budget, verification
             )
-            result = await guard.evaluate(files, automatic, before, baseline_scan)
+            try:
+                result = await guard.evaluate(files, automatic, before, baseline_scan)
+            except (TimeoutError, asyncio.CancelledError, ToolFailure) as error:
+                for record in records:
+                    if record["status"] == "proposed":
+                        record.update(
+                            status="rejected",
+                            reason="verification_unavailable"
+                            if isinstance(error, ToolFailure)
+                            else "iteration_deadline",
+                        )
+                raise
             for record in records:
                 if record["status"] == "proposed":
                     record.update(
@@ -448,17 +468,31 @@ class SecurityAgent:
                     )
         verification["templates"] = []
         for module, kind in template_requests(files, list(baseline_scan.violations)):
+            construction_started = time.monotonic()
             automatic, record = build_template(
                 files, list(baseline_scan.violations), module, kind
             )
+            verification["construction_seconds"] += (
+                time.monotonic() - construction_started
+            )
             verification["templates"].append(record)
+            verification["verification_action"] = "template:" + kind
             if automatic == files:
                 continue
             verification.update(fix_started=True, candidate_created=True)
             guard = CandidateGuard(
                 self.terraform_verifier, self.scanner, variant, budget, verification
             )
-            result = await guard.evaluate(files, automatic, before, baseline_scan)
+            try:
+                result = await guard.evaluate(files, automatic, before, baseline_scan)
+            except (TimeoutError, asyncio.CancelledError, ToolFailure) as error:
+                record.update(
+                    status="rejected",
+                    reason="verification_unavailable"
+                    if isinstance(error, ToolFailure)
+                    else "iteration_deadline",
+                )
+                raise
             record.update(
                 status="rejected" if result.reason else "retained",
                 reason=result.reason or "supporting_resources",
@@ -485,6 +519,7 @@ class SecurityAgent:
             )
             return files, [], package_diff(iteration_original, files), baseline_scan
         verification["fix_started"] = True
+        verification["verification_action"] = "focused_fixer"
         verification["candidate_created"] = False
         candidate, fixes, _ = await self._fix_pass(
             ctx,
@@ -554,6 +589,7 @@ class SecurityAgent:
         verification["verification_seconds"] = (
             verification["terraform_verification_seconds"]
             + verification["security_verification_seconds"]
+            + verification.get("syntax_verification_seconds", 0.0)
         )
         retained_metrics(fixes, files, candidate)
         workspace = current_workspace()
@@ -571,31 +607,48 @@ class SecurityAgent:
         iteration: int,
         metrics_start: int,
     ) -> None:
+        started = time.monotonic()
+        allowance = max(
+            0.001,
+            record.get("_iteration_deadline", ctx.clock() + 5.0) - ctx.clock() - 0.5,
+        )
+        try:
+            async with asyncio.timeout(allowance):
+                await self._publish_iteration_inside(
+                    ctx, variant, record, iteration, metrics_start
+                )
+        except TimeoutError:
+            record["publication_deadline"] = True
+        finally:
+            record["publication_seconds"] = time.monotonic() - started
+            record.pop("_iteration_deadline", None)
+
+    async def _publish_iteration_inside(
+        self,
+        ctx: StageContext,
+        variant: Variant,
+        record: dict[str, Any],
+        iteration: int,
+        metrics_start: int,
+    ) -> None:
         workspace = current_workspace()
-        for change in record.get("catalogue", []):
+        if record.get("catalogue") or record.get("templates"):
             await self._notice(
                 ctx,
                 variant,
-                "deterministic security control evaluated",
-                rule_ids=change["rule_ids"],
-                resource=change["resource"],
-                control=change["control"],
-                outcome=change["status"],
-                reason=change.get("reason"),
+                "deterministic security actions evaluated",
+                catalogue_outcomes=dict(
+                    Counter(c["status"] for c in record.get("catalogue", []))
+                ),
+                template_outcomes=dict(
+                    Counter(c["status"] for c in record.get("templates", []))
+                ),
             )
-        for template in record.get("templates", []):
-            await self._notice(
-                ctx,
-                variant,
-                "supporting security template evaluated",
-                template=template["template"],
-                outcome=template["status"],
-                reason=template.get("reason"),
-                introduced_findings=template.get("introduced_findings", []),
-            )
-        record["verification_seconds"] = record.get(
-            "terraform_verification_seconds", 0.0
-        ) + record.get("security_verification_seconds", 0.0)
+        record["verification_seconds"] = (
+            record.get("terraform_verification_seconds", 0.0)
+            + record.get("security_verification_seconds", 0.0)
+            + record.get("syntax_verification_seconds", 0.0)
+        )
         record.update(
             initialization_metrics(
                 workspace.terraform_metrics[metrics_start:] if workspace else []
@@ -628,6 +681,11 @@ class SecurityAgent:
                 "reasons",
                 "terraform_verification_seconds",
                 "security_verification_seconds",
+                "scan_seconds",
+                "construction_seconds",
+                "syntax_verification_seconds",
+                "cancellation_seconds",
+                "restoration_seconds",
             )
             if key in record
         }
@@ -652,7 +710,11 @@ class SecurityAgent:
         validation_failures: Sequence[dict[str, Any]] = (),
         initial_findings: Sequence[Violation] = (),
         target_files: Sequence[str] = (),
+        iteration_started: float | None = None,
     ) -> PackageStatus:
+        iteration_started = (
+            ctx.clock() if iteration_started is None else iteration_started
+        )
         files = dict(package.files)
         session_start_files = dict(files)
         started_at = datetime.now(UTC).isoformat()
@@ -691,6 +753,7 @@ class SecurityAgent:
             }
             if targets and budget.remaining() >= 1:
                 verification: dict[str, Any] = {}
+                cleanup_start = len(cleanup_times.get() or [])
                 iteration_source = dict(files)
                 checkpoint = RetainedCandidate(
                     dict(files),
@@ -700,7 +763,7 @@ class SecurityAgent:
                     ),
                 )
                 iteration_budget = AgentBudget(
-                    max(0.001, min(60.0, budget.remaining())), clock=ctx.clock
+                    max(0.001, min(55.0, budget.remaining() - 5.0)), clock=ctx.clock
                 )
                 workspace = current_workspace()
                 metrics_start = len(workspace.terraform_metrics) if workspace else 0
@@ -737,6 +800,7 @@ class SecurityAgent:
                         async with workspace.check(files):
                             pass
                 except TimeoutError:
+                    restoration_started = time.monotonic()
                     files = dict(checkpoint.files)
                     verification["deadline_only"] = bool(
                         verification.get("candidate_created")
@@ -748,9 +812,11 @@ class SecurityAgent:
                         if verification.get("candidate_created")
                         else "stopped"
                     )
-                    verification["verification_seconds"] = verification.get(
-                        "terraform_verification_seconds", 0.0
-                    ) + verification.get("security_verification_seconds", 0.0)
+                    verification["verification_seconds"] = (
+                        verification.get("terraform_verification_seconds", 0.0)
+                        + verification.get("security_verification_seconds", 0.0)
+                        + verification.get("syntax_verification_seconds", 0.0)
+                    )
                     fixes, diff = (
                         checkpoint.fixes,
                         package_diff(iteration_source, files),
@@ -793,6 +859,7 @@ class SecurityAgent:
                     {"index": 0, "notice": message, "fixes": [], "diff": ""}
                 )
                 await self._notice(ctx, variant, message)
+            iteration_started = ctx.clock()
             await ctx.writer.package_transition(
                 ctx.run_id,
                 variant,
@@ -801,9 +868,12 @@ class SecurityAgent:
             )
 
         while True:
+            iteration_deadline = iteration_started + min(60.0, budget.remaining())
             iteration_budget = AgentBudget(
-                max(0.001, min(60.0, budget.remaining())), clock=ctx.clock
+                max(0.001, iteration_deadline - ctx.clock() - 5.0), clock=ctx.clock
             )
+            scan_started = time.monotonic()
+            cleanup_start = len(cleanup_times.get() or [])
             try:
                 async with asyncio.timeout(iteration_budget.remaining()):
                     if pending_error is not None:
@@ -899,7 +969,10 @@ class SecurityAgent:
             iteration_source = dict(files)
             checkpoint = RetainedCandidate(dict(files), scan)
             try:
-                entry["verification"] = {}
+                entry["verification"] = {
+                    "_iteration_deadline": iteration_deadline,
+                    "scan_seconds": time.monotonic() - scan_started,
+                }
                 workspace = current_workspace()
                 metrics_start = len(workspace.terraform_metrics) if workspace else 0
                 async with asyncio.timeout(iteration_budget.remaining()):
@@ -951,6 +1024,7 @@ class SecurityAgent:
                     )
                 break
             except TimeoutError:
+                restoration_started = time.monotonic()
                 files = dict(checkpoint.files)
                 entry["fixes"] = checkpoint.fixes
                 entry["diff"], entry["diff_omitted_chars"] = _capped_diff(
@@ -964,13 +1038,21 @@ class SecurityAgent:
                     verification.get("candidate_created") and not reasons
                 )
                 reasons.append("iteration_deadline")
-                verification["verification_seconds"] = verification.get(
-                    "terraform_verification_seconds", 0.0
-                ) + verification.get("security_verification_seconds", 0.0)
+                verification["verification_seconds"] = (
+                    verification.get("terraform_verification_seconds", 0.0)
+                    + verification.get("security_verification_seconds", 0.0)
+                    + verification.get("syntax_verification_seconds", 0.0)
+                )
                 workspace = current_workspace()
                 if workspace:
                     async with workspace.check(files):
                         pass
+                verification["restoration_seconds"] = (
+                    time.monotonic() - restoration_started
+                )
+                verification["cancellation_seconds"] = sum(
+                    (cleanup_times.get() or [])[cleanup_start:]
+                )
                 verification["outcome"] = (
                     "rolled_back"
                     if verification.get("candidate_created")
@@ -984,6 +1066,7 @@ class SecurityAgent:
                 previous_attempt = attempt_feedback(verification, [], self.redactor)
                 if budget.remaining() >= 1 and iteration_count < ctx.max_iterations:
                     pending_scan = checkpoint.scan
+                    iteration_started = ctx.clock()
                     await ctx.writer.package_transition(
                         ctx.run_id,
                         variant,
@@ -1024,6 +1107,7 @@ class SecurityAgent:
                 fixes_accepted=sum(bool(f["accepted"]) for f in fixes),
                 fixes_rejected=sum(not f["accepted"] for f in fixes),
             )
+            iteration_started = ctx.clock()
             await ctx.writer.package_transition(
                 ctx.run_id,
                 variant,

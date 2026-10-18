@@ -27,6 +27,38 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f corrective — Retention and iteration finalization
+
+**Summary:** Reject syntax-breaking candidates even when diagnostic counts or
+scanner fingerprints match, protect declarations referenced by unchanged files,
+and bound iteration work/publication within the existing security limits.
+
+**Requirements addressed:** FR-S-03, FR-S-04, FR-S-09, FR-V-03, NFR-01, PR-05.
+
+**Files:** security/acceptance.py and partial.py, agents/security/agent.py,
+scanners/runner.py, test_phase9f_acceptance_followup.py and integration
+test_phase9f_deadlines.py.
+
+**Decisions:** D-46. Native cached syntax checks precede every candidate retention.
+Builtin references and module-wide unchanged consumers prevent dependency deletion.
+Retained provenance names catalogue/template/fixer/partial actions. Security work
+gets 55 of the existing 60 seconds, leaving bounded restoration/publication time;
+tool cancellation is measured with a shorter cleanup bound. Template records
+interrupted by deadlines become explicit rejections. EventLog batches notices;
+full action details remain in package metadata. Limits remain 45/60/240 seconds,
+four iterations, two resources/12 findings and six partial evaluations.
+
+**Tests:** Five acceptance/publication follow-ups passed (2.18 s), covering
+unchanged variable consumers, equal-count syntax replacement and bounded security
+and generation publication. The full backend run before the final two generation
+cases passed 1,479 tests. A PostgreSQL deadline regression retains verified TLS,
+finalizes the interrupted KMS template and stays within the 60-second workload.
+Final combined results follow in the concluding entry.
+
+**Known gaps / follow-ups:** Benchmark A's exact publication/cleanup breakdown is
+historically unavailable; its two measured overruns are not retroactively filled
+in. Real-model performance remains author verification.
+
 ## 2026-10-18 — Phase 9f corrective — Native generation syntax recovery
 
 **Summary:** Establish native syntax checks before accepting Terraform edits and

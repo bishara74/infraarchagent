@@ -251,6 +251,7 @@ async def accept_groups(
         for change in group:
             proposed = change.apply(proposed)
         evaluated += 1
+        guard.record["verification_action"] = "partial_group"
         try:
             result = await guard.evaluate(retained, proposed, checks, scan)
         except asyncio.CancelledError:
