@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f corrective — Checkov Helm source mapping
+
+**Summary:** Resolve rendered chart-name paths through validated chart metadata
+to exact source files. Preserve every finding and distinguish path failures from
+malformed scanner JSON.
+
+**Requirements addressed:** FR-S-03, FR-V-03, NFR-01.
+
+**Files:** scanners/checkov_parser.py, scan.py, test_phase9f_helm_locations.py.
+
+**Decisions:** D-46. Map only Helm framework reports with one exact validated
+chart-root/name match; reject traversal and ambiguous nested mappings. Do not
+claim rendered line numbers as source locations. Scan errors now distinguish
+path_mapping from invalid_json rather than dropping or weakening findings.
+
+**Tests:** Four focused tests passed (0.25 s): exact source mapping, traversal,
+ambiguous nested charts and separate malformed-JSON/path failure categories.
+Native offline replay of benchmark-A 1c3abc8d/security produced valid JSON and
+preserved all 107 reported findings, including all 21 previously unmappable Helm
+findings; source hashes and counts are recorded in the final evidence artifact.
+
+**Known gaps / follow-ups:** No source line claims are made for rendered findings.
+The original scan failure preceded templates; it was not template-introduced.
+
 ## 2026-10-18 — Phase 9f corrective — Retention and iteration finalization
 
 **Summary:** Reject syntax-breaking candidates even when diagnostic counts or

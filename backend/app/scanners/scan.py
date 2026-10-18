@@ -10,7 +10,7 @@ from tempfile import TemporaryDirectory
 from app.domain.enums import Variant
 from app.domain.models import Violation
 from app.domain.paths import validate_file_map
-from app.scanners.checkov_parser import parse_checkov
+from app.scanners.checkov_parser import CheckovPathError, parse_checkov
 from app.scanners.external_modules import external_module_findings
 from app.scanners.runner import TOOLS, ToolFailure, ToolName, ToolResult, ToolRunner
 from app.scanners.terraform_parser import parse_terraform
@@ -112,6 +112,8 @@ class Scanner:
                         if name == "trivy"
                         else parse_terraform(output.stdout, root, set(files))
                     )
+                except CheckovPathError:
+                    raise ToolFailure(name, "path_mapping") from None
                 except ValueError:
                     raise ToolFailure(name, "invalid_json") from None
                 if output.exit_code not in (0, 1):
