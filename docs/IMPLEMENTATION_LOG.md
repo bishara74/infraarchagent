@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f A2 — Reject expiry during provenance recording
+
+**Summary:** Recheck the candidate's work budget after provenance observation,
+before returning an accepted result to the retained checkpoint.
+
+**Requirements addressed:** FR-S-03, FR-S-04, PR-05.
+
+**Files:** security/acceptance.py and test_phase9f_a2.py.
+
+**Decisions:** D-46. A deterministic fault injection advanced the clock during
+provenance recording and reproduced an accepted return with an expired budget.
+The final recheck now raises TimeoutError; fully verified timing is required
+before the caller may advance the retained baseline. No guard is relaxed.
+
+**Tests:** A2/partial/acceptance regressions: 29 passed (4.24 s), including the
+new post-observation expiry case and unchanged retained files. The preceding full
+backend suite passed 1,506 tests / six perf deselected (274.61 s); final full
+delivery verification includes the additional regression and follows below.
+
+**Known gaps / follow-ups:** No real model calls or claims about the six discarded
+completeness candidates. The cooperative scheduling limitation remains explicit.
+
 ## 2026-10-18 — Phase 9f A2 — Workload reporting and final boundary checks
 
 **Summary:** Add source-free completeness projections and separate PR-05 workload

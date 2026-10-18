@@ -189,6 +189,7 @@ class CandidateGuard:
                 partial=True,
                 action=self.record.get("verification_action", "focused_fixer"),
             )
+        self.time_left()
         return CandidateResult(
             "new_blocking_findings" if introduced else None, after, scanned, introduced
         )

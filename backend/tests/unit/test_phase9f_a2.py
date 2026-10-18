@@ -328,3 +328,34 @@ async def test_initial_scanning_write_has_the_same_absolute_deadline():
         await security.run(ctx, Variant.SECURITY, None)
     assert entered.is_set()
     security._loop.assert_not_awaited()
+
+
+async def test_expiration_during_provenance_cannot_return_an_accepted_candidate(
+    monkeypatch,
+):
+    from tests.unit.test_security_partial import setup
+
+    now = [0.0]
+    files = {"terraform/main.tf": 'output "x" { value = 1 }'}
+    guard, checkpoint = setup(files, clock=lambda: now[0])
+    workspace = ValidationWorkspace()
+    observe = workspace.observe
+
+    def slow_observation(*args, **kwargs):
+        observe(*args, **kwargs)
+        now[0] = 61
+
+    monkeypatch.setattr(workspace, "observe", slow_observation)
+    try:
+        with workspace.activate():
+            checks = await guard.checks(files)
+            with pytest.raises(TimeoutError):
+                await guard.evaluate(
+                    files,
+                    {"terraform/main.tf": 'output "x" { value = 2 }'},
+                    checks,
+                    checkpoint.scan,
+                )
+        assert checkpoint.files == files
+    finally:
+        workspace.close()
