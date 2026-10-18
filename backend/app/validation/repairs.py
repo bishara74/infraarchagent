@@ -6,12 +6,11 @@ from collections import defaultdict
 from pathlib import PurePosixPath
 from typing import Any
 
-import hcl2
-from hcl2.utils import SerializationOptions
 from lark import Tree
 from lark.exceptions import LarkError
 
 from app.validation.documents import (
+    PackageDocuments,
     blocks,
     hcl_reference_locations,
     json_reference_locations,
@@ -41,6 +40,9 @@ def repair_terraform(
         variables: set[str] = set()
         data_sources: set[str] = set()
         references: set[str] = set()
+        documents = PackageDocuments.parse({p: files[p] for p in paths})
+        if any(doc.parse_error for doc in documents.documents.values()):
+            continue
         try:
             for path in paths:
                 # JSON declarations must not be overlooked when adding HCL inputs.
@@ -53,17 +55,11 @@ def repair_terraform(
                         json_reference_locations(files[path], include_data=True)
                     )
                     continue
-                tree = hcl2.parses_to_tree(files[path])
+                tree = documents.documents[path].tree
+                assert tree is not None
                 trees[path] = tree
                 references.update(hcl_reference_locations(tree, include_data=True))
-                data = hcl2.serialize(
-                    hcl2.transform(tree),
-                    serialization_options=SerializationOptions(
-                        strip_string_quotes=True,
-                        with_comments=False,
-                        explicit_blocks=False,
-                    ),
-                )
+                data = documents.documents[path].data
                 variables.update(labels[0] for labels, _ in blocks(data, "variable"))
                 data_sources.update(
                     f"{labels[0]}.{name}"
@@ -131,3 +127,44 @@ def repair_terraform(
             target = f"{module}/variables.tf"
             result[target] = result.get(target, "") + "\n\n" + "\n".join(additions)
     return result, repairs
+
+
+async def repair_declarations(
+    files: dict[str, str],
+) -> tuple[dict[str, str], list[dict[str, str]]]:
+    """A gate's existence is not evidence that these module bytes were repaired."""
+    from app.validation.syntax import native_syntax
+    from app.validation.workspace import ValidationWorkspace, current_workspace
+
+    result = dict(files)
+    records: list[dict[str, str]] = []
+    workspace = current_workspace()
+    modules = sorted(
+        {
+            str(PurePosixPath(p).parent)
+            for p in files
+            if p.startswith("terraform/") and p.endswith((".tf", ".tf.json"))
+        }
+    )
+    for module in modules:
+        current = {
+            p: s
+            for p, s in result.items()
+            if str(PurePosixPath(p).parent) == module
+            and p.endswith((".tf", ".tf.json"))
+        }
+        fingerprint = ValidationWorkspace.fingerprint(current)
+        if workspace and workspace.declaration_fingerprints.get(module) == fingerprint:
+            continue
+        if await native_syntax(current):
+            continue
+        candidate, changes = repair_terraform(current)
+        if await native_syntax(candidate):
+            continue
+        result.update(candidate)
+        records.extend(changes)
+        if workspace:
+            workspace.declaration_fingerprints[module] = (
+                ValidationWorkspace.fingerprint(candidate)
+            )
+    return result, records

@@ -10,6 +10,22 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.core.config import Settings
+from app.core.deadlines import active_deadline
+
+
+async def clip_database_waits(session: AsyncSession) -> None:
+    window = active_deadline.get()
+    if window is None:
+        return
+    window.check()
+    milliseconds = str(max(1, int(window.remaining() * 1000)))
+    await session.execute(
+        text(
+            "SELECT set_config('statement_timeout', :limit, true), "
+            "set_config('lock_timeout', :limit, true)"
+        ),
+        {"limit": milliseconds},
+    )
 
 
 def make_app_engine(settings: Settings, *, test: bool = False) -> AsyncEngine:

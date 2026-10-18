@@ -21,8 +21,10 @@ from uuid import UUID, uuid4
 from sqlalchemy import insert, select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.deadlines import deadline_bound
 from app.core.safety import PublicDataSafety
 from app.db.models import AgentEvent
+from app.db.session import clip_database_waits
 from app.domain.enums import AgentName, AgentState, PackageStatus, RunStatus
 from app.events.publisher import EventRecord, Publisher
 
@@ -64,6 +66,7 @@ class EventLog:
         """Internal no-op seam for deterministic transaction-order tests."""
         return None
 
+    @deadline_bound("event_publication")
     async def append(
         self,
         run_id: UUID,
@@ -101,6 +104,7 @@ class EventLog:
         async with self._run_lock(run_id):
             async with self.session_factory() as session:
                 async with session.begin():
+                    await clip_database_waits(session)
                     await self._acquire_advisory_lock(session, run_id)
                     result = await session.execute(
                         insert(AgentEvent)

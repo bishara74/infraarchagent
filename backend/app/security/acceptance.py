@@ -1,5 +1,6 @@
 """Reusable candidate checks; never retain unverified security changes."""
 
+import asyncio
 import re
 import time
 from dataclasses import dataclass
@@ -99,16 +100,27 @@ class CandidateGuard:
                 if c.status == "failed"
             }
 
-        if broken_references(candidate) - broken_references(before):
+        old_references = broken_references(before)
+        await asyncio.sleep(0)
+        self.time_left()
+        if broken_references(candidate) - old_references:
             return CandidateResult("reference_regression", checks, scan, [])
 
         def declarations(files: dict[str, str]) -> set[tuple[str, str]]:
-            return {
-                (str(PurePosixPath(doc.path).parent), ".".join(labels))
-                for doc in PackageDocuments.parse(files).documents.values()
-                if not doc.parse_error
-                for labels, _ in blocks(doc.data, "resource")
-            }
+            def build() -> set[tuple[str, str]]:
+                return {
+                    (str(PurePosixPath(doc.path).parent), ".".join(labels))
+                    for doc in PackageDocuments.parse(files).documents.values()
+                    if not doc.parse_error
+                    for labels, _ in blocks(doc.data, "resource")
+                }
+
+            workspace = current_workspace()
+            return (
+                workspace.cache_index("resources", files, build)
+                if workspace
+                else build()
+            )
 
         for module, removed in declarations(before) - declarations(candidate):
             if any(

@@ -582,6 +582,18 @@ def prometheus_references(package: PackageDocuments) -> list[ValidationCheck]:
 
 
 def reference_checks(package: PackageDocuments) -> list[ValidationCheck]:
+    from app.validation.workspace import current_workspace
+
+    workspace = current_workspace()
+    if workspace:
+        checks = workspace.cache_index(
+            "references", package.files, lambda: _reference_checks(package)
+        )
+        return [c.model_copy() for c in checks]
+    return _reference_checks(package)
+
+
+def _reference_checks(package: PackageDocuments) -> list[ValidationCheck]:
     return [
         *terraform_references(package),
         *kubernetes_references(package),

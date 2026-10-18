@@ -1,5 +1,6 @@
 """Parse package files once, sharing data and safe source positions."""
 
+import hashlib
 import json
 import re
 from collections.abc import Iterator
@@ -178,6 +179,7 @@ class Document:
     error_line: int | None = None
     parse_error: bool = False
     reference_locations: dict[str, int] = field(default_factory=dict)
+    tree: Tree[Any] | None = None
 
     def line(self, token: str | None = None) -> int:
         if token:
@@ -194,15 +196,24 @@ class PackageDocuments:
 
     @classmethod
     def parse(cls, files: dict[str, str]) -> "PackageDocuments":
+        from app.validation.workspace import current_workspace
+
         safe = validate_file_map(files)
         package = cls(safe)
+        workspace = current_workspace()
         for path, source in sorted(safe.items()):
+            key = (path, hashlib.sha256(source.encode()).hexdigest())
+            if workspace and key in workspace.document_cache:
+                package.documents[path] = workspace.document_cache[key]
+                workspace.document_cache.move_to_end(key)
+                continue
             kind = classify_path(path)
             data: Any = None
             documents: list[YamlDocument] = []
             error_line: int | None = None
             failed = False
             references: dict[str, int] = {}
+            tree = None
             try:
                 if kind == FileType.TERRAFORM and path.endswith(".tf.json"):
                     data = json.loads(source)
@@ -262,7 +273,12 @@ class PackageDocuments:
                 error_line,
                 failed,
                 references,
+                tree,
             )
+            if workspace:
+                workspace.document_cache[key] = package.documents[path]
+                if len(workspace.document_cache) > 128:
+                    workspace.document_cache.popitem(last=False)
         return package
 
     def of_kind(self, kind: FileType) -> list[Document]:

@@ -27,6 +27,40 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-18 — Phase 9f A2 — Complete iteration deadlines and cached indexes
+
+**Summary:** Enclose automated and review iteration work/finalization in one
+absolute deadline. Cache content-keyed documents/trees and reference/declaration
+indexes per package, and preserve line-independent variable-reference provenance.
+
+**Requirements addressed:** FR-S-03, FR-S-04, FR-S-09, FR-V-03, NFR-01, PR-05.
+
+**Files:** core/deadlines.py, db/session.py, events/log.py, pipeline/state.py,
+scanners/runner.py, agents/security/agent.py, security/acceptance.py,
+validation/documents.py, references.py, repairs.py, workspace.py and PostgreSQL
+deadline/continuation/security regressions.
+
+**Decisions:** D-46 A2. Work retains a five-second finalization reserve; shutdown,
+workspace locking, DB/statement/advisory-lock waits, notices and closing state/
+event writes share remaining time. No parsing workers. Expired finalization fails
+closed through legal arrows, including interrupted publication of an already
+committed clean transition. Any stage-fault settlement uses the original remaining
+stage allowance and stays visible as fault-recovery time/actual overrun. Partial
+observations preserve variable identity; first observation is distinct from proof
+of introduction. Terminal scans retain timing metadata without pretending a fix
+verification occurred.
+
+**Tests:** Full backend checkpoint: 1,502 passed / 0 failed / 0 skipped / 6 perf
+deselected (281.86 s). Five final PostgreSQL deadline tests passed (8.01 s), including
+advisory-lock cancellation, restoration/notice/closing-write stalls, and durable
+clean-event interruption failing closed. Final combined release checks follow.
+Old continuation fixtures now expire work at 56 seconds while retaining reserve;
+the separate 61-second hard-expiry fixture verifies scan_error and unchanged files.
+
+**Known gaps / follow-ups:** Cooperative timers cannot guarantee hard real-time
+scheduling under external CPU/DB failure. Such overruns remain failures in PR-05;
+no thresholds, benchmark timestamp boundaries or readiness rules are changed.
+
 ## 2026-10-18 — Phase 9f corrective — Final history audit and cleanup
 
 **Summary:** Record the post-implementation secret scan and close task-owned test

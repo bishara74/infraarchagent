@@ -43,8 +43,7 @@ async def test_iteration_deadline_preserves_unmodified_files(db_engines):
     security = agent(engine, ScriptedScanner([[finding("RULE")]]), ScriptedFix())
     security.terraform_verifier = SlowVerifier()
     assert (
-        await security.run(ctx, Variant.SECURITY, package)
-        == PackageStatus.SCAN_EXHAUSTED
+        await security.run(ctx, Variant.SECURITY, package) == PackageStatus.SCAN_ERROR
     )
     async with make_session_factory(engine)() as session:
         row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
@@ -408,13 +407,15 @@ async def test_time_budget_stops_before_fix_call(
         async def scan(
             self, files: dict[str, str], variant: Variant, *, iteration: int = 0
         ) -> ScanResult:
-            now[0] = 239.5
+            now[0] = 1.0
             return await super().scan(files, variant)
 
     fixer = ScriptedFix()
-    result = await agent(engine, ExpiringScanner([[finding("CKV_AWS_16")]]), fixer).run(
-        ctx, Variant.SECURITY, package
+    security = agent(engine, ExpiringScanner([[finding("CKV_AWS_16")]]), fixer)
+    security.settings = security.settings.model_copy(
+        update={"security_deadline_seconds": 1.5}
     )
+    result = await security.run(ctx, Variant.SECURITY, package)
     assert result == PackageStatus.SCAN_EXHAUSTED
     assert fixer.calls == []
     async with make_session_factory(engine)() as session:

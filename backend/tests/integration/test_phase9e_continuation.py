@@ -104,7 +104,8 @@ async def test_full_loop_retains_baseline_and_uses_available_allowance(
                 and path.startswith("terraform/")
             )
             if mode == "stage_timeout" or (mode == "timeout" and tf_attempt == 1):
-                now[0] += 61
+                # Exhaust work while retaining the reserved finalization time.
+                now[0] += min(56, 69.5 - now[0]) if mode == "stage_timeout" else 56
             return FixProposal(
                 path,
                 True,
@@ -123,7 +124,7 @@ async def test_full_loop_retains_baseline_and_uses_available_allowance(
         async def checks(self, files):
             self.inputs.append(dict(files))
             if mode == "baseline_timeout":
-                now[0] += 61
+                now[0] += min(56, 239.5 - now[0])
             return checks(
                 int(
                     (
@@ -244,4 +245,4 @@ async def test_full_loop_retains_baseline_and_uses_available_allowance(
             == package.files["terraform/main.tf"] + "# fixed\n"
         )
     if mode == "baseline_timeout":
-        assert not fixer.calls and len(verifier.inputs) == 4
+        assert not fixer.calls and len(verifier.inputs) == 5

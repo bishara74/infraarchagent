@@ -23,6 +23,7 @@ from app.agents.security.verification import (
     terraform_files,
 )
 from app.core.config import Settings
+from app.core.deadlines import iteration_window
 from app.core.logging import RedactingFilter
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
@@ -731,389 +732,520 @@ class SecurityAgent:
         pending_error: ToolFailure | None = None
 
         if kind == "review_retry":
-            paths = retry_targets(
-                files,
-                {
-                    "final": {
-                        "remaining_blocking": [
-                            _finding(item) for item in initial_findings
+            review_end = iteration_started + min(60.0, budget.remaining())
+            review_metrics: dict[str, Any] = {}
+            try:
+                async with iteration_window(review_end, ctx.clock, review_metrics):
+                    paths = retry_targets(
+                        files,
+                        {
+                            "final": {
+                                "remaining_blocking": [
+                                    _finding(item) for item in initial_findings
+                                ]
+                            }
+                        },
+                        {"failed_checks_for_remediation": list(validation_failures)},
+                        target_files,
+                    )
+                    targets: dict[str, list[Violation]] = {
+                        path: [
+                            item
+                            for item in initial_findings
+                            if item.blocking and item.file_path == path
                         ]
+                        for path in paths
                     }
-                },
-                {"failed_checks_for_remediation": list(validation_failures)},
-                target_files,
-            )
-            targets: dict[str, list[Violation]] = {
-                path: [
-                    item
-                    for item in initial_findings
-                    if item.blocking and item.file_path == path
-                ]
-                for path in paths
-            }
-            if targets and budget.remaining() >= 1:
-                verification: dict[str, Any] = {}
-                cleanup_start = len(cleanup_times.get() or [])
-                iteration_source = dict(files)
-                checkpoint = RetainedCandidate(
-                    dict(files),
-                    ScanResult(
-                        list(initial_findings),
-                        {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
-                    ),
-                )
-                iteration_budget = AgentBudget(
-                    max(0.001, min(55.0, budget.remaining() - 5.0)), clock=ctx.clock
-                )
-                workspace = current_workspace()
-                metrics_start = len(workspace.terraform_metrics) if workspace else 0
-                try:
-                    async with asyncio.timeout(iteration_budget.remaining()):
-                        files, fixes, diff, pending_scan = await self._fix_iteration(
-                            ctx,
-                            variant,
-                            files,
-                            targets,
-                            iteration_budget,
+                    if targets and budget.remaining() >= 1:
+                        verification: dict[str, Any] = {
+                            "_iteration_deadline": review_end
+                        }
+                        cleanup_start = len(cleanup_times.get() or [])
+                        iteration_source = dict(files)
+                        checkpoint = RetainedCandidate(
+                            dict(files),
                             ScanResult(
                                 list(initial_findings),
                                 {"checkov": "ok", "trivy": "ok", "terraform": "ok"},
                             ),
-                            verification,
-                            feedback=feedback,
-                            validation_failures=validation_failures,
-                            review_target_order=True,
-                            checkpoint=checkpoint,
                         )
-                except ToolFailure as error:
-                    files = dict(checkpoint.files)
-                    pending_error = error
-                    verification.setdefault("reasons", []).append(
-                        "verification_unavailable"
-                    )
-                    verification.update(outcome="rolled_back", deadline_only=False)
-                    fixes, diff = (
-                        checkpoint.fixes,
-                        package_diff(iteration_source, files),
-                    )
-                    if workspace:
-                        async with workspace.check(files):
-                            pass
-                except TimeoutError:
-                    restoration_started = time.monotonic()
-                    files = dict(checkpoint.files)
-                    verification["deadline_only"] = bool(
-                        verification.get("candidate_created")
-                        and not verification.get("reasons")
-                    )
-                    verification.setdefault("reasons", []).append("iteration_deadline")
-                    verification["outcome"] = (
-                        "rolled_back"
-                        if verification.get("candidate_created")
-                        else "stopped"
-                    )
-                    verification["verification_seconds"] = (
-                        verification.get("terraform_verification_seconds", 0.0)
-                        + verification.get("security_verification_seconds", 0.0)
-                        + verification.get("syntax_verification_seconds", 0.0)
-                    )
-                    fixes, diff = (
-                        checkpoint.fixes,
-                        package_diff(iteration_source, files),
-                    )
-                    pending_scan = checkpoint.scan
-                    if workspace:
-                        async with workspace.check(files):
-                            pass
-                iteration_count = int(bool(verification.get("fix_started")))
-                previous_attempt = attempt_feedback(verification, fixes, self.redactor)
-                await self._publish_iteration(
-                    ctx, variant, verification, iteration_count, metrics_start
-                )
-                capped, omitted = _capped_diff(diff)
-                iterations.append(
-                    {
-                        "index": 0,
-                        "scan": {"blocking": [_finding(v) for v in initial_findings]},
-                        "fixes": fixes,
-                        "diff": capped,
-                        "diff_omitted_chars": omitted,
-                        "verification": verification,
-                    }
-                )
-                await self._notice(
-                    ctx,
-                    variant,
-                    "review fix pass completed",
-                    iteration=0,
-                    blocking_by_severity=dict(
-                        Counter(v.severity.value for v in initial_findings)
-                    ),
-                    advisory_count=0,
-                    fixes_accepted=sum(bool(f["accepted"]) for f in fixes),
-                    fixes_rejected=sum(not f["accepted"] for f in fixes),
-                )
-            elif feedback is not None and not targets:
-                message = "no file could be targeted; feedback was not applied"
-                iterations.append(
-                    {"index": 0, "notice": message, "fixes": [], "diff": ""}
-                )
-                await self._notice(ctx, variant, message)
-            iteration_started = ctx.clock()
-            await ctx.writer.package_transition(
-                ctx.run_id,
-                variant,
-                PackageStatus.SCANNING,
-                message="review retry scanning",
-            )
-
-        while True:
-            iteration_deadline = iteration_started + min(60.0, budget.remaining())
-            iteration_budget = AgentBudget(
-                max(0.001, iteration_deadline - ctx.clock() - 5.0), clock=ctx.clock
-            )
-            scan_started = time.monotonic()
-            cleanup_start = len(cleanup_times.get() or [])
-            try:
-                async with asyncio.timeout(iteration_budget.remaining()):
-                    if pending_error is not None:
-                        raise pending_error
-                    if pending_scan is None and budget.remaining() < 1:
-                        raise TimeoutError
-                    scan = pending_scan or await scan_files(
-                        self.scanner, files, variant, iteration=iteration_count
-                    )
-                    pending_scan = None
-            except (ToolFailure, TimeoutError) as error:
-                reason = (
-                    "security iteration deadline"
-                    if isinstance(error, TimeoutError)
-                    else f"{error.tool} is not installed"
-                    if error.category == "not_installed"
-                    else f"{error.tool} scan {error.category}"
-                )
-                status = PackageStatus.SCAN_ERROR
-                if kind != "review_retry":
-                    await ctx.writer.package_transition(
-                        ctx.run_id, variant, status, message=reason, error=reason
-                    )
-                break
-            if first_counts is None:
-                first_counts = {
-                    tool: sum(
-                        item.tool == tool
-                        and item.severity in {Severity.HIGH, Severity.CRITICAL}
-                        for item in scan.violations
-                    )
-                    for tool in ("checkov", "trivy", "terraform")
-                }
-            blocking = [item for item in scan.violations if item.blocking]
-            last_blocking = blocking
-            entry: dict[str, Any] = {
-                "index": iteration_count,
-                "scan": _scan_report(scan),
-                "fixes": [],
-                "diff": "",
-                "diff_omitted_chars": 0,
-            }
-            iterations.append(entry)
-            if not blocking:
-                outcome, status = "clean", PackageStatus.SCAN_CLEAN
-                await self._notice(
-                    ctx,
-                    variant,
-                    "security scan complete",
-                    status=PackageStatus.SCANNING,
-                    iteration=iteration_count,
-                    blocking_by_severity={},
-                    advisory_count=entry["scan"]["advisory_count"],
-                    fixes_accepted=0,
-                    fixes_rejected=0,
-                )
-                await ctx.writer.package_transition(
-                    ctx.run_id, variant, status, message="no blocking security findings"
-                )
-                break
-            await ctx.writer.package_transition(
-                ctx.run_id,
-                variant,
-                PackageStatus.REMEDIATING,
-                message="blocking security findings found",
-            )
-            decision = remediation_budget_decision(iteration_count, ctx.max_iterations)
-            if not decision.apply_fix:
-                reason = "iteration limit"
-            elif budget.remaining() < 1:
-                reason = "time budget"
-            if reason is not None:
-                outcome, status = "exhausted", PackageStatus.SCAN_EXHAUSTED
-                await self._notice(
-                    ctx,
-                    variant,
-                    "security remediation exhausted",
-                    iteration=iteration_count,
-                    blocking_by_severity=dict(
-                        Counter(v.severity.value for v in blocking)
-                    ),
-                    advisory_count=entry["scan"]["advisory_count"],
-                    fixes_accepted=0,
-                    fixes_rejected=0,
-                )
-                await ctx.writer.package_transition(
-                    ctx.run_id, variant, status, message=reason
-                )
-                break
-            targets = defaultdict(list)
-            for item in blocking:
-                targets[item.file_path].append(item)
-            iteration_source = dict(files)
-            checkpoint = RetainedCandidate(dict(files), scan)
-            try:
-                entry["verification"] = {
-                    "_iteration_deadline": iteration_deadline,
-                    "scan_seconds": time.monotonic() - scan_started,
-                }
-                workspace = current_workspace()
-                metrics_start = len(workspace.terraform_metrics) if workspace else 0
-                async with asyncio.timeout(iteration_budget.remaining()):
-                    files, fixes, diff, pending_scan = await self._fix_iteration(
-                        ctx,
-                        variant,
-                        files,
-                        targets,
-                        iteration_budget,
-                        scan,
-                        entry["verification"],
-                        feedback=feedback,
-                        validation_failures=validation_failures,
-                        previous_attempt=previous_attempt,
-                        checkpoint=checkpoint,
-                        iteration_index=iteration_count,
-                    )
-            except ToolFailure as error:
-                files = dict(checkpoint.files)
-                entry["fixes"] = checkpoint.fixes
-                entry["diff"], entry["diff_omitted_chars"] = _capped_diff(
-                    package_diff(iteration_source, files)
-                )
-                last_blocking = [v for v in checkpoint.scan.violations if v.blocking]
-                reason = f"{error.tool} scan {error.category}"
-                outcome, status = "error", PackageStatus.SCAN_ERROR
-                verification = entry["verification"]
-                verification.setdefault("reasons", []).append(
-                    "verification_unavailable"
-                )
-                verification.update(outcome="rolled_back", deadline_only=False)
-                if verification.get("fix_started"):
-                    iteration_count = decision.next_iteration_count
-                if workspace:
-                    async with workspace.check(files):
-                        pass
-                await self._publish_iteration(
-                    ctx, variant, verification, iteration_count, metrics_start
-                )
-                if kind != "review_retry":
-                    await ctx.writer.package_transition(
-                        ctx.run_id,
-                        variant,
-                        PackageStatus.SCANNING,
-                        message="security verification failed",
-                    )
-                    await ctx.writer.package_transition(
-                        ctx.run_id, variant, status, message=reason, error=reason
-                    )
-                break
-            except TimeoutError:
-                restoration_started = time.monotonic()
-                files = dict(checkpoint.files)
-                entry["fixes"] = checkpoint.fixes
-                entry["diff"], entry["diff_omitted_chars"] = _capped_diff(
-                    package_diff(iteration_source, files)
-                )
-                last_blocking = [v for v in checkpoint.scan.violations if v.blocking]
-                entry["stop_reason"] = "iteration_deadline"
-                verification = entry.get("verification", {})
-                reasons = verification.setdefault("reasons", [])
-                verification["deadline_only"] = bool(
-                    verification.get("candidate_created") and not reasons
-                )
-                reasons.append("iteration_deadline")
-                verification["verification_seconds"] = (
-                    verification.get("terraform_verification_seconds", 0.0)
-                    + verification.get("security_verification_seconds", 0.0)
-                    + verification.get("syntax_verification_seconds", 0.0)
-                )
-                workspace = current_workspace()
-                if workspace:
-                    async with workspace.check(files):
-                        pass
-                verification["restoration_seconds"] = (
-                    time.monotonic() - restoration_started
-                )
-                verification["cancellation_seconds"] = sum(
-                    (cleanup_times.get() or [])[cleanup_start:]
-                )
-                verification["outcome"] = (
-                    "rolled_back"
-                    if verification.get("candidate_created")
-                    else "stopped"
-                )
-                if verification.get("fix_started"):
-                    iteration_count = decision.next_iteration_count
-                await self._publish_iteration(
-                    ctx, variant, verification, iteration_count, metrics_start
-                )
-                previous_attempt = attempt_feedback(verification, [], self.redactor)
-                if budget.remaining() >= 1 and iteration_count < ctx.max_iterations:
-                    pending_scan = checkpoint.scan
+                        iteration_budget = AgentBudget(
+                            max(0.001, review_end - ctx.clock() - 5.0), clock=ctx.clock
+                        )
+                        workspace = current_workspace()
+                        metrics_start = (
+                            len(workspace.terraform_metrics) if workspace else 0
+                        )
+                        try:
+                            async with asyncio.timeout(iteration_budget.remaining()):
+                                (
+                                    files,
+                                    fixes,
+                                    diff,
+                                    pending_scan,
+                                ) = await self._fix_iteration(
+                                    ctx,
+                                    variant,
+                                    files,
+                                    targets,
+                                    iteration_budget,
+                                    ScanResult(
+                                        list(initial_findings),
+                                        {
+                                            "checkov": "ok",
+                                            "trivy": "ok",
+                                            "terraform": "ok",
+                                        },
+                                    ),
+                                    verification,
+                                    feedback=feedback,
+                                    validation_failures=validation_failures,
+                                    review_target_order=True,
+                                    checkpoint=checkpoint,
+                                )
+                        except ToolFailure as error:
+                            files = dict(checkpoint.files)
+                            pending_error = error
+                            verification.setdefault("reasons", []).append(
+                                "verification_unavailable"
+                            )
+                            verification.update(
+                                outcome="rolled_back", deadline_only=False
+                            )
+                            fixes, diff = (
+                                checkpoint.fixes,
+                                package_diff(iteration_source, files),
+                            )
+                            if workspace:
+                                async with workspace.check(files):
+                                    pass
+                        except TimeoutError:
+                            restoration_started = time.monotonic()
+                            files = dict(checkpoint.files)
+                            verification["deadline_only"] = bool(
+                                verification.get("candidate_created")
+                                and not verification.get("reasons")
+                            )
+                            verification.setdefault("reasons", []).append(
+                                "iteration_deadline"
+                            )
+                            verification["outcome"] = (
+                                "rolled_back"
+                                if verification.get("candidate_created")
+                                else "stopped"
+                            )
+                            verification["verification_seconds"] = (
+                                verification.get("terraform_verification_seconds", 0.0)
+                                + verification.get("security_verification_seconds", 0.0)
+                                + verification.get("syntax_verification_seconds", 0.0)
+                            )
+                            fixes, diff = (
+                                checkpoint.fixes,
+                                package_diff(iteration_source, files),
+                            )
+                            pending_scan = checkpoint.scan
+                            if workspace:
+                                async with workspace.check(files):
+                                    pass
+                        iteration_count = int(bool(verification.get("fix_started")))
+                        previous_attempt = attempt_feedback(
+                            verification, fixes, self.redactor
+                        )
+                        await self._publish_iteration(
+                            ctx, variant, verification, iteration_count, metrics_start
+                        )
+                        capped, omitted = _capped_diff(diff)
+                        iterations.append(
+                            {
+                                "index": 0,
+                                "scan": {
+                                    "blocking": [_finding(v) for v in initial_findings]
+                                },
+                                "fixes": fixes,
+                                "diff": capped,
+                                "diff_omitted_chars": omitted,
+                                "verification": verification,
+                            }
+                        )
+                        await self._notice(
+                            ctx,
+                            variant,
+                            "review fix pass completed",
+                            iteration=0,
+                            blocking_by_severity=dict(
+                                Counter(v.severity.value for v in initial_findings)
+                            ),
+                            advisory_count=0,
+                            fixes_accepted=sum(bool(f["accepted"]) for f in fixes),
+                            fixes_rejected=sum(not f["accepted"] for f in fixes),
+                        )
+                    elif feedback is not None and not targets:
+                        message = "no file could be targeted; feedback was not applied"
+                        iterations.append(
+                            {"index": 0, "notice": message, "fixes": [], "diff": ""}
+                        )
+                        await self._notice(ctx, variant, message)
                     iteration_started = ctx.clock()
                     await ctx.writer.package_transition(
                         ctx.run_id,
                         variant,
                         PackageStatus.SCANNING,
-                        message="security iteration rolled back; retrying",
+                        message="review retry scanning",
                     )
-                    continue
-                reason = (
-                    "iteration limit"
-                    if iteration_count >= ctx.max_iterations
-                    else "time budget"
-                )
-                outcome, status = "exhausted", PackageStatus.SCAN_EXHAUSTED
-                await ctx.writer.package_transition(
-                    ctx.run_id, variant, status, message=reason
+
+            except TimeoutError:
+                raise ReviewRetryScanError(
+                    "review iteration finalization deadline"
+                ) from None
+            finally:
+                if iterations:
+                    iterations[-1].setdefault("verification", {}).update(review_metrics)
+
+        while True:
+            iteration_begin = iteration_started
+            iteration_deadline = iteration_started + min(60.0, budget.remaining())
+            deadline_metrics: dict[str, Any] = {}
+            entry: dict[str, Any] | None = None
+            checkpoint = RetainedCandidate(
+                dict(files), pending_scan or ScanResult(list(last_blocking), {})
+            )
+            try:
+                async with iteration_window(
+                    iteration_deadline, ctx.clock, deadline_metrics
+                ):
+                    iteration_budget = AgentBudget(
+                        max(0.001, iteration_deadline - ctx.clock() - 5.0),
+                        clock=ctx.clock,
+                    )
+                    scan_started = time.monotonic()
+                    cleanup_start = len(cleanup_times.get() or [])
+                    try:
+                        async with asyncio.timeout(iteration_budget.remaining()):
+                            if pending_error is not None:
+                                raise pending_error
+                            if pending_scan is None and budget.remaining() < 1:
+                                raise TimeoutError
+                            scan = pending_scan or await scan_files(
+                                self.scanner, files, variant, iteration=iteration_count
+                            )
+                            pending_scan = None
+                        checkpoint = RetainedCandidate(dict(files), scan)
+                    except (ToolFailure, TimeoutError) as error:
+                        reason = (
+                            "security iteration deadline"
+                            if isinstance(error, TimeoutError)
+                            else f"{error.tool} is not installed"
+                            if error.category == "not_installed"
+                            else f"{error.tool} scan {error.category}"
+                        )
+                        status = PackageStatus.SCAN_ERROR
+                        if kind != "review_retry":
+                            await ctx.writer.package_transition(
+                                ctx.run_id,
+                                variant,
+                                status,
+                                message=reason,
+                                error=reason,
+                            )
+                        break
+                    if first_counts is None:
+                        first_counts = {
+                            tool: sum(
+                                item.tool == tool
+                                and item.severity in {Severity.HIGH, Severity.CRITICAL}
+                                for item in scan.violations
+                            )
+                            for tool in ("checkov", "trivy", "terraform")
+                        }
+                    blocking = [item for item in scan.violations if item.blocking]
+                    last_blocking = blocking
+                    entry = {
+                        "index": iteration_count,
+                        "scan": _scan_report(scan),
+                        "fixes": [],
+                        "diff": "",
+                        "diff_omitted_chars": 0,
+                    }
+                    iterations.append(entry)
+                    if not blocking:
+                        outcome, status = "clean", PackageStatus.SCAN_CLEAN
+                        await self._notice(
+                            ctx,
+                            variant,
+                            "security scan complete",
+                            status=PackageStatus.SCANNING,
+                            iteration=iteration_count,
+                            blocking_by_severity={},
+                            advisory_count=entry["scan"]["advisory_count"],
+                            fixes_accepted=0,
+                            fixes_rejected=0,
+                        )
+                        await ctx.writer.package_transition(
+                            ctx.run_id,
+                            variant,
+                            status,
+                            message="no blocking security findings",
+                        )
+                        break
+                    await ctx.writer.package_transition(
+                        ctx.run_id,
+                        variant,
+                        PackageStatus.REMEDIATING,
+                        message="blocking security findings found",
+                    )
+                    decision = remediation_budget_decision(
+                        iteration_count, ctx.max_iterations
+                    )
+                    if not decision.apply_fix:
+                        reason = "iteration limit"
+                    elif budget.remaining() < 1:
+                        reason = "time budget"
+                    if reason is not None:
+                        outcome, status = "exhausted", PackageStatus.SCAN_EXHAUSTED
+                        await self._notice(
+                            ctx,
+                            variant,
+                            "security remediation exhausted",
+                            iteration=iteration_count,
+                            blocking_by_severity=dict(
+                                Counter(v.severity.value for v in blocking)
+                            ),
+                            advisory_count=entry["scan"]["advisory_count"],
+                            fixes_accepted=0,
+                            fixes_rejected=0,
+                        )
+                        await ctx.writer.package_transition(
+                            ctx.run_id, variant, status, message=reason
+                        )
+                        break
+                    targets = defaultdict(list)
+                    for item in blocking:
+                        targets[item.file_path].append(item)
+                    iteration_source = dict(files)
+                    checkpoint = RetainedCandidate(dict(files), scan)
+                    try:
+                        entry["verification"] = {
+                            "_iteration_deadline": iteration_deadline,
+                            "scan_seconds": time.monotonic() - scan_started,
+                        }
+                        workspace = current_workspace()
+                        metrics_start = (
+                            len(workspace.terraform_metrics) if workspace else 0
+                        )
+                        async with asyncio.timeout(iteration_budget.remaining()):
+                            (
+                                files,
+                                fixes,
+                                diff,
+                                pending_scan,
+                            ) = await self._fix_iteration(
+                                ctx,
+                                variant,
+                                files,
+                                targets,
+                                iteration_budget,
+                                scan,
+                                entry["verification"],
+                                feedback=feedback,
+                                validation_failures=validation_failures,
+                                previous_attempt=previous_attempt,
+                                checkpoint=checkpoint,
+                                iteration_index=iteration_count,
+                            )
+                    except ToolFailure as error:
+                        files = dict(checkpoint.files)
+                        entry["fixes"] = checkpoint.fixes
+                        entry["diff"], entry["diff_omitted_chars"] = _capped_diff(
+                            package_diff(iteration_source, files)
+                        )
+                        last_blocking = [
+                            v for v in checkpoint.scan.violations if v.blocking
+                        ]
+                        reason = f"{error.tool} scan {error.category}"
+                        outcome, status = "error", PackageStatus.SCAN_ERROR
+                        verification = entry["verification"]
+                        verification.setdefault("reasons", []).append(
+                            "verification_unavailable"
+                        )
+                        verification.update(outcome="rolled_back", deadline_only=False)
+                        if verification.get("fix_started"):
+                            iteration_count = decision.next_iteration_count
+                        if workspace:
+                            async with workspace.check(files):
+                                pass
+                        await self._publish_iteration(
+                            ctx, variant, verification, iteration_count, metrics_start
+                        )
+                        if kind != "review_retry":
+                            await ctx.writer.package_transition(
+                                ctx.run_id,
+                                variant,
+                                PackageStatus.SCANNING,
+                                message="security verification failed",
+                            )
+                            await ctx.writer.package_transition(
+                                ctx.run_id,
+                                variant,
+                                status,
+                                message=reason,
+                                error=reason,
+                            )
+                        break
+                    except TimeoutError:
+                        restoration_started = time.monotonic()
+                        files = dict(checkpoint.files)
+                        entry["fixes"] = checkpoint.fixes
+                        entry["diff"], entry["diff_omitted_chars"] = _capped_diff(
+                            package_diff(iteration_source, files)
+                        )
+                        last_blocking = [
+                            v for v in checkpoint.scan.violations if v.blocking
+                        ]
+                        entry["stop_reason"] = "iteration_deadline"
+                        verification = entry.get("verification", {})
+                        reasons = verification.setdefault("reasons", [])
+                        verification["deadline_only"] = bool(
+                            verification.get("candidate_created") and not reasons
+                        )
+                        reasons.append("iteration_deadline")
+                        verification["verification_seconds"] = (
+                            verification.get("terraform_verification_seconds", 0.0)
+                            + verification.get("security_verification_seconds", 0.0)
+                            + verification.get("syntax_verification_seconds", 0.0)
+                        )
+                        workspace = current_workspace()
+                        if workspace:
+                            async with workspace.check(files):
+                                pass
+                        verification["restoration_seconds"] = (
+                            time.monotonic() - restoration_started
+                        )
+                        verification["cancellation_seconds"] = sum(
+                            (cleanup_times.get() or [])[cleanup_start:]
+                        )
+                        verification["outcome"] = (
+                            "rolled_back"
+                            if verification.get("candidate_created")
+                            else "stopped"
+                        )
+                        if verification.get("fix_started"):
+                            iteration_count = decision.next_iteration_count
+                        await self._publish_iteration(
+                            ctx, variant, verification, iteration_count, metrics_start
+                        )
+                        previous_attempt = attempt_feedback(
+                            verification, [], self.redactor
+                        )
+                        if (
+                            budget.remaining() >= 1
+                            and iteration_count < ctx.max_iterations
+                        ):
+                            pending_scan = checkpoint.scan
+                            iteration_started = ctx.clock()
+                            await ctx.writer.package_transition(
+                                ctx.run_id,
+                                variant,
+                                PackageStatus.SCANNING,
+                                message="security iteration rolled back; retrying",
+                            )
+                            continue
+                        reason = (
+                            "iteration limit"
+                            if iteration_count >= ctx.max_iterations
+                            else "time budget"
+                        )
+                        outcome, status = "exhausted", PackageStatus.SCAN_EXHAUSTED
+                        await ctx.writer.package_transition(
+                            ctx.run_id, variant, status, message=reason
+                        )
+                        break
+                    previous_attempt = attempt_feedback(
+                        entry["verification"], fixes, self.redactor
+                    )
+                    entry["fixes"] = fixes
+                    await self._publish_iteration(
+                        ctx,
+                        variant,
+                        entry["verification"],
+                        decision.next_iteration_count,
+                        metrics_start,
+                    )
+                    entry["diff"], entry["diff_omitted_chars"] = _capped_diff(diff)
+                    iteration_count = decision.next_iteration_count
+                    await self._notice(
+                        ctx,
+                        variant,
+                        "security fix pass completed",
+                        iteration=iteration_count,
+                        blocking_by_severity=dict(
+                            Counter(v.severity.value for v in blocking)
+                        ),
+                        advisory_count=entry["scan"]["advisory_count"],
+                        fixes_accepted=sum(bool(f["accepted"]) for f in fixes),
+                        fixes_rejected=sum(not f["accepted"] for f in fixes),
+                    )
+                    iteration_started = ctx.clock()
+                    await ctx.writer.package_transition(
+                        ctx.run_id,
+                        variant,
+                        PackageStatus.SCANNING,
+                        message="security rescan started",
+                    )
+            except TimeoutError:
+                recovery_started = time.monotonic()
+                # A failure to finish mandatory finalization is an explicit
+                # failed iteration, never a fresh allowance for more fixing.
+                if entry is not None:
+                    entry.setdefault("verification", {}).update(
+                        absolute_deadline=True,
+                        outcome="rolled_back",
+                    )
+                    entry["stop_reason"] = "iteration_deadline"
+                    files = dict(checkpoint.files)
+                    last_blocking = [
+                        v for v in checkpoint.scan.violations if v.blocking
+                    ]
+                reason = "security iteration finalization deadline"
+                outcome, status = "error", PackageStatus.SCAN_ERROR
+                # Settle a failed stage through existing legal arrows. This
+                # fault-recovery tail remains visible in PR-05, not hidden as
+                # successful work inside a restarted iteration budget.
+                async with asyncio.timeout(budget.remaining()):
+                    async with self.session_factory() as session:
+                        row = await PackageRepository(session).get(ctx.run_id, variant)
+                        current = PackageStatus(row.status) if row else None
+                    if current == PackageStatus.REMEDIATING:
+                        await ctx.writer.package_transition(
+                            ctx.run_id, variant, PackageStatus.SCANNING, message=reason
+                        )
+                        current = PackageStatus.SCANNING
+                    if current in {
+                        PackageStatus.SCANNING,
+                        PackageStatus.SCAN_CLEAN,
+                        PackageStatus.SCAN_EXHAUSTED,
+                    }:
+                        await ctx.writer.package_transition(
+                            ctx.run_id, variant, status, message=reason, error=reason
+                        )
+                deadline_metrics["fault_recovery_seconds"] = (
+                    time.monotonic() - recovery_started
                 )
                 break
-            previous_attempt = attempt_feedback(
-                entry["verification"], fixes, self.redactor
-            )
-            entry["fixes"] = fixes
-            await self._publish_iteration(
-                ctx,
-                variant,
-                entry["verification"],
-                decision.next_iteration_count,
-                metrics_start,
-            )
-            entry["diff"], entry["diff_omitted_chars"] = _capped_diff(diff)
-            iteration_count = decision.next_iteration_count
-            await self._notice(
-                ctx,
-                variant,
-                "security fix pass completed",
-                iteration=iteration_count,
-                blocking_by_severity=dict(Counter(v.severity.value for v in blocking)),
-                advisory_count=entry["scan"]["advisory_count"],
-                fixes_accepted=sum(bool(f["accepted"]) for f in fixes),
-                fixes_rejected=sum(not f["accepted"] for f in fixes),
-            )
-            iteration_started = ctx.clock()
-            await ctx.writer.package_transition(
-                ctx.run_id,
-                variant,
-                PackageStatus.SCANNING,
-                message="security rescan started",
-            )
+            finally:
+                if entry is not None:
+                    details = entry.get("verification")
+                    if details is not None:
+                        details.pop("_iteration_deadline", None)
+                    deadline_metrics["iteration_elapsed_seconds"] = (
+                        ctx.clock() - iteration_begin
+                    )
+                    deadline_metrics["deadline_overrun_seconds"] = max(
+                        0.0, ctx.clock() - iteration_deadline
+                    )
+                    if details is not None:
+                        details.update(deadline_metrics)
+                    else:
+                        entry["deadline"] = deadline_metrics
 
         checkov_count = first_counts["checkov"] if first_counts is not None else None
         trivy_count = first_counts["trivy"] if first_counts is not None else None

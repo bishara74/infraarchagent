@@ -4,7 +4,7 @@ import asyncio
 import hashlib
 import json
 import shutil
-from collections import Counter
+from collections import Counter, OrderedDict
 from collections.abc import AsyncIterator, Iterator
 from contextlib import asynccontextmanager, contextmanager
 from contextvars import ContextVar
@@ -12,6 +12,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from app.core.deadlines import bounded_phase
 from app.domain.paths import validate_file_map
 from app.domain.validation import ValidationCheck
 
@@ -48,9 +49,32 @@ class ValidationWorkspace:
         self.syntax_cache: dict[tuple[str, str], list[Any]] = {}
         self.failure_anchors: dict[tuple[str, ...], list[tuple[str, int | None]]] = {}
         self.observations: list[dict[str, Any]] = []
+        self.first_observations: dict[tuple[str, str, str], str] = {}
+        self.document_cache: OrderedDict[tuple[str, str], Any] = OrderedDict()
+        self.index_cache: OrderedDict[tuple[str, str], Any] = OrderedDict()
+        self.declaration_fingerprints: dict[str, str] = {}
+
+    def cache_index(self, kind: str, files: dict[str, str], build: Any) -> Any:
+        key = (kind, self.fingerprint(files))
+        if key not in self.index_cache:
+            self.index_cache[key] = build()
+            if len(self.index_cache) > 32:
+                self.index_cache.popitem(last=False)
+        self.index_cache.move_to_end(key)
+        return self.index_cache[key]
 
     @staticmethod
     def check_key(check: ValidationCheck) -> tuple[str, str, str]:
+        if check.check_id in {
+            "terraform.var_ref",
+            "terraform.local_ref",
+            "terraform.module_ref",
+        }:
+            return (
+                check.check_id,
+                check.file_path or "",
+                check.message.split(" ", 1)[0],
+            )
         return (
             check.check_id,
             check.file_path or "",
@@ -130,6 +154,16 @@ class ValidationWorkspace:
                     "action": action,
                     "line": check.line_start,
                     "origin": self.origins[key],
+                    "first_observed_stage": self.first_observations.setdefault(
+                        key, stage
+                    ),
+                    "introduction_proven": bool(
+                        self.observed
+                        and not partial
+                        and stage != "generated"
+                        and key not in self.last_failures
+                        and self.origins[key] == stage
+                    ),
                     "content_hash": hashlib.sha256(
                         files.get(check.file_path or "", "").encode()
                     ).hexdigest(),
@@ -185,10 +219,11 @@ class ValidationWorkspace:
 
     @asynccontextmanager
     async def check(self, files: dict[str, str]) -> AsyncIterator[Path]:
-        async with self.lock:
-            self.sync(files)
-            with self.activate():
-                yield self.root
+        async with bounded_phase("workspace"):
+            async with self.lock:
+                self.sync(files)
+                with self.activate():
+                    yield self.root
 
     def environment(self, module: str) -> Path:
         key = hashlib.sha256(module.encode()).hexdigest()[:16]
@@ -209,4 +244,6 @@ class ValidationWorkspace:
         ).hexdigest()
 
     def close(self) -> None:
+        self.document_cache.clear()
+        self.index_cache.clear()
         self._temporary.cleanup()

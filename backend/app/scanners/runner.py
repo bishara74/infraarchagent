@@ -15,6 +15,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Literal, Protocol
 
+from app.core.deadlines import active_deadline
+
 cleanup_times: ContextVar[list[float] | None] = ContextVar(
     "scanner_cleanup", default=None
 )
@@ -140,13 +142,22 @@ class ProcessToolRunner:
         except ProcessLookupError:
             pass
         try:
-            await asyncio.wait_for(process.communicate(), timeout=1)
+            window = active_deadline.get()
+            allowance = min(1.0, window.remaining()) if window else 1.0
+            if allowance <= 0:
+                raise TimeoutError
+            await asyncio.wait_for(process.communicate(), timeout=allowance)
         except TimeoutError:
             # asyncio exposes no public subprocess pipe-close API. Closing the
             # transport prevents a pipe-owning descendant from blocking exit.
             transport = getattr(process, "_transport", None)
             if transport is not None:
                 transport.close()
+        except asyncio.CancelledError:
+            transport = getattr(process, "_transport", None)
+            if transport is not None:
+                transport.close()
+            raise
         finally:
             measurements = cleanup_times.get()
             if measurements is not None:

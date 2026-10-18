@@ -10,8 +10,10 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.core.deadlines import deadline_bound
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
+from app.db.session import clip_database_waits
 from app.domain.enums import AgentName, AgentState, PackageStatus, RunStatus, Variant
 from app.events.kinds import (
     agent_state_payload,
@@ -105,6 +107,7 @@ class PipelineStateWriter:
             run_status_payload(),
         )
 
+    @deadline_bound("closing_state_event")
     async def package_transition(
         self,
         run_id: UUID,
@@ -116,6 +119,7 @@ class PipelineStateWriter:
     ) -> None:
         async with self.session_factory() as session:
             async with session.begin():
+                await clip_database_waits(session)
                 _, previous = await PackageRepository(session).transition_status(
                     run_id, variant, target, error=error
                 )
