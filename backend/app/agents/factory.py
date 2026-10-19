@@ -134,6 +134,7 @@ class AgentFactory:
                 attempt_timeout=self.settings.fix_attempt_timeout_seconds,
                 max_output_tokens=self.settings.fix_max_output_tokens,
                 schema_context_max_chars=self.settings.schema_context_max_chars,
+                structured_output=self.settings.llm_structured_output,
             ),
             self.session_factory,
             self.settings,

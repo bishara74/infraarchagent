@@ -185,7 +185,8 @@ async def test_capacity_stops_before_submission():
     ) as client:
         harness = Harness(client)
         await harness.pr03()
-    assert not harness.rows and "capacity" in harness.stop_reason
+    assert len(harness.rows) == 4 and "capacity" in harness.stop_reason
+    assert all(r["execution_status"] == "not_started" for r in harness.rows)
 
 
 @pytest.mark.req("PR-01", "NFR-01")
@@ -203,7 +204,8 @@ async def test_low_guard_stops_without_request_and_partial_summary(tmp_path):
 
         harness.credit = credit
         await harness.pr01()
-    assert not harness.rows and harness.stop_reason
+    assert len(harness.rows) == 10 and harness.stop_reason
+    assert all(r["execution_status"] == "not_started" for r in harness.rows)
     assert "INCOMPLETE" in (tmp_path / "summary.md").read_text()
 
 

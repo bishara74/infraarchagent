@@ -27,6 +27,47 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9g section 5 — Share fixer schemas and stop quota submissions
+
+**Summary:** Repair calls now use the generator structured-output mechanism for
+all models, with a closed fixer patch wire schema. Benchmark guards read account
+credits, preserve typed quota failures, stop new submissions and identify the
+unstarted remainder without fabricated measurements.
+
+**Requirements addressed:** FR-A-03, FR-S-02, FR-S-09, PR-01, PR-03, PR-05, NFR-01.
+
+**Files:** agents/factory, security fixer/schema/prompt, remediation and syntax/
+validation repair, orchestrator, LLM base/OpenAI adapter, RepairRound model,
+benchmark/budget/suite and quality metrics, Makefile, mocked wire/credit/quota
+and command tests, README and D-46.
+
+**Decisions:** Shared json_schema/json_object/off behavior, strict=true and
+OpenRouter require_parameters apply equally to security/validation/syntax calls.
+Dynamic maps use closed path/content arrays and typed summaries; local salvage,
+validation, retries and unsupported-capability handling match generators without
+automatic downgrade. All existing patch/acceptance/deadline guards remain.
+Future attempt outcomes are safely retained; missing historical/interrupted
+coverage stays unknown. Account credit unknown is explicit; existing effective
+budget checks remain. Already submitted work is observed after quota exhaustion.
+
+**Tests:** Final focused backend suite: 93 passed, 0 failed. make lint passed
+(135 application sources checked by mypy, frontend ESLint and both TS projects).
+Mocked tests cover both model families, all three call paths/modes, strict schema
+rejection/retry/salvage, map normalization, quota failures at each stage, account
+balance fallback/minimum, Make forwarding and smaller smoke caps. Initial test
+runs exposed stale no-submission ledger expectations, incomplete wire fixtures,
+an invalid test RetryPolicy and a fake harness missing its stop field; corrected
+and rerun. One mistyped test path collected no tests and is not counted.
+
+**Baseline:** Complete A3/B fixer attempt counts and format-failure rates remain
+unknown. Preserved partial B excerpt: 14/22 non-quota Haiku attempts failed with
+invalid_json/prose_before, eight succeeded, four additional quota failures
+excluded. The 140/32 proposal records are not attempt counts. D-46 records the
+historical missing request context and the limited illustrative sample.
+
+**Known gaps / follow-ups:** Mocked transport behavior is not a real-provider
+reliability measurement. Full lint/test/e2e/offline checks follow in section 6.
+
 ## 2026-10-19 — Phase 9g section 4 — Add secondary contextual assessments
 
 **Summary:** Add versioned strict/contextual-v1 profiles and parsed resource

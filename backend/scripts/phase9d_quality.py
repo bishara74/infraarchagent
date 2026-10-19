@@ -21,6 +21,7 @@ from scripts.phase9f_metrics import (
 from scripts.phase9f_metrics import (
     summary as phase9f_summary,
 )
+from scripts.phase9g_metrics import compact_evidence, fixer_evidence
 
 
 def safe_text(value: object, redactor: RedactingFilter, limit: int = 500) -> str:
@@ -162,6 +163,7 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         if validation.get("summary", {}).get("result") in {"valid", "invalid", "error"}
         else None,
         "phase9f": phase9f_snapshot(package, redactor),
+        "fixer_attempts": fixer_evidence(package),
         "review_reasons": sorted(
             {
                 safe_text(reason, redactor, 100)
@@ -565,6 +567,9 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                         },
                     }
                     current[variant] = quality_snapshot(pseudo, redactor)
+                    current[variant]["fixer_attempts"] = compact_evidence(
+                        raw.get("fixer_attempts")
+                    )
                     for key in current[variant]["counts"]:
                         value = raw.get("counts", {}).get(key)
                         if type(value) is int and value >= 0:

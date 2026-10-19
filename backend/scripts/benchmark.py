@@ -43,6 +43,7 @@ from scripts.phase9d_quality import quality_snapshot, quality_table, recompute_q
 from scripts.phase9e_metrics import measurement as safe_measurement
 from scripts.phase9e_metrics import measurement_summary
 from scripts.phase9f_workloads import pr05_workloads
+from scripts.phase9g_metrics import fixer_evidence
 
 TERMINAL = {"success", "partial_success", "failed"}
 SETTLED = {
@@ -336,6 +337,29 @@ class Harness:
             await self.credit_reader.read() if self.credit_reader else CreditSnapshot()
         )
 
+    def mark_not_started(self, planned: list[tuple[str, str | None]]) -> None:
+        from collections import Counter
+
+        existing = Counter((r["measurement"], r.get("role")) for r in self.rows)
+        for measurement, role in planned:
+            key = (measurement, role)
+            if existing[key]:
+                existing[key] -= 1
+                continue
+            self.rows.append(
+                {
+                    "measurement": measurement,
+                    "role": role,
+                    "mode": self.mode,
+                    "execution_status": "not_started",
+                    "complete": False,
+                    "run_id": None,
+                    "seconds": None,
+                    "cost_usd": None,
+                }
+            )
+        self.flush()
+
     def flush(self) -> None:
         if self.output is None:
             return
@@ -472,7 +496,18 @@ class Harness:
                 rehearsal_table,
             ]
         for measurement in ("pr01", "pr03", "pr04"):
-            rows = [row for row in self.rows if row["measurement"] == measurement]
+            planned = [row for row in self.rows if row["measurement"] == measurement]
+            not_started = sum(
+                row.get("execution_status") == "not_started" for row in planned
+            )
+            if not_started:
+                lines.append(
+                    f"{measurement}: not_started={not_started} "
+                    "(excluded from failures and measurements)."
+                )
+            rows = [
+                row for row in planned if row.get("execution_status") != "not_started"
+            ]
             if not rows:
                 continue
             valid = [
@@ -704,6 +739,12 @@ class Harness:
             response = await self.client.post(
                 self.base_url + "/api/pipeline/run", json=body, headers=self.headers
             )
+            if response.status_code == 402:
+                row["failure_categories"] = {"run": "usage_limit"}
+                self.stop_reason = (
+                    "Provider usage_limit (HTTP 402); no further runs submitted."
+                )
+                return row
             if response.status_code != 202:
                 raise RuntimeError("Pipeline submission rejected")
             run_id = str(UUID(response.json()["run_id"]))
@@ -738,6 +779,11 @@ class Harness:
                                         continue
                                     cursor = event["seq"]
                                     local.append(event)
+                                    if event["failure_category"] == "usage_limit":
+                                        self.stop_reason = (
+                                            "Provider usage_limit (HTTP 402); "
+                                            "no further runs submitted."
+                                        )
                                     self.events.append({"run_id": run_id, **event})
                                     if (
                                         event["kind"] == "run_status"
@@ -822,6 +868,19 @@ class Harness:
             )
         self.agent_rows.extend(timings(row["run_id"], local))
         row.update(generator_evidence(local))
+        for event in local:
+            if event.get("failure_category") and not (
+                event["agent"].startswith("generator_")
+                and event["kind"] == "agent_state"
+            ):
+                key = event["agent"] + (
+                    ":" + event["variant"] if event.get("variant") else ""
+                )
+                row["failure_categories"][key] = event["failure_category"]
+        if "usage_limit" in row["failure_categories"].values():
+            self.stop_reason = (
+                "Provider usage_limit (HTTP 402); no further runs submitted."
+            )
         if row["run_status"] == "failed" and not row["failure_categories"]:
             row["failure_categories"] = {"run": "unknown"}
         generated = [e["metrics"] for e in local if e["kind"] == "package_generated"]
@@ -839,6 +898,17 @@ class Harness:
                 row["generator_" + field] = (
                     sum(values) if all(v is not None for v in values) else None
                 )
+        evidence = [fixer_evidence(p) for p in snapshot["packages"]]
+        row["fixer_attempt_details"] = [
+            {"variant": p["variant"], **a}
+            for p, measured in zip(snapshot["packages"], evidence, strict=True)
+            for a in measured["attempt_details"] or []
+        ] or None
+        row["fixer_attempt_count"] = (
+            sum(e["attempt_count"] for e in evidence)
+            if evidence and all(e["attempt_count"] is not None for e in evidence)
+            else None
+        )
         fixes = []
         for package in snapshot["packages"]:
             report = package.get("security_report")
@@ -878,6 +948,15 @@ class Harness:
                 cost_usd=float(cost) if cost is not None and row["complete"] else None,
                 observed_usage_delta_usd=float(cost) if cost is not None else None,
                 cost_attribution="sequential" if self.mode == "real" else "stub free",
+                account_remaining_before_usd=float(before.account_remaining)
+                if before.account_remaining is not None
+                else None,
+                account_balance_status="known"
+                if before.account_remaining is not None
+                else "unknown",
+                key_remaining_before_usd=float(before.key_remaining)
+                if before.key_remaining is not None
+                else None,
                 cost_before_usd=float(before.usage)
                 if before.usage is not None
                 else None,
@@ -892,7 +971,11 @@ class Harness:
             if self.guard:
                 if row["complete"]:
                     self.guard.observe(cost)
-                if cost is None and self.guard.max_runs is None:
+                if (
+                    cost is None
+                    and self.guard.max_runs is None
+                    and not self.stop_reason
+                ):
                     self.stop_reason = (
                         "Cost delta unknown; explicit --max-runs required."
                     )
@@ -917,7 +1000,7 @@ class Harness:
             self.flush()
             return row
         except CreditError as error:
-            self.stop_reason = str(error)
+            self.stop_reason = self.stop_reason or str(error)
             self.flush()
             return None
 
@@ -945,6 +1028,9 @@ class Harness:
                 [1] * (runs - index - 1) + (following or []),
                 prompt_index=indices[index % len(indices)],
             )
+
+        if self.stop_reason:
+            self.mark_not_started([("pr01", None)] * runs)
 
     async def pr03(self, reference_rows: list[dict] | None = None) -> None:
         try:
@@ -1024,8 +1110,14 @@ class Harness:
                 )
             self.flush()
         except (CreditError, httpx.HTTPError, ValueError, KeyError):
-            self.stop_reason = "PR-03 prerequisite or credit check failed; stopping."
+            self.stop_reason = (
+                self.stop_reason
+                or "PR-03 prerequisite or credit check failed; stopping."
+            )
             self.flush()
+        finally:
+            if self.stop_reason:
+                self.mark_not_started([("pr03", "baseline")] + [("pr03", "cohort")] * 3)
 
     async def pr04(self, run_id: str, repeat: int = 10) -> None:
         run_id = str(UUID(run_id))

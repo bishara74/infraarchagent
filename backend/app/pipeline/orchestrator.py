@@ -267,6 +267,20 @@ class PipelineOrchestrator:
                         )
                         package = package.model_copy(update={"files": recovered})
                         actions = [a for r in recovery["rounds"] for a in r["actions"]]
+                        if any(
+                            a.get("failure_category") == "usage_limit" for a in actions
+                        ):
+                            await self.writer.event_log.append(
+                                self.run_id,
+                                AgentName("generator_" + package.variant.value),
+                                PackageStatus.GENERATING,
+                                message="Syntax repair usage limit reached.",
+                                payload={
+                                    "kind": "stage_notice",
+                                    "variant": package.variant.value,
+                                    "failure_category": "usage_limit",
+                                },
+                            )
                         if generator.last_run and actions:
                             updates: dict[str, Any] = {}
                             old_attempts = generator.last_run.total_llm_attempts
@@ -806,6 +820,7 @@ class PipelineOrchestrator:
                 AgentState.FAILED,
                 previous=AgentState.RUNNING,
                 message=str(error),
+                failure_category=getattr(error, "llm_category", error.category),
             )
             await self.writer.run_transition(
                 self.run_id,

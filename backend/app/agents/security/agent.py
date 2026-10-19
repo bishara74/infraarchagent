@@ -243,7 +243,10 @@ class SecurityAgent:
             }
         ):
             assert reason is not None
-            await self._notice(ctx, variant, reason)
+            category = next(
+                (key for key, value in SAFE_MESSAGES.items() if value == reason), None
+            )
+            await self._notice(ctx, variant, reason, failure_category=category)
         return (
             current,
             sorted(results, key=lambda r: r["file"]),

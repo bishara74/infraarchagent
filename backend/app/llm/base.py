@@ -113,8 +113,9 @@ class LLMAdapter(ABC):
         self.response_format = response_format
         self.structured_output: StructuredOutput | None = None
         self.output_schema: dict[str, Any] | None = None
-        self._generator_request: ContextVar[bool] = ContextVar(
-            "generator_request", default=False
+        self.output_schema_name = "generator_package"
+        self._structured_request: ContextVar[bool] = ContextVar(
+            "structured_request", default=False
         )
         self._sleep = sleep
         self._clock = clock
@@ -179,7 +180,7 @@ class LLMAdapter(ABC):
             http_status: int | None = None
             exception_class: str | None = None
             attempt_prompt = retry_prompt
-            context_token = self._generator_request.set(response_validator is not None)
+            context_token = self._structured_request.set(response_validator is not None)
             try:
                 response = await asyncio.wait_for(
                     self.send_prompt(
@@ -239,7 +240,7 @@ class LLMAdapter(ABC):
                         + format_reason
                         + "). Answer again with exactly one JSON object, "
                         "no markdown fences or surrounding text. "
-                        "Keep the package within the output budget."
+                        "Keep the response within the output budget."
                     )
             except LLMDeadlineExceeded:
                 category = "deadline"
@@ -255,7 +256,7 @@ class LLMAdapter(ABC):
                 exception_class = type(error).__name__
                 raise LLMPermanentError("unexpected") from None
             finally:
-                self._generator_request.reset(context_token)
+                self._structured_request.reset(context_token)
                 stats = response.stats() if response is not None else None
                 log_category = (
                     category

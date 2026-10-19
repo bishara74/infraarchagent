@@ -9,10 +9,10 @@ from app.agents.prompts.quality import DOCUMENT_GUIDANCE, PROVIDER_GUIDANCE, S3_
 from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
 
-SECURITY_FIX_PROMPT_VERSION = "6"
+SECURITY_FIX_PROMPT_VERSION = "7"
 
 
-def system_prompt(directive: str, *, syntax_only: bool = False) -> str:
+def _system_prompt(directive: str, *, syntax_only: bool = False) -> str:
     if syntax_only:
         return "\n".join(
             (
@@ -54,6 +54,30 @@ def system_prompt(directive: str, *, syntax_only: bool = False) -> str:
             '"resource":"...","summary":"..."}]}.',
         )
     )
+
+
+def system_prompt(
+    directive: str, *, syntax_only: bool = False, wire_files: bool = False
+) -> str:
+    prompt = _system_prompt(directive, syntax_only=syntax_only)
+    if wire_files:
+        prompt = prompt.replace('"edits":{}', '"edits":[]').replace(
+            '"new_files":{}', '"new_files":[]'
+        )
+        prompt = prompt.replace(
+            '"edits":{"existing/path":"complete content"}',
+            '"edits":[{"path":"existing/path","content":"complete content"}]',
+        )
+        prompt = prompt.replace(
+            '"new_files":{"new/path":"content"}',
+            '"new_files":[{"path":"new/path","content":"content"}]',
+        )
+        prompt += (
+            "\nStrict patch format requires all four keys; "
+            "edits and new_files are path/content arrays; fixes is a list "
+            "of rule_id/resource/summary objects."
+        )
+    return prompt
 
 
 def user_prompt(

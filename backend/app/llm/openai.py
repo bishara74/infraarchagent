@@ -87,13 +87,13 @@ class OpenAIAdapter(LLMAdapter):
         elif self.reasoning_effort is not None:
             params["extra_body"] = {"reasoning": {"effort": self.reasoning_effort}}
         structured_output = (
-            self.structured_output if self._generator_request.get() else None
+            self.structured_output if self._structured_request.get() else None
         )
         if structured_output == "json_schema":
             params["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {
-                    "name": "generator_package",
+                    "name": self.output_schema_name,
                     "strict": True,
                     "schema": self.output_schema,
                 },

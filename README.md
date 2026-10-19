@@ -206,10 +206,11 @@ key, run `node frontend/e2e/support/recordFixtures.ts` from the repository root.
 It rewrites the recorded pending/repaired responses and streams for contract tests.
 
 
-The API key and active run ID live only in `sessionStorage`. A 401 clears the key
-and offers re-entry on the current route. Variant and file selections live in
-the URL. Generated code and report messages render as text; downloads use the
-header-authenticated API and a revoked Blob URL.
+The browser exchanges the API key for an HttpOnly session cookie; it never
+persists the key. Only the active run ID lives in `sessionStorage`. A 401 returns
+to login on the current route. Variant and file selections live in the URL.
+Generated code and report messages render as text; downloads use the session
+cookie and a revoked Blob URL. Scripts may continue using `X-API-Key`.
 
 At stream EOF the client fetches results once. It closes normally only when the
 run is terminal, no package is scanning/remediating/validating, and every package
@@ -1029,8 +1030,14 @@ make bench-real BASE_URL=http://127.0.0.1:8765 BUDGET=2 MAX_RUNS=14
 For the second run, set SECURITY_FIX_MODEL to the author's selected OpenRouter
 Haiku-class model ID and SECURITY_FIX_REASONING_EFFORT=off, restart, and repeat.
 Keep the existing OpenRouter base URL and externally supplied credentials; never
-copy them into evidence. JSON-object fixer requests are available through
-LLM_RESPONSE_FORMAT=json_object; local FixOutput validation remains mandatory.
+copy them into evidence. All security fixing, validation repair and syntax
+repair share generator structured-output settings: `LLM_STRUCTURED_OUTPUT`
+selects `json_schema` (default), `json_object`, or `off`. Strict mode sends the
+closed fixer patch schema and OpenRouter `provider.require_parameters=true`,
+normalizes path/content arrays into internal maps, and validates typed summaries.
+Local validation, unambiguous salvage and retries remain active; unsupported
+schemas never trigger an automatic downgrade. `LLM_RESPONSE_FORMAT` is the
+legacy nonstructured adapter option, not the fixer mode selector.
 Reports distinguish each fixer model and its effective attempt timeout; the
 iteration/stage ceilings remain 60/240 seconds. The default attempt remains 90
 seconds; 45 is the comparison override, clipped to remaining iteration time.
@@ -1099,3 +1106,24 @@ strict blockers alongside explicitly excepted contextual records. Contextual
 results are experimental pending supervisor approval. D-48 is the full policy
 appendix, including conservative omissions and references. Offline A3/B
 reclassification is in `docs/evals/phase9g-reclassification-20261019/`.
+
+### Phase 9g benchmark corrections
+
+`make bench-stub`, `make bench-real` and `make bench-smoke` all forward
+`BASE_URL`, `BUDGET` and `MAX_RUNS`. Smoke respects smaller explicit caps and
+never exceeds three runs. Account `/credits` and key information are probed
+without logging credentials; the guard uses the stricter available balance,
+including the existing effective-budget constraint. Unavailable account balance
+is explicitly unknown. A typed provider `usage_limit` from any stage stops new
+submissions immediately; already submitted work is observed, and the remaining
+planned runs are `not_started` with unavailable timing/cost.
+
+Safe fixer attempt outcomes and format reasons are persisted for security,
+validation and syntax repair and exported in quality snapshots/benchmark rows.
+Missing historical or interrupted-call telemetry remains unknown. Mocked wire
+tests verify request behavior across model families; they establish no real
+provider reliability gain. Complete A3/B format-failure baselines are unknown.
+The preserved partial B excerpt has 14 invalid_json/prose_before failures out of
+22 non-quota Haiku attempts (eight successes); four quota failures are excluded.
+This illustrative excerpt is not the complete B run. Proposal counts are not
+LLM attempt counts.

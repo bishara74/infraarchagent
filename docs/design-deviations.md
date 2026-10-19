@@ -1475,6 +1475,40 @@ destinations still have documented strict logging/KMS/replication blockers;
 replication is not a new contextual exception. No scanner, severity, fingerprint
 or no-new-blocker acceptance rule changes. SSE-S3 remains required for log delivery.
 
+#### D-46 Phase 9g credit, quota and fixer transport correction
+
+PR-01/03, FR-A-03, FR-S-02/09 and NFR-01. OpenRouter account /credits is
+queried alongside /key; the guard uses the minimum known account/key/effective
+balance. Account probe failure remains unknown, never a fictional balance.
+Architect events now retain provider failure categories; security/validation
+fixing and syntax repair expose typed quota failures. The first observed
+usage_limit stops new submissions; already submitted work is observed. Remaining
+planned measurements are not_started without invented run IDs, timing or cost.
+All Make targets forward BASE_URL/BUDGET/MAX_RUNS; smoke caps at three while
+respecting smaller explicit limits. bench-real already forwarded these values;
+the historical prompt's contrary statement was disproved during investigation.
+
+The historical fixer omitted the generator response-validator context, so its
+json_schema setting never reached fixer requests. FixAgent now shares that
+mechanism for every supported model and all three repair paths. Its existing
+patch fields become closed path/content arrays on the strict wire, normalized
+back to internal dictionaries; fix summaries are typed. json_schema sends
+strict=true and OpenRouter provider.require_parameters=true. Configured
+json_object/off, local validation, unambiguous salvage, retry correction and
+unsupported-capability behavior match generators, with no automatic downgrade.
+Patch paths, suppression, preservation, syntax, strict acceptance and budgets
+are unchanged. Safe per-attempt outcomes/format reasons are persisted/exported;
+missing historical or interrupted-call coverage stays unknown. Mocked HTTP
+tests establish request semantics, not measured real-provider reliability.
+
+Complete format-failure baselines: A3 unknown (no saved attempt logs); complete
+B unknown (snapshots lack per-attempt outcomes). The preserved partial B log
+excerpt at evals/phase9-bench-real-20261018T231027886459Z/fixer-log-excerpt.txt
+contains 14/22 non-quota Haiku invalid_json/prose_before failures and eight
+successes. Four additional quota failures are excluded. This is an illustrative
+partial sample only. The 140 A3 / 32 B security proposal records are not attempt
+counts. No cached results or historical evaluation files were changed.
+
 ### D-47 — Honest check and engineer-decision labels (Phase 9g)
 
 FR-S-08/10 and FR-UI-06/07: automatic strict clean scan plus valid validation

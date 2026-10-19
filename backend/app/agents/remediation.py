@@ -1,6 +1,7 @@
 """Shared Retry/automatic patch merging and verification primitives."""
 
 from collections.abc import Mapping, Sequence
+from dataclasses import asdict
 from typing import Any, Protocol
 
 from app.agents.security.fix import FixProposal, content_hash
@@ -72,6 +73,9 @@ def apply_proposals(
                 "cached_input_tokens": proposal.cached_input_tokens,
                 "schema_context_chars": proposal.schema_context_chars,
                 "schema_context_reason": proposal.schema_context_reason,
+                "failure_category": proposal.failure_category,
+                "call_kind": proposal.call_kind,
+                "attempt_details": [asdict(a) for a in proposal.attempt_details],
             }
         )
     return current, results

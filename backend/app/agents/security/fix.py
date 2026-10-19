@@ -13,12 +13,14 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from app.agents.prompts.security_fix import system_prompt, user_prompt
+from app.agents.security.fix_schema import validate_output, wire_schema
+from app.core.config import StructuredOutput
 from app.core.logging import RedactingFilter
 from app.domain.models import Violation
 from app.domain.package_layout import package_structure_errors
 from app.domain.paths import UnsafePathError, validate_relative_path
 from app.domain.plan import DeploymentPlan
-from app.llm.base import LLMAdapter
+from app.llm.base import LLMAdapter, LLMAttempt
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -120,6 +122,9 @@ class FixProposal:
     normalized_existing_paths: tuple[str, ...] = ()
     conflicting_paths: tuple[str, ...] = ()
     llm_attempts: int | None = None
+    attempt_details: tuple[LLMAttempt, ...] = ()
+    failure_category: str | None = None
+    call_kind: str = "security_fixer"
 
 
 def content_hash(source: str) -> str:
@@ -271,8 +276,19 @@ class FixAgent:
         attempt_timeout: float = 90,
         max_output_tokens: int = 16000,
         schema_context_max_chars: int = 16000,
+        structured_output: StructuredOutput = "json_schema",
     ) -> None:
         self.adapter = adapter
+        self.wire_files = (
+            bool(getattr(adapter, "supports_structured_output", False))
+            and structured_output == "json_schema"
+        )
+        adapter.structured_output = structured_output
+        adapter.output_schema = wire_schema() if self.wire_files else None
+        adapter.output_schema_name = "fix_patch"
+        self.output_validator = lambda data: validate_output(
+            data, wire_files=self.wire_files
+        )
         self.attempt_timeout = attempt_timeout
         self.max_output_tokens = max_output_tokens
         self.schema_context_max_chars = schema_context_max_chars
@@ -314,6 +330,14 @@ class FixAgent:
                 if docs.documents.get(path) and docs.documents[path].parse_error
                 else "no_schema_entries"
             )
+        attempts: list[LLMAttempt] = []
+        call_kind = (
+            "syntax_repair"
+            if syntax_only
+            else "validation_repair"
+            if validation_failures and not findings
+            else "security_fixer"
+        )
         try:
             response = await self.adapter.complete_json(
                 user_prompt(
@@ -338,10 +362,14 @@ class FixAgent:
                         and name.endswith((".tf", ".tf.json"))
                     },
                 ),
-                system=system_prompt(directive, syntax_only=syntax_only),
+                system=system_prompt(
+                    directive, syntax_only=syntax_only, wire_files=self.wire_files
+                ),
                 deadline=remaining,
                 attempt_timeout=self.attempt_timeout,
                 max_output_tokens=self.max_output_tokens,
+                response_validator=self.output_validator,
+                attempt_observer=attempts.append,
             )
         except LLMRetryExhausted as error:
             return FixProposal(
@@ -353,6 +381,10 @@ class FixAgent:
                 (),
                 schema_context_chars=len(context),
                 schema_context_reason=context_reason,
+                attempt_details=tuple(attempts),
+                llm_attempts=len(attempts) or None,
+                failure_category=error.last_category,
+                call_kind=call_kind,
             )
         except LLMPermanentError as error:
             return FixProposal(
@@ -364,6 +396,10 @@ class FixAgent:
                 (),
                 schema_context_chars=len(context),
                 schema_context_reason=context_reason,
+                attempt_details=tuple(attempts),
+                llm_attempts=len(attempts) or None,
+                failure_category=error.category,
+                call_kind=call_kind,
             )
         except LLMDeadlineExceeded:
             return FixProposal(
@@ -375,6 +411,10 @@ class FixAgent:
                 (),
                 schema_context_chars=len(context),
                 schema_context_reason=context_reason,
+                attempt_details=tuple(attempts),
+                llm_attempts=len(attempts) or None,
+                failure_category="deadline",
+                call_kind=call_kind,
             )
         proposal = validate_fix(response.data, path=path, files=files, plan=plan)
         if proposal.accepted:
@@ -402,6 +442,8 @@ class FixAgent:
         return replace(
             proposal,
             llm_attempts=getattr(response, "attempts", None),
+            attempt_details=tuple(attempts),
+            call_kind=call_kind,
             input_tokens=response.response.input_tokens,
             output_tokens=response.response.output_tokens,
             cached_input_tokens=response.response.cached_input_tokens,

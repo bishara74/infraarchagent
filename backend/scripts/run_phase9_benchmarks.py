@@ -51,6 +51,8 @@ def section_reports(harness: Harness, directory: Path) -> None:
 async def execute(harness: Harness, *, seeder=None, smoke: bool = False) -> None:
     if smoke:
         await harness.pr01(3, following=[], prompt_indices=[0, 1, 2])
+        if harness.stop_reason and hasattr(harness, "mark_not_started"):
+            harness.mark_not_started([("pr01", None)] * 3)
         harness.flush()
         return
     await harness.pr01(10, following=[1, 3])
@@ -73,6 +75,10 @@ async def execute(harness: Harness, *, seeder=None, smoke: bool = False) -> None
                 [report["measurement"], f"Run: {report['run_id']}."],
             )
         await harness.pr04(report["run_id"], 10)
+    if harness.stop_reason and hasattr(harness, "mark_not_started"):
+        harness.mark_not_started(
+            [("pr01", None)] * 10 + [("pr03", "baseline")] + [("pr03", "cohort")] * 3
+        )
     harness.flush()
 
 

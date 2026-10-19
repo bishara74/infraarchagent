@@ -4,6 +4,7 @@ import asyncio
 import re
 from collections import Counter
 from collections.abc import Awaitable, Callable
+from dataclasses import asdict
 from difflib import SequenceMatcher
 from typing import Any
 
@@ -119,6 +120,10 @@ async def recover_generation_syntax(
                         "output_tokens": proposal.output_tokens,
                         "cached_input_tokens": proposal.cached_input_tokens,
                         "llm_attempts": proposal.llm_attempts,
+                        "attempt_details": [
+                            asdict(a) for a in proposal.attempt_details
+                        ],
+                        "failure_category": proposal.failure_category,
                     }
                     record["actions"].append(action)
                     if not proposal.accepted or proposal.content is None:

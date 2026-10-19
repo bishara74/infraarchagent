@@ -151,9 +151,14 @@ class ValidationRepair:
                     )
                     record = record.model_copy(
                         update={
+                            "fixer_attempts": [
+                                a
+                                for p in proposals
+                                for a in p.get("attempt_details", [])
+                            ],
                             "schema_context_chars": sum(
                                 int(p.get("schema_context_chars", 0)) for p in proposals
-                            )
+                            ),
                         }
                     )
                     touched = {

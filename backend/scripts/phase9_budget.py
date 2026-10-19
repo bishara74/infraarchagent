@@ -1,6 +1,6 @@
 """Measured-credit guard and an informational first-cost schedule projection."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Any
 
@@ -17,6 +17,8 @@ class CreditSnapshot:
     usage: Decimal | None = None
     remaining: Decimal | None = None
     supported: bool = False
+    key_remaining: Decimal | None = field(default=None, compare=False)
+    account_remaining: Decimal | None = field(default=None, compare=False)
 
 
 def numeric(value: Any) -> Decimal | None:
@@ -30,6 +32,28 @@ class CreditReader:
     def __init__(self, client: httpx.AsyncClient, base_url: str, key: SecretStr):
         self.client, self.base_url, self.key = client, base_url.rstrip("/"), key
 
+    async def account_balance(self) -> Decimal | None:
+        try:
+            response = await self.client.get(
+                self.base_url + "/credits",
+                headers={"Authorization": "Bearer " + self.key.get_secret_value()},
+            )
+            if response.status_code != 200:
+                return None
+            body = response.json()
+            data = body.get("data") if isinstance(body, dict) else None
+            if not isinstance(data, dict):
+                return None
+            credits, usage = (
+                numeric(data.get("total_credits")),
+                numeric(data.get("total_usage")),
+            )
+            if credits is None or usage is None or credits < 0 or usage < 0:
+                return None
+            return max(Decimal(0), credits - usage)
+        except (httpx.HTTPError, ValueError):
+            return None
+
     async def read(self) -> CreditSnapshot:
         try:
             response = await self.client.get(
@@ -37,7 +61,12 @@ class CreditReader:
                 headers={"Authorization": "Bearer " + self.key.get_secret_value()},
             )
             if response.status_code in {404, 405}:
-                return CreditSnapshot()
+                account = await self.account_balance()
+                return CreditSnapshot(
+                    remaining=account,
+                    supported=account is not None,
+                    account_remaining=account,
+                )
             if response.status_code != 200:
                 raise CreditError("Key-info probe failed; no further runs submitted.")
             body = response.json()
@@ -63,10 +92,19 @@ class CreditReader:
                 )
             ):
                 raise CreditError("Key-info response is unusable; stopping.")
+            account = await self.account_balance()
             values = [
-                value for value in (remaining, effective_remaining) if value is not None
+                value
+                for value in (remaining, effective_remaining, account)
+                if value is not None
             ]
-            return CreditSnapshot(usage, min(values) if values else None, True)
+            return CreditSnapshot(
+                usage,
+                min(values) if values else None,
+                True,
+                key_remaining=remaining,
+                account_remaining=account,
+            )
         except (httpx.HTTPError, ValueError):
             raise CreditError(
                 "Key-info probe failed; no further runs submitted."

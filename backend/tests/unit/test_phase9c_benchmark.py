@@ -197,6 +197,8 @@ async def test_smoke_has_three_examples_and_no_other_measurements():
     calls = []
 
     class FakeHarness:
+        stop_reason = None
+
         async def pr01(self, runs, **kwargs):
             calls.append((runs, kwargs))
 

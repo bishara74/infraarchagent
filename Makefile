@@ -106,6 +106,7 @@ BASE_URL ?= http://127.0.0.1:8000
 .PHONY: bench-stub bench-real
 bench-stub: export PHASE9_BASE_URL = $(BASE_URL)
 bench-stub: export PHASE9_MAX_RUNS = $(MAX_RUNS)
+bench-stub: export PHASE9_BUDGET = $(BUDGET)
 bench-stub:
 	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks stub
 
@@ -118,6 +119,6 @@ bench-real:
 .PHONY: bench-smoke
 bench-smoke: export PHASE9_BASE_URL = $(BASE_URL)
 bench-smoke: export PHASE9_BUDGET = $(BUDGET)
-bench-smoke: export PHASE9_MAX_RUNS = 3
+bench-smoke: export PHASE9_MAX_RUNS = $(MAX_RUNS)
 bench-smoke:
 	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks real --smoke

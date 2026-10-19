@@ -134,6 +134,7 @@ class DeterministicRepair(BaseModel):
 
 
 class RepairRound(BaseModel):
+    fixer_attempts: list[dict[str, Any]] = Field(default_factory=list)
     model_config = ConfigDict(extra="forbid", frozen=True)
     phase: Literal["generation", "before_security", "after_security"]
     index: int = Field(ge=1)

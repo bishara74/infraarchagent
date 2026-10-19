@@ -45,7 +45,13 @@ async def test_fixer_model_switch_reaches_http_guards_and_report(
         requests.append(request)
         body = success_body("openai")
         body["model"] = model
-        body["choices"][0]["message"]["content"] = json.dumps(raw())
+        patch = raw()
+        patch["new_files"] = [
+            {"path": p, "content": v} for p, v in patch["new_files"].items()
+        ]
+        patch["edits"] = []
+        patch["fixes"] = []
+        body["choices"][0]["message"]["content"] = json.dumps(patch)
         return httpx2.Response(200, json=body)
 
     class Scanner:
@@ -103,7 +109,10 @@ async def test_fixer_model_switch_reaches_http_guards_and_report(
     assert status == PackageStatus.SCAN_CLEAN
     payload = json.loads(requests[0].content)
     assert payload["model"] == model
-    assert payload["response_format"] == {"type": "json_object"}
+    assert payload["response_format"]["type"] == "json_schema"
+    assert payload["response_format"]["json_schema"]["strict"] is True
+    assert payload["response_format"]["json_schema"]["name"] == "fix_patch"
+    assert payload["provider"] == {"require_parameters": True}
     assert payload["reasoning"] == (
         {"effort": "low"} if reasoning == "low" else {"enabled": False}
     )

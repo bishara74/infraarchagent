@@ -133,6 +133,7 @@ class GeneratorAgent(ABC):
             llm_adapter.supports_structured_output
             and structured_output == "json_schema"
         )
+        llm_adapter.output_schema_name = "generator_package"
         llm_adapter.structured_output = structured_output
         llm_adapter.output_schema = generator_wire_schema() if self.wire_files else None
         self.output_validator = lambda data: validate_generator_output(
