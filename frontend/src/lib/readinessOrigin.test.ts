@@ -24,3 +24,7 @@ it('missing transition is unavailable; other variants and later retries cannot c
   const start = events.find(event => event.payload.review_action === 'retry')!;
   expect(readinessOrigin([{ ...start, variant: 'cost' }, label, { ...start, seq: label.seq + 1 }], ready)).toBe('automatic (clean scan and valid validation)');
 });
+
+it('pending review never describes failed checks as clean automatic success',()=>{
+ expect(readinessOrigin([], {variant:'security',readiness_label:'pending_review'})).toBeNull();
+});

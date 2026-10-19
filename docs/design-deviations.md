@@ -1487,6 +1487,44 @@ immutable, distinguishes recorded approvals, and returns unverifiable legacy
 success claims to pending_review. Missing historical identity/reason is unknown.
 Historical reports are never rewritten; compatibility output discloses mapping.
 
+### D-48 — Versioned secondary exception assessments (Phase 9g appendix)
+
+FR-S-04, FR-UI-05 and NFR-01. Bundled strict/contextual-v1 JSON profiles are
+version 1 on strict policy 3. The selected identifier is persisted per run by
+migration 0006, emitted in its acceptance event and included in results, archives
+and benchmark records. Both assessments use the same stored final findings;
+strict findings, severities, official labels and every acceptance guard remain
+unchanged. Excepted records retain rule/resource/path, entry ID and justification.
+This is experimental analysis: author/supervisor approval is outstanding before
+reported thesis use. It is not an approved security release policy.
+
+| Entry | Checkov IDs | Trivy IDs | Resources / exact parsed condition | Justification / reference |
+|---|---|---|---|---|
+| s3-log-target-sse-s3 | CKV_AWS_145 | AWS-0132 | Unique S3 bucket/encryption association; source bucket differs from destination; source logging resolves to destination; destination is proven AES256 | Delivery-compatible SSE-S3; AWS S3 enable-server-access-logging guide |
+| s3-log-target-no-recursion | CKV_AWS_18 | AWS-0089 | Exact destination of another bucket's inline/standalone logging configuration | Avoid recursive server logging; AWS S3 ServerLogs guide |
+| public-subnet-addressing | CKV_AWS_130 | AWS-0164 | Unique explicit/main/default route table and default IGW route; IGW and subnet belong to the same resolved VPC | Intentional public subnet; AWS VPC Internet Gateway guide |
+| public-lb-exclusive-egress | none curated | AWS-0104 | Security group/rule with completely resolved consumers exclusively public application aws_lb/aws_alb resources, internal=false | Public-LB traffic; AWS ALB security-groups guide |
+| public-lb-https-redirect | none curated | AWS-0053 | Public application LB, HTTP:80 default redirect HTTPS:443 (301/302), HTTPS listener, no HTTP listener-rule bypass | Intentional public HTTPS endpoint; AWS ALB rule-action-types guide |
+| public-lb-http-ingress | CKV_AWS_260 | none curated | Exact public TCP:80 ingress; group exclusively serves the above redirecting LBs; broad rules cannot qualify | Redirect-only HTTP; AWS ALB rule-action-types guide |
+
+Exact URLs are retained in each JSON entry. Missing curated equivalent IDs are
+explicitly empty; different scanner controls are never paired. All resources,
+references and scope are parsed; comments, README names, substring matches,
+dynamic instances, aliased providers, malformed modules and unresolved bindings
+cannot prove an exception. External/literal IDs and hidden module consumers
+remain unresolved. Plan-only NAT/public-tier mappings are omitted because no
+resource-address binding exists. IPv6 HTTP ingress and custom HTTP listener rules
+are conservatively omitted. CKV_AWS_144 is rejected as a new exception: a missing
+replication requirement is not proof that replication is unnecessary. Existing
+strict variant exemptions remain exactly as policy 3 defines them.
+
+Offline reclassification: evals/phase9g-reclassification-20261019 contains sanitized
+metadata and SHA-256 input manifests. A3 strict/contextual-v1 are 1/29 and 1/29;
+B is 1/9 and 1/9. Additional validation-valid packages retain noncandidate
+blockers. Both original benchmarks remain incomplete provider-limited evidence;
+no new model reliability or production deployment claim follows. All source
+snapshots and original evaluation folders are unchanged.
+
 ### D-49 — HttpOnly login and explicit local mode (Phase 9g)
 
 NFR-01: shared-key login issues a random 256-bit token; only its SHA-256 hash is

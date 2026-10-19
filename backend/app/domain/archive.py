@@ -25,13 +25,16 @@ def readiness_document(
     validation_report: dict[str, Any] | None,
     retried: bool = False,
     decision: dict[str, Any] | None = None,
+    policy_profile: str = "strict",
+    assessments: dict[str, Any] | None = None,
 ) -> str:
     if not is_downloadable(status):
         raise ValueError("package is not downloadable")
     label = status.value.replace("_", " ").upper()
     origin = (
         "engineer decision"
-        if review_action in {"approve", "reject"}
+        if status in {PackageStatus.ENGINEER_APPROVED, PackageStatus.REJECTED}
+        or review_action in {"approve", "reject"}
         else "automatic after an engineer-requested retry "
         "(clean scan and valid validation)"
         if labelled_at and retried
@@ -45,7 +48,11 @@ def readiness_document(
         else "unavailable (transition event not recorded)"
     )
     security = security_final(security_report)
-    blocking_count = len(security.get("remaining_blocking", []))
+    blocking_count = (
+        len(security["remaining_blocking"])
+        if "remaining_blocking" in security
+        else "unavailable"
+    )
     summary = (validation_report or {}).get("summary", {})
     return "\n".join(
         [
@@ -56,6 +63,22 @@ def readiness_document(
             f"Model: {model or 'unavailable'}",
             f"Labelled at: {timestamp}",
             f"Label origin: {origin}",
+            "",
+            f"Selected secondary profile: {policy_profile}",
+            "Strict alone controls the official label and template acceptance.",
+            "## Profile assessments",
+            *[
+                f"{name}: checks passed={view.get('checks_passed')}; "
+                f"remaining blocking={view.get('remaining_blocking')}"
+                for name, view in (assessments or {}).items()
+            ],
+            "Contextual results are experimental; supervisor approval is required.",
+            *[
+                f"- excepted: {f.get('rule_id')} / {f.get('resource')} "
+                f"[{f.get('entry_id')}] — {f.get('justification')}"
+                for view in (assessments or {}).values()
+                for f in view.get("excepted", [])
+            ],
             "",
             "## Engineer decision",
             f"Decision: {(decision or {}).get('action', 'none')}",
@@ -73,9 +96,10 @@ def readiness_document(
             "",
             "## Validation summary",
             f"Result: {summary.get('result', 'unavailable')}",
-            f"Passed: {summary.get('passed', 0)}; failed: {summary.get('failed', 0)}; "
-            f"warnings: {summary.get('warnings', 0)}; "
-            f"skipped: {summary.get('skipped', 0)}",
+            f"Passed: {summary.get('passed', 'unavailable')}; "
+            f"failed: {summary.get('failed', 'unavailable')}; "
+            f"warnings: {summary.get('warnings', 'unavailable')}; "
+            f"skipped: {summary.get('skipped', 'unavailable')}",
             "",
             "## Remaining findings and failed checks",
             *[

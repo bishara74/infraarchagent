@@ -27,6 +27,40 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9g section 4 — Add secondary contextual assessments
+
+**Summary:** Add versioned strict/contextual-v1 profiles and parsed resource
+conditions, with strict-only readiness/acceptance preserved. Record selection per
+run and expose both views in results, events, UI, archives and quality reports.
+
+**Requirements addressed:** FR-S-04, FR-S-08, FR-UI-05, FR-UI-06, FR-I-04, NFR-01.
+
+**Files:** security/profiles.py and JSON registry, migration 0006, run configuration/
+repository/models, results/API/archive, benchmark/quality projection, frontend
+profile selection/reports/fixtures, profile tests, D-48/README and sanitized
+phase9g-reclassification-20261019 evidence (no cached source snapshots).
+
+**Decisions:** D-48 is the full appendix. Only parsed exact relationships qualify;
+no plan-address guessing, substring/comment matching, dynamic/unknown consumer
+exemptions, fake equivalent IDs or new replication exemption. Profiles never
+participate in CandidateGuard or readiness transitions. Pending review provenance
+never describes failed checks as clean; missing archive counts remain unavailable.
+Contextual results are experimental pending supervisor approval for reported use.
+
+**Tests:** Final backend profile/config/API/quality regression suite: 72 passed,
+0 failed. Frontend: 102 passed / 15 files. make lint passed (134 application
+sources checked by mypy). An initial two frontend failures exposed new object
+fields incorrectly included in scalar-contract assertions; corrected explicitly.
+
+**Reclassification:** A3 strict 1/29; contextual-v1 1/29 (4 missing variants).
+B strict 1/9; contextual-v1 1/9 (24 missing/not-generated variants). Full-input
+SHA-256 manifests verified unchanged. No LLM/scanner calls for reclassification.
+Both original benchmark sets remain incomplete because of provider usage limits.
+
+**Known gaps / follow-ups:** Author/supervisor profile approval is outstanding.
+Model reliability/concurrency improvements are not inferred from reclassification.
+Compact historical reports without resource evidence cannot prove new exceptions.
+
 ## 2026-10-19 — Phase 9g section 3 — Emit scanner-compatible native templates
 
 **Summary:** Emit supporting resources in native HCL, preserving versioning,

@@ -182,6 +182,7 @@ async def submit_run(
                     text,
                     resolved.provider,
                     resolved.max_iterations,
+                    policy_profile=resolved.policy_profile,
                     model=PublicDataSafety(settings).value(resolved.model),
                 )
                 run_id = row.run_id
@@ -190,7 +191,7 @@ async def submit_run(
             AgentName.ORCHESTRATOR,
             RunStatus.CREATED,
             message="pipeline accepted",
-            payload=run_status_payload(),
+            payload={**run_status_payload(), "policy_profile": resolved.policy_profile},
         )
         runner.start(run_id, text, config)
     except Exception:

@@ -10,6 +10,7 @@ from app.core.logging import REDACTED, RedactingFilter
 from app.domain.enums import PackageStatus
 from app.domain.paths import validate_relative_path
 from app.domain.review import security_final, security_iterations
+from app.security.profiles import assess
 from scripts.phase9_common import ROOT, write_json
 from scripts.phase9_report import statistics_for
 from scripts.phase9c_metrics import number
@@ -31,7 +32,10 @@ def safe_text(value: object, redactor: RedactingFilter, limit: int = 500) -> str
 def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
     """Construct every field explicitly: never copy arbitrary report metadata."""
     status = package.get("status")
-    legacy = status in {"production_ready", "not_production_ready"}
+    legacy = package.get("legacy_label_mapped") is True or status in {
+        "production_ready",
+        "not_production_ready",
+    }
     if status == "production_ready":
         final = security_final(package.get("security_report"))
         valid = (package.get("validation_report") or {}).get("summary", {}).get(
@@ -141,9 +145,19 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         }
         for r in remediation.get("rounds", [])
     ]
+    assessments = assess(package)
+    for view in assessments.values():
+        view["excepted"] = [
+            {
+                key: safe_text(value, redactor) if isinstance(value, str) else value
+                for key, value in finding.items()
+            }
+            for finding in view["excepted"]
+        ]
     return {
         "status": status,
         "legacy_label_mapped": legacy,
+        "profile_assessments": assessments,
         "validation_result": validation.get("summary", {}).get("result")
         if validation.get("summary", {}).get("result") in {"valid", "invalid", "error"}
         else None,
@@ -268,6 +282,17 @@ def quality_table(
             bool(p.get("legacy_label_mapped")) for p in packages
         ),
         "status_counts": dict(statuses.most_common()),
+        "profile_rates": {
+            name: {
+                "passed": sum(
+                    p.get("profile_assessments", {}).get(name, {}).get("checks_passed")
+                    is True
+                    for p in packages
+                ),
+                "packages": total,
+            }
+            for name in ("strict", "contextual-v1")
+        },
         "review_reason_counts": dict(reasons.most_common()),
         "failed_check_counts": [
             {"check_id": k[0], "message": k[1], "count": n}
@@ -381,6 +406,12 @@ def quality_table(
         f"Checks-passed rate among generated packages: **{rate}**.",
         f"Legacy labels mapped: {result['legacy_labels_mapped']}. "
         f"Missing variants: {missing}; runs without quality snapshots: {unavailable}.",
+        "Strict / contextual-v1 assessments: "
+        + "; ".join(
+            f"{name}: {view['passed']}/{total}"
+            for name, view in result["profile_rates"].items()
+        )
+        + ". Contextual results are experimental and never change package labels.",
     ]
     for title, rows in (
         ("Package status", statuses.most_common()),
@@ -447,7 +478,7 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
         current = {}
         if full.is_file():
             snapshot = json.loads(full.read_text())
-            missing += len(snapshot.get("missing_variants", []))
+            missing += max(0, 3 - len(snapshot.get("packages", [])))
             current = {
                 p["variant"]: quality_snapshot(p, redactor)
                 for p in snapshot.get("packages", [])
@@ -462,8 +493,10 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                     # Re-allowlist historical compact data before exporting it.
                     pseudo = {
                         "status": raw.get("status"),
+                        "legacy_label_mapped": raw.get("legacy_label_mapped") is True,
                         "review_reasons": raw.get("review_reasons", []),
                         "validation_report": {
+                            "summary": {"result": raw.get("validation_result")},
                             "checks": [
                                 {**c, "status": "failed"}
                                 for c in raw.get("failed_checks", [])
@@ -518,13 +551,16 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                                 },
                             ],
                             "final": {
+                                "outcome": "clean"
+                                if raw.get("status") == "checks_passed"
+                                else "exhausted",
                                 "remaining_blocking": [
                                     {"rule_id": rule}
                                     for rule, count in raw.get(
                                         "remaining_findings", {}
                                     ).items()
                                     for _ in range(count)
-                                ]
+                                ],
                             },
                         },
                     }

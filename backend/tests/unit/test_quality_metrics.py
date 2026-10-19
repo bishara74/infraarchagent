@@ -59,6 +59,7 @@ def test_strict_projection_redacts_allowed_text_and_counts_findings():
     assert set(snapshot) == {
         "status",
         "legacy_label_mapped",
+        "profile_assessments",
         "review_reasons",
         "failed_checks",
         "remaining_findings",

@@ -18,3 +18,14 @@ it.each(['automatic (clean scan and valid validation)','automatic after an engin
  expect(screen.getByText('Label origin: '+origin,{exact:true})).toBeVisible();
  expect(screen.getByRole('button',{name:'Download ZIP'})).toBeVisible();
 });
+
+it('FR-S-04 contextual success leaves strict findings and the official pending label visible',()=>{
+ const value=item();value.profile_assessments={strict:{checks_passed:false,remaining_blocking:1,excepted:[]},'contextual-v1':{checks_passed:true,remaining_blocking:0,excepted:[{rule_id:'AWS-0132',resource:'aws_s3_bucket.logs',file_path:'terraform/logs.tf',entry_id:'s3-log-target-sse-s3',classification:'excepted',justification:'Proven log destination'}]}};
+ value.security_report={final:{outcome:'exhausted',remaining_blocking:[{rule_id:'AWS-0132',resource:'aws_s3_bucket.logs',file_path:'terraform/logs.tf',severity:'HIGH',message:'KMS required'}]}};
+ render(<><ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/><ReportPanel item={value} onFile={vi.fn()}/></>);
+ expect(screen.getByRole('heading',{name:'Pending review'})).toBeVisible();
+ expect(screen.queryByRole('button',{name:'Download ZIP'})).toBeNull();
+ expect(screen.getByText('excepted')).toHaveClass('warn');
+ expect(screen.getByText('unresolved')).toBeVisible();
+ expect(screen.getByText('KMS required')).toBeVisible();
+});

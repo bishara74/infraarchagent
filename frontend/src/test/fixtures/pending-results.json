@@ -8,7 +8,8 @@
     "provider": "stub",
     "model": "stub",
     "max_iterations": 3,
-    "error_message": null
+    "error_message": null,
+    "policy_profile": "strict"
   },
   "plan": {
     "cloud_provider": "aws",
@@ -165,7 +166,21 @@
       "review_available": false,
       "retry_in_progress": false,
       "review_reasons": [],
-      "retry_targets": []
+      "retry_targets": [],
+      "review_decision": null,
+      "profile_assessments": {
+        "strict": {
+          "checks_passed": true,
+          "remaining_blocking": 0,
+          "excepted": []
+        },
+        "contextual-v1": {
+          "checks_passed": true,
+          "remaining_blocking": 0,
+          "excepted": [],
+          "approval": "experimental; supervisor approval required"
+        }
+      }
     },
     {
       "variant": "performance",
@@ -295,7 +310,21 @@
       "review_available": false,
       "retry_in_progress": false,
       "review_reasons": [],
-      "retry_targets": []
+      "retry_targets": [],
+      "review_decision": null,
+      "profile_assessments": {
+        "strict": {
+          "checks_passed": true,
+          "remaining_blocking": 0,
+          "excepted": []
+        },
+        "contextual-v1": {
+          "checks_passed": true,
+          "remaining_blocking": 0,
+          "excepted": [],
+          "approval": "experimental; supervisor approval required"
+        }
+      }
     },
     {
       "variant": "security",
@@ -463,7 +492,21 @@
       ],
       "retry_targets": [
         "terraform/main.tf"
-      ]
+      ],
+      "review_decision": null,
+      "profile_assessments": {
+        "strict": {
+          "checks_passed": false,
+          "remaining_blocking": 0,
+          "excepted": []
+        },
+        "contextual-v1": {
+          "checks_passed": false,
+          "remaining_blocking": 0,
+          "excepted": [],
+          "approval": "experimental; supervisor approval required"
+        }
+      }
     }
   ],
   "missing_variants": []

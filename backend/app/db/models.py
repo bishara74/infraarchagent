@@ -15,6 +15,9 @@ class PipelineRun(Base):
     __tablename__ = "pipeline_runs"
 
     run_id: Mapped[UUID] = mapped_column(primary_key=True)
+    policy_profile: Mapped[str] = mapped_column(
+        String(32), default="strict", server_default="strict"
+    )
     input_text: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     start_time: Mapped[datetime] = mapped_column(

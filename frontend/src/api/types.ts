@@ -17,7 +17,9 @@ export interface DeploymentPlan {
   file_types: ('terraform' | 'kubernetes' | 'helm' | 'nginx' | 'jenkins' | 'ansible' | 'prometheus' | 'grafana' | 'dockerfile')[];
   ambiguities: { topic: string; detail: string; assumption: string }[];
 }
+export interface ProfileAssessment {checks_passed:boolean;remaining_blocking:number;excepted:{rule_id:string;resource:string;file_path:string;entry_id:string;classification:string;justification:string}[]}
 export interface RunResult {
+  policy_profile?: 'strict'|'contextual-v1';
   id: string; status: RunStatus; input_text: string; start_time: string;
   end_time: string | null; provider: Provider; model: string | null;
   max_iterations: number; error_message: string | null;
@@ -28,6 +30,7 @@ export interface PackageResult {
   original_files: Record<string, string> | null;
   security_report: Record<string, unknown> | null;
   validation_report: Record<string, unknown> | null;
+  profile_assessments?: Record<'strict'|'contextual-v1',ProfileAssessment>;
   review_decision?: {action:string;reviewer_name:string|null;reason:string|null;decided_at:string|null;identity_basis:string} | null;
   review_feedback: string | null;
   readiness_label: 'checks_passed' | 'engineer_approved' | 'rejected' | 'pending_review' | null;
@@ -38,7 +41,7 @@ export interface ResultsResponse {
   run: RunResult; plan: DeploymentPlan | null; packages: PackageResult[];
   missing_variants: { variant: Variant; error: string }[];
 }
-export interface RunConfig { provider?: Provider; model?: string; max_iterations?: number }
+export interface RunConfig { policy_profile?:'strict'|'contextual-v1'; provider?: Provider; model?: string; max_iterations?: number }
 export interface SubmitResponse { run_id: string; status: 'created'; stream_url: string }
 export interface ReviewRequest { action: 'approve' | 'retry' | 'reject'; reviewer_name?:string;reason?:string; feedback?: string; target_files?: string[] }
 export interface ReviewResponse { run_id: string; variant: Variant; status: PackageStatus }

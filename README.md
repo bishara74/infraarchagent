@@ -1089,3 +1089,13 @@ Phase 9g supporting templates emit native `security_support.tf` so the installed
 scanners interpret encryption/versioning blocks consistently. Existing JSON is
 preserved; all strict acceptance guards still apply. Access-log destinations can
 remain rejected for documented context-dependent findings.
+
+
+Phase 9g accepts `config.policy_profile` (`strict` by default, or
+`contextual-v1`). This selects an additional assessment, never a different
+readiness or fix-acceptance rule. Results expose `run.policy_profile` and each
+package's `profile_assessments`; archives and comparison/report panels retain
+strict blockers alongside explicitly excepted contextual records. Contextual
+results are experimental pending supervisor approval. D-48 is the full policy
+appendix, including conservative omissions and references. Offline A3/B
+reclassification is in `docs/evals/phase9g-reclassification-20261019/`.

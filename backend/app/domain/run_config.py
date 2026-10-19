@@ -1,6 +1,6 @@
 """Per-run LLM and remediation choices, without transport concerns."""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -22,6 +22,7 @@ class RunConfigError(ValueError):
 class ResolvedRunConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    policy_profile: Literal["strict", "contextual-v1"] = "strict"
     provider: LLMProvider
     model: str | None
     max_iterations: int = Field(ge=1)
@@ -30,6 +31,7 @@ class ResolvedRunConfig(BaseModel):
 class RunConfig(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
+    policy_profile: Literal["strict", "contextual-v1"] = "strict"
     provider: LLMProvider | None = None
     model: str | None = None
     max_iterations: int | None = Field(default=None, ge=1)
@@ -46,6 +48,7 @@ class RunConfig(BaseModel):
         else:
             raise RunConfigError()
         return ResolvedRunConfig(
+            policy_profile=self.policy_profile,
             provider=provider,
             model=model,
             max_iterations=(

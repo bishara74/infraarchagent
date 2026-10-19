@@ -131,6 +131,7 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
         "model",
         "max_iterations",
         "error_message",
+        "policy_profile",
     }
     assert data["run"]["id"] == str(run_id)
     assert data["run"]["start_time"].endswith("Z") and data["run"]["end_time"].endswith(
@@ -153,6 +154,7 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
             "validation_report",
             "review_feedback",
             "review_decision",
+            "profile_assessments",
             "readiness_label",
             "downloadable",
             "review_available",

@@ -14,6 +14,7 @@ from app.domain.plan import DeploymentPlan
 from app.domain.review import package_presentation
 from app.domain.states import is_downloadable
 from app.pipeline.review import ReviewError
+from app.security.profiles import assess
 
 
 class ResultsService:
@@ -61,6 +62,14 @@ class ResultsService:
             validation_report=row.validation_report,
             retried=retried,
             decision=row.review_decision,
+            policy_profile=snapshot.run.policy_profile or "strict",
+            assessments=assess(
+                {
+                    "security_report": row.security_report,
+                    "validation_report": row.validation_report,
+                    "files": row.files,
+                }
+            ),
         )
         archive = package_zip(self.safety.value(row.files), self.safety.text(readiness))
         return (
@@ -105,6 +114,13 @@ class ResultsService:
                                 "validation_report": item.validation_report,
                                 "review_feedback": item.review_feedback,
                                 "review_decision": item.review_decision,
+                                "profile_assessments": assess(
+                                    {
+                                        "security_report": item.security_report,
+                                        "validation_report": item.validation_report,
+                                        "files": item.files,
+                                    }
+                                ),
                                 **package_presentation(
                                     run_status,
                                     status,
@@ -120,6 +136,9 @@ class ResultsService:
         return ResultsResponse(
             run=RunResult(
                 id=row.run_id,
+                policy_profile="contextual-v1"
+                if row.policy_profile == "contextual-v1"
+                else "strict",
                 status=run_status,
                 input_text=self.safety.text(row.input_text),
                 start_time=row.start_time,

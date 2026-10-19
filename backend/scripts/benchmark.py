@@ -795,6 +795,7 @@ class Harness:
             settled_at=datetime.now(UTC).isoformat(),
             complete=True,
             run_status=run["status"],
+            policy_profile=run.get("policy_profile", "strict"),
             provider=provider,
             model=self.redactor.redact(run.get("model") or ""),
         )

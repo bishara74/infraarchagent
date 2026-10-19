@@ -15,6 +15,7 @@ class StrictResponse(BaseModel):
 
 
 class RunResult(StrictResponse):
+    policy_profile: Literal["strict", "contextual-v1"] = "strict"
     id: UUID
     status: RunStatus
     input_text: str
@@ -37,6 +38,7 @@ class PackageResult(StrictResponse):
     original_files: dict[str, str] | None
     security_report: dict[str, Any] | None
     validation_report: dict[str, Any] | None
+    profile_assessments: dict[str, Any] = Field(default_factory=dict)
     review_decision: dict[str, Any] | None = None
     review_feedback: str | None
     readiness_label: (
