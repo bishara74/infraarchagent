@@ -45,7 +45,15 @@ from scripts.phase9e_metrics import measurement_summary
 from scripts.phase9f_workloads import pr05_workloads
 
 TERMINAL = {"success", "partial_success", "failed"}
-SETTLED = {"pending_review", "production_ready", "not_production_ready", "scan_error"}
+SETTLED = {
+    "pending_review",
+    "checks_passed",
+    "engineer_approved",
+    "rejected",
+    "scan_error",
+    "production_ready",
+    "not_production_ready",
+}
 EVENT_KINDS = {
     "agent_state",
     "package_status",
@@ -80,7 +88,10 @@ def normalized_event(item: dict) -> dict:
     variant = item.get("variant")
     if variant not in (*VARIANTS, None):
         raise ValueError("Invalid variant")
-    status = item.get("status")
+    status = {
+        "production_ready": "checks_passed",
+        "not_production_ready": "rejected",
+    }.get(item.get("status"), item.get("status"))
     if status not in {value.value for value in PackageStatus} | {
         value.value for value in RunStatus
     } | {"pending", "running", "completed", "failed"}:

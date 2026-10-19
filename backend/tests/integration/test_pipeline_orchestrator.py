@@ -278,7 +278,7 @@ async def test_partial_and_review_outcomes(
     if failed_variant:
         assert statuses[failed_variant] == PackageStatus.FAILED
         assert all(
-            status == PackageStatus.PRODUCTION_READY
+            status == PackageStatus.CHECKS_PASSED
             for variant, status in statuses.items()
             if variant != failed_variant
         )

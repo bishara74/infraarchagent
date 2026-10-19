@@ -32,10 +32,7 @@ async def test_seed_and_download_through_http(db_engines, tmp_path):
     assert len(harness.rows) == 2 and all(row["complete"] for row in harness.rows)
     assert 99_000 < len(response.content) < 101_000
     with ZipFile(BytesIO(response.content)) as archive:
-        assert (
-            "NOT PRODUCTION READY"
-            in archive.read("INFRAARCHAGENT_READINESS.md").decode()
-        )
+        assert "REJECTED" in archive.read("INFRAARCHAGENT_READINESS.md").decode()
         assert (
             "benchmark synthetic package"
             in archive.read("INFRAARCHAGENT_READINESS.md").decode()

@@ -32,7 +32,7 @@ def event(seq, agent, status, timestamp, kind="agent_state", variant=None):
     )
 
 
-def snapshot(status="production_ready", retry=False):
+def snapshot(status="checks_passed", retry=False):
     return {
         "run": {"status": "partial_success", "provider": "stub", "model": "stub"},
         "packages": [{"variant": "cost", "status": status, "retry_in_progress": retry}],

@@ -25,8 +25,9 @@ class PackageStatus(StrEnum):
     INVALID = "invalid"
     VALIDATION_ERROR = "validation_error"
     PENDING_REVIEW = "pending_review"
-    PRODUCTION_READY = "production_ready"
-    NOT_PRODUCTION_READY = "not_production_ready"
+    CHECKS_PASSED = "checks_passed"
+    ENGINEER_APPROVED = "engineer_approved"
+    REJECTED = "rejected"
 
 
 class Variant(StrEnum):

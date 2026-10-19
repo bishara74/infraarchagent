@@ -60,6 +60,7 @@ class ResultsService:
             security_report=row.security_report,
             validation_report=row.validation_report,
             retried=retried,
+            decision=row.review_decision,
         )
         archive = package_zip(self.safety.value(row.files), self.safety.text(readiness))
         return (
@@ -103,6 +104,7 @@ class ResultsService:
                                 "security_report": item.security_report,
                                 "validation_report": item.validation_report,
                                 "review_feedback": item.review_feedback,
+                                "review_decision": item.review_decision,
                                 **package_presentation(
                                     run_status,
                                     status,

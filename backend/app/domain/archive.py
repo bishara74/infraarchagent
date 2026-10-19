@@ -24,14 +24,11 @@ def readiness_document(
     security_report: dict[str, Any] | None,
     validation_report: dict[str, Any] | None,
     retried: bool = False,
+    decision: dict[str, Any] | None = None,
 ) -> str:
     if not is_downloadable(status):
         raise ValueError("package is not downloadable")
-    label = (
-        "PRODUCTION READY"
-        if status == PackageStatus.PRODUCTION_READY
-        else "NOT PRODUCTION READY — rejected by the reviewing engineer"
-    )
+    label = status.value.replace("_", " ").upper()
     origin = (
         "engineer decision"
         if review_action in {"approve", "reject"}
@@ -60,6 +57,13 @@ def readiness_document(
             f"Labelled at: {timestamp}",
             f"Label origin: {origin}",
             "",
+            "## Engineer decision",
+            f"Decision: {(decision or {}).get('action', 'none')}",
+            f"Reviewer: {(decision or {}).get('reviewer_name') or 'unavailable'} — "
+            f"{(decision or {}).get('identity_basis', 'unavailable')}",
+            f"Decision time: {(decision or {}).get('decided_at') or 'unavailable'}",
+            f"Reason: {(decision or {}).get('reason') or 'unavailable'}",
+            "",
             "## Review feedback",
             feedback or "None",
             "",
@@ -73,8 +77,21 @@ def readiness_document(
             f"warnings: {summary.get('warnings', 0)}; "
             f"skipped: {summary.get('skipped', 0)}",
             "",
-            "Static validity does not prove deployability. For example, an Aurora "
-            "cluster may still lack required instances.",
+            "## Remaining findings and failed checks",
+            *[
+                f"- {f.get('rule_id', 'unavailable')} — "
+                f"{f.get('resource', 'unavailable')} "
+                f"({f.get('file_path', 'unavailable')})"
+                for f in security.get("remaining_blocking", [])
+            ],
+            *[
+                f"- {c.get('check_id', 'unavailable')}: "
+                f"{c.get('message', 'unavailable')}"
+                for c in (validation_report or {}).get("checks", [])
+                if c.get("status") == "failed"
+            ],
+            "No label implies a successful cloud deployment. "
+            "These are static checks only.",
             "",
         ]
     )

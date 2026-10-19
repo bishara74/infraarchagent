@@ -37,8 +37,12 @@ class PackageResult(StrictResponse):
     original_files: dict[str, str] | None
     security_report: dict[str, Any] | None
     validation_report: dict[str, Any] | None
+    review_decision: dict[str, Any] | None = None
     review_feedback: str | None
-    readiness_label: Literal["production_ready", "not_production_ready"] | None
+    readiness_label: (
+        Literal["checks_passed", "engineer_approved", "rejected", "pending_review"]
+        | None
+    )
     downloadable: bool
     review_available: bool
     retry_in_progress: bool
@@ -68,6 +72,8 @@ class ResultsResponse(StrictResponse):
 class ReviewRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     action: Literal["approve", "retry", "reject"]
+    reviewer_name: str | None = Field(default=None, max_length=120)
+    reason: str | None = Field(default=None, max_length=2000)
     feedback: str | None = None
     target_files: list[str] = Field(default_factory=list, max_length=5)
 
@@ -83,6 +89,16 @@ class ReviewRequest(BaseModel):
 
     @model_validator(mode="after")
     def targets_only_for_retry(self) -> "ReviewRequest":
+        if self.action in {"approve", "reject"}:
+            if (
+                not self.reviewer_name
+                or not self.reviewer_name.strip()
+                or not self.reason
+                or not self.reason.strip()
+            ):
+                raise ValueError("reviewer name and reason are required")
+            self.reviewer_name = self.reviewer_name.strip()
+            self.reason = self.reason.strip()
         if "target_files" in self.model_fields_set and self.action != "retry":
             raise ValueError("targets require retry")
         return self

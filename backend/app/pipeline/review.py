@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import UUID
 
@@ -39,7 +40,12 @@ class ReviewService:
         self.safety = PublicDataSafety(runner.factory.settings)
 
     async def review(
-        self, run_id: UUID, variant: Variant, body: ReviewRequest
+        self,
+        run_id: UUID,
+        variant: Variant,
+        body: ReviewRequest,
+        *,
+        auth_mode: str = "shared_key",
     ) -> ReviewResponse:
         reserved = False
         started = False
@@ -109,17 +115,40 @@ class ReviewService:
                                 "Too many pipeline runs are active.",
                             )
                         reserved = True
+                    decision = (
+                        self.safety.value(
+                            {
+                                "action": body.action,
+                                "reviewer_name": body.reviewer_name,
+                                "reason": body.reason,
+                                "decided_at": datetime.now(UTC).isoformat(),
+                                "identity_basis": "self-declared "
+                                "(shared-key authentication)"
+                                if auth_mode != "local"
+                                else "self-declared (no authentication — local mode)",
+                            }
+                        )
+                        if body.action in {"approve", "reject"}
+                        else None
+                    )
+                    row.review_decision = decision
                     previous = await self.writer.review_action(
                         session, run_id, variant, body.action, feedback
                     )
                     target = {
-                        "approve": PackageStatus.PRODUCTION_READY,
-                        "reject": PackageStatus.NOT_PRODUCTION_READY,
+                        "approve": PackageStatus.ENGINEER_APPROVED,
+                        "reject": PackageStatus.REJECTED,
                         "retry": PackageStatus.REMEDIATING,
                     }[body.action]
             accepted = True
             await self.writer.review_event(
-                run_id, variant, target, previous, action=body.action, reasons=reasons
+                run_id,
+                variant,
+                target,
+                previous,
+                action=body.action,
+                reasons=reasons,
+                decision=decision,
             )
             if body.action == "retry":
                 self.runner.start_review_retry(run_id, variant, body.target_files)

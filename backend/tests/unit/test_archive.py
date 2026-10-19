@@ -88,9 +88,9 @@ def test_readiness_document_distinguishes_origins(action, retried, expected):
     document = readiness_document(
         run_id=uuid4(),
         variant=Variant.COST,
-        status=PackageStatus.NOT_PRODUCTION_READY
+        status=PackageStatus.REJECTED
         if action == "reject"
-        else PackageStatus.PRODUCTION_READY,
+        else PackageStatus.CHECKS_PASSED,
         model="stub",
         labelled_at=datetime.now(UTC),
         review_action=action,

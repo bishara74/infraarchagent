@@ -38,7 +38,15 @@ async def test_every_pipeline_route_requires_header_but_health_is_open(db_engine
     routes = [
         ("POST", "/api/pipeline/run", {"text": "Deploy AWS web app"}),
         ("GET", f"/api/pipeline/{run_id}/results", None),
-        ("POST", review_url(run_id), {"action": "approve"}),
+        (
+            "POST",
+            review_url(run_id),
+            {
+                "reviewer_name": "Test engineer",
+                "reason": "Reviewed outstanding checks",
+                "action": "approve",
+            },
+        ),
         ("GET", f"/api/pipeline/{run_id}/download/cost", None),
         ("GET", f"/api/pipeline/{run_id}/stream", None),
     ]
@@ -59,7 +67,13 @@ async def test_every_pipeline_route_requires_header_but_health_is_open(db_engine
         assert (await client.get(routes[1][1], headers=headers)).status_code == 200
         assert (
             await client.post(
-                review_url(run_id), json={"action": "approve"}, headers=headers
+                review_url(run_id),
+                json={
+                    "reviewer_name": "Test engineer",
+                    "reason": "Reviewed outstanding checks",
+                    "action": "approve",
+                },
+                headers=headers,
             )
         ).status_code == 200
         assert (await client.get(routes[3][1], headers=headers)).status_code == 200

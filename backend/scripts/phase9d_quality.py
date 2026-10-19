@@ -31,6 +31,23 @@ def safe_text(value: object, redactor: RedactingFilter, limit: int = 500) -> str
 def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
     """Construct every field explicitly: never copy arbitrary report metadata."""
     status = package.get("status")
+    legacy = status in {"production_ready", "not_production_ready"}
+    if status == "production_ready":
+        final = security_final(package.get("security_report"))
+        valid = (package.get("validation_report") or {}).get("summary", {}).get(
+            "result"
+        ) == "valid"
+        status = (
+            "checks_passed"
+            if final.get("outcome") == "clean"
+            and not final.get("remaining_blocking")
+            and valid
+            else "engineer_approved"
+            if (package.get("review_decision") or {}).get("action") == "approve"
+            else "pending_review"
+        )
+    elif status == "not_production_ready":
+        status = "rejected"
     if status not in {item.value for item in PackageStatus}:
         status = "unknown"
     validation = package.get("validation_report") or {}
@@ -126,6 +143,7 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
     ]
     return {
         "status": status,
+        "legacy_label_mapped": legacy,
         "validation_result": validation.get("summary", {}).get("result")
         if validation.get("summary", {}).get("result") in {"valid", "invalid", "error"}
         else None,
@@ -236,16 +254,19 @@ def quality_table(
     findings: Counter[str] = Counter()
     for package in packages:
         findings.update(package["remaining_findings"])
-    ready = statuses["production_ready"]
+    ready = statuses["checks_passed"]
     total = len(packages)
     result = {
         "counts": {
             "packages": total,
             "missing_variants": missing,
             "unavailable_runs": unavailable,
-            "production_ready": ready,
+            "checks_passed": ready,
         },
-        "production_ready_rate": ready / total if total else None,
+        "checks_passed_rate": ready / total if total else None,
+        "legacy_labels_mapped": sum(
+            bool(p.get("legacy_label_mapped")) for p in packages
+        ),
         "status_counts": dict(statuses.most_common()),
         "review_reason_counts": dict(reasons.most_common()),
         "failed_check_counts": [
@@ -357,7 +378,8 @@ def quality_table(
     }
     rate = f"{ready}/{total} ({100 * ready / total:.2f}%)" if total else "unknown"
     lines = [
-        f"Production-ready rate among generated packages: **{rate}**.",
+        f"Checks-passed rate among generated packages: **{rate}**.",
+        f"Legacy labels mapped: {result['legacy_labels_mapped']}. "
         f"Missing variants: {missing}; runs without quality snapshots: {unavailable}.",
     ]
     for title, rows in (

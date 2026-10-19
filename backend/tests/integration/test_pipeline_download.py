@@ -23,8 +23,8 @@ from tests.integration.test_pipeline_review import (
 @pytest.mark.parametrize(
     "action,label",
     [
-        ("approve", "PRODUCTION READY"),
-        ("reject", "NOT PRODUCTION READY — rejected by the reviewing engineer"),
+        ("approve", "ENGINEER APPROVED"),
+        ("reject", "REJECTED"),
     ],
 )
 async def test_labelled_download_exact_files_and_repeat_bytes(
@@ -36,15 +36,19 @@ async def test_labelled_download_exact_files_and_repeat_bytes(
             await client.get(f"/api/pipeline/{run_id}/download/cost")
         ).status_code == 409
         await client.post(
-            review_url(run_id), json={"action": action, "feedback": "Engineer notes"}
+            review_url(run_id),
+            json={
+                "reviewer_name": "Test engineer",
+                "reason": "Reviewed outstanding checks",
+                "action": action,
+                "feedback": "Engineer notes",
+            },
         )
         first = await client.get(f"/api/pipeline/{run_id}/download/cost")
         second = await client.get(f"/api/pipeline/{run_id}/download/cost")
     assert first.status_code == 200 and first.content == second.content
     assert first.headers["content-type"] == "application/zip"
-    expected_status = (
-        "production_ready" if action == "approve" else "not_production_ready"
-    )
+    expected_status = "checks_passed" if action == "approve" else "rejected"
     assert first.headers["content-disposition"] == (
         f'attachment; filename="infraarch-{str(run_id)[:8]}-cost-{expected_status}.zip"'
     )
@@ -129,7 +133,14 @@ async def _ten_megabyte_download(db_engines):
         async with session.begin():
             await PackageRepository(session).save_files(run_id, Variant.COST, files)
     async with client_for(app) as client:
-        await client.post(review_url(run_id), json={"action": "approve"})
+        await client.post(
+            review_url(run_id),
+            json={
+                "reviewer_name": "Test engineer",
+                "reason": "Reviewed outstanding checks",
+                "action": "approve",
+            },
+        )
         start = time.perf_counter()
         response = await client.get(f"/api/pipeline/{run_id}/download/cost")
         elapsed = time.perf_counter() - start
@@ -141,7 +152,7 @@ async def _ten_megabyte_download(db_engines):
         for path, content in files.items():
             assert archive.read(path).decode() == content
         assert archive.read("INFRAARCHAGENT_READINESS.md").startswith(
-            b"# PRODUCTION READY"
+            b"# CHECKS PASSED"
         )
     return elapsed, len(response.content)
 
@@ -214,7 +225,7 @@ async def test_origin_history_is_variant_scoped_and_precedes_label(
     if before_label:
         await record_retry()
     await app.state.writer.package_transition(
-        run_id, Variant.COST, PackageStatus.PRODUCTION_READY, message="labelled"
+        run_id, Variant.COST, PackageStatus.CHECKS_PASSED, message="labelled"
     )
     if not before_label:
         await record_retry()

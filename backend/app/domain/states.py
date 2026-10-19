@@ -60,7 +60,7 @@ PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
     ),
     PackageStatus.VALID: frozenset(
         {
-            PackageStatus.PRODUCTION_READY,
+            PackageStatus.CHECKS_PASSED,
             PackageStatus.PENDING_REVIEW,
             PackageStatus.SCANNING,
         }
@@ -73,21 +73,23 @@ PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
     ),
     PackageStatus.PENDING_REVIEW: frozenset(
         {
-            PackageStatus.PRODUCTION_READY,
-            PackageStatus.NOT_PRODUCTION_READY,
+            PackageStatus.ENGINEER_APPROVED,
+            PackageStatus.REJECTED,
             PackageStatus.REMEDIATING,
         }
     ),
-    PackageStatus.PRODUCTION_READY: frozenset(),
-    PackageStatus.NOT_PRODUCTION_READY: frozenset(),
+    PackageStatus.ENGINEER_APPROVED: frozenset(),
+    PackageStatus.CHECKS_PASSED: frozenset(),
+    PackageStatus.REJECTED: frozenset(),
 }
 
 PACKAGE_TERMINAL = frozenset(
     {
         PackageStatus.FAILED,
         PackageStatus.SCAN_ERROR,
-        PackageStatus.PRODUCTION_READY,
-        PackageStatus.NOT_PRODUCTION_READY,
+        PackageStatus.ENGINEER_APPROVED,
+        PackageStatus.CHECKS_PASSED,
+        PackageStatus.REJECTED,
     }
 )
 
@@ -178,7 +180,7 @@ def readiness_after_validation(
         scan_outcome == PackageStatus.SCAN_CLEAN
         and validation_outcome == PackageStatus.VALID
     ):
-        return PackageStatus.PRODUCTION_READY
+        return PackageStatus.CHECKS_PASSED
     return PackageStatus.PENDING_REVIEW
 
 
@@ -202,8 +204,9 @@ def is_settled(status: PackageStatus) -> bool:
 
 def is_downloadable(status: PackageStatus) -> bool:
     return status in {
-        PackageStatus.PRODUCTION_READY,
-        PackageStatus.NOT_PRODUCTION_READY,
+        PackageStatus.ENGINEER_APPROVED,
+        PackageStatus.CHECKS_PASSED,
+        PackageStatus.REJECTED,
     }
 
 
@@ -223,6 +226,6 @@ def classify_run(
     ]
     if not available:
         return RunStatus.FAILED
-    if all(status == PackageStatus.PRODUCTION_READY for status in outcomes):
+    if all(status == PackageStatus.CHECKS_PASSED for status in outcomes):
         return RunStatus.SUCCESS
     return RunStatus.PARTIAL_SUCCESS

@@ -1462,6 +1462,18 @@ No Phase 9g exception profile, real model benchmark, readiness/severity change,
 new dependency or migration is introduced. New template findings remain blocking.
 
 
+### D-47 — Honest check and engineer-decision labels (Phase 9g)
+
+FR-S-08/10 and FR-UI-06/07: automatic strict clean scan plus valid validation
+is named `checks_passed`. Approval produces `engineer_approved`; rejection is
+`rejected`. Required reviewer name/reason and application UTC decision time are
+persisted and shown with self-declared identity provenance. Local mode explicitly
+states no authentication. Reports/findings remain visible after decisions; no
+label implies a successful cloud deployment. Migration 0004 leaves events
+immutable, distinguishes recorded approvals, and returns unverifiable legacy
+success claims to pending_review. Missing historical identity/reason is unknown.
+Historical reports are never rewritten; compatibility output discloses mapping.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

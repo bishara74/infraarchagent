@@ -49,7 +49,20 @@ class ResultsRepository:
                 AgentEvent.run_id == run_id,
                 AgentEvent.payload["kind"].astext == EventKind.PACKAGE_STATUS,
                 AgentEvent.payload["variant"].astext == variant.value,
-                AgentEvent.new_state == status.value,
+                AgentEvent.new_state.in_(
+                    [
+                        status.value,
+                        "production_ready"
+                        if status
+                        in {
+                            PackageStatus.CHECKS_PASSED,
+                            PackageStatus.ENGINEER_APPROVED,
+                        }
+                        else "not_production_ready"
+                        if status == PackageStatus.REJECTED
+                        else status.value,
+                    ]
+                ),
             )
             .order_by(AgentEvent.seq.desc())
             .limit(1)

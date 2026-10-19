@@ -72,7 +72,11 @@ def package_presentation(
     error: str | None,
 ) -> dict[str, Any]:
     reasons = []
-    if status == PackageStatus.PENDING_REVIEW:
+    if status in {
+        PackageStatus.PENDING_REVIEW,
+        PackageStatus.ENGINEER_APPROVED,
+        PackageStatus.REJECTED,
+    }:
         final = security_final(security_report)
         if final.get("remaining_blocking") or final.get("outcome") == "exhausted":
             reasons.append("unresolved_security_findings")
@@ -85,7 +89,9 @@ def package_presentation(
             reasons.append("retry_aborted")
     downloadable = is_downloadable(status)
     return {
-        "readiness_label": status.value if downloadable else None,
+        "readiness_label": status.value
+        if downloadable or status == PackageStatus.PENDING_REVIEW
+        else None,
         "downloadable": downloadable,
         "review_available": status == PackageStatus.PENDING_REVIEW
         and run_status in TERMINAL_RUNS,

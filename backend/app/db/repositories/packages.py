@@ -45,8 +45,8 @@ class PackageRepository:
         self, run_id: UUID, variant: Variant, action: str, feedback: str | None
     ) -> PackageStatus:
         target = {
-            "approve": PackageStatus.PRODUCTION_READY,
-            "reject": PackageStatus.NOT_PRODUCTION_READY,
+            "approve": PackageStatus.ENGINEER_APPROVED,
+            "reject": PackageStatus.REJECTED,
             "retry": PackageStatus.REMEDIATING,
         }[action]
         row, previous = await self.transition_status(run_id, variant, target)
@@ -149,8 +149,8 @@ class PackageRepository:
         row.status = target
         if target in {
             PackageStatus.PENDING_REVIEW,
-            PackageStatus.PRODUCTION_READY,
-            PackageStatus.NOT_PRODUCTION_READY,
+            PackageStatus.CHECKS_PASSED,
+            PackageStatus.REJECTED,
         }:
             row.review_retry_started_at = None
         if error is not None:

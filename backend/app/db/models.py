@@ -42,6 +42,7 @@ class GeneratedPackage(Base):
     remediation_diff: Mapped[str | None] = mapped_column(Text)
     iteration_count: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
+    review_decision: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     review_feedback: Mapped[str | None] = mapped_column(Text)
     review_retry_started_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True)

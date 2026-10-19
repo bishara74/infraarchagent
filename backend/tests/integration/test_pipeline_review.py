@@ -178,7 +178,7 @@ async def state(app, run_id):
 @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
 @pytest.mark.parametrize(
     "action,expected",
-    [("approve", "production_ready"), ("reject", "not_production_ready")],
+    [("approve", "engineer_approved"), ("reject", "rejected")],
 )
 async def test_decision_without_agents_and_frozen_run(
     db_engines, monkeypatch, action, expected
@@ -191,11 +191,24 @@ async def test_decision_without_agents_and_frozen_run(
     monkeypatch.setattr(app.state.runner.validation_stage, "run", validator)
     async with client_for(app) as client:
         response = await client.post(
-            review_url(run_id), json={"action": action, "feedback": "  Reviewed  "}
+            review_url(run_id),
+            json={
+                "reviewer_name": "Test engineer",
+                "reason": "Reviewed outstanding checks",
+                "action": action,
+                "feedback": "  Reviewed  ",
+            },
         )
         assert response.status_code == 200 and response.json()["status"] == expected
         assert (
-            await client.post(review_url(run_id), json={"action": action})
+            await client.post(
+                review_url(run_id),
+                json={
+                    "reviewer_name": "Test engineer",
+                    "reason": "Reviewed outstanding checks",
+                    "action": action,
+                },
+            )
         ).status_code == 409
     run, row = await state(app, run_id)
     assert (run.status, run.end_time) == (before.status, before.end_time)
@@ -218,7 +231,14 @@ async def test_decision_without_agents_and_frozen_run(
 async def test_review_waits_for_run_completion(db_engines, action):
     app, run_id = await pending_app(db_engines[0], terminal=False)
     async with client_for(app) as client:
-        response = await client.post(review_url(run_id), json={"action": action})
+        response = await client.post(
+            review_url(run_id),
+            json={
+                "reviewer_name": "Test engineer",
+                "reason": "Reviewed outstanding checks",
+                "action": action,
+            },
+        )
         assert (
             response.status_code == 409
             and response.json()["error"] == "run_in_progress"
@@ -254,7 +274,7 @@ async def test_retry_reset_prompt_and_option_c(db_engines, monkeypatch, result):
     )
     await asyncio.gather(*app.state.runner.tasks.values())
     run, row = await state(app, run_id)
-    assert row.status == ("production_ready" if result == "valid" else "pending_review")
+    assert row.status == ("checks_passed" if result == "valid" else "pending_review")
     assert (
         "Repair the reference" in adapter.prompts[0]
         and "broken reference" in adapter.prompts[0]
@@ -377,7 +397,14 @@ async def test_concurrent_reviews_one_acceptance(db_engines, monkeypatch, action
             responses = await asyncio.wait_for(
                 asyncio.gather(
                     *(
-                        client.post(review_url(run_id), json={"action": action})
+                        client.post(
+                            review_url(run_id),
+                            json={
+                                "reviewer_name": "Test engineer",
+                                "reason": "Reviewed outstanding checks",
+                                "action": action,
+                            },
+                        )
                         for action in actions
                     )
                 ),
@@ -434,11 +461,21 @@ async def test_retry_failure_returns_to_review(db_engines, monkeypatch, failure)
     [
         {},
         {"action": "other"},
-        {"action": "approve", "extra": 1},
+        {
+            "reviewer_name": "Test engineer",
+            "reason": "Reviewed outstanding checks",
+            "action": "approve",
+            "extra": 1,
+        },
         {"action": "retry", "feedback": 2},
         {"action": "retry", "feedback": None},
         {"action": "retry", "feedback": "x" * 2001},
-        {"action": "approve", "target_files": []},
+        {
+            "reviewer_name": "Test engineer",
+            "reason": "Reviewed outstanding checks",
+            "action": "approve",
+            "target_files": [],
+        },
         {"action": "retry", "target_files": ["terraform/main.tf"] * 6},
         {"action": "retry", "target_files": [2]},
     ],
@@ -448,13 +485,34 @@ async def test_bad_body_is_400(db_engines, body):
     async with client_for(app) as client:
         assert (await client.post(review_url(run_id), json=body)).status_code == 400
         assert (
-            await client.post(review_url("bad"), json={"action": "approve"})
+            await client.post(
+                review_url("bad"),
+                json={
+                    "reviewer_name": "Test engineer",
+                    "reason": "Reviewed outstanding checks",
+                    "action": "approve",
+                },
+            )
         ).status_code == 400
         assert (
-            await client.post(review_url(run_id, "unknown"), json={"action": "approve"})
+            await client.post(
+                review_url(run_id, "unknown"),
+                json={
+                    "reviewer_name": "Test engineer",
+                    "reason": "Reviewed outstanding checks",
+                    "action": "approve",
+                },
+            )
         ).status_code == 400
         assert (
-            await client.post(review_url(uuid4()), json={"action": "approve"})
+            await client.post(
+                review_url(uuid4()),
+                json={
+                    "reviewer_name": "Test engineer",
+                    "reason": "Reviewed outstanding checks",
+                    "action": "approve",
+                },
+            )
         ).status_code == 404
 
 
@@ -468,7 +526,13 @@ async def test_feedback_boundary_is_measured_after_trimming(
     app, run_id = await pending_app(db_engines[0])
     async with client_for(app) as client:
         response = await client.post(
-            review_url(run_id), json={"action": "reject", "feedback": feedback}
+            review_url(run_id),
+            json={
+                "reviewer_name": "Test engineer",
+                "reason": "Reviewed outstanding checks",
+                "action": "reject",
+                "feedback": feedback,
+            },
         )
     assert response.status_code == 200
     assert (await state(app, run_id))[1].review_feedback == expected

@@ -52,11 +52,13 @@ class PipelineStateWriter:
         *,
         action: str,
         reasons: list[str],
+        decision: dict[str, Any] | None = None,
     ) -> None:
         payload: dict[str, Any] = {
             **package_status_payload(variant),
             "review_action": action,
             "review_reasons": reasons,
+            "review_decision": decision,
         }
         await self.event_log.append(
             run_id,

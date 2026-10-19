@@ -86,7 +86,7 @@ async def test_full_stub_pipeline_with_real_terraform(db_engines, monkeypatch, m
         run = await RunRepository(session).get(run_id)
         rows = await PackageRepository(session).list_for_run(run_id)
     assert run.status == (RunStatus.PARTIAL_SUCCESS if mixed else RunStatus.SUCCESS)
-    assert sum(row.status == PackageStatus.PRODUCTION_READY for row in rows) == (
+    assert sum(row.status == PackageStatus.CHECKS_PASSED for row in rows) == (
         2 if mixed else 3
     )
     assert all(row.validation_report for row in rows)
@@ -216,7 +216,7 @@ async def setup(
 @pytest.mark.parametrize(
     ("case,scan,target"),
     [
-        (("valid"), PackageStatus.SCAN_CLEAN, PackageStatus.PRODUCTION_READY),
+        (("valid"), PackageStatus.SCAN_CLEAN, PackageStatus.CHECKS_PASSED),
         (("invalid"), PackageStatus.SCAN_CLEAN, PackageStatus.PENDING_REVIEW),
         (("valid"), PackageStatus.SCAN_EXHAUSTED, PackageStatus.PENDING_REVIEW),
         (("error"), PackageStatus.SCAN_CLEAN, PackageStatus.PENDING_REVIEW),

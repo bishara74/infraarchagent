@@ -52,9 +52,9 @@ async def test_watcher_prints_terminal_summary_offline(
             )
     assert status == "success"
     assert packages == {
-        "cost": "production_ready",
-        "performance": "production_ready",
-        "security": "production_ready",
+        "cost": "checks_passed",
+        "performance": "checks_passed",
+        "security": "checks_passed",
     }
     output = capsys.readouterr().out
     assert "Run " in output

@@ -89,7 +89,10 @@ async def review_package(run_id: str, variant: str, request: Request) -> Respons
         return failure(400, "invalid_request", "Invalid review request.")
     try:
         result = await ReviewService(request.app.state.runner).review(
-            parsed, selected, body
+            parsed,
+            selected,
+            body,
+            auth_mode="shared_key" if request.app.state.settings.api_key else "local",
         )
     except ReviewError as error:
         return failure(error.status, error.code, error.message)

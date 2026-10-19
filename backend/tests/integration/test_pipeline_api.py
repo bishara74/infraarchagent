@@ -80,7 +80,7 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
             assert run.model == "stub"
             assert run.max_iterations == 2
             assert len(packages) == 3
-            assert all(row.status == PackageStatus.PRODUCTION_READY for row in packages)
+            assert all(row.status == PackageStatus.CHECKS_PASSED for row in packages)
             assert all(row.files for row in packages)
             replay = await client.get(response.json()["stream_url"])
             assert replay.status_code == 200

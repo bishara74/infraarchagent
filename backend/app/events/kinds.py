@@ -70,7 +70,16 @@ def to_sse(record: EventRecord) -> str:
         "seq": record.seq,
         "kind": kind.value,
         "agent": record.agent_name.value,
-        "status": record.new_state,
+        "status": (
+            "engineer_approved"
+            if record.payload.get("review_action") == "approve"
+            or record.previous_state == "pending_review"
+            else "checks_passed"
+        )
+        if record.new_state == "production_ready"
+        else "rejected"
+        if record.new_state == "not_production_ready"
+        else record.new_state,
         "previous_status": record.previous_state,
         "message": record.message,
         "variant": record.payload.get("variant"),

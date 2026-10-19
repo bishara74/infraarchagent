@@ -37,8 +37,8 @@ async def test_review_demo_retries_to_ready_and_preserves_audit(db_engines, tmp_
         before = (await client.get(url)).json()
         assert before["run"]["status"] == "partial_success"
         assert [p["status"] for p in before["packages"]] == [
-            "production_ready",
-            "production_ready",
+            "checks_passed",
+            "checks_passed",
             "pending_review",
         ]
         package = before["packages"][2]
@@ -54,7 +54,7 @@ async def test_review_demo_retries_to_ready_and_preserves_audit(db_engines, tmp_
         assert after["run"] == before["run"]
         assert after["packages"][:2] == before["packages"][:2]
         fixed = after["packages"][2]
-        assert fixed["status"] == "production_ready"
+        assert fixed["status"] == "checks_passed"
         assert fixed["retry_in_progress"] is False
         assert fixed["original_files"] == package["original_files"]
         assert fixed["validation_report"]["summary"]["result"] == "valid"

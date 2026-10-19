@@ -55,7 +55,7 @@ def test_package_edges_and_full_retry_path() -> None:
         P.SCAN_CLEAN,
         P.VALIDATING,
         P.VALID,
-        P.PRODUCTION_READY,
+        P.CHECKS_PASSED,
     ]
     for current, target in zip(path, path[1:], strict=False):
         assert_transition(current, target)
@@ -64,12 +64,12 @@ def test_package_edges_and_full_retry_path() -> None:
         P.VALIDATING,
         P.INVALID,
         P.PENDING_REVIEW,
-        P.NOT_PRODUCTION_READY,
+        P.REJECTED,
     ]
     for current, target in zip(failure, failure[1:], strict=False):
         assert_package_transition(current, target)
     for current, target in (
-        (P.VALIDATION_ERROR, P.PRODUCTION_READY),
+        (P.VALIDATION_ERROR, P.CHECKS_PASSED),
         (P.SCANNING, P.SCAN_EXHAUSTED),
         (P.FAILED, P.GENERATING),
     ):
@@ -78,8 +78,8 @@ def test_package_edges_and_full_retry_path() -> None:
     for terminal in (
         P.FAILED,
         P.SCAN_ERROR,
-        P.PRODUCTION_READY,
-        P.NOT_PRODUCTION_READY,
+        P.CHECKS_PASSED,
+        P.REJECTED,
     ):
         assert not PACKAGE_TRANSITIONS[terminal]
 
@@ -113,7 +113,7 @@ def test_readiness_and_reasons(scan: P, validation: P) -> None:
     result = readiness_after_validation(scan, validation)
     reasons = review_reasons(scan, validation)
     if scan == P.SCAN_CLEAN and validation == P.VALID:
-        assert result == P.PRODUCTION_READY
+        assert result == P.CHECKS_PASSED
         assert reasons == []
     else:
         assert result == P.PENDING_REVIEW
@@ -132,12 +132,12 @@ def test_readiness_input_and_downloadability() -> None:
     for status in (P.INVALID, P.VALIDATION_ERROR):
         assert not is_settled(status)
     assert is_settled(P.PENDING_REVIEW)
-    assert is_downloadable(P.PRODUCTION_READY)
-    assert is_downloadable(P.NOT_PRODUCTION_READY)
+    assert is_downloadable(P.CHECKS_PASSED)
+    assert is_downloadable(P.REJECTED)
 
 
 def test_classify_run_all_rules() -> None:
-    ready = {variant: P.PRODUCTION_READY for variant in Variant}
+    ready = {variant: P.CHECKS_PASSED for variant in Variant}
     assert classify_run(False, {}) == R.FAILED
     assert classify_run(True, {}) == R.FAILED
     assert classify_run(True, {v: P.SCAN_ERROR for v in Variant}) == R.FAILED

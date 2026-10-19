@@ -7,7 +7,7 @@ import { readinessOrigin } from './readinessOrigin';
 
 const events: RunEvent[] = [];
 createSseParser(frame => events.push(eventFromFrame(frame))).feed(run + retry);
-const ready = { variant: 'security', readiness_label: 'production_ready' } as const;
+const ready = { variant: 'security', readiness_label: 'checks_passed' } as const;
 it('FR-UI-06/07 recorded automatic and retry origins agree with archive copy', () => {
   expect(readinessOrigin(events, { ...ready, variant: 'cost' })).toBe('automatic (clean scan and valid validation)');
   expect(readinessOrigin(events, ready)).toBe('automatic after an engineer-requested retry (clean scan and valid validation)');

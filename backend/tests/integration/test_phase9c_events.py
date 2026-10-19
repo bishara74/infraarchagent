@@ -94,7 +94,7 @@ async def test_generator_metrics_persist_without_raw_output(
     )
     if case == "late":
         assert cost_package is not None
-        assert cost_package["status"] == "production_ready"
+        assert cost_package["status"] == "checks_passed"
         assert evidence["generator_deadlines"]["cost"] == {
             "deadline_exceeded": True,
             "overrun_seconds": 1.0,

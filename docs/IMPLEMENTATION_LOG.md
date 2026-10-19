@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9g section 1 — Separate checks from engineer decisions
+
+**Summary:** Replace automatic production-ready claims with checks_passed;
+manual approval/rejection preserve failed checks and self-declared provenance.
+
+**Requirements addressed:** FR-S-08, FR-S-10, FR-UI-06, FR-UI-07, NFR-01.
+
+**Files:** domain states/archive/review, DB models/repositories and migration
+0004, API/results/review/events, benchmark readers/seed, frontend types/review/
+badges/fixtures and backend/browser tests; README and D-47.
+
+**Decisions:** D-47. Events/evaluation folders stay immutable. Required names and
+reasons are sanitized and stored with UTC decision time. Local identity records
+no authentication. Ambiguous legacy success claims return to pending_review.
+
+**Tests:** Focused backend: 162 passed, 0 failed. Frontend: 100 passed in 15 files.
+Mypy: 126 sources passed. make lint passed (Ruff/format, mypy, ESLint/TypeScript). Full backend
+verification is running and is repeated at final delivery.
+Migration rehearsal: one checks_passed, one engineer_approved, one rejected,
+one pending_review, with unchanged event rows. The isolated fresh test database
+had zero pre-existing legacy rows; no author database was migrated.
+
+**Known gaps / follow-ups:** Sections 2–6 remain. Initial regression runs found
+stale contract expectations (16 backend and three frontend failures), corrected
+without relaxing behavioral assertions. Historical missing reviewer data stays
+unavailable. No real provider calls or cached input changes.
+
 ## 2026-10-18 — Phase 9f A2 — Final replay and full verification evidence
 
 **Summary:** Record preserved A2 investigation/replay, final full-stack checks and

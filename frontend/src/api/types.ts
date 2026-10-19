@@ -2,7 +2,7 @@ export const variants = ['cost', 'performance', 'security'] as const;
 export type Variant = typeof variants[number];
 export type Provider = 'stub' | 'openai' | 'anthropic';
 export type RunStatus = 'created' | 'running' | 'success' | 'partial_success' | 'failed';
-export type PackageStatus = 'generating' | 'generated' | 'failed' | 'scanning' | 'remediating' | 'scan_clean' | 'scan_exhausted' | 'scan_error' | 'validating' | 'valid' | 'invalid' | 'validation_error' | 'pending_review' | 'production_ready' | 'not_production_ready';
+export type PackageStatus = 'generating' | 'generated' | 'failed' | 'scanning' | 'remediating' | 'scan_clean' | 'scan_exhausted' | 'scan_error' | 'validating' | 'valid' | 'invalid' | 'validation_error' | 'pending_review' | 'checks_passed' | 'engineer_approved' | 'rejected';
 export type AgentName = 'orchestrator' | 'architect' | 'generator_cost' | 'generator_performance' | 'generator_security' | 'security' | 'validator';
 export type AgentState = 'pending' | 'running' | 'completed' | 'failed';
 export type EventKind = 'run_status' | 'agent_state' | 'plan_created' | 'package_status' | 'package_generated' | 'stage_notice';
@@ -28,8 +28,9 @@ export interface PackageResult {
   original_files: Record<string, string> | null;
   security_report: Record<string, unknown> | null;
   validation_report: Record<string, unknown> | null;
+  review_decision?: {action:string;reviewer_name:string|null;reason:string|null;decided_at:string|null;identity_basis:string} | null;
   review_feedback: string | null;
-  readiness_label: 'production_ready' | 'not_production_ready' | null;
+  readiness_label: 'checks_passed' | 'engineer_approved' | 'rejected' | 'pending_review' | null;
   downloadable: boolean; review_available: boolean; retry_in_progress: boolean;
   review_reasons: ReviewReason[]; retry_targets: string[];
 }
@@ -39,7 +40,7 @@ export interface ResultsResponse {
 }
 export interface RunConfig { provider?: Provider; model?: string; max_iterations?: number }
 export interface SubmitResponse { run_id: string; status: 'created'; stream_url: string }
-export interface ReviewRequest { action: 'approve' | 'retry' | 'reject'; feedback?: string; target_files?: string[] }
+export interface ReviewRequest { action: 'approve' | 'retry' | 'reject'; reviewer_name?:string;reason?:string; feedback?: string; target_files?: string[] }
 export interface ReviewResponse { run_id: string; variant: Variant; status: PackageStatus }
 export interface RetryResponse extends ReviewResponse { stream_url: string }
 export interface ErrorResponse { error: string; message: string }

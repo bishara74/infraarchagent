@@ -30,7 +30,7 @@ results snapshots, review decisions/retries, deterministic labelled ZIP download
 and optional static API-key authentication. Phase 6 provides
 deterministic structure, reference and naming checks, offline
 Terraform provider-schema validation, optional local linters and persisted
-reports. Clean scans plus valid packages reach `production_ready`; all three
+reports. Clean scans plus valid packages reach `checks_passed`; all three
 ready packages give run `success`. Invalid or unavailable required validation
 reaches `pending_review` through the existing Option C rules. See
 [`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
@@ -253,7 +253,7 @@ With `LLM_PROVIDER=stub`, the API uses a
 pipeline-only deterministic demo; the Phase 1 spike and Phase 2–3 evaluation
 stubs are unchanged. The demo packages are scanned by the installed tools;
 validation uses the real engine. With clean scans, installed Terraform and the
-provider mirror, all three can reach `production_ready` and the run can end
+provider mirror, all three can reach `checks_passed` and the run can end
 `success`. A missing or repeatedly failing scanner places its package in
 `scan_error`; unavailable required Terraform validation requires review.
 
@@ -262,7 +262,7 @@ The security variant contains a deterministic undeclared local in
 `terraform/main.tf`, caught by the built-in `terraform.local_ref` check at
 line 4. Cost and performance stay clean. Security enters `pending_review`;
 retrying with feedback lets the demo fixer declare the local and reach
-`production_ready`. The run's historical `partial_success` remains unchanged.
+`checks_passed`. The run's historical `partial_success` remains unchanged.
 The default `clean` scenario preserves existing packages. Real-provider runs
 ignore the scenario, including when their fixer is stub; startup warns when
 `review` is configured with a non-stub default provider. The intentional
@@ -281,7 +281,10 @@ Apply `make migrate` as `infraarch_owner` before starting this backend version.
 Migration `0003_review_retry_started_at` adds the nullable retry timestamp;
 existing packages stay unchanged with a NULL marker.
 
-`API_KEY` is optional. When set, every `/api/pipeline` endpoint, including
+`API_KEY` is optional. Manual approval produces `engineer_approved`, never
+`checks_passed`. Approve/reject requests require non-empty `reviewer_name` and
+`reason`; names are self-declared under shared-key authentication. Decisions
+preserve failed checks and remaining findings. When set, every `/api/pipeline` endpoint, including
 submission and SSE, requires `X-API-Key`. Empty/unset allows local access and
 logs one startup warning. `/api/health` stays public. Missing and incorrect
 headers receive the same 401; query-string keys are not accepted. The examples
@@ -331,7 +334,7 @@ schemas. Malformed IDs return 400 and unknown runs return 404.
 Reviews require a terminal run and a `pending_review` package. An active run
 returns 409 `run_in_progress`; other package states return 409
 `not_pending_review`. Approve and reject return 200; approve performs no scan
-or validation, and reject labels the package `not_production_ready`. Feedback
+or validation, and reject labels the package `rejected`. Feedback
 is trimmed, limited to 2,000 characters, and stored on retry/reject. Unknown
 fields or incorrect types return 400.
 
@@ -342,7 +345,7 @@ Targetless requests return 422 `feedback_needs_target` when feedback exists,
 or `nothing_to_retry` otherwise. Full runner capacity returns 429 without
 changing package data. Each retry shares the run capacity and uses the saved
 provider/model/iteration settings plus configured fixer overrides. Clean scan
-and valid validation produce `production_ready`; other outcomes return to
+and valid validation produce `checks_passed`; other outcomes return to
 review. Reviews never reclassify or retime the completed run.
 
 Acceptance saves the UTC `review_retry_started_at` marker in the same
@@ -358,7 +361,7 @@ custom request headers. The stream stays open through retry scanning and
 validation and closes after the final package-state frame. Keep one backend
 process because the broker is in memory.
 
-Downloads require `production_ready` or `not_production_ready`; other states
+Downloads require `checks_passed` or `rejected`; other states
 return 409 `not_downloadable`. Missing, expired or failed-generation packages
 return 404; OQ-01's proposed 410 remains deferred. The ZIP uses persisted
 remediated files, sorted paths, fixed metadata and DEFLATED compression level
@@ -638,7 +641,7 @@ costs not attributed. These safeguards are heuristics, not a guaranteed spend ca
 For a synthetic download fixture, run from `backend/` with exported development
 settings: `.venv/bin/python -m scripts.seed_benchmark_package`. It prints a run ID
 and records its seed/sizes. It refuses test databases and labels the fixture
-`not_production_ready`; its input explicitly says `benchmark synthetic package`.
+`rejected`; its input explicitly says `benchmark synthetic package`.
 The ZIP is calibrated just below 10 MB; source bytes are larger because compression
 is included. Then run `make benchmark BENCH_ARGS='pr04 --run-id ID --repeat 10'`.
 Timing includes the complete HTTP download, not fixture preparation.

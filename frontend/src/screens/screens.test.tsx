@@ -34,9 +34,9 @@ it('401 permits key reentry on the current route',async()=>{snapshot(null,new Ap
 it('FR-UI-06/07 screen 4 has one readiness badge beside download and a clear pending review heading',()=>{
  snapshot(repaired as ResultsResponse);const root=show(<PackageScreen/>,'/runs/run/packages/security');
  const panel=screen.getByRole('region',{name:'Package readiness and review'});
- expect(screen.getAllByText('production ready',{exact:true})).toHaveLength(1);
- expect(within(panel).getByText('production ready')).toBeVisible();
- expect(within(panel).getByRole('button',{name:'Download ZIP'}).parentElement).toContainElement(within(panel).getByText('production ready'));
+ expect(screen.getAllByText('checks passed',{exact:true})).toHaveLength(1);
+ expect(within(panel).getByText('checks passed')).toBeVisible();
+ expect(within(panel).getByRole('button',{name:'Download ZIP'}).parentElement).toContainElement(within(panel).getByText('checks passed'));
  expect(document.querySelector('.page-heading .badge')).toBeNull();
  root.unmount();snapshot();show(<PackageScreen/>,'/runs/run/packages/security');
  expect(screen.getByRole('heading',{name:'Pending review'})).toBeVisible();
@@ -46,7 +46,7 @@ it('FR-UI-06/07 screen 4 has one readiness badge beside download and a clear pen
 
 it.each(['approve','reject'] as const)('FR-UI-07/FR-P-04 %s resumes closed SSE to recover its label-origin event without a retry latch',async action=>{
  snapshot();expect(state.current.state).toBe('closed');
- vi.spyOn(api,'review').mockResolvedValue({run_id:'run',variant:'security',status:action==='approve'?'production_ready':'not_production_ready'});
+ vi.spyOn(api,'review').mockResolvedValue({run_id:'run',variant:'security',status:action==='approve'?'engineer_approved':'rejected'});
  show(<PackageScreen/>,'/runs/run/packages/security');
  if(action==='reject'){
   // jsdom lacks native dialog methods; keep the real Reject/Confirm UI path.
@@ -56,6 +56,6 @@ it.each(['approve','reject'] as const)('FR-UI-07/FR-P-04 %s resumes closed SSE t
   await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));
  }else await userEvent.click(screen.getByRole('button',{name:'Approve'}));
  await vi.waitFor(()=>expect(state.current.reconnect).toHaveBeenCalledExactlyOnceWith());
- expect(api.review).toHaveBeenCalledExactlyOnceWith('run','security',{action});
+ expect(api.review).toHaveBeenCalledExactlyOnceWith('run','security',{action,reviewer_name:'',reason:''});
  expect(state.current.reopenRetry).not.toHaveBeenCalled();expect(state.current.refresh).toHaveBeenCalled();
 });

@@ -127,7 +127,7 @@ async def verification_rehearsal(*, runner=None, settings=None) -> dict:
     return {
         "label": "Separate scripted-fix verification rehearsal; "
         "real offline Terraform; "
-        "three concurrent private workspaces; excluded from production-ready rates "
+        "three concurrent private workspaces; excluded from checks-passed rates "
         "and PR thresholds.",
         "records": records,
         "summary": summary,

@@ -78,10 +78,10 @@ def test_strict_projection_redacts_allowed_text_and_counts_findings():
     assert snapshot["counts"]["deterministic_repairs"] == 1
     assert snapshot["counts"]["validation_repair_rounds"] == 1
     metrics, table = quality_table(
-        [snapshot, quality_snapshot({"status": "production_ready"}, RedactingFilter())],
+        [snapshot, quality_snapshot({"status": "checks_passed"}, RedactingFilter())],
         missing=1,
     )
-    assert metrics["production_ready_rate"] == 0.5
+    assert metrics["checks_passed_rate"] == 0.5
     assert metrics["remaining_finding_counts"] == {"AWS-0086": 2}
     assert metrics["counts"]["missing_variants"] == 1
     assert "50.00%" in table
@@ -118,7 +118,7 @@ def test_offline_recompute_preserves_inputs_and_accepts_compact_snapshots(tmp_pa
         "packages": 1,
         "missing_variants": 2,
         "unavailable_runs": 0,
-        "production_ready": 0,
+        "checks_passed": 0,
     }
     again = tmp_path / "again"
     recompute_quality(source, output / "quality", again)
@@ -136,7 +136,7 @@ def test_missing_historical_snapshots_are_unknown(tmp_path):
     output = tmp_path / "quality"
     recompute_quality(source, source / "absent", output)
     report = json.loads((output / "quality.json").read_text())
-    assert report["production_ready_rate"] is None
+    assert report["checks_passed_rate"] is None
     assert report["counts"]["unavailable_runs"] == 1
 
 

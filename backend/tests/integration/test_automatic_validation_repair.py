@@ -100,7 +100,7 @@ async def test_final_security_and_validation_describe_repaired_files(
     if final_scan_fails:
         assert outcome == PackageStatus.SCAN_ERROR
     else:
-        assert outcome == PackageStatus.PRODUCTION_READY
+        assert outcome == PackageStatus.CHECKS_PASSED
         assert row.files == package.files == validations[-1]
         assert row.validation_report["summary"]["result"] == "valid"
         assert (
@@ -183,7 +183,7 @@ async def test_review_demo_bypass_is_scoped_to_stub_runs(db_engines, provider):
     )
     assert (
         await orchestrator._post_generation(ctx, Variant.SECURITY, package)
-        == PackageStatus.PRODUCTION_READY
+        == PackageStatus.CHECKS_PASSED
     )
     async with sessions() as session:
         row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)

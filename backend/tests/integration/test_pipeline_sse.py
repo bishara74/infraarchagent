@@ -300,9 +300,9 @@ async def test_http_retry_stream_includes_validation_and_final_state(
         await asyncio.gather(*app.state.runner.tasks.values())
     data = "".join(frames)
     assert '"status": "scan_clean"' in data
-    assert '"status": "validating"' in data and '"status": "production_ready"' in data
+    assert '"status": "validating"' in data and '"status": "checks_passed"' in data
     assert "review fix pass completed" in data
-    assert (await state(app, run_id))[1].status == "production_ready"
+    assert (await state(app, run_id))[1].status == "checks_passed"
 
 
 @pytest.mark.req("FR-P-04", "FR-S-09")
@@ -321,12 +321,12 @@ async def test_final_state_commit_does_not_close_before_its_frame(db_engines):
     await app.state.writer.review_event(
         run_id,
         Variant.COST,
-        PackageStatus.PRODUCTION_READY,
+        PackageStatus.CHECKS_PASSED,
         previous,
         action="approve",
         reasons=["validation_failed"],
     )
-    observed["cost"] = "production_ready"
+    observed["cost"] = "checks_passed"
     assert await _can_close(app.state.session_factory, run_id, True, observed)
 
 
@@ -443,7 +443,7 @@ async def test_cancelled_stream_finishes_database_read_and_cleanup(
         body = result.json()
         assert body["run"]["status"] == "success"
         assert len(body["packages"]) == 3
-        assert all(item["status"] == "production_ready" for item in body["packages"])
+        assert all(item["status"] == "checks_passed" for item in body["packages"])
 
 
 @pytest.mark.req("FR-P-04", "PR-02")

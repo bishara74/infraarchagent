@@ -12,17 +12,27 @@ from app.domain.review import package_presentation, retry_targets
 def test_presentation_for_every_state(status, run_status):
     result = package_presentation(run_status, status, {}, None, None, None)
     labelled = status in {
-        PackageStatus.PRODUCTION_READY,
-        PackageStatus.NOT_PRODUCTION_READY,
+        PackageStatus.ENGINEER_APPROVED,
+        PackageStatus.CHECKS_PASSED,
+        PackageStatus.REJECTED,
     }
     assert result["downloadable"] == labelled
-    assert result["readiness_label"] == (status.value if labelled else None)
+    assert result["readiness_label"] == (
+        status.value if labelled or status == PackageStatus.PENDING_REVIEW else None
+    )
     assert result["review_available"] == (
         status == PackageStatus.PENDING_REVIEW
         and run_status not in {RunStatus.CREATED, RunStatus.RUNNING}
     )
     assert result["review_reasons"] == (
-        ["validation_error"] if status == PackageStatus.PENDING_REVIEW else []
+        ["validation_error"]
+        if status
+        in {
+            PackageStatus.PENDING_REVIEW,
+            PackageStatus.ENGINEER_APPROVED,
+            PackageStatus.REJECTED,
+        }
+        else []
     )
 
 

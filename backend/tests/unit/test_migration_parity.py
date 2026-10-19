@@ -28,7 +28,17 @@ def test_migration_check_literals_match_domain_enums() -> None:
         ("LLM_PROVIDER_VALUES", LLMProvider),
         ("AGENT_NAME_VALUES", AgentName),
     ):
-        assert set(getattr(migration, name)) == {item.value for item in enum}
+        if name == "PACKAGE_STATUS_VALUES":
+            path = (
+                Path(__file__).resolve().parents[2]
+                / "app/db/migrations/versions/0004_honest_labels.py"
+            )
+            spec = importlib.util.spec_from_file_location("honest_labels", path)
+            current = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(current)
+            assert set(current.PACKAGE_STATUS_VALUES) == {item.value for item in enum}
+        else:
+            assert set(getattr(migration, name)) == {item.value for item in enum}
 
 
 @pytest.mark.req("FR-S-09", "NFR-01")

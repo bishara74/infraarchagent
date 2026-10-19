@@ -22,7 +22,7 @@ async def test_full_size_seed_and_download_against_real_postgres(db_engines):
     report = await seed_package(sessions)
     async with sessions() as session:
         row = await PackageRepository(session).get(UUID(report["run_id"]), Variant.COST)
-    assert row.status == PackageStatus.NOT_PRODUCTION_READY
+    assert row.status == PackageStatus.REJECTED
     assert row.security_report is None and row.validation_report is None
     assert row.review_feedback == "benchmark synthetic package"
     assert 9_940_050 <= report["calibrated_archive_bytes"] <= 9_990_000
@@ -36,5 +36,5 @@ async def test_full_size_seed_and_download_against_real_postgres(db_engines):
     assert len(response.content) <= 10_000_000
     with ZipFile(BytesIO(response.content)) as archive:
         label = archive.read("INFRAARCHAGENT_READINESS.md").decode()
-    assert "NOT PRODUCTION READY" in label
+    assert "REJECTED" in label
     assert "Scan outcome: unavailable" in label

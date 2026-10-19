@@ -12,7 +12,7 @@ it('FR-UI-02 counts the union of real active intervals across variants and retri
  const {stageElapsed}=await import('./runReducer');
  const at=(seconds:number)=>new Date(Date.parse('2026-10-12T12:00:00Z')+seconds*1000).toISOString();
  let model=initialModel();
- model.packageStatuses={cost:'production_ready',security:'pending_review'};
+ model.packageStatuses={cost:'checks_passed',security:'pending_review'};
  const frames:[number,'cost'|'security','running'|'completed'][]=[[0,'cost','running'],[2,'security','running'],[4,'cost','completed'],[6,'security','completed'],[20,'security','running']];
  for(const [index,[seconds,variant,status]] of frames.entries()) model=reduceEvent(model,{seq:index+1,kind:'agent_state',agent:'security',variant,status,previous_status:null,message:null,timestamp:at(seconds),payload:{}});
  expect(stageElapsed(stageFor(model,'security'),Date.parse(at(23)))).toBe('9s');

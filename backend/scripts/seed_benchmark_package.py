@@ -81,7 +81,7 @@ async def seed_package(
     readiness = readiness_document(
         run_id=run_id,
         variant=Variant.COST,
-        status=PackageStatus.NOT_PRODUCTION_READY,
+        status=PackageStatus.REJECTED,
         model="stub",
         labelled_at=datetime.now(UTC),
         review_action="reject",
@@ -132,7 +132,7 @@ async def seed_package(
     await writer.review_event(
         run_id,
         Variant.COST,
-        PackageStatus.NOT_PRODUCTION_READY,
+        PackageStatus.REJECTED,
         previous,
         action="reject",
         reasons=["validation_error"],
@@ -141,7 +141,7 @@ async def seed_package(
     return {
         "run_id": str(run_id),
         "synthetic": True,
-        "label": "not_production_ready",
+        "label": "rejected",
         "seed": seed,
         "file_count": len(files),
         "source_bytes": sum(len(value.encode()) for value in files.values()),
@@ -174,7 +174,7 @@ async def run(args) -> None:
                 report["measurement"],
                 f"Run: {report['run_id']}; "
                 f"archive bytes: {report['calibrated_archive_bytes']}.",
-                "Synthetic not_production_ready label; no successful scan claim.",
+                "Synthetic rejected label; no successful scan claim.",
             ],
         )
         print(report["run_id"])
