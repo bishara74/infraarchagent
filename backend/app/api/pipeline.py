@@ -29,6 +29,7 @@ from app.core.config import Settings
 from app.core.credentials import CredentialError
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
+from app.db.repositories.preferences import PreferenceRepository
 from app.db.repositories.runs import RunRepository
 from app.domain.enums import AgentName, RunStatus, Variant
 from app.domain.input_rules import InputRuleError, validate_request_text
@@ -165,8 +166,14 @@ async def submit_run(
         if body.get("config") is not None and not isinstance(body["config"], dict):
             raise ValueError("config must be an object")
         settings: Settings = request.app.state.settings
+        personal = None
+        if request.state.user:
+            async with request.app.state.session_factory() as session:
+                personal = (
+                    await PreferenceRepository(session).get(request.state.user.id)
+                )["data"].get("role_defaults")
         config = await model_service(request).resolve(
-            config, interactive=request.state.auth_mode == "account"
+            config, interactive=request.state.auth_mode == "account", personal=personal
         )
         resolved = config.resolve(settings)
         if not config.credential_id:
@@ -210,6 +217,10 @@ async def submit_run(
                     credential_id=config.credential_id,
                 )
                 run_id = row.run_id
+                if request.state.user:
+                    await PreferenceRepository(session).visit(
+                        request.state.user.id, run_id
+                    )
         await event_log.append(
             run_id,
             AgentName.ORCHESTRATOR,
@@ -415,4 +426,40 @@ async def stream_run(
         events(),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@router.get("/{run_id}/events")
+async def history(
+    run_id: UUID, request: Request, after: int = 0, through: int | None = None
+) -> JSONResponse:
+    if after < 0 or (through is not None and through < 0):
+        return failure(400, "invalid_request", "Invalid event cursor.")
+    async with request.app.state.session_factory() as session:
+        if await RunRepository(session).get(run_id) is None:
+            return failure(404, "not_found", "Pipeline run not found.")
+        packages = await PackageRepository(session).list_for_run(run_id)
+    records = await _replay_records(request.app.state.event_log, run_id, None)
+    latest = {
+        r.payload.get("variant"): r
+        for r in records
+        if r.payload.get("kind") == EventKind.PACKAGE_STATUS
+    }
+    outcomes = {
+        latest[p.variant].seq: p.status for p in packages if p.variant in latest
+    }
+    page = [
+        r for r in records if r.seq > after and (through is None or r.seq <= through)
+    ]
+    import json
+
+    events = [
+        json.loads(to_sse(r, legacy_status=outcomes.get(r.seq)).split("data: ", 1)[1])
+        for r in page[:500]
+    ]
+    return JSONResponse(
+        PublicDataSafety(request.app.state.settings).value(
+            {"events": events, "has_more": len(page) > 500}
+        ),
+        headers={"Cache-Control": "no-store"},
     )

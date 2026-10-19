@@ -141,3 +141,21 @@ class LLMSettings(Base):
     )
     agent_defaults: Mapped[dict[str, Any]] = mapped_column(JSONB)
     static_models: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+
+
+class UserPreferences(Base):
+    __tablename__ = "user_preferences"
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    revision: Mapped[int] = mapped_column(Integer)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class UserRecentRun(Base):
+    __tablename__ = "user_recent_runs"
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    run_id: Mapped[UUID] = mapped_column(
+        ForeignKey("pipeline_runs.run_id"), primary_key=True
+    )
+    opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_seq: Mapped[int] = mapped_column(BigInteger)

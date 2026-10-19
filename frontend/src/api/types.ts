@@ -19,6 +19,7 @@ export interface DeploymentPlan {
 }
 export interface ProfileAssessment {checks_passed:boolean;remaining_blocking:number;excepted:{rule_id:string;resource:string;file_path:string;entry_id:string;classification:string;justification:string}[]}
 export interface RunResult {
+  agent_models?: Record<string,AgentSelection>|null;
   policy_profile?: 'strict'|'contextual-v1';
   id: string; status: RunStatus; input_text: string; start_time: string;
   end_time: string | null; provider: Provider; model: string | null;
@@ -41,7 +42,12 @@ export interface ResultsResponse {
   run: RunResult; plan: DeploymentPlan | null; packages: PackageResult[];
   missing_variants: { variant: Variant; error: string }[];
 }
-export interface RunConfig { policy_profile?:'strict'|'contextual-v1'; provider?: Provider; model?: string; max_iterations?: number }
+export type ThinkingMode = "off"|"low"|"medium"|"high";
+export interface AgentChoice {model:string;thinking_mode?:ThinkingMode|null}
+export interface AgentSelection extends AgentChoice {provider:Provider;configured_thinking?:ThinkingMode|null;request_style?:string}
+export interface CatalogModel {id:string;name:string;context_length:number|null;pricing:Record<string,string|number>;structured_output:boolean|null;reasoning:boolean|null;thinking_modes:ThinkingMode[];source:string}
+export interface Catalog {environment_defaults?:Record<string,AgentSelection>;provider:string;credential_id:string|null;models:CatalogModel[];defaults:Record<string,AgentChoice>;status?:string}
+export interface RunConfig { agent_models?:Record<string,AgentChoice>; policy_profile?:'strict'|'contextual-v1'; provider?: Provider; model?: string; max_iterations?: number }
 export interface SubmitResponse { run_id: string; status: 'created'; stream_url: string }
 export interface ReviewRequest { action: 'approve' | 'retry' | 'reject'; reviewer_name?:string;reason?:string; feedback?: string; target_files?: string[] }
 export interface ReviewResponse { run_id: string; variant: Variant; status: PackageStatus }

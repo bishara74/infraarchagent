@@ -1225,3 +1225,12 @@ environment requests: LLM_MODEL/LLM_REASONING_EFFORT and SECURITY_FIX_* fallback
 Unset effort means omitted reasoning, never off. All five resolved selections
 are recorded. Future consumer-subscription OAuth/Responses work is described in
 D-51/D-52; it is not implemented.
+
+### Saved user state
+
+Account drafts, role defaults, UI preferences and recent runs follow the user
+through PostgreSQL. After login the server is authoritative. localStorage is a
+versioned, user-scoped cache/offline fallback only; it never holds passwords,
+provider keys or session tokens. A save conflict reloads the server copy and
+keeps the unsaved draft available for explicit recovery. Recent-run cursors
+hydrate prior event history before SSE resumes, avoiding skipped stage/log data.

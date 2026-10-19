@@ -38,6 +38,7 @@ export function createApiClient(options: {
   const base = (id: string) => `/api/pipeline/${encodeURIComponent(id)}`;
   return {
     headers,
+    request: <T>(url:string, method="GET", body?:unknown, signal?:AbortSignal) => json<T>(url,{method,signal,...(body===undefined?{}:{headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})}),
     session: () => json<SessionStatus>('/api/auth/session'),
     login: async (username:string,password:string,setup=false) => {await json(setup?'/api/auth/setup':'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});const value=await json<SessionStatus>('/api/auth/session');setSessionStatus(value);},
     logout: async () => {await json('/api/auth/logout',{method:'POST'});setSessionStatus({auth_required:true,authenticated:false,mode:'shared_key'});},

@@ -15,6 +15,7 @@ from app.api.frontend import DEFAULT_DIST, register_frontend
 from app.api.health import router as health_router
 from app.api.models import router as models_router
 from app.api.pipeline import router as pipeline_router
+from app.api.preferences import router as preferences_router
 from app.api.providers import router as providers_router
 from app.core.auth import AuthService
 from app.core.bind import check_open_bind
@@ -150,6 +151,7 @@ def create_app(
     app.include_router(auth_router)
     app.include_router(providers_router)
     app.include_router(models_router)
+    app.include_router(preferences_router)
     app.include_router(benchmark_router)
     app.include_router(pipeline_router)
     register_frontend(app, frontend_dist if frontend_dist is not None else DEFAULT_DIST)

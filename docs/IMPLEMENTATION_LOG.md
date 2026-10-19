@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 4 — Persist user preferences and resume history
+
+**Summary:** Add revisioned server preferences, recent-run references/cursors,
+versioned browser fallback and history hydration before SSE resume.
+
+**Requirements addressed:** FR-UI-01, FR-P-04, NFR-01.
+
+**Files:** preference API/repository/models, migration 0011, submission/history,
+frontend preference store/cache, input/model controls and stream hydration, tests,
+README and D-53.
+
+**Decisions:** D-53. Server copy wins after login; conflicts retain recoverable
+unsaved work. Storage is allowlisted and scoped to users. Cursor writes clamp to
+actual run events; failed hydration starts full replay rather than skipping.
+
+**Tests:** Focused preference/account/model backend tests: 8 passed, 0 failed.
+Frontend lint passed; Vitest: 108 passed, 0 failed across 16 files. Earlier mypy
+passed 151 application sources. Browser reload/cross-context checks follow in 7/8.
+
+**Known gaps / follow-ups:** History output is paginated but existing EventLog
+retrieval internally loads the complete run history. Final runtime browser tests
+and settings navigation follow; no real provider requests were made.
+
 ## 2026-10-19 — Phase 9h section 3 — Freeze role selections and preserve benchmark requests
 
 **Summary:** Add catalog/default APIs, static capabilities, per-role resolution,

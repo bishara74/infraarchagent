@@ -1,3 +1,4 @@
+import {cursorFor,rememberRun} from './preferences';
 import { flushSync } from 'react-dom';
 import { api } from '../api/client';
 import { isSettled, streamRun, type StreamState } from '../api/sse';
@@ -22,11 +23,17 @@ function createStore(runId: string) {
     start() {
       controller?.abort(); controller = new AbortController(); const current = ++generation;
       update({ error: null });
-      void streamRun({ runId, signal: controller.signal, cursor: value.model.events.at(-1)?.seq,
-        event: event => { if (current === generation) flushSync(() => update({ model: reduceEvent(value.model, event) })); },
-        snapshot: result => { if (current === generation) { ++refreshRevision; update({ results: result, model: applySnapshot(value.model, result), pendingRetries: isSettled(result) ? [] : value.pendingRetries }); } },
+      void (async()=>{
+        const saved=cursorFor(runId);
+        if(value.model.events.length===0&&saved){
+          let after=0;let model=initialModel();
+          try{let more=true;while(more){const page=await api.request<{events:import('../api/types').RunEvent[];has_more:boolean}>(`/api/pipeline/${encodeURIComponent(runId)}/events?after=${after}&through=${saved}`);if(current!==generation)return;for(const event of page.events){model=reduceEvent(model,event);after=event.seq;}more=page.has_more;}update({model});}catch{if(current!==generation)return;update({model:initialModel()});}
+        }
+        await streamRun({ runId, signal: controller.signal, cursor: value.model.events.at(-1)?.seq,
+        event: event => { if (current === generation) flushSync(() => update({ model: reduceEvent(value.model, event) })); rememberRun(runId,event.seq); },
+        snapshot: result => { if (current === generation) { ++refreshRevision; rememberRun(runId,value.model.events.at(-1)?.seq??0,result); update({ results: result, model: applySnapshot(value.model, result), pendingRetries: isSettled(result) ? [] : value.pendingRetries }); } },
         state: (state, error = null) => { if (current === generation) update({ state, error }); },
-      });
+      });})();
     },
     reopenRetry(variant: Variant) {
       update({ pendingRetries: [...new Set([...value.pendingRetries, variant])] });

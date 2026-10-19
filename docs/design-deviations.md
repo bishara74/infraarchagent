@@ -1645,6 +1645,19 @@ credential/protocol fields and encrypted envelope capacity, without implementing
 OAuth, refresh tokens or Responses. Future work requires provider-policy and
 availability verification; no consumer subscription entitlement is assumed.
 
+### D-53 — Server-authoritative preferences and browser fallback (Phase 9h)
+
+FR-UI-01 / FR-P-04: account preferences persist role defaults, prompt/configuration
+drafts and allowlisted UI settings in PostgreSQL with optimistic revisions.
+Recent-run rows reference shared runs and bound cursors to real per-run events.
+After login the server copy wins; conflicts preserve a separate recoverable
+unsaved draft. Versioned user-scoped localStorage is a validated, bounded cache
+and offline fallback; no authentication/credential form state is serialized.
+SSE cursor restoration hydrates history through that cursor before live resume,
+using the same historical-label interpretation. Hydration failure replays from
+zero. The API returns history in pages of 500; current EventLog retrieval still
+loads the run history internally and is not a large-history optimization.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
