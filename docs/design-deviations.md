@@ -1604,6 +1604,24 @@ Legacy key login remains a transitional pre-account API path only and is absent
 from the browser. Bootstrap revokes all unbound sessions as well as migration
 0008 revoking existing sessions. Header access is unaffected.
 
+### D-51 — Encrypted provider credentials (Phase 9h)
+
+NFR-01 is amended by author instruction to permit authenticated ciphertext in
+PostgreSQL, never plaintext. AES-256-GCM binds provider and UUID as associated
+data; versioned encrypted envelopes, fresh nonces and key versions support
+rotation. CREDENTIAL_ENCRYPTION_KEY is process-environment-only (base64 32 bytes).
+Missing/wrong keys fail closed. Dynamic secrets join public/log redaction.
+OpenRouter, OpenAI, native Anthropic and custom-compatible API-key presets use
+existing SDKs; provider probes use mocked HTTP in tests. credential_type and
+api_protocol are extensible strings; future OAuth access/refresh tokens and
+expiry metadata fit the same envelope without a schema migration. Future OpenAI
+"Sign in with ChatGPT" with Responses transport requires an authentication
+resolver/adapter implementation and policy verification; none is implemented.
+
+Dependency inventory: cryptography 50.0.2 (Apache-2.0 OR BSD-3-Clause), cffi 2.1.1
+(MIT-0), pycparser 3.11 (BSD-3-Clause), exact locked distributions. cryptography
+is the sole new direct dependency; the other two are its required transitives.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

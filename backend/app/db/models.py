@@ -4,7 +4,16 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Identity, Integer, String, Text
+from sqlalchemy import (
+    BigInteger,
+    DateTime,
+    ForeignKey,
+    Identity,
+    Integer,
+    LargeBinary,
+    String,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -62,7 +71,10 @@ class AgentEvent(Base):
 
     event_id: Mapped[UUID] = mapped_column(primary_key=True)
     seq: Mapped[int] = mapped_column(
-        BigInteger, Identity(always=True, cache=1), unique=True, nullable=False
+        BigInteger,
+        Identity(always=True, cache=1),
+        unique=True,
+        nullable=False,
     )
     run_id: Mapped[UUID] = mapped_column(
         ForeignKey("pipeline_runs.run_id", ondelete="RESTRICT"), nullable=False
@@ -97,3 +109,31 @@ class User(Base):
     )
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     disabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class ProviderCredential(Base):
+    __tablename__ = "provider_credentials"
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    provider: Mapped[str] = mapped_column(String(32))
+    label: Mapped[str] = mapped_column(String(120))
+    base_url: Mapped[str] = mapped_column(Text)
+    credential_type: Mapped[str] = mapped_column(String(32))
+    api_protocol: Mapped[str] = mapped_column(String(32))
+    ciphertext: Mapped[bytes] = mapped_column(LargeBinary)
+    nonce: Mapped[bytes] = mapped_column(LargeBinary)
+    key_version: Mapped[int] = mapped_column(Integer)
+    last4: Mapped[str] = mapped_column(String(4))
+    created_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class LLMSettings(Base):
+    __tablename__ = "llm_settings"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    default_credential_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("provider_credentials.id")
+    )
+    agent_defaults: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    static_models: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)

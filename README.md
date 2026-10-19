@@ -1191,3 +1191,22 @@ characters. Existing shared-key browser sessions are revoked; scripts using
 `X-API-Key` continue to work. Once an account exists, login is required even
 when API_KEY is unset. The unset-key verified loopback bind requirement remains.
 Network deployment, HTTPS and Secure-cookie deployment are future work.
+
+### Provider encryption
+
+Before saving keys, generate a master key outside Codex and export it in the
+backend process environment (do not commit it or store it in PostgreSQL):
+
+```bash
+python3 -c 'import base64,secrets; print(base64.b64encode(secrets.token_bytes(32)).decode())'
+```
+
+Set `CREDENTIAL_ENCRYPTION_KEY` to that value and
+`CREDENTIAL_ENCRYPTION_KEY_VERSION=1`. Missing configuration disables storage.
+Interactive provider precedence is selected encrypted DB credential, environment
+LLM key fallback, then setup required. Revoked/unreadable selections fail visibly.
+Stop the backend for rotation, export the existing key plus
+`CREDENTIAL_ENCRYPTION_NEW_KEY` and a larger `CREDENTIAL_ENCRYPTION_NEW_VERSION`,
+run `make rotate-credential-key`, then restart with the new key/version. Keep
+old backup keys securely: rotating live rows does not re-encrypt old backups.
+The author-authorised dependency additions and licenses are listed in D-51.

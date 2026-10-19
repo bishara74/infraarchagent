@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 2 — Encrypt provider credentials
+
+**Summary:** Add AES-GCM provider storage, metadata-only admin APIs, mocked
+preset probes, extensible credential envelopes and transactional rotation.
+
+**Requirements addressed:** NFR-01.
+
+**Files:** credentials core, provider repository/API, catalog normalization,
+migration 0009/models, rotation CLI/Make target, main router and credential tests,
+dependency manifest/lock, README and D-51.
+
+**Decisions:** D-51. One direct dependency: cryptography 50.0.2 (Apache-2.0 OR
+BSD-3-Clause); required transitives cffi 2.1.1 (MIT-0), pycparser 3.11
+(BSD-3-Clause). Master key is read directly from process environment. OAuth and
+Responses are extension points only; no OAuth or token-refresh behavior exists.
+
+**Tests:** Credential suite: 6 passed, 0 failed. Initial collection exposed an
+incorrect extra SQLAlchemy column argument; corrected before the passing rerun.
+Mocked HTTP only; no real key/provider use. Scoped formatting/lint checked.
+
+**Known gaps / follow-ups:** Reactive provider form joins the section 7 settings
+shell. Full compatibility and final verification follow in sections 3/8.
+
 ## 2026-10-19 — Phase 9h section 1 — Add accounts and review identity
 
 **Summary:** Add atomic admin bootstrap, scrypt accounts, reviewer administration,

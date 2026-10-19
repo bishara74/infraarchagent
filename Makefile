@@ -122,3 +122,7 @@ bench-smoke: export PHASE9_BUDGET = $(BUDGET)
 bench-smoke: export PHASE9_MAX_RUNS = $(MAX_RUNS)
 bench-smoke:
 	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks real --smoke
+
+.PHONY: rotate-credential-key
+rotate-credential-key:
+	$(BACKEND) .venv/bin/python -m scripts.rotate_credential_key

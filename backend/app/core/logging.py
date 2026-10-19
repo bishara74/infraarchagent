@@ -6,6 +6,14 @@ import traceback
 
 from app.core.config import Settings
 
+DYNAMIC_SECRETS: set[str] = set()
+
+
+def register_secret(value: str) -> None:
+    if value:
+        DYNAMIC_SECRETS.add(value)
+
+
 REDACTED = "[REDACTED]"
 KEY_PATTERNS = (
     re.compile(r"sk-ant-[A-Za-z0-9_-]{8,}"),
@@ -25,7 +33,7 @@ class RedactingFilter(logging.Filter):
         self.keys = tuple(key for key in (api_key, *additional_keys) if key)
 
     def redact(self, value: str) -> str:
-        for key in sorted(self.keys, key=len, reverse=True):
+        for key in sorted(set(self.keys) | DYNAMIC_SECRETS, key=len, reverse=True):
             value = value.replace(key, REDACTED)
         for pattern in KEY_PATTERNS:
             value = pattern.sub(REDACTED, value)

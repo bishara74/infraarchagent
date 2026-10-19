@@ -14,6 +14,7 @@ from app.api.benchmark import router as benchmark_router
 from app.api.frontend import DEFAULT_DIST, register_frontend
 from app.api.health import router as health_router
 from app.api.pipeline import router as pipeline_router
+from app.api.providers import router as providers_router
 from app.core.auth import AuthService
 from app.core.bind import check_open_bind
 from app.core.config import Settings, get_settings
@@ -145,6 +146,7 @@ def create_app(
     app.add_exception_handler(ForbiddenError, forbidden_error_handler)
     app.include_router(health_router)
     app.include_router(auth_router)
+    app.include_router(providers_router)
     app.include_router(benchmark_router)
     app.include_router(pipeline_router)
     register_frontend(app, frontend_dist if frontend_dist is not None else DEFAULT_DIST)
