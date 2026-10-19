@@ -39,7 +39,7 @@ export function createApiClient(options: {
   return {
     headers,
     session: () => json<SessionStatus>('/api/auth/session'),
-    login: async (api_key:string) => {await json('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key})});const value=await json<SessionStatus>('/api/auth/session');setSessionStatus(value);},
+    login: async (username:string,password:string,setup=false) => {await json(setup?'/api/auth/setup':'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});const value=await json<SessionStatus>('/api/auth/session');setSessionStatus(value);},
     logout: async () => {await json('/api/auth/logout',{method:'POST'});setSessionStatus({auth_required:true,authenticated:false,mode:'shared_key'});},
     openStream: (id: string, signal: AbortSignal, cursor?: number) => checked(`${base(id)}/stream`, {
       signal, headers: cursor === undefined ? {} : { 'Last-Event-ID': String(cursor) },

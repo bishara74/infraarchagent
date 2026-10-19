@@ -1171,3 +1171,23 @@ Final local results and migration counts are in the
 The stub rehearsal completed every observation, but its PR-03 concurrency
 threshold failed; its other measured thresholds passed. It is not real-provider
 quality or reliability evidence.
+
+## Phase 9h account upgrade
+
+Stop the backend before upgrading. Back up the existing database before running
+new migrations (these commands are for the author, outside Codex):
+
+```bash
+umask 077
+docker compose exec -T postgres pg_dump -U postgres -Fc infraarch > infraarch-before-9h.dump
+docker compose exec -T postgres pg_dumpall -U postgres --roles-only > infraarch-roles-before-9h.sql
+make migrate
+make run
+```
+
+Protect both backups: the role backup contains password verifiers. Open the UI
+from `127.0.0.1` and create the first admin with a password of at least 12
+characters. Existing shared-key browser sessions are revoked; scripts using
+`X-API-Key` continue to work. Once an account exists, login is required even
+when API_KEY is unset. The unset-key verified loopback bind requirement remains.
+Network deployment, HTTPS and Secure-cookie deployment are future work.

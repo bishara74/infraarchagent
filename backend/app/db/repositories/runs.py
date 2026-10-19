@@ -24,12 +24,14 @@ class RunRepository:
         model: str | None = None,
         policy_profile: str = "strict",
         run_id: UUID | None = None,
+        user_id: UUID | None = None,
     ) -> PipelineRun:
         if max_iterations < 1:
             raise ValueError("max_iterations must be positive")
         row = PipelineRun(
             run_id=run_id or uuid4(),
             input_text=input_text,
+            user_id=user_id,
             policy_profile=policy_profile,
             status=RunStatus.CREATED,
             start_time=datetime.now(UTC),

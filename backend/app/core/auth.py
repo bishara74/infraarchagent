@@ -6,14 +6,16 @@ import secrets
 from collections import deque
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 import anyio
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings
-from app.db.models import AuthSession
+from app.db.models import AuthSession, User
 from app.db.repositories.sessions import SessionRepository
+from app.db.repositories.users import UserRepository
 
 COOKIE_NAME = "infraarch_session"
 
@@ -56,7 +58,7 @@ class AuthService:
         attempts.append(now)
         return True
 
-    async def login(self) -> str:
+    async def login(self, user_id: UUID | None = None) -> str:
         token = secrets.token_urlsafe(32)
         now = self.clock()
         async with self.sessions() as session, session.begin():
@@ -64,6 +66,7 @@ class AuthService:
                 token_hash(token),
                 now,
                 now + timedelta(seconds=self.settings.auth_absolute_seconds),
+                user_id,
             )
         return token
 
@@ -81,22 +84,28 @@ class AuthService:
         async with self.sessions() as session, session.begin():
             await SessionRepository(session).revoke(token_hash(token), self.clock())
 
+    async def has_users(self) -> bool:
+        async with self.sessions() as session:
+            return await UserRepository(session).any()
+
+    async def user(self, user_id: UUID | None) -> User | None:
+        async with self.sessions() as session:
+            return await session.get(User, user_id) if user_id else None
+
     async def status(self, request: Request) -> dict[str, object]:
-        if self.settings.api_key is None:
-            return {
-                "auth_required": False,
-                "authenticated": False,
-                "mode": "local",
-                "message": "No authentication (local mode)",
-            }
+        setup = not await self.has_users()
         token = request.cookies.get(COOKIE_NAME)
         row = await self.activity(token_hash(token)) if token else None
-        authenticated = row is not None or key_matches(
-            self.settings, request.headers.get("X-API-Key")
-        )
+        user = await self.user(row.user_id) if row else None
+        local = setup and self.settings.api_key is None
         return {
-            "auth_required": True,
-            "authenticated": authenticated,
-            "mode": "shared_key",
-            "absolute_expires_at": row.absolute_expires_at.isoformat() if row else None,
+            "auth_required": not local,
+            "authenticated": row is not None
+            or key_matches(self.settings, request.headers.get("X-API-Key")),
+            "setup_required": setup,
+            "mode": "local" if local else "account" if not setup else "shared_key",
+            "message": "No authentication (local mode)" if local else None,
+            "user": {"id": str(user.id), "username": user.username, "role": user.role}
+            if user
+            else None,
         }

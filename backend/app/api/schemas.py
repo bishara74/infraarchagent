@@ -92,14 +92,11 @@ class ReviewRequest(BaseModel):
     @model_validator(mode="after")
     def targets_only_for_retry(self) -> "ReviewRequest":
         if self.action in {"approve", "reject"}:
-            if (
-                not self.reviewer_name
-                or not self.reviewer_name.strip()
-                or not self.reason
-                or not self.reason.strip()
-            ):
+            if not self.reason or not self.reason.strip():
                 raise ValueError("reviewer name and reason are required")
-            self.reviewer_name = self.reviewer_name.strip()
+            self.reviewer_name = (
+                self.reviewer_name.strip() if self.reviewer_name else None
+            )
             self.reason = self.reason.strip()
         if "target_files" in self.model_fields_set and self.action != "retry":
             raise ValueError("targets require retry")

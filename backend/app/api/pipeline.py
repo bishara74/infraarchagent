@@ -92,7 +92,8 @@ async def review_package(run_id: str, variant: str, request: Request) -> Respons
             parsed,
             selected,
             body,
-            auth_mode="shared_key" if request.app.state.settings.api_key else "local",
+            auth_mode=request.state.auth_mode,
+            user=request.state.user,
         )
     except ReviewError as error:
         return failure(error.status, error.code, error.message)
@@ -184,6 +185,7 @@ async def submit_run(
                     resolved.max_iterations,
                     policy_profile=resolved.policy_profile,
                     model=PublicDataSafety(settings).value(resolved.model),
+                    user_id=request.state.user.id if request.state.user else None,
                 )
                 run_id = row.run_id
         await event_log.append(

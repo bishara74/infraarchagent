@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from app.agents.security.agent import ReviewRetryScanError
@@ -46,7 +46,14 @@ class ReviewService:
         body: ReviewRequest,
         *,
         auth_mode: str = "shared_key",
+        user: Any = None,
     ) -> ReviewResponse:
+        if (
+            body.action in {"approve", "reject"}
+            and user is None
+            and not (body.reviewer_name or "").strip()
+        ):
+            raise ReviewError(400, "invalid_request", "Reviewer name is required.")
         reserved = False
         started = False
         accepted = False
@@ -119,12 +126,16 @@ class ReviewService:
                         self.safety.value(
                             {
                                 "action": body.action,
-                                "reviewer_name": body.reviewer_name,
+                                "reviewer_name": user.username
+                                if user
+                                else body.reviewer_name,
+                                "user_id": str(user.id) if user else None,
                                 "reason": body.reason,
                                 "decided_at": datetime.now(UTC).isoformat(),
-                                "identity_basis": "self-declared "
-                                "(shared-key authentication)"
-                                if auth_mode != "local"
+                                "identity_basis": "authenticated account"
+                                if user
+                                else "self-declared (shared-key authentication)"
+                                if user or auth_mode != "local"
                                 else "self-declared (no authentication — local mode)",
                             }
                         )

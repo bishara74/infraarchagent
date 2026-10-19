@@ -27,6 +27,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 1 — Add accounts and review identity
+
+**Summary:** Add atomic admin bootstrap, scrypt accounts, reviewer administration,
+password changes, bound/revocable sessions and authenticated review provenance.
+Capture baseline model/reasoning/format requests before adapter changes.
+
+**Requirements addressed:** NFR-01, FR-UI-07, FR-P-04.
+
+**Files:** auth/core/API/repositories, models and migration 0008, review contract,
+frontend login gate/client, account tests and baseline wire fixture, README/D-50.
+
+**Decisions:** D-50; shared workspace. Unset-key loopback restriction retained;
+open local access ends after bootstrap. Historical decisions are untouched.
+
+**Tests:** Serial focused backend suite: 135 passed, 0 failed. mypy: 139 sources
+passed. Initial frontend run: 104 passed, 1 stale key-login test failed; updated
+for account login. Final frontend lint passed; frontend tests: 105 passed, 0 failed. An
+accidental overlapping database run produced 132 passed/1 fixture-clearing
+failure; overlap stopped and the entire focused suite rerun serially.
+
+**Known gaps / follow-ups:** Settings navigation and account management pages
+are integrated in section 7. Full final verification follows in section 8.
+
 ## 2026-10-19 — Phase 9g section 6 — Verify provenance, sessions and honest reporting
 
 **Summary:** Finish documentation and verification for sections 1–6. Preserve

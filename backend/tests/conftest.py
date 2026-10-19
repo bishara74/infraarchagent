@@ -37,7 +37,7 @@ async def db_engines(
             await connection.execute(
                 text(
                     "TRUNCATE auth_sessions, agent_events, generated_packages, "
-                    "pipeline_runs RESTART IDENTITY"
+                    "pipeline_runs, users RESTART IDENTITY CASCADE"
                 )
             )
         yield app_engine, owner_engine

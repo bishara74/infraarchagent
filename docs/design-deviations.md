@@ -1590,6 +1590,20 @@ use a valid header at login/logout too; an explicit bad Origin is always denied.
 Tests use
 an explicit synthetic local bind and isolated PostgreSQL, never author settings.
 
+### D-50 — Accounts and authenticated review identity (Phase 9h)
+
+NFR-01 / FR-UI-07: usernames are case-insensitively unique and passwords use
+salted standard-library scrypt (32768/8/1, 32 bytes). HttpOnly hashed sessions
+bind to users; password resets and disabling revoke sessions. Bootstrap is
+serialized and requires a local peer without forwarding headers or the API
+header, plus existing Origin checks. The author explicitly changes D-49: local
+open mode exists only until the first account; the unset-key loopback startup
+restriction remains. Historical decisions are untouched. New account decisions
+snapshot user ID and username; script/local identities remain self-declared.
+Legacy key login remains a transitional pre-account API path only and is absent
+from the browser. Bootstrap revokes all unbound sessions as well as migration
+0008 revoking existing sessions. Header access is unaffected.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
