@@ -1258,3 +1258,6 @@ are not passwords. Credential ciphertext/nonce are binary fields (often shown
 as hex), with key_version and last4 metadata. The master key is absent from the
 database. The inspection role can SELECT but cannot insert, update, delete or
 truncate application data. Protect pgAdmin's own volume and credentials.
+
+The [agent harness tool reference](docs/agent-tools.md) describes every model and
+local-tool invocation, bounds and failure path, with a sequence diagram.

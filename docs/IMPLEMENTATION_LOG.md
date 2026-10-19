@@ -27,6 +27,25 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 6 — Document harness-driven tools
+
+**Summary:** Document each agent's LLM/local-tool path, decision ownership,
+inputs/outputs, limits, failure handling and a Mermaid sequence diagram.
+
+**Requirements addressed:** FR-P-04, NFR-01, NFR-02 (architecture exposition).
+
+**Files:** docs/agent-tools.md, README, this log.
+
+**Decisions:** Document actual harness-driven dispatch, not model function calling.
+Future OAuth/Responses does not imply model tools or cloud deployment.
+
+**Tests:** Documentation-only section; no new executable behavior or test run.
+Cross-checked scanner runner, factory, validation gates/workspaces/linters and
+schema/repair call sites. Full executable verification follows in section 8.
+
+**Known gaps / follow-ups:** No claim of a live student debugging demonstration
+or supervisor approval is made by this documentation.
+
 ## 2026-10-19 — Phase 9h section 5 — Add local read-only database inspection
 
 **Summary:** Add optional loopback pgAdmin, server registration, cluster-role
