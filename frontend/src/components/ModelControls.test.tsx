@@ -1,4 +1,4 @@
-import {render,screen,fireEvent,waitFor} from '@testing-library/react';
+import {render,screen,fireEvent,waitFor,act} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {afterEach,expect,it,vi} from 'vitest';
 import {ModelControls} from './ModelControls';
@@ -15,4 +15,26 @@ it('NFR-01 entering a key automatically probes and loads catalog without persist
  const calls=vi.spyOn(api,'request').mockImplementation(async url=>url.endsWith('/probe')?{status:'ok',models:catalog.models}: {storage_enabled:true,default_credential_id:null,credentials:[]} as never);
  render(<MemoryRouter><ProviderPage/></MemoryRouter>);fireEvent.change(screen.getByLabelText('Provider API key'),{target:{value:'synthetic-provider-key'}});
  await waitFor(()=>expect(screen.getByRole('status')).toHaveTextContent('2 models loaded'),{timeout:3000});expect(calls.mock.calls.some(([url])=>url==='/api/providers/probe')).toBe(true);expect(JSON.stringify({...localStorage,...sessionStorage})).not.toContain('synthetic-provider-key');
+});
+
+it('FR-UI-01 obsolete probe responses cannot replace the current catalog', async () => {
+ const probes: Array<{signal?: AbortSignal; resolve: (value: unknown) => void}> = [];
+ vi.spyOn(api, 'request').mockImplementation((url, _method, _body, signal) => {
+  if (!url.endsWith('/probe')) return Promise.resolve({storage_enabled:true,default_credential_id:null,credentials:[]}) as never;
+  return new Promise(resolve => probes.push({signal, resolve})) as never;
+ });
+ render(<MemoryRouter><ProviderPage/></MemoryRouter>);
+ const input = screen.getByLabelText('Provider API key');
+ fireEvent.paste(input);fireEvent.change(input,{target:{value:'first-synthetic-key'}});
+ await waitFor(()=>expect(probes).toHaveLength(1));
+ fireEvent.change(input,{target:{value:'second-synthetic-key'}});
+ await waitFor(()=>expect(probes).toHaveLength(2));
+ const [first, second] = probes;
+ if (!first || !second) throw new Error('Expected two probe requests');
+ expect(first.signal?.aborted).toBe(true);
+ await act(async()=>second.resolve({status:'ok',models:catalog.models}));
+ expect(screen.getByRole('status')).toHaveTextContent('2 models loaded');
+ // The mock deliberately ignores abort: the UI must discard its stale result.
+ await act(async()=>first.resolve({status:'invalid',models:[]}));
+ expect(screen.getByRole('status')).toHaveTextContent('Provider test: ok. 2 models loaded');
 });

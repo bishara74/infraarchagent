@@ -27,6 +27,49 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 8 — Record upgrade and verification evidence
+
+**Summary:** Finish the author upgrade/backup and encryption/provider/defaults/cache
+instructions, D-50–D-53/future-work notes, mocked screenshots and reproducible
+isolated verification reports. Preserve actual benchmark failures.
+
+**Requirements addressed:** FR-UI-01, FR-UI-07, FR-P-04, NFR-01, PR-01, PR-03,
+PR-04, PR-05.
+
+**Files:** README, .env.example output-format comment, implementation log;
+frontend stale-probe regression; docs/evals/phase9h-verification-20261019 and
+Phase 9h stub/secret-scan evidence directories. D-50–D-53 were completed alongside
+the implementation; docs/spec remains untouched.
+
+**Decisions:** Preserve the seed guard: the initial benchmark refused infraarch_test
+before any workload. Create a separate migrated infraarch database only inside
+the disposable container and repeat there. No author database operations, dotenv
+reads/edits, real LLM calls, pushes, pgAdmin image pulls or unrelated dependencies.
+Credentials reserve future typed OAuth/Responses envelopes/interfaces without
+implementing consumer-subscription authentication. Exact new distributions:
+cryptography 50.0.2 (Apache-2.0 OR BSD-3-Clause), cffi 2.1.1 (MIT-0), pycparser
+3.11 (BSD-3-Clause); the latter two are required transitives.
+
+**Tests:** make lint passed (Ruff/format, mypy 152 files, ESLint/TypeScript).
+make test: 1,656 passed, 0 failed, 0 skipped, 6 perf deselected, 537.76s.
+Latest account/factory/native/golden regressions: 29 passed. make frontend-test:
+111 passed in 17 files, including obsolete provider responses. make test-e2e:
+7 passed in 4.1m. Production build passed, 147 modules. make secret-scan:
+0 findings, 0 scan errors (all refs/reflogs). make bench-stub completed 14 pipeline
+runs and 10 downloads: overall FAIL, PR-01/PR-05 PASS, PR-03/PR-04 FAIL.
+42/42 generated variants reached checks_passed; all 14 environment entries contain
+five resolved selections. PR-03 ratios 2.395–2.422; PR-04 median 1.988s, max 2.653s.
+Separate offline rehearsal: 6 iterations, 2 deadline-only rollbacks. Initial
+partial/failed attempts and the guarded benchmark refusal are disclosed in the
+verification report, not counted as passes.
+
+**Known gaps / follow-ups:** PR-03 concurrency and PR-04 latency thresholds remain
+unmet on this machine. pgAdmin runtime, real-provider behavior, author-volume
+upgrade and OAuth/Responses/HTTPS remain unverified or future work. No new open
+product question; D-53 records current history-loading scale limitations. Author
+next step: backup and follow the documented loopback upgrade, then exercise
+provider setup outside Codex. See docs/evals/phase9h-verification-20261019/summary.md.
+
 ## 2026-10-19 — Phase 9h section 7 — Complete committee account/configuration flows
 
 **Summary:** Add consistent account, provider/model settings and Recent runs navigation,

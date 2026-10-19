@@ -1289,3 +1289,6 @@ local-tool invocation, bounds and failure path, with a sequence diagram.
 [Authenticated review screenshot](docs/evals/phase9h-verification-20261019/account-review-mocked.png).
 These demonstrate the UI with synthetic credentials and mocked model HTTP,
 not real-provider reliability or deployment quality.
+
+Phase 9h verification results and limitations are recorded in the
+[isolated verification report](docs/evals/phase9h-verification-20261019/summary.md).
