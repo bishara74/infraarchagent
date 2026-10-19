@@ -11,6 +11,7 @@ from app.security.terraform import (
     edit_resource,
     fields_supported,
     objects,
+    render_fields,
 )
 from app.validation.provider_schema import DEFAULT_INDEX
 from app.validation.schema_context import index_for
@@ -828,18 +829,23 @@ class Builder:
     def finish(self) -> dict[str, str]:
         if not self.new and not self.data:
             return self.files
-        path = self.module + "/security_support.tf.json"
-        data = json.loads(self.files.get(path, "{}"))
-        if not isinstance(data, dict):
-            raise TemplateUnavailable("context: support file conflict")
-        for kind, additions in (("resource", self.new), ("data", self.data)):
-            for typ, named in additions.items():
-                for name, body in named.items():
-                    dest = data.setdefault(kind, {}).setdefault(typ, {})
-                    if name in dest and dest[name] != body:
-                        raise TemplateUnavailable("context: support file conflict")
-                    dest[name] = body
-        return {**self.files, path: json.dumps(data, indent=2) + "\n"}
+        path = self.module + "/security_support.tf"
+        source = self.files.get(path, "")
+        additions = []
+        for kind, groups in (("resource", self.new), ("data", self.data)):
+            for typ, named in sorted(groups.items()):
+                schema = self.index.resource_schema(typ, data_source=kind == "data")
+                if schema is None:
+                    raise TemplateUnavailable("context: support schema unavailable")
+                for name, body in sorted(named.items()):
+                    additions.append(
+                        f'{kind} "{typ}" "{name}" {{\n'
+                        + render_fields(body, schema)
+                        + "}\n"
+                    )
+        # Trivy's JSON adapter misreads nested encryption/versioning blocks.
+        # Native HCL retains the same controls and is checked by every guard.
+        return {**self.files, path: source + "\n" + "\n".join(additions)}
 
 
 def build_template(

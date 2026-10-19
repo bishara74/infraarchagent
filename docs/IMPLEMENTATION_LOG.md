@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9g section 3 — Emit scanner-compatible native templates
+
+**Summary:** Emit supporting resources in native HCL, preserving versioning,
+public-access protection, SSE-S3 delivery and KMS references. Reject non-object
+Terraform JSON modules rather than constructing support around invalid context.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-V-03, NFR-01.
+
+**Files:** security/templates.py, security/terraform.py, template unit/offline
+integration tests, README, D-46 and this log.
+
+**Decisions:** D-46. Three offline probes reproduced versioning/KMS false findings
+for nested JSON but not equivalent HCL. Every existing strict guard remains.
+Documented log-target logging/KMS/replication findings remain strict blockers;
+replication is not a new profile exception. No saved source/evidence is rewritten.
+
+**Tests:** Final template suite: 39 passed, 0 failed, including real offline
+Checkov/Trivy for all four templates with both AWS pins and Terraform provider
+validation. Initial fixture-reader regressions and the malformed-module case
+were corrected; failed intermediate runs are not passing evidence. make lint
+passed at the prior checkpoint; final scoped Ruff and mypy for both changed
+application modules passed. Full final verification follows in section 6.
+
+**Known gaps / follow-ups:** A log template can still be rejected under strict
+policy; contextual assessment will not relax acceptance. No real model calls.
+
 ## 2026-10-19 — Phase 9g section 2 — Add hashed HttpOnly sessions
 
 **Summary:** Browser login replaces key storage; cookie/header paths protect SSE,

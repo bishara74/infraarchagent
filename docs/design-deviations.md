@@ -1462,6 +1462,19 @@ No Phase 9g exception profile, real model benchmark, readiness/severity change,
 new dependency or migration is introduced. New template findings remain blocking.
 
 
+#### D-46 Phase 9g template representation correction
+
+FR-S-02/03 and FR-V-03: access-log versioning/public-access protection already
+existed. An offline counterexample proved Trivy reports AWS-0090/AWS-0132 on
+correct nested Terraform JSON (both list/object block encodings) but neither
+finding on equivalent HCL. Emit new supporting resources in security_support.tf
+using the schema-aware native renderer; preserve all controls and old files.
+Malformed non-object module documents now conservatively prevent construction.
+Real Checkov/Trivy and both pinned providers verify each template. Access-log
+destinations still have documented strict logging/KMS/replication blockers;
+replication is not a new contextual exception. No scanner, severity, fingerprint
+or no-new-blocker acceptance rule changes. SSE-S3 remains required for log delivery.
+
 ### D-47 — Honest check and engineer-decision labels (Phase 9g)
 
 FR-S-08/10 and FR-UI-06/07: automatic strict clean scan plus valid validation

@@ -1083,3 +1083,9 @@ PR-03 cohort workloads. The aggregate verdict and thresholds are unchanged.
 A2 verification and the preserved-corpus replay are documented in
 `docs/phase9f-a2-corrective-verification.md`. To replay without model calls:
 `cd backend && .venv/bin/python -m scripts.phase9f_a2_replay --output /tmp/phase9f-a2-replay.json`.
+
+
+Phase 9g supporting templates emit native `security_support.tf` so the installed
+scanners interpret encryption/versioning blocks consistently. Existing JSON is
+preserved; all strict acceptance guards still apply. Access-log destinations can
+remain rejected for documented context-dependent findings.

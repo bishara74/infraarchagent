@@ -69,7 +69,7 @@ class TerraformPackage:
 
     def module_safe(self, module: str) -> bool:
         return not any(
-            d.parse_error
+            d.parse_error or not isinstance(d.data, dict)
             for d in self.documents.documents.values()
             if str(PurePosixPath(d.path).parent) == module
         )

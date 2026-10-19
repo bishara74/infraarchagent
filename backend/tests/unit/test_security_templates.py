@@ -6,7 +6,22 @@ import pytest
 
 from app.domain.models import Violation
 from app.security.templates import build_template
+from app.security.terraform import TerraformPackage
+from app.validation.documents import blocks
 from app.validation.gate import syntax_checks
+
+
+def read_support(files):
+    package = TerraformPackage(files)
+    resources = {}
+    data = {}
+    for resource in package.resources:
+        if resource.path.endswith("/security_support.tf"):
+            resources.setdefault(resource.type, {})[resource.name] = resource.body
+    for doc in package.documents.documents.values():
+        for labels, body in blocks(doc.data, "data"):
+            data.setdefault(labels[0], {}).update(body)
+    return {"resource": resources, "data": data}
 
 
 def template_input(version, kind):
@@ -57,7 +72,7 @@ def test_templates_both_schemas_parse_and_do_not_duplicate(version, kind):
     assert candidate != files and not syntax_checks(candidate)
     second, _ = build_template(candidate, findings, "terraform", kind)
     assert second == candidate
-    support = json.loads(candidate["terraform/security_support.tf.json"])["resource"]
+    support = read_support(candidate)["resource"]
     assert all(
         len(values) == 1
         for typ, values in support.items()
@@ -104,9 +119,9 @@ def test_existing_compatible_key_reused_and_collision_skips():
     files["terraform/main.tf.json"] = json.dumps(data)
     candidate, record = build_template(files, findings, "terraform", "kms")
     assert record["status"] == "proposed"
-    support = json.loads(candidate["terraform/security_support.tf.json"])
+    support = read_support(candidate)
     assert "aws_kms_key" not in support["resource"]
-    assert "aws_kms_key.existing.arn" in candidate["terraform/security_support.tf.json"]
+    assert "aws_kms_key.existing.arn" in candidate["terraform/security_support.tf"]
     data["resource"]["aws_kms_key"]["existing"]["enable_key_rotation"] = False
     files["terraform/main.tf.json"] = json.dumps(data)
     assert build_template(files, findings, "terraform", "kms")[0] == files
@@ -131,7 +146,7 @@ def test_load_balancer_delivery_policy_and_dependency():
     assert target["depends_on"] == ["aws_s3_bucket_policy.infraarch_access_logs"]
     assert (
         "logdelivery.elasticloadbalancing.amazonaws.com"
-        in candidate["terraform/security_support.tf.json"]
+        in candidate["terraform/security_support.tf"]
     )
 
 
@@ -157,7 +172,7 @@ def test_template_support_reused_for_second_flagged_resource(kind):
     second_finding = findings[0].model_copy(update={"resource": typ + ".second"})
     second, record = build_template(candidate, [second_finding], "terraform", kind)
     assert record["status"] == "proposed", record
-    support = json.loads(second["terraform/security_support.tf.json"])["resource"]
+    support = read_support(second)["resource"]
     assert all(
         len(support.get(t, {})) <= 1
         for t in (
@@ -232,9 +247,9 @@ def test_kms_links_all_supported_resource_types(version, typ, body, rule, field)
     assert "aws_kms_key.infraarch_security.arn" in json.dumps(target[field])
     assert build_template(candidate, findings, "terraform", "kms")[0] == candidate
     if typ == "aws_cloudwatch_log_group":
-        policy = json.loads(candidate["terraform/security_support.tf.json"])[
-            "resource"
-        ]["aws_kms_key"]["infraarch_security"]["policy"]
+        policy = read_support(candidate)["resource"]["aws_kms_key"][
+            "infraarch_security"
+        ]["policy"]
         assert "/app/service" in policy and "ArnEquals" in policy
 
 
