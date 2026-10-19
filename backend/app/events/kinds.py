@@ -64,27 +64,38 @@ def stage_notice_payload(
     return payload
 
 
-def to_sse(record: EventRecord) -> str:
+def event_status(record: EventRecord, legacy_status: str | None = None) -> str:
+    if record.new_state == "not_production_ready":
+        return "rejected"
+    if record.new_state != "production_ready":
+        return record.new_state
+    if (
+        record.payload.get("review_action") == "approve"
+        or record.previous_state == "pending_review"
+    ):
+        return "engineer_approved"
+    # Only the migrated current row can establish an automatic legacy result.
+    return legacy_status or "pending_review"
+
+
+def to_sse(record: EventRecord, *, legacy_status: str | None = None) -> str:
     kind = EventKind(record.payload["kind"])
-    data = {
+    data: dict[str, Any] = {
         "seq": record.seq,
         "kind": kind.value,
         "agent": record.agent_name.value,
-        "status": (
-            "engineer_approved"
-            if record.payload.get("review_action") == "approve"
-            or record.previous_state == "pending_review"
-            else "checks_passed"
-        )
-        if record.new_state == "production_ready"
-        else "rejected"
-        if record.new_state == "not_production_ready"
-        else record.new_state,
+        "status": event_status(record, legacy_status),
         "previous_status": record.previous_state,
         "message": record.message,
         "variant": record.payload.get("variant"),
         "timestamp": record.timestamp.isoformat(),
         "payload": dict(record.payload),
     }
+    if record.new_state in {"production_ready", "not_production_ready"}:
+        data["payload"]["legacy_label_interpretation"] = (
+            "Historical label mapped to "
+            + data["status"]
+            + "; original immutable event retained."
+        )
     encoded = json.dumps(data, ensure_ascii=False)
     return f"id: {record.seq}\nevent: {kind.value}\ndata: {encoded}\n\n"

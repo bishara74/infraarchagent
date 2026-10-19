@@ -66,6 +66,7 @@ def test_strict_projection_redacts_allowed_text_and_counts_findings():
         "counts",
         "phase9e",
         "phase9f",
+        "fixer_attempts",
         "validation_result",
     }
     assert set(snapshot["failed_checks"][0]) == {
@@ -169,3 +170,17 @@ def test_phase9e_totals_and_contexts_are_allowlisted():
     assert report["package_initialization"]["init_reused"] == 4
     assert report["schema_context_chars"]["generator"]["max"] == 5800
     assert CANARY not in json.dumps(report) + json.dumps(compact) + table
+
+
+@pytest.mark.req("FR-S-08", "FR-S-10")
+def test_historical_manual_approval_remains_manual_even_when_checks_are_clean():
+    raw = {
+        "status": "production_ready",
+        "review_decision": {"action": "approve"},
+        "security_report": {"final": {"outcome": "clean", "remaining_blocking": []}},
+        "validation_report": {"summary": {"result": "valid"}},
+    }
+    value = quality_snapshot(raw, RedactingFilter())
+    assert value["status"] == "engineer_approved"
+    assert value["legacy_label_mapped"] is True
+    assert value["profile_assessments"]["strict"]["checks_passed"] is True

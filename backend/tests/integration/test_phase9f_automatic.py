@@ -64,7 +64,7 @@ async def test_template_introduced_findings_remain_rejected_and_reported(db_engi
     introduced = finding("CKV_AWS_145").model_copy(
         update={
             "resource": "aws_s3_bucket.infraarch_access_logs",
-            "file_path": "terraform/security_support.tf.json",
+            "file_path": "terraform/security_support.tf",
         }
     )
 
@@ -72,7 +72,7 @@ async def test_template_introduced_findings_remain_rejected_and_reported(db_engi
         async def scan(self, source, variant, **kwargs):
             return ScanResult(
                 [original, introduced]
-                if "terraform/security_support.tf.json" in source
+                if "terraform/security_support.tf" in source
                 else [original],
                 {},
             )
@@ -91,5 +91,5 @@ async def test_template_introduced_findings_remain_rejected_and_reported(db_engi
         record["status"] == "rejected" and record["reason"] == "new_blocking_findings"
     )
     assert record["introduced_findings"][0]["rule_id"] == "CKV_AWS_145"
-    assert "terraform/security_support.tf.json" not in row.files
+    assert "terraform/security_support.tf" not in row.files
     assert "aws_s3_bucket.source" in json.dumps(row.security_report)

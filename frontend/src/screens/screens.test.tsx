@@ -48,6 +48,8 @@ it.each(['approve','reject'] as const)('FR-UI-07/FR-P-04 %s resumes closed SSE t
  snapshot();expect(state.current.state).toBe('closed');
  vi.spyOn(api,'review').mockResolvedValue({run_id:'run',variant:'security',status:action==='approve'?'engineer_approved':'rejected'});
  show(<PackageScreen/>,'/runs/run/packages/security');
+ await userEvent.type(screen.getByLabelText('Reviewer name'),' Test engineer ');
+ await userEvent.type(screen.getByLabelText('Decision reason'),' Reviewed remaining checks. ');
  if(action==='reject'){
   // jsdom lacks native dialog methods; keep the real Reject/Confirm UI path.
   const dialog=document.querySelector('dialog')!;
@@ -56,6 +58,10 @@ it.each(['approve','reject'] as const)('FR-UI-07/FR-P-04 %s resumes closed SSE t
   await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));
  }else await userEvent.click(screen.getByRole('button',{name:'Approve'}));
  await vi.waitFor(()=>expect(state.current.reconnect).toHaveBeenCalledExactlyOnceWith());
- expect(api.review).toHaveBeenCalledExactlyOnceWith('run','security',{action,reviewer_name:'',reason:''});
+ expect(api.review).toHaveBeenCalledExactlyOnceWith('run','security',{action,reviewer_name:'Test engineer',reason:'Reviewed remaining checks.'});
  expect(state.current.reopenRetry).not.toHaveBeenCalled();expect(state.current.refresh).toHaveBeenCalled();
 });
+
+it('FR-UI-07 empty decisions focus the missing field without sending a request',async()=>{snapshot();const request=vi.spyOn(api,'review');show(<PackageScreen/>,'/runs/run/packages/security');await userEvent.click(screen.getByRole('button',{name:'Approve'}));expect(request).not.toHaveBeenCalled();expect(screen.getByRole('alert')).toHaveTextContent('Enter a reviewer name and decision reason.');expect(screen.getByLabelText('Reviewer name')).toHaveFocus();await userEvent.type(screen.getByLabelText('Reviewer name'),'Engineer');await userEvent.click(screen.getByRole('button',{name:'Approve'}));expect(screen.getByLabelText('Decision reason')).toHaveFocus();expect(request).not.toHaveBeenCalled();});
+
+it('FR-UI-05 strict and contextual totals are adjacent without promoting the label',()=>{const value=structuredClone(pending) as ResultsResponse;const item=value.packages[2]!;item.profile_assessments={'strict':{checks_passed:false,remaining_blocking:1,excepted:[]},'contextual-v1':{checks_passed:true,remaining_blocking:0,excepted:[]}};snapshot(value);show(<ComparisonScreen/>,'/runs/run/compare');expect(screen.getByText(/Assessment pass counts — strict: 2\/3 · contextual-v1: 3\/3/)).toBeVisible();expect(screen.getAllByText('pending review').length).toBeGreaterThan(0);});

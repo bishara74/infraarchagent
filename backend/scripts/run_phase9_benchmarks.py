@@ -185,7 +185,7 @@ def main() -> None:
     if args.smoke:
         if args.mode != "real":
             parser.error("Smoke is real mode only")
-        args.max_runs = min(args.max_runs or 3, 3)
+        args.max_runs = min(args.max_runs if args.max_runs is not None else 3, 3)
     args.command = "suite"
     if args.mode == "real" and (
         args.budget_usd is None

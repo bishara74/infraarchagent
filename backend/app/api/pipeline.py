@@ -32,7 +32,7 @@ from app.domain.enums import AgentName, RunStatus, Variant
 from app.domain.input_rules import InputRuleError, validate_request_text
 from app.domain.run_config import RunConfig, RunConfigError
 from app.events.broker import InMemoryBroker
-from app.events.kinds import EventKind, run_status_payload, to_sse
+from app.events.kinds import EventKind, event_status, run_status_payload, to_sse
 from app.events.log import EventLog
 from app.events.publisher import EventRecord
 from app.llm.errors import LLMConfigurationError
@@ -276,6 +276,7 @@ async def stream_run(
     async with session_factory() as session:
         if await RunRepository(session).get(parsed_id) is None:
             return failure(404, "not_found", "Pipeline run not found.")
+        current_packages = await PackageRepository(session).list_for_run(parsed_id)
     keepalive: float = request.app.state.settings.sse_keepalive_seconds
     safety = PublicDataSafety(request.app.state.settings)
 
@@ -289,6 +290,7 @@ async def stream_run(
         last_sent = cursor
         terminal_event_seen = False
         observed_packages: dict[str, str] = {}
+        legacy_outcomes: dict[int, str] = {}
 
         def observe(record: EventRecord) -> None:
             nonlocal terminal_event_seen
@@ -298,19 +300,43 @@ async def stream_run(
             ):
                 terminal_event_seen = True
             elif record.payload.get("kind") == EventKind.PACKAGE_STATUS:
-                observed_packages[str(record.payload.get("variant"))] = record.new_state
+                observed_packages[str(record.payload.get("variant"))] = event_status(
+                    record, legacy_outcomes.get(record.seq)
+                )
 
         async with broker.subscribe(parsed_id) as subscription:
+            records = await _replay_records(event_log, parsed_id, None)
+            latest = {
+                r.payload.get("variant"): r
+                for r in records
+                if r.payload.get("kind") == EventKind.PACKAGE_STATUS
+            }
+            for item in current_packages:
+                record = latest.get(item.variant)
+                if (
+                    record
+                    and record.new_state in {"production_ready", "not_production_ready"}
+                    and item.status
+                    in {
+                        "checks_passed",
+                        "engineer_approved",
+                        "rejected",
+                        "pending_review",
+                    }
+                ):
+                    legacy_outcomes[record.seq] = item.status
             if cursor is not None:
-                for record in await _replay_records(event_log, parsed_id, None):
+                for record in records:
                     if record.seq <= cursor:
                         observe(record)
-            for record in await _replay_records(event_log, parsed_id, cursor):
+            for record in records:
                 if last_sent is not None and record.seq <= last_sent:
                     continue
                 if not await active_session():
                     return
-                yield safety.text(to_sse(record))
+                yield safety.text(
+                    to_sse(record, legacy_status=legacy_outcomes.get(record.seq))
+                )
                 last_sent = record.seq
                 observe(record)
                 if (
@@ -339,7 +365,9 @@ async def stream_run(
                     continue
                 if not await active_session():
                     return
-                yield safety.text(to_sse(record))
+                yield safety.text(
+                    to_sse(record, legacy_status=legacy_outcomes.get(record.seq))
+                )
                 last_sent = record.seq
                 if (
                     record.payload.get("kind") == EventKind.RUN_STATUS

@@ -28,3 +28,5 @@ it('missing transition is unavailable; other variants and later retries cannot c
 it('pending review never describes failed checks as clean automatic success',()=>{
  expect(readinessOrigin([], {variant:'security',readiness_label:'pending_review'})).toBeNull();
 });
+
+it('FR-UI-06/PR-04 synthetic rejection never invents an engineer decision',()=>{const label=events.at(-1)!;const synthetic={...label,status:'rejected',payload:{...label.payload,review_action:'reject',review_decision:{identity_basis:'synthetic benchmark fixture'}}};expect(readinessOrigin([synthetic],{variant:'security',readiness_label:'rejected'})).toBe('synthetic benchmark fixture (no engineer decision or executed checks)');});

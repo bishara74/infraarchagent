@@ -43,7 +43,7 @@ resource "aws_s3_bucket" "source" { bucket = "application-storage" }
     evaluate = CandidateGuard.evaluate
 
     async def template_timeout(self, before, candidate, checks, scan, **kwargs):
-        if "terraform/security_support.tf.json" in candidate:
+        if "terraform/security_support.tf" in candidate:
             now[0] = 56
             raise TimeoutError
         return await evaluate(self, before, candidate, checks, scan, **kwargs)
@@ -59,5 +59,5 @@ resource "aws_s3_bucket" "source" { bucket = "application-storage" }
     assert verification["templates"][0]["status"] == "rejected"
     assert verification["templates"][0]["reason"] == "iteration_deadline"
     assert "TLS13" in row.files["terraform/main.tf"]
-    assert "terraform/security_support.tf.json" not in row.files
+    assert "terraform/security_support.tf" not in row.files
     assert now[0] < 60

@@ -352,3 +352,38 @@ def test_standalone_ingress_finding_is_resolved_to_its_own_rule(port, expected):
         )["contextual-v1"]["checks_passed"]
         is expected
     )
+
+
+@pytest.mark.req("FR-S-04", "FR-S-08")
+@pytest.mark.parametrize(
+    "outcome,findings,passed",
+    [
+        ("exhausted", [], False),
+        ("clean", None, False),
+        ("exhausted", None, False),
+        ("clean", [], True),
+    ],
+)
+def test_strict_parity_requires_clean_scan_and_available_findings(
+    outcome, findings, passed
+):
+    final = {"outcome": outcome}
+    final["remaining_blocking"] = findings
+    value = {
+        "security_report": {"final": final},
+        "validation_report": {"summary": {"result": "valid"}},
+    }
+    views = assess(value)
+    assert views["strict"]["checks_passed"] is passed
+    assert views["contextual-v1"]["checks_passed"] is passed
+    assert assess({"status": "checks_passed"})["strict"]["checks_passed"]
+
+
+@pytest.mark.req("FR-S-04", "FR-S-08")
+def test_missing_scan_findings_cannot_establish_an_assessment_success():
+    value = {
+        "security_report": {"final": {"outcome": "clean"}},
+        "validation_report": {"summary": {"result": "valid"}},
+    }
+    assert not assess(value)["strict"]["checks_passed"]
+    assert not assess(value)["contextual-v1"]["checks_passed"]

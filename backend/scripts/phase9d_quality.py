@@ -43,12 +43,12 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
             "result"
         ) == "valid"
         status = (
-            "checks_passed"
+            "engineer_approved"
+            if (package.get("review_decision") or {}).get("action") == "approve"
+            else "checks_passed"
             if final.get("outcome") == "clean"
             and not final.get("remaining_blocking")
             and valid
-            else "engineer_approved"
-            if (package.get("review_decision") or {}).get("action") == "approve"
             else "pending_review"
         )
     elif status == "not_production_ready":

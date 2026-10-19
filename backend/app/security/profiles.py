@@ -363,15 +363,20 @@ def assess(
     package: Mapping[str, Any], files: Mapping[str, str] | None = None
 ) -> dict[str, Any]:
     final = security_final(package.get("security_report"))
-    findings = final.get("remaining_blocking", [])
+    raw_findings = final.get("remaining_blocking")
+    known_findings = isinstance(raw_findings, list)
+    findings = raw_findings if isinstance(raw_findings, list) else []
     valid = (package.get("validation_report") or {}).get("summary", {}).get(
         "result"
     ) == "valid"
-    observed = final.get("outcome") in {"clean", "exhausted"}
-    if not observed and package.get("status") == "checks_passed" and not findings:
-        observed = valid = True
+    clean = final.get("outcome") == "clean" and known_findings
+    observed = clean or (
+        final.get("outcome") == "exhausted" and known_findings and bool(findings)
+    )
+    if not final and package.get("status") == "checks_passed":
+        observed = clean = valid = True
     strict: dict[str, Any] = {
-        "checks_passed": observed and valid and not findings,
+        "checks_passed": clean and valid and not findings,
         "remaining_blocking": len(findings),
         "excepted": [],
     }

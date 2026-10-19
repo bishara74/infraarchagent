@@ -32,7 +32,9 @@ def readiness_document(
         raise ValueError("package is not downloadable")
     label = status.value.replace("_", " ").upper()
     origin = (
-        "engineer decision"
+        "synthetic benchmark fixture (no engineer decision or executed checks)"
+        if (decision or {}).get("identity_basis") == "synthetic benchmark fixture"
+        else "engineer decision"
         if status in {PackageStatus.ENGINEER_APPROVED, PackageStatus.REJECTED}
         or review_action in {"approve", "reject"}
         else "automatic after an engineer-requested retry "

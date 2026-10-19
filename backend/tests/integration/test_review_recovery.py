@@ -123,9 +123,7 @@ async def test_migration_preserves_existing_rows_and_downgrade_drops_only_marker
     from pathlib import Path
     from uuid import uuid4
 
-    from app.db.repositories.runs import RunRepository
     from app.db.session import make_session_factory
-    from app.domain.enums import LLMProvider
 
     backend = Path(__file__).resolve().parents[2]
 
@@ -151,10 +149,17 @@ async def test_migration_preserves_existing_rows_and_downgrade_drops_only_marker
     try:
         async with make_session_factory(engine)() as session:
             async with session.begin():
-                run = await RunRepository(session).create(
-                    "Deploy AWS app", LLMProvider.STUB, 2
+                # The current ORM includes columns absent from the old schema.
+                run_id = uuid4()
+                await session.execute(
+                    text(
+                        "INSERT INTO pipeline_runs "
+                        "(run_id,input_text,status,start_time,"
+                        "llm_provider,max_iterations) "
+                        "VALUES (:run,'Deploy AWS app','created',:now,'stub',2)"
+                    ),
+                    {"run": run_id, "now": datetime.now(UTC)},
                 )
-                run_id = run.run_id
                 await session.execute(
                     text(
                         "INSERT INTO generated_packages "

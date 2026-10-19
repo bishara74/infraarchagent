@@ -7,6 +7,7 @@ from collections import deque
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
+import anyio
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -67,10 +68,14 @@ class AuthService:
         return token
 
     async def activity(self, digest: str) -> AuthSession | None:
-        async with self.sessions() as session, session.begin():
-            return await SessionRepository(session).touch(
-                digest, self.clock(), self.settings.auth_idle_seconds
-            )
+        # StreamingResponse uses level-triggered cancellation on disconnect.
+        # Finish the owned transaction and return its connection before exiting.
+        with anyio.CancelScope(shield=True):
+            async with self.sessions() as session, session.begin():
+                return await SessionRepository(session).touch(
+                    digest, self.clock(), self.settings.auth_idle_seconds
+                )
+        return None
 
     async def revoke(self, token: str) -> None:
         async with self.sessions() as session, session.begin():

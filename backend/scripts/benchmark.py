@@ -719,6 +719,19 @@ class Harness:
         return value
 
     async def observe(self, text: str, measurement: str, **extra: Any) -> dict:
+        if self.stop_reason:
+            row = {
+                "measurement": measurement,
+                "mode": self.mode,
+                **extra,
+                "execution_status": "not_started",
+                "complete": False,
+                "run_id": None,
+                "seconds": None,
+                "cost_usd": None,
+            }
+            self.rows.append(row)
+            return row
         started = self.clock()
         row = {
             "measurement": measurement,
@@ -1079,8 +1092,12 @@ class Harness:
             self.cohorts.append(
                 {
                     "cost_usd": float(cost) if cost is not None else None,
-                    "average_cost_usd": float(cost / 3) if cost is not None else None,
-                    "average_label": "Total / 3 average; per-run costs not attributed",
+                    "average_cost_usd": float(cost / 3)
+                    if cost is not None and all(r["run_id"] for r in cohort)
+                    else None,
+                    "average_label": "Total / 3 average; per-run costs not attributed"
+                    if all(r["run_id"] for r in cohort)
+                    else "Incomplete cohort; per-run cost unavailable",
                     "run_ids": [row["run_id"] for row in cohort],
                     "before_remaining_usd": float(before.remaining)
                     if before.remaining is not None

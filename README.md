@@ -499,7 +499,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `PIPELINE_DEMO_SCENARIO` | Test/demo-only `clean` or `review`; only affects resolved stub runs | `clean` |
 | `LLM_MODEL` | Model name, required for a real adapter | Unset |
 | `LLM_API_KEY` | Real-adapter credential | Unset |
-| `API_KEY` | Optional static pipeline API credential, sent as `X-API-Key`; empty leaves local access open | Unset |
+| `API_KEY` | Shared login key; scripts use `X-API-Key`. Unset requires verified `127.0.0.1` local mode | Unset |
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
 | `LLM_STRUCTURED_OUTPUT` | Generator-only `json_schema`, `json_object`, or `off`; strict mode uses a closed file-entry list over OpenAI-compatible requests | `json_schema` |
@@ -1127,3 +1127,47 @@ The preserved partial B excerpt has 14 invalid_json/prose_before failures out of
 22 non-quota Haiku attempts (eight successes); four quota failures are excluded.
 This illustrative excerpt is not the complete B run. Proposal counts are not
 LLM attempt counts.
+
+### Phase 9g verification and interpretation
+
+Migrations 0004–0006 separate historical labels/decision metadata, add hashed
+browser sessions and default/backfill run `policy_profile` to `strict`. Migration
+0007 requires a recorded automatic transition before retaining a legacy success
+claim; clean stored reports alone do not establish decision provenance. Apply
+migrations as the owner role; application permissions remain unchanged.
+Historical SSE labels disclose their mapping, and ambiguous legacy success
+remains pending review. Synthetic PR-04 fixtures explicitly disclose that no
+engineer decision or checks were executed.
+
+`docs/evals/phase9g-reclassification-20261019/` records read-only A3/B input
+hashes and sanitized secondary assessments. Strict/contextual-v1 rates remain
+1/29 and 1/29 for A3, 1/9 and 1/9 for B. These provider-limited measurements are
+incomplete. Contextual results require supervisor approval before thesis use;
+all current official labels still follow the strict rule.
+
+For verification without dotenv, export isolated application/owner test URLs
+and set `INFRAARCH_TEST_BOOTSTRAP=1` and
+`PYTHONPATH="$PWD/backend/tests/bootstrap:$PWD/backend"` before invoking Make
+from the repository root. This also disables dotenv in the migration
+prerequisite. Use stub providers and empty model/API credentials. Run:
+
+```text
+make lint
+make test
+make frontend-test
+make test-e2e
+make secret-scan
+make provider-schema
+make bench-stub BASE_URL=http://127.0.0.1:8765
+```
+
+The last command needs a separate stub backend and exported synthetic matching
+API key, plus its isolated development `infraarch` database for PR-04; the E2E
+and backend suites use `infraarch_test`. Existing offline scanners, provider
+mirror and browser binaries are prerequisites; verification installs nothing.
+
+Final local results and migration counts are in the
+[Phase 9g verification report](docs/evals/phase9g-verification-20261019/summary.md).
+The stub rehearsal completed every observation, but its PR-03 concurrency
+threshold failed; its other measured thresholds passed. It is not real-provider
+quality or reliability evidence.

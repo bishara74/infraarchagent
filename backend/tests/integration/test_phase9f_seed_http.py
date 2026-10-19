@@ -38,3 +38,7 @@ async def test_full_size_seed_and_download_against_real_postgres(db_engines):
         label = archive.read("INFRAARCHAGENT_READINESS.md").decode()
     assert "REJECTED" in label
     assert "Scan outcome: unavailable" in label
+    assert (
+        "synthetic benchmark fixture (no engineer decision or executed checks)" in label
+    )
+    assert row.review_decision["identity_basis"] == "synthetic benchmark fixture"

@@ -1485,7 +1485,7 @@ fixing and syntax repair expose typed quota failures. The first observed
 usage_limit stops new submissions; already submitted work is observed. Remaining
 planned measurements are not_started without invented run IDs, timing or cost.
 All Make targets forward BASE_URL/BUDGET/MAX_RUNS; smoke caps at three while
-respecting smaller explicit limits. bench-real already forwarded these values;
+respecting smaller explicit positive limits and rejecting zero before submission. bench-real already forwarded these values;
 the historical prompt's contrary statement was disproved during investigation.
 
 The historical fixer omitted the generator response-validator context, so its
@@ -1520,6 +1520,15 @@ label implies a successful cloud deployment. Migration 0004 leaves events
 immutable, distinguishes recorded approvals, and returns unverifiable legacy
 success claims to pending_review. Missing historical identity/reason is unknown.
 Historical reports are never rewritten; compatibility output discloses mapping.
+SSE replay reconciles its latest legacy outcome with the migrated row; an
+ambiguous event cannot claim checks_passed or leave a settled stream open.
+Synthetic benchmark fixtures identify themselves and never invent a human review.
+Final provenance audit added 0007 rather than editing already-applied 0004:
+a migrated success needs a recorded automatic valid -> production_ready event
+(or a current checks_passed event). Clean reports with a missing/ambiguous
+transition cannot establish automatic provenance and return to pending review.
+The data-only downgrade never restores an unverifiable success claim. Events and
+original decision records remain untouched.
 
 ### D-48 — Versioned secondary exception assessments (Phase 9g appendix)
 
@@ -1528,7 +1537,9 @@ version 1 on strict policy 3. The selected identifier is persisted per run by
 migration 0006, emitted in its acceptance event and included in results, archives
 and benchmark records. Both assessments use the same stored final findings;
 strict findings, severities, official labels and every acceptance guard remain
-unchanged. Excepted records retain rule/resource/path, entry ID and justification.
+unchanged. Missing/contradictory scan metadata cannot establish assessment
+success; strict still requires a recorded clean scan and valid validation.
+Excepted records retain rule/resource/path, entry ID and justification.
 This is experimental analysis: author/supervisor approval is outstanding before
 reported thesis use. It is not an approved security release policy.
 
@@ -1572,7 +1583,11 @@ expiry is never extended. No user accounts or verified reviewer identities.
 With API_KEY configured, direct Uvicorn and the author's VS Code configuration
 stay unchanged. Only unset-key startup requires the validated app.server launcher
 bound to 127.0.0.1; unknown/other binds fail startup with a fixed clear message.
-Session status/UI visibly disclose no authentication in local mode. Tests use
+Session status/UI visibly disclose no authentication in local mode. Owned SSE
+session-renewal transactions and connection cleanup finish before disconnect
+cancellation; live/heartbeat waits remain cancellable. Origin-less scripts may
+use a valid header at login/logout too; an explicit bad Origin is always denied.
+Tests use
 an explicit synthetic local bind and isolated PostgreSQL, never author settings.
 
 ## Clarifications (spec is silent; the diagrams decide)
@@ -1744,6 +1759,33 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+- R1 amendment / Chapters 3–4 and state diagrams (D-47): replace the old
+  production-ready outcome with checks_passed for strict automatic scan-clean
+  plus valid validation only. Human approval is engineer_approved, rejection is
+  rejected, and unresolved decisions remain pending_review. Specify mandatory
+  reviewer name/reason, application UTC time and self-declared identity under
+  shared-key authentication; disclose unauthenticated local review explicitly.
+  No static or human label proves successful cloud deployment. Migration 0004
+  preserves immutable historical events and reports category counts; unverifiable
+  success claims return to review. Show legacy-label interpretation in readers.
+- Chapters 4–5 (D-49): add hashed, revocable HttpOnly sessions, login/logout,
+  Origin/Host checks, 30-minute idle / 12-hour absolute expiry, SSE heartbeat
+  activity and the localhost-only guarded open-mode launcher. Shared-key login
+  authenticates access, not an individual engineer's self-declared identity.
+- R2 / policy appendix (D-48): list every versioned parsed-resource condition,
+  equivalent IDs, justification, references and conservative omissions. Strict
+  alone controls labels and template acceptance; contextual-v1 is an adjacent
+  experimental assessment requiring supervisor approval before reported use.
+- Chapter 6 (D-46/D-48): A3 and B are incomplete provider-usage-limited
+  measurements, not complete matched benchmark sets. Reclassification preserves
+  strict/contextual 1/29 and 1/29 (A3), 1/9 and 1/9 (B), with 4/24 missing
+  variants respectively. Attribute rapid failures to typed provider usage_limit.
+  Complete fixer format-failure baselines are unavailable; the partial B excerpt
+  is 14/22 non-quota invalid_json/prose_before failures, not a complete-run rate.
+  Do not treat proposal counts as attempts or mocked strict-wire tests as a
+  real-provider reliability gain. Explain the Terraform-JSON scanner artifact,
+  native-HCL correction, account/key credit guard and stopped-run ledger.
 
 - Chapter 4 / D-46: append the schema-versioned attribute and supporting-template
   tables, configuration-derived subnet intent, focused calls, existing-file edit

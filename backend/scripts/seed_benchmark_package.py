@@ -17,7 +17,7 @@ from app.db.repositories.runs import RunRepository
 from app.db.session import make_database_engine, make_session_factory
 from app.domain.archive import package_zip, readiness_document
 from app.domain.enums import AgentName, LLMProvider, PackageStatus, RunStatus, Variant
-from app.events.kinds import run_status_payload
+from app.events.kinds import package_status_payload, run_status_payload
 from app.events.log import EventLog
 from app.events.publisher import NullPublisher
 from app.pipeline.state import PipelineStateWriter
@@ -78,6 +78,15 @@ async def seed_package(
     session_factory, *, seed: int = 704, archive_bytes: int = 9_990_000
 ) -> dict:
     run_id = uuid4()
+    decision = {
+        "action": "reject",
+        "reviewer_name": None,
+        "reason": (
+            "Synthetic fixture; no human review, scanner, validation or LLM executed."
+        ),
+        "decided_at": datetime.now(UTC).isoformat(),
+        "identity_basis": "synthetic benchmark fixture",
+    }
     readiness = readiness_document(
         run_id=run_id,
         variant=Variant.COST,
@@ -88,6 +97,7 @@ async def seed_package(
         feedback=SYNTHETIC,
         security_report=None,
         validation_report=None,
+        decision=decision,
     )
     files = calibrated_files(seed, archive_bytes, readiness)
     async with session_factory() as session:
@@ -129,13 +139,21 @@ async def seed_package(
             previous = await writer.review_action(
                 session, run_id, Variant.COST, "reject", SYNTHETIC
             )
-    await writer.review_event(
+            row = await PackageRepository(session).get_for_update(run_id, Variant.COST)
+            assert row is not None
+            row.review_decision = decision
+    await log.append(
         run_id,
-        Variant.COST,
+        AgentName.ORCHESTRATOR,
         PackageStatus.REJECTED,
         previous,
-        action="reject",
-        reasons=["validation_error"],
+        message=SYNTHETIC,
+        payload={
+            **package_status_payload(Variant.COST),
+            "review_action": "reject",
+            "review_decision": decision,
+            "review_reasons": ["synthetic_fixture"],
+        },
     )
     await writer.run_transition(run_id, RunStatus.PARTIAL_SUCCESS, message=SYNTHETIC)
     return {

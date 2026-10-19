@@ -1,0 +1,114 @@
+{
+  "backend": {
+    "command": "make test",
+    "exit_code": 0,
+    "passed": 1632,
+    "failed": 0,
+    "skipped": 0,
+    "deselected": 6,
+    "seconds": 407.76
+  },
+  "frontend": {
+    "command": "make frontend-test",
+    "exit_code": 0,
+    "passed": 105,
+    "failed": 0,
+    "files": 15
+  },
+  "e2e": {
+    "command": "make test-e2e",
+    "exit_code": 0,
+    "passed": 6,
+    "failed": 0
+  },
+  "lint": {
+    "command": "make lint",
+    "exit_code": 0,
+    "mypy_application_sources": 136,
+    "checks": [
+      "ruff check",
+      "ruff format --check",
+      "mypy",
+      "eslint",
+      "tsc application",
+      "tsc tooling"
+    ]
+  },
+  "frontend_build": {
+    "command": "make frontend-build",
+    "exit_code": 0,
+    "modules": 143
+  },
+  "provider_schema": {
+    "command": "make provider-schema",
+    "exit_code": 0,
+    "offline_versions_exported": 7
+  },
+  "secret_scan": {
+    "command": "make secret-scan",
+    "exit_code": 0,
+    "findings": 0,
+    "scan_errors": 0,
+    "evidence": "../phase9-secret-scan-20261019T120443434782Z"
+  },
+  "stub_rehearsal": {
+    "command": "make bench-stub BASE_URL=http://127.0.0.1:8879 BUDGET=2 MAX_RUNS=14",
+    "exit_code": 0,
+    "aggregate_verdict": "FAIL",
+    "pipeline_runs_complete": 14,
+    "synthetic_downloads_complete": 10,
+    "strict_passed_packages": 42,
+    "contextual_passed_packages": 42,
+    "thresholds": {
+      "PR-01": "PASS",
+      "PR-03": "FAIL",
+      "PR-04": "PASS",
+      "PR-05": "PASS"
+    },
+    "concurrent_ratios_to_isolated_baseline": [
+      2.5265250866650377,
+      2.4479587701862036,
+      2.5355896685330275
+    ],
+    "evidence": "../phase9-bench-stub-20261019T025515537899Z"
+  },
+  "reclassification": {
+    "A3": {
+      "strict": 1,
+      "contextual-v1": 1,
+      "packages": 29,
+      "missing_variants": 4
+    },
+    "B": {
+      "strict": 1,
+      "contextual-v1": 1,
+      "packages": 9,
+      "missing_variants": 24
+    },
+    "source_hashes_unchanged": 22,
+    "supervisor_approval": "outstanding"
+  },
+  "migration_rehearsals": {
+    "0004": {
+      "checks_passed": 1,
+      "engineer_approved": 1,
+      "rejected": 1,
+      "pending_review": 1
+    },
+    "0007": {
+      "checks_passed": 2,
+      "engineer_approved": 1,
+      "rejected": 0,
+      "pending_review": 3
+    },
+    "historical_events_unchanged": true,
+    "author_databases_migrated": false
+  },
+  "limitations": [
+    "No real LLM calls or real-provider reliability measurement.",
+    "Complete A3/B fixer-attempt baselines remain unknown.",
+    "Partial B: 14/22 non-quota format failures; eight successes; four quota failures excluded.",
+    "PR-03 failed; stub timings are not a controlled cross-phase comparison.",
+    "Contextual-v1 requires supervisor approval before reported thesis use."
+  ]
+}

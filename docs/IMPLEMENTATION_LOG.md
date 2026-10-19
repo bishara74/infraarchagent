@@ -27,6 +27,91 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9g section 6 — Verify provenance, sessions and honest reporting
+
+**Summary:** Finish documentation and verification for sections 1–6. Preserve
+strict-only labels and template acceptance, surface secondary assessments and
+explicit human/synthetic provenance, and verify the complete offline workflow.
+
+**Requirements addressed:** FR-A-03, FR-S-02, FR-S-03, FR-S-04, FR-S-08,
+FR-S-09, FR-S-10, FR-V-03, FR-V-04, FR-P-04, FR-UI-05, FR-UI-06, FR-UI-07,
+NFR-01, PR-01, PR-03, PR-04, PR-05, UC-08.
+
+**Files:** README, D-46/47/48/49 and collected thesis-update notes; verification
+and stub/secret-scan evidence; follow-up migration 0007; auth/session cleanup,
+SSE legacy interpretation and closure, archive/synthetic seed provenance,
+quality compatibility, concurrent quota submission guard; review controls,
+comparison totals, origin helper, browser flows and corresponding tests.
+
+**Decisions:** Clean legacy reports alone cannot prove automatic provenance.
+Add data-only migration 0007 rather than editing applied 0004; ambiguous success
+returns to review, with immutable events and original decisions retained.
+Historical SSE maps the latest legacy outcome to its migrated row and discloses
+interpretation. Manual historical approval has priority over clean reports.
+Synthetic fixtures never invent an engineer decision. Review controls require
+trimmed name/reason before submission. Strict/contextual totals are adjacent. Missing/contradictory scan metadata
+cannot establish a passed assessment; strict still requires a clean scan.
+Owned session-renewal transactions finish before disconnect cancellation; idle
+and absolute expiry semantics remain unchanged. Origin-less header scripts work
+at login/logout too; explicit bad Origins always fail. Concurrent tasks that
+have not yet submitted stop after an observed quota failure; incomplete cohorts
+never invent per-run costs. Smoke rejects MAX_RUNS=0 before submission.
+No strict finding, severity, acceptance or deadline
+guard was weakened.
+
+**Investigation correction:** Access-log versioning/public protection already
+existed; Trivy's nested Terraform-JSON handling produced the false findings.
+Native HCL removes that artifact while documented strict destination blockers
+remain. bench-real forwarding already worked; stub/smoke required correction.
+The fixer lacked the generator response-validation context; strict configuration
+therefore did not reach its wire requests. Complete A3/B attempt logs are absent;
+the partial B excerpt is 14/22 non-quota Haiku format failures, not a whole-run
+rate. All shared-key reviewer names remain self-declared.
+
+**Tests:** Final make test: 1,632 passed / 0 failed / 0 skipped / 6 deselected (407.76 s). make lint passed: Ruff checks/format,
+mypy 136 application sources, ESLint and both TypeScript projects. Frontend:
+105 passed / 15 files; production build passed (143 modules). Browser E2E:
+6 passed / 0 failed (2.4 minutes). provider-schema: all 7 pinned provider versions
+exported offline. Final make secret-scan: 0 findings / 0 scan errors. Focused final regressions:
+26 correction tests, 13 auth tests, 41 quota/benchmark tests and 6 migration
+checks and 52 strict/profile/quality regressions and 81 combined CLI/parity/contract cases
+passed. An intermediate complete
+backend run passed 1,626 tests / 6 deselected before the final assessment
+parity and zero-cap cases were added. The earlier full run was 1,616 passed / 5 failed / 6 deselected;
+four stale fixtures/contracts were corrected, and the unchanged tight deadline
+case passed on focused rerun. An initial browser run was interrupted to fix a
+session-renewal cancellation/pool error; the deterministic regression and full
+browser rerun pass. Details: evals/phase9g-verification-20261019/summary.md.
+
+**Stub evidence:** evals/phase9-bench-stub-20261019T025515537899Z: command exit 0,
+14/14 pipeline runs and 10/10 synthetic downloads complete. Strict/contextual
+42/42 static successes among generated fixtures. PR-01, PR-04 and individual
+PR-05 thresholds pass; PR-03 fails (2.4480–2.5356 times the isolated baseline).
+Aggregate benchmark verdict is FAIL, not a real-model performance claim.
+PR-01 median 21.0897 s; PR-04 median 1.1444 s. The initial observations overlapped
+migration/lint verification; no controlled cross-phase speed claim is made.
+
+**Migration counts:** 0004 historical rehearsal: checks_passed=1,
+engineer_approved=1, rejected=1, pending_review=1; event rows unchanged. Fresh
+isolated databases had zero legacy rows. 0007 rehearsal: checks_passed=2,
+engineer_approved=1, pending_review=3; event rows unchanged. Isolated E2E database
+reconciliation confirmed 14 modern automatic outcomes and moved 0; isolated
+benchmark database had 0/0. Author databases were not migrated.
+
+**Reclassification:** A3 strict/contextual 1/29 and 1/29 (4 missing variants);
+B 1/9 and 1/9 (24 missing). All 22 input SHA-256 hashes remain unchanged. Original
+cached results and historical evaluation folders were not modified or committed.
+New outputs are sanitized derived evidence only. No real LLM calls, dotenv reads,
+installs/downloads, dependencies or pushes. Direct Uvicorn startup was exercised
+with a synthetic configured key and no --host; VS Code configuration is untouched.
+
+**Known gaps / follow-ups:** PR-03 remains a failed local stub performance
+measurement. Real-provider reliability and complete A3/B format rates are not
+verified. Contextual-v1 remains experimental pending supervisor approval before
+reported thesis use; D-48 documents all exceptions and conservative omissions.
+No new unresolved product decision. Review the six commits and obtain supervisor
+approval of D-48 before using contextual figures in the thesis.
+
 ## 2026-10-19 — Phase 9g section 5 — Share fixer schemas and stop quota submissions
 
 **Summary:** Repair calls now use the generator structured-output mechanism for

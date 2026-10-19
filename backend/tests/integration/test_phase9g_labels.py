@@ -169,3 +169,128 @@ async def test_legacy_migration_preserves_events_and_counts(db_engines, monkeypa
         assert (
             await connection.execute(text("SELECT * FROM agent_events ORDER BY seq"))
         ).all() == before
+
+
+@pytest.mark.req("FR-S-08", "FR-P-04")
+async def test_ambiguous_legacy_sse_closes_without_claiming_passed_checks(
+    db_engines, monkeypatch
+):
+    import asyncio
+
+    from app.domain.enums import AgentName
+    from app.events import log
+
+    app, run_id = await pending_app(db_engines[0], blocking=True)
+    monkeypatch.setattr(log, "STATE_VALUES", log.STATE_VALUES | {"production_ready"})
+    await app.state.event_log.append(
+        run_id,
+        AgentName.ORCHESTRATOR,
+        "production_ready",
+        previous_state="valid",
+        payload={"kind": "package_status", "variant": "cost"},
+    )
+    async with client_for(app) as client:
+        response = await asyncio.wait_for(
+            client.get(f"/api/pipeline/{run_id}/stream"), 5
+        )
+    assert '"status": "checks_passed"' not in response.text
+    assert '"status": "pending_review"' in response.text
+    assert '"legacy_label_interpretation"' in response.text
+
+
+@pytest.mark.req("FR-S-08", "FR-S-10")
+async def test_legacy_reconciliation_requires_recorded_automatic_transition(
+    db_engines, monkeypatch
+):
+    import importlib.util
+    import json
+    from pathlib import Path
+    from uuid import uuid4
+
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+    from sqlalchemy import text
+
+    path = (
+        Path(__file__).resolve().parents[2]
+        / "app/db/migrations/versions/0007_legacy_label_provenance.py"
+    )
+    spec = importlib.util.spec_from_file_location("migration_provenance", path)
+    migration = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(migration)
+    async with db_engines[1].begin() as connection:
+        await connection.execute(
+            text(
+                "CREATE TEMP TABLE generated_packages (package_id uuid,run_id uuid,"
+                "variant text,status text) ON COMMIT DROP"
+            )
+        )
+        await connection.execute(
+            text(
+                "CREATE TEMP TABLE agent_events (seq bigint,run_id uuid,"
+                "new_state text,previous_state text,payload jsonb) ON COMMIT DROP"
+            )
+        )
+        for index, kind in enumerate(
+            ["automatic", "modern", "approve", "missing", "unknown", "contradiction"]
+        ):
+            run = uuid4()
+            status = "engineer_approved" if kind == "approve" else "checks_passed"
+            await connection.execute(
+                text("INSERT INTO generated_packages VALUES (:id,:run,'cost',:status)"),
+                {"id": uuid4(), "run": run, "status": status},
+            )
+            if kind != "missing":
+                await connection.execute(
+                    text(
+                        "INSERT INTO agent_events VALUES "
+                        "(:seq,:run,:state,:previous,CAST(:payload AS jsonb))"
+                    ),
+                    {
+                        "seq": index,
+                        "run": run,
+                        "state": "checks_passed"
+                        if kind == "modern"
+                        else "production_ready",
+                        "previous": None if kind == "unknown" else "valid",
+                        "payload": json.dumps(
+                            {
+                                "kind": "package_status",
+                                "variant": "cost",
+                                **(
+                                    {"review_action": "approve"}
+                                    if kind in {"approve", "contradiction"}
+                                    else {}
+                                ),
+                            }
+                        ),
+                    },
+                )
+        before = (
+            await connection.execute(text("SELECT * FROM agent_events ORDER BY seq"))
+        ).all()
+
+        def upgrade(sync):
+            monkeypatch.setattr(
+                migration, "op", Operations(MigrationContext.configure(sync))
+            )
+            migration.upgrade()
+
+        await connection.run_sync(upgrade)
+        counts = dict(
+            (
+                await connection.execute(
+                    text(
+                        "SELECT status,count(*) FROM generated_packages GROUP BY status"
+                    )
+                )
+            ).all()
+        )
+        assert counts == {
+            "checks_passed": 2,
+            "engineer_approved": 1,
+            "pending_review": 3,
+        }
+        assert (
+            await connection.execute(text("SELECT * FROM agent_events ORDER BY seq"))
+        ).all() == before

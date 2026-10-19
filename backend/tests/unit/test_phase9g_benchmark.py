@@ -176,3 +176,41 @@ def test_smoke_cli_respects_smaller_cap(monkeypatch, cap, expected):
     monkeypatch.setattr(suite, "run", fake_run)
     suite.main()
     assert captured == [expected]
+
+
+@pytest.mark.req("PR-03", "NFR-01")
+async def test_cohort_tasks_not_yet_submitted_stop_after_observed_quota(tmp_path):
+    import asyncio
+
+    posts = []
+
+    def handler(request):
+        posts.append(request.url.path)
+        return httpx.Response(402, json={"error": "UNTRUSTED"})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        harness = Harness(client, output=tmp_path)
+        rows = await asyncio.gather(
+            *(harness.observe("synthetic", "pr03", role="cohort") for _ in range(3))
+        )
+        harness.flush()
+    assert len(posts) == 1
+    assert sum(r.get("execution_status") == "not_started" for r in rows) == 2
+    assert all(r["run_id"] is None and r["seconds"] is None for r in rows)
+    assert "usage_limit" in harness.stop_reason
+
+
+@pytest.mark.req("PR-01", "NFR-01")
+def test_smoke_zero_cap_is_rejected_before_any_submission(monkeypatch):
+    from scripts import run_phase9_benchmarks as suite
+
+    async def forbidden(args):
+        pytest.fail("An invalid zero cap must not submit a run")
+
+    monkeypatch.setattr(
+        "sys.argv", ["bench", "real", "--smoke", "--budget-usd", "2", "--max-runs", "0"]
+    )
+    monkeypatch.setattr(suite, "run", forbidden)
+    with pytest.raises(SystemExit) as failure:
+        suite.main()
+    assert failure.value.code == 2

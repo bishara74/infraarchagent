@@ -238,3 +238,63 @@ async def test_configured_key_startup_needs_no_bind_context(db_engines, monkeypa
     async with app.router.lifespan_context(app):
         async with client(app) as c:
             assert (await c.get("/api/health")).status_code == 200
+
+
+@pytest.mark.req("NFR-01")
+async def test_originless_header_scripts_can_login_logout_but_bad_origins_fail(
+    db_engines,
+):
+    app, _ = await authenticated(db_engines[0])
+    async with client(app) as c:
+        headers = {"X-API-Key": KEY}
+        assert (
+            await c.post("/api/auth/login", json={"api_key": KEY}, headers=headers)
+        ).status_code == 200
+        assert (await c.post("/api/auth/logout", headers=headers)).status_code == 200
+        headers["Origin"] = "https://evil.invalid"
+        assert (
+            await c.post("/api/auth/login", json={"api_key": KEY}, headers=headers)
+        ).status_code == 403
+        assert (await c.post("/api/auth/logout", headers=headers)).status_code == 403
+
+
+@pytest.mark.req("NFR-01", "FR-P-04")
+async def test_sse_disconnect_finishes_owned_session_renewal(db_engines, monkeypatch):
+    import anyio
+
+    from app.db.repositories.sessions import SessionRepository
+
+    app, _ = await authenticated(db_engines[0])
+    token = await app.state.auth.login()
+    entered, release, finished = anyio.Event(), anyio.Event(), anyio.Event()
+    original = SessionRepository.touch
+    completed = []
+    holder = []
+
+    async def blocked(*args):
+        value = await original(*args)
+        entered.set()
+        await release.wait()
+        completed.append(value is not None)
+        return value
+
+    async def watch():
+        try:
+            with anyio.CancelScope() as scope:
+                holder.append(scope)
+                await app.state.auth.activity(token_hash(token))
+                await anyio.lowlevel.checkpoint()
+        finally:
+            finished.set()
+
+    monkeypatch.setattr(SessionRepository, "touch", blocked)
+    async with anyio.create_task_group() as group:
+        group.start_soon(watch)
+        with anyio.fail_after(3):
+            await entered.wait()
+        holder[0].cancel()
+        release.set()
+        with anyio.fail_after(3):
+            await finished.wait()
+    assert completed == [True]
+    assert app.state.engine.sync_engine.pool.checkedout() == 0

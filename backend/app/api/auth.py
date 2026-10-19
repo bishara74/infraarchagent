@@ -29,7 +29,12 @@ async def session_status(request: Request) -> JSONResponse:
 @router.post("/login")
 async def login(request: Request) -> JSONResponse:
     auth = request.app.state.auth
-    if not origin_allowed(request, required=True):
+    if not origin_allowed(
+        request,
+        required=not key_matches(
+            request.app.state.auth.settings, request.headers.get("x-api-key")
+        ),
+    ):
         return failure(403, "forbidden", "Same-origin request required.")
     if not auth.allow_attempt(request.client.host if request.client else "unknown"):
         response = failure(
@@ -62,7 +67,12 @@ async def login(request: Request) -> JSONResponse:
 
 @router.post("/logout")
 async def logout(request: Request) -> JSONResponse:
-    if not origin_allowed(request, required=True):
+    if not origin_allowed(
+        request,
+        required=not key_matches(
+            request.app.state.auth.settings, request.headers.get("x-api-key")
+        ),
+    ):
         return failure(403, "forbidden", "Same-origin request required.")
     if token := request.cookies.get(COOKIE_NAME):
         await request.app.state.auth.revoke(token)
