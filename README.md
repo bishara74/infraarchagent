@@ -1181,9 +1181,15 @@ new migrations (these commands are for the author, outside Codex):
 umask 077
 docker compose exec -T postgres pg_dump -U postgres -Fc infraarch > infraarch-before-9h.dump
 docker compose exec -T postgres pg_dumpall -U postgres --roles-only > infraarch-roles-before-9h.sql
+docker compose up -d postgres
+make prepare-db-tools
 make migrate
 make run
 ```
+
+Before these commands, add the new read-only/tool placeholders from `.env.example`
+to the author-managed configuration. `prepare-db-tools` provisions the cluster
+role without granting CREATEROLE to the migration owner.
 
 Protect both backups: the role backup contains password verifiers. Open the UI
 from `127.0.0.1` and create the first admin with a password of at least 12
@@ -1234,3 +1240,21 @@ versioned, user-scoped cache/offline fallback only; it never holds passwords,
 provider keys or session tokens. A save conflict reloads the server copy and
 keeps the unsaved draft available for explicit recovery. Recent-run cursors
 hydrate prior event history before SSE resumes, avoiding skipped stage/log data.
+
+### Read-only database tools
+
+The author may pull `dpage/pgadmin4:9.8`, then run `make db-tools` and open
+`http://127.0.0.1:5050`. The target uses `--pull never`. Configure
+`INFRAARCH_READONLY_PASSWORD`, `PGADMIN_DEFAULT_EMAIL`, and
+`PGADMIN_DEFAULT_PASSWORD` with local values. Existing volumes must run
+`make prepare-db-tools` before migration 0012; fresh volumes provision the role
+during initialization. Do not grant CREATEROLE to infraarch_owner.
+
+The preconfigured server connects to postgres as infraarch_readonly. Expand
+Databases → infraarch → Schemas → public → Tables to inspect pipeline_runs,
+generated_packages, agent_events, users, preferences and provider_credentials.
+Password hashes have the scrypt algorithm/parameters/salt/digest format; they
+are not passwords. Credential ciphertext/nonce are binary fields (often shown
+as hex), with key_version and last4 metadata. The master key is absent from the
+database. The inspection role can SELECT but cannot insert, update, delete or
+truncate application data. Protect pgAdmin's own volume and credentials.

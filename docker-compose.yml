@@ -5,17 +5,37 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       INFRAARCH_OWNER_PASSWORD: ${INFRAARCH_OWNER_PASSWORD:?Set INFRAARCH_OWNER_PASSWORD in .env}
+      INFRAARCH_READONLY_PASSWORD: ${INFRAARCH_READONLY_PASSWORD:-}
       INFRAARCH_APP_PASSWORD: ${INFRAARCH_APP_PASSWORD:?Set INFRAARCH_APP_PASSWORD in .env}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init/01-roles-and-databases.sh:/docker-entrypoint-initdb.d/01-roles-and-databases.sh:ro
+      - ./docker/postgres/init/02-inspection-role.sh:/docker-entrypoint-initdb.d/02-inspection-role.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 2s
       timeout: 2s
       retries: 30
 
+  pgadmin:
+    image: dpage/pgadmin4:9.8
+    profiles: [tools]
+    ports:
+      - "127.0.0.1:5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "True"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   postgres_data:
+  pgadmin_data:

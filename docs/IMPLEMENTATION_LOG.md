@@ -27,6 +27,26 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 5 — Add local read-only database inspection
+
+**Summary:** Add optional loopback pgAdmin, server registration, cluster-role
+bootstrap/existing-volume command and SELECT-only migration grants.
+
+**Requirements addressed:** NFR-01 (inspection privilege boundary).
+
+**Files:** Compose, docker inspection bootstrap/server JSON, migration 0012,
+Makefile, .env.example placeholders, grant test, README and D-04 extension.
+
+**Decisions:** Cluster admin provisions roles; owner manages object grants and
+receives no CREATEROLE. Image is pinned dpage/pgadmin4:9.8, never pulled by Codex.
+
+**Tests:** PostgreSQL grant test: 1 passed, 0 failed. Independent synthetic-role
+probe SELECT succeeded and UPDATE was denied. Compose config --quiet passed
+with --env-file /dev/null and synthetic placeholders. No image download.
+
+**Known gaps / follow-ups:** pgAdmin UI runtime was not exercised because the
+image has not been pulled. Author database/role preparation was not executed.
+
 ## 2026-10-19 — Phase 9h section 4 — Persist user preferences and resume history
 
 **Summary:** Add revisioned server preferences, recent-run references/cursors,

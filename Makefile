@@ -126,3 +126,10 @@ bench-smoke:
 .PHONY: rotate-credential-key
 rotate-credential-key:
 	$(BACKEND) .venv/bin/python -m scripts.rotate_credential_key
+
+.PHONY: db-tools prepare-db-tools
+prepare-db-tools:
+	docker compose exec -T postgres sh /docker-entrypoint-initdb.d/02-inspection-role.sh
+
+db-tools:
+	docker compose --profile tools up -d --pull never pgadmin

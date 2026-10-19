@@ -1604,6 +1604,12 @@ Legacy key login remains a transitional pre-account API path only and is absent
 from the browser. Bootstrap revokes all unbound sessions as well as migration
 0008 revoking existing sessions. Header access is unaffected.
 
+D-04 extension (Phase 9h): an inspection-only role is cluster-provisioned by
+bootstrap, then receives schema usage, SELECT and future-table SELECT grants
+from migration 0012. The owner/app privilege boundary remains unchanged;
+pgAdmin is optional and loopback-only. Existing volumes must provision the role
+before migration. No pgAdmin image was pulled by Codex.
+
 ### D-51 — Encrypted provider credentials (Phase 9h)
 
 NFR-01 is amended by author instruction to permit authenticated ciphertext in
