@@ -3,6 +3,10 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
 import App from './App';
+import {beforeEach,vi} from 'vitest';
+import {api} from './api/client';
+import {setSessionStatus} from './lib/sessionState';
+beforeEach(()=>{const status={auth_required:false,authenticated:false,mode:'local' as const};setSessionStatus(status);vi.spyOn(api,'session').mockResolvedValue(status);});
 
 describe('application shell', () => {
   it('renders the input screen in the main landmark', () => {

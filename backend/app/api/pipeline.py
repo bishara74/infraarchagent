@@ -278,6 +278,12 @@ async def stream_run(
     keepalive: float = request.app.state.settings.sse_keepalive_seconds
     safety = PublicDataSafety(request.app.state.settings)
 
+    async def active_session() -> bool:
+        digest = getattr(request.state, "session_hash", None)
+        return (
+            digest is None or await request.app.state.auth.activity(digest) is not None
+        )
+
     async def events() -> AsyncIterator[str]:
         last_sent = cursor
         terminal_event_seen = False
@@ -301,6 +307,8 @@ async def stream_run(
             for record in await _replay_records(event_log, parsed_id, cursor):
                 if last_sent is not None and record.seq <= last_sent:
                     continue
+                if not await active_session():
+                    return
                 yield safety.text(to_sse(record))
                 last_sent = record.seq
                 observe(record)
@@ -319,6 +327,8 @@ async def stream_run(
                         subscription.queue.get(), timeout=keepalive
                     )
                 except TimeoutError:
+                    if not await active_session():
+                        return
                     yield ": keepalive\n\n"
                     continue
                 if queued is None or subscription.overflowed:
@@ -326,6 +336,8 @@ async def stream_run(
                 record = queued
                 if last_sent is not None and record.seq <= last_sent:
                     continue
+                if not await active_session():
+                    return
                 yield safety.text(to_sse(record))
                 last_sent = record.seq
                 if (

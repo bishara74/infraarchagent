@@ -36,7 +36,7 @@ async def db_engines(
         async with owner_engine.begin() as connection:
             await connection.execute(
                 text(
-                    "TRUNCATE agent_events, generated_packages, "
+                    "TRUNCATE auth_sessions, agent_events, generated_packages, "
                     "pipeline_runs RESTART IDENTITY"
                 )
             )
@@ -63,3 +63,10 @@ def canary_key(monkeypatch: pytest.MonkeyPatch) -> Iterator[Settings]:
         yield get_settings()
     finally:
         get_settings.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def local_asgi_bind(monkeypatch):
+    from app.core import bind
+
+    monkeypatch.setattr(bind, "validated_open_bind", "127.0.0.1")

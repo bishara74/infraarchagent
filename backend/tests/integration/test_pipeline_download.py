@@ -48,7 +48,7 @@ async def test_labelled_download_exact_files_and_repeat_bytes(
         second = await client.get(f"/api/pipeline/{run_id}/download/cost")
     assert first.status_code == 200 and first.content == second.content
     assert first.headers["content-type"] == "application/zip"
-    expected_status = "checks_passed" if action == "approve" else "rejected"
+    expected_status = "engineer_approved" if action == "approve" else "rejected"
     assert first.headers["content-disposition"] == (
         f'attachment; filename="infraarch-{str(run_id)[:8]}-cost-{expected_status}.zip"'
     )
@@ -64,7 +64,7 @@ async def test_labelled_download_exact_files_and_repeat_bytes(
     assert f"Labelled at: {label_event.timestamp.isoformat()}" in readiness
     assert (
         "engineer decision" in readiness
-        and "Static validity does not prove deployability" in readiness
+        and "No label implies a successful cloud deployment" in readiness
     )
     if action == "reject":
         assert "Engineer notes" in readiness
@@ -152,7 +152,7 @@ async def _ten_megabyte_download(db_engines):
         for path, content in files.items():
             assert archive.read(path).decode() == content
         assert archive.read("INFRAARCHAGENT_READINESS.md").startswith(
-            b"# CHECKS PASSED"
+            b"# ENGINEER APPROVED"
         )
     return elapsed, len(response.content)
 
@@ -224,6 +224,16 @@ async def test_origin_history_is_variant_scoped_and_precedes_label(
 
     if before_label:
         await record_retry()
+    for target in (
+        PackageStatus.REMEDIATING,
+        PackageStatus.SCANNING,
+        PackageStatus.SCAN_CLEAN,
+        PackageStatus.VALIDATING,
+        PackageStatus.VALID,
+    ):
+        await app.state.writer.package_transition(
+            run_id, Variant.COST, target, message="fixture"
+        )
     await app.state.writer.package_transition(
         run_id, Variant.COST, PackageStatus.CHECKS_PASSED, message="labelled"
     )

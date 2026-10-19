@@ -281,14 +281,41 @@ Apply `make migrate` as `infraarch_owner` before starting this backend version.
 Migration `0003_review_retry_started_at` adds the nullable retry timestamp;
 existing packages stay unchanged with a NULL marker.
 
-`API_KEY` is optional. Manual approval produces `engineer_approved`, never
-`checks_passed`. Approve/reject requests require non-empty `reviewer_name` and
-`reason`; names are self-declared under shared-key authentication. Decisions
-preserve failed checks and remaining findings. When set, every `/api/pipeline` endpoint, including
-submission and SSE, requires `X-API-Key`. Empty/unset allows local access and
-logs one startup warning. `/api/health` stays public. Missing and incorrect
-headers receive the same 401; query-string keys are not accepted. The examples
-below use placeholder values; omit the header when authentication is unset.
+Manual approval produces `engineer_approved`, never `checks_passed`. Approval
+and rejection require non-empty `reviewer_name` and `reason`; names are
+self-declared and failed checks remain visible.
+
+When `API_KEY` is set, browsers log in through `POST /api/auth/login` with
+`{"api_key":"..."}` and use an HttpOnly, SameSite=Strict cookie scoped to `/api`.
+The frontend stores no key. `GET /api/auth/session` reports authentication state;
+`POST /api/auth/logout` revokes the session. Browser mutations require a matching
+Origin and Host. Scripts and benchmarks keep using `X-API-Key`, including SSE
+and ZIP requests. `/api/health` remains public.
+
+Sessions expire after 30 idle minutes or 12 absolute hours. Active SSE events
+and heartbeats refresh idle activity; absolute expiry and revocation still close
+streams. Configure `AUTH_IDLE_SECONDS`, `AUTH_ABSOLUTE_SECONDS`,
+`AUTH_LOGIN_ATTEMPTS_PER_MINUTE` (default 5), and `AUTH_COOKIE_SECURE` (false for
+local HTTP; set true behind HTTPS).
+
+With a configured key, direct startup and the existing VS Code debugger work
+unchanged, from `backend/`:
+
+```bash
+python -m uvicorn app.main:app --port 8765 --workers 1
+```
+
+Without a key, open mode requires the validated localhost launcher:
+
+```bash
+make run PORT=8765
+# Or, from backend/:
+python -m app.server --host 127.0.0.1 --port 8765
+```
+
+An unset key with another/unknown bind refuses startup. The UI and session status
+explicitly display "No authentication (local mode)". Missing/wrong authentication
+returns a generic 401; keys in query strings are never accepted.
 
 ```bash
 export RUN_ID="replace-with-run-uuid"
@@ -296,7 +323,7 @@ export API_KEY="replace-with-local-static-key"
 curl -H "X-API-Key: $API_KEY" "http://localhost:8000/api/pipeline/$RUN_ID/results"
 
 curl -X POST -H "X-API-Key: $API_KEY" -H 'Content-Type: application/json' \
-  -d '{"action":"approve"}' \
+  -d '{"action":"approve","reviewer_name":"Engineer","reason":"Reviewed remaining findings"}' \
   "http://localhost:8000/api/pipeline/$RUN_ID/packages/cost/review"
 
 curl -X POST -H "X-API-Key: $API_KEY" -H 'Content-Type: application/json' \

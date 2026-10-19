@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9g section 2 — Add hashed HttpOnly sessions
+
+**Summary:** Browser login replaces key storage; cookie/header paths protect SSE,
+results and downloads. Open mode requires a validated 127.0.0.1 launcher.
+
+**Requirements addressed:** NFR-01, FR-P-04, FR-UI-01, FR-UI-06.
+
+**Files:** auth API/core/repository, bind/server launcher, migration 0005/models,
+settings/dependencies/main/SSE, frontend session/client/login/screens/E2E,
+Makefile, README, D-49, auth tests and corrected legacy-label test fixtures.
+
+**Decisions:** D-49. Five attempts/minute; idle/absolute defaults 30 minutes/12
+hours. Active SSE emits/heartbeats touch the session; expiry/revocation cannot
+revive it. Cookie HttpOnly/Strict/Path=/api; Secure is configured for HTTPS.
+Configured-key direct Uvicorn and VS Code startup remain unchanged. SSE DB
+activity/cleanup is shielded against disconnect cancellation. Only token hashes
+are stored; keys are transient password input and never browser storage.
+
+**Tests:** Combined auth/SSE/label/download/command/quality regressions: 46 passed.
+Final auth tests (including heartbeat renewal, revocation and direct startup):
+11 passed. Frontend: 100 passed/15 files. Ruff and mypy (132 sources) passed;
+make lint passed at completion. Initial broad checkpoint: 1503 passed, 12 failed,
+6 perf deselected; failures identified stale readiness, command and projection
+expectations, corrected in focused reruns. One overlapping focused invocation was
+interrupted rather than used as evidence; PostgreSQL runs are serialized.
+
+**Known gaps / follow-ups:** Final full-suite/browser verification follows in
+section 6. No .env, real credentials/provider calls, installations or downloads.
+The original PostgreSQL/container and existing VS Code configuration are untouched.
+
 ## 2026-10-19 — Phase 9g section 1 — Separate checks from engineer decisions
 
 **Summary:** Replace automatic production-ready claims with checks_passed;

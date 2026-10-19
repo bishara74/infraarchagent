@@ -1,34 +1,46 @@
 """Accessors for application-owned resources."""
 
-import hmac
 from typing import Annotated
 
 from fastapi import Header, Request
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.core.errors import UnauthorizedError
+from app.core.auth import COOKIE_NAME, key_matches, origin_allowed, token_hash
+from app.core.errors import ForbiddenError, UnauthorizedError
 from app.events.broker import InMemoryBroker
 from app.events.log import EventLog
 from app.pipeline.runner import PipelineRunner
 from app.pipeline.state import PipelineStateWriter
 
 
-def require_api_key(
+async def require_api_key(
     request: Request, supplied: Annotated[str | None, Header(alias="X-API-Key")] = None
 ) -> None:
-    configured = request.app.state.settings.api_key
-    if configured is not None and not hmac.compare_digest(
-        (supplied or "").encode("utf-8"), configured.get_secret_value().encode("utf-8")
+    settings = request.app.state.settings
+    request.state.session_hash = None
+    if settings.api_key is None:
+        request.state.auth_mode = "local"
+    elif key_matches(settings, supplied):
+        request.state.auth_mode = "shared_key"
+    else:
+        token = request.cookies.get(COOKIE_NAME)
+        digest = token_hash(token) if token else None
+        if digest is None or await request.app.state.auth.activity(digest) is None:
+            raise UnauthorizedError()
+        request.state.session_hash = digest
+        request.state.auth_mode = "shared_key"
+    if request.method not in {"GET", "HEAD", "OPTIONS"} and not origin_allowed(
+        request, required=request.state.session_hash is not None
     ):
-        raise UnauthorizedError()
+        raise ForbiddenError()
 
 
-def require_benchmark_api_key(
+async def require_benchmark_api_key(
     request: Request, supplied: Annotated[str | None, Header(alias="X-API-Key")] = None
 ) -> None:
-    if request.app.state.settings.api_key is None or not supplied:
+    if request.app.state.settings.api_key is None:
         raise UnauthorizedError()
-    require_api_key(request, supplied)
+    await require_api_key(request, supplied)
 
 
 def get_engine(request: Request) -> AsyncEngine:

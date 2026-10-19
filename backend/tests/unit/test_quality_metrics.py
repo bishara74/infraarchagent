@@ -58,6 +58,7 @@ def test_strict_projection_redacts_allowed_text_and_counts_findings():
     assert "[REDACTED]" in snapshot["failed_checks"][0]["message"]
     assert set(snapshot) == {
         "status",
+        "legacy_label_mapped",
         "review_reasons",
         "failed_checks",
         "remaining_findings",

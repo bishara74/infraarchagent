@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { setApiKey } from '../lib/sessionState';
+import {useState} from 'react';
+import {api,errorMessage} from '../api/client';
 export function Authentication({onSaved}:{onSaved:()=>void}){
- const [key,setKey]=useState('');return <form className="panel auth" onSubmit={event=>{event.preventDefault();setApiKey(key.trim()||null);onSaved();}}><h2>API key required</h2><p>Enter your key to continue on this page.</p><label htmlFor="reentry-key">API key</label><input id="reentry-key" name="api-key" type="password" autoComplete="current-password" value={key} onChange={event=>setKey(event.target.value)}/><button type="submit">Continue</button></form>;
+ const [key,setKey]=useState('');const [busy,setBusy]=useState(false);const [error,setError]=useState<unknown>(null);
+ return <form className="panel auth" onSubmit={event=>{event.preventDefault();if(busy)return;setBusy(true);setError(null);const submitted=key;setKey('');void api.login(submitted).then(onSaved).catch(setError).finally(()=>setBusy(false));}}><h2>API key required</h2><p>Log in to continue on this page.</p><label htmlFor="login-key">API key</label><input id="login-key" name="api-key" type="password" autoComplete="off" value={key} onChange={event=>setKey(event.target.value)} disabled={busy}/><button disabled={busy} type="submit">Continue{busy?'…':''}</button>{error?<p role="alert">{errorMessage(error)}</p>:null}</form>;
 }

@@ -9,13 +9,18 @@ from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from app.agents.factory import AgentFactory
+from app.api.auth import router as auth_router
 from app.api.benchmark import router as benchmark_router
 from app.api.frontend import DEFAULT_DIST, register_frontend
 from app.api.health import router as health_router
 from app.api.pipeline import router as pipeline_router
+from app.core.auth import AuthService
+from app.core.bind import check_open_bind
 from app.core.config import Settings, get_settings
 from app.core.errors import (
+    ForbiddenError,
     UnauthorizedError,
+    forbidden_error_handler,
     internal_error_handler,
     unauthorized_error_handler,
 )
@@ -72,6 +77,7 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        check_open_bind(configured.api_key)
         app.state.engine = app_engine
         if (
             configured.pipeline_demo_scenario == "review"
@@ -130,12 +136,15 @@ def create_app(
     app.state.runner = runner
     app.state.settings = configured
     app.state.session_factory = session_factory
+    app.state.auth = AuthService(session_factory, configured)
     app.state.scanners = scanner_info
     app.state.validators = validator_versions()
     app.state.provider_mirror_present = mirror_present()
     app.add_exception_handler(Exception, internal_error_handler)
     app.add_exception_handler(UnauthorizedError, unauthorized_error_handler)
+    app.add_exception_handler(ForbiddenError, forbidden_error_handler)
     app.include_router(health_router)
+    app.include_router(auth_router)
     app.include_router(benchmark_router)
     app.include_router(pipeline_router)
     register_frontend(app, frontend_dist if frontend_dist is not None else DEFAULT_DIST)

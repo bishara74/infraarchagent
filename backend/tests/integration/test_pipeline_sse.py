@@ -321,12 +321,12 @@ async def test_final_state_commit_does_not_close_before_its_frame(db_engines):
     await app.state.writer.review_event(
         run_id,
         Variant.COST,
-        PackageStatus.CHECKS_PASSED,
+        PackageStatus.ENGINEER_APPROVED,
         previous,
         action="approve",
         reasons=["validation_failed"],
     )
-    observed["cost"] = "checks_passed"
+    observed["cost"] = "engineer_approved"
     assert await _can_close(app.state.session_factory, run_id, True, observed)
 
 

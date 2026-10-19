@@ -27,3 +27,14 @@ async def internal_error_handler(request: Request, exc: Exception) -> JSONRespon
         status_code=500,
         content={"error": "internal_error", "message": "An unexpected error occurred."},
     )
+
+
+class ForbiddenError(Exception):
+    """A browser mutation did not originate from the same origin."""
+
+
+async def forbidden_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    return JSONResponse(
+        status_code=403,
+        content={"error": "forbidden", "message": "Same-origin request required."},
+    )

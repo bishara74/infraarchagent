@@ -1474,6 +1474,22 @@ immutable, distinguishes recorded approvals, and returns unverifiable legacy
 success claims to pending_review. Missing historical identity/reason is unknown.
 Historical reports are never rewritten; compatibility output discloses mapping.
 
+### D-49 — HttpOnly login and explicit local mode (Phase 9g)
+
+NFR-01: shared-key login issues a random 256-bit token; only its SHA-256 hash is
+stored in auth_sessions (migration 0005). HttpOnly/SameSite=Strict/Path=/api,
+configurable Secure for HTTPS, same-origin browser mutations, and bounded login
+attempts replace browser key storage. Headers remain supported for scripts.
+Idle/absolute defaults are 1800/43200 seconds. Active SSE emits and heartbeats
+renew idle activity atomically; expiry/revocation cannot be revived and absolute
+expiry is never extended. No user accounts or verified reviewer identities.
+
+With API_KEY configured, direct Uvicorn and the author's VS Code configuration
+stay unchanged. Only unset-key startup requires the validated app.server launcher
+bound to 127.0.0.1; unknown/other binds fail startup with a fixed clear message.
+Session status/UI visibly disclose no authentication in local mode. Tests use
+an explicit synthetic local bind and isolated PostgreSQL, never author settings.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

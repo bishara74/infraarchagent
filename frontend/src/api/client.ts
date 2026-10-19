@@ -1,4 +1,4 @@
-import { getApiKey, setApiKey } from '../lib/sessionState';
+import { setSessionStatus, type SessionStatus } from '../lib/sessionState';
 import type { ErrorResponse, ResultsResponse, ReviewRequest, ReviewResponse, RetryResponse, RunConfig, SubmitResponse, Variant } from './types';
 
 export class ApiError extends Error {
@@ -12,19 +12,16 @@ export function errorMessage(error: unknown): string {
   return error instanceof ApiError ? error.message : 'The request could not be completed. Please try again.';
 }
 export function createApiClient(options: {
-  key?: () => string | null; unauthorized?: () => void; fetch?: typeof fetch;
+  unauthorized?: () => void; fetch?: typeof fetch;
 } = {}) {
   const transport = options.fetch ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
-  const key = options.key ?? getApiKey;
-  const unauthorized = options.unauthorized ?? (() => setApiKey(null));
+  const unauthorized = options.unauthorized ?? (() => setSessionStatus({auth_required:true,authenticated:false,mode:'shared_key'}));
   function headers(extra: HeadersInit = {}) {
     const result = new Headers(extra);
-    const value = key();
-    if (value) result.set('X-API-Key', value);
     return result;
   }
   async function checked(url: string, init: RequestInit = {}) {
-    const response = await transport(url, { ...init, headers: headers(init.headers) });
+    const response = await transport(url, { ...init, credentials:'same-origin', headers: headers(init.headers) });
     if (!response.ok) {
       if (response.status === 401) unauthorized();
       let body: Partial<ErrorResponse> = {};
@@ -41,6 +38,9 @@ export function createApiClient(options: {
   const base = (id: string) => `/api/pipeline/${encodeURIComponent(id)}`;
   return {
     headers,
+    session: () => json<SessionStatus>('/api/auth/session'),
+    login: async (api_key:string) => {await json('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key})});const value=await json<SessionStatus>('/api/auth/session');setSessionStatus(value);},
+    logout: async () => {await json('/api/auth/logout',{method:'POST'});setSessionStatus({auth_required:true,authenticated:false,mode:'shared_key'});},
     openStream: (id: string, signal: AbortSignal, cursor?: number) => checked(`${base(id)}/stream`, {
       signal, headers: cursor === undefined ? {} : { 'Last-Event-ID': String(cursor) },
     }),

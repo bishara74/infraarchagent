@@ -21,7 +21,7 @@ def test_run_port_default_and_override(arguments, port):
     )
     assert completed.returncode == 0, completed.stderr
     assert completed.stdout.strip() == (
-        f"cd backend && .venv/bin/uvicorn app.main:app --workers 1 --port {port}"
+        f"cd backend && .venv/bin/python -m app.server --host 127.0.0.1 --port {port}"
     )
 
 

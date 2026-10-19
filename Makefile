@@ -1,5 +1,6 @@
 PYTHON := python3
 PORT ?= 8000
+HOST ?= 127.0.0.1
 VENV := backend/.venv
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
@@ -24,7 +25,7 @@ migrate-test:
 	$(BACKEND) .venv/bin/alembic -x database=test upgrade head
 
 run:
-	$(BACKEND) .venv/bin/uvicorn app.main:app --workers 1 --port $(PORT)
+	$(BACKEND) .venv/bin/python -m app.server --host $(HOST) --port $(PORT)
 
 run-pipeline: export PIPELINE_TEXT = $(TEXT)
 run-pipeline:
