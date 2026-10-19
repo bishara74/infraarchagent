@@ -1,0 +1,221 @@
+{
+  "runs": [
+    {
+      "measurement": "pr03",
+      "prompt": "A Node.js REST API with a PostgreSQL database, autoscaling on ECS, a Jenkins CI/CD pipeline, Nginx reverse proxy, and Prometheus + Grafana monitoring stack on AWS.",
+      "mode": "real",
+      "run_id": "ea5184af-594f-455c-9cec-93ca98795625",
+      "seconds": 1.446889632003149,
+      "complete": true,
+      "submitted_at": "2026-10-18T21:59:42.454784+00:00",
+      "role": "baseline",
+      "settled_at": "2026-10-18T21:59:43.901677+00:00",
+      "run_status": "failed",
+      "provider": "openai",
+      "model": "openai/gpt-oss-120b:nitro",
+      "cost_variant_status": "failed",
+      "performance_variant_status": "failed",
+      "security_variant_status": "failed",
+      "generator_attempt_count": 3,
+      "generator_attempts_by_format_reason": {
+        "none": 3
+      },
+      "generator_output_tokens_per_attempt": [
+        {
+          "variant": "cost",
+          "attempt": 1,
+          "output_tokens": null
+        },
+        {
+          "variant": "performance",
+          "attempt": 1,
+          "output_tokens": null
+        },
+        {
+          "variant": "security",
+          "attempt": 1,
+          "output_tokens": null
+        }
+      ],
+      "generator_attempt_details": [
+        {
+          "variant": "cost",
+          "attempt": 1,
+          "package_attempt": 1,
+          "outcome": "usage_limit",
+          "category": "usage_limit",
+          "format_reason": null,
+          "elapsed_seconds": 0.29917251400183886,
+          "input_tokens": null,
+          "output_tokens": null,
+          "response_characters": null,
+          "deadline_exceeded": false,
+          "overrun_seconds": 0.0
+        },
+        {
+          "variant": "performance",
+          "attempt": 1,
+          "package_attempt": 1,
+          "outcome": "usage_limit",
+          "category": "usage_limit",
+          "format_reason": null,
+          "elapsed_seconds": 0.29684073200041894,
+          "input_tokens": null,
+          "output_tokens": null,
+          "response_characters": null,
+          "deadline_exceeded": false,
+          "overrun_seconds": 0.0
+        },
+        {
+          "variant": "security",
+          "attempt": 1,
+          "package_attempt": 1,
+          "outcome": "usage_limit",
+          "category": "usage_limit",
+          "format_reason": null,
+          "elapsed_seconds": 0.2833039250035654,
+          "input_tokens": null,
+          "output_tokens": null,
+          "response_characters": null,
+          "deadline_exceeded": false,
+          "overrun_seconds": 0.0
+        }
+      ],
+      "generator_deadlines": {
+        "cost": {
+          "deadline_exceeded": false,
+          "overrun_seconds": 0.0,
+          "generator_elapsed_seconds": 0.3012903639973956
+        },
+        "performance": {
+          "deadline_exceeded": false,
+          "overrun_seconds": 0.0,
+          "generator_elapsed_seconds": 0.29845303599722683
+        },
+        "security": {
+          "deadline_exceeded": false,
+          "overrun_seconds": 0.0,
+          "generator_elapsed_seconds": 0.2852402409989736
+        }
+      },
+      "generator_completeness": {
+        "cost": [
+          {
+            "attempt": 1,
+            "error_count": null,
+            "missing_types": [],
+            "missing_paths": [],
+            "categories": {
+              "no_candidate": 1
+            }
+          }
+        ],
+        "performance": [
+          {
+            "attempt": 1,
+            "error_count": null,
+            "missing_types": [],
+            "missing_paths": [],
+            "categories": {
+              "no_candidate": 1
+            }
+          }
+        ],
+        "security": [
+          {
+            "attempt": 1,
+            "error_count": null,
+            "missing_types": [],
+            "missing_paths": [],
+            "categories": {
+              "no_candidate": 1
+            }
+          }
+        ]
+      },
+      "failure_categories": {
+        "cost": "usage_limit",
+        "performance": "usage_limit",
+        "security": "usage_limit"
+      },
+      "generator_llm_attempts": 3,
+      "generator_input_tokens": null,
+      "generator_output_tokens": null,
+      "fixer_input_tokens": null,
+      "fixer_output_tokens": null,
+      "cost_usd": 0.0,
+      "observed_usage_delta_usd": 0.0,
+      "cost_attribution": "sequential",
+      "cost_before_usd": 21.86052406,
+      "cost_after_usd": 21.86052406,
+      "remaining_before_usd": 3.1394759400000005,
+      "remaining_after_usd": 3.1394759400000005
+    }
+  ],
+  "cohorts": [],
+  "runner_capacity": 5,
+  "stop_reason": "PR-03 baseline did not complete successfully.",
+  "pr05_workloads": {
+    "isolated_pr01": {
+      "verdict": "INCOMPLETE",
+      "observations": 0,
+      "failures": 0,
+      "missing_measurements": 0,
+      "agents": {},
+      "durations": {
+        "count": 0,
+        "median": null,
+        "p90": null,
+        "max": null
+      },
+      "failed_observations": []
+    },
+    "isolated_pr03_baseline": {
+      "verdict": "PASS",
+      "observations": 4,
+      "failures": 0,
+      "missing_measurements": 0,
+      "agents": {
+        "architect": 1,
+        "generator_cost": 1,
+        "generator_performance": 1,
+        "generator_security": 1
+      },
+      "durations": {
+        "count": 4,
+        "median": 0.339901,
+        "p90": 0.998962,
+        "max": 0.998962
+      },
+      "failed_observations": []
+    },
+    "concurrent_pr03_cohort": {
+      "verdict": "INCOMPLETE",
+      "observations": 0,
+      "failures": 0,
+      "missing_measurements": 0,
+      "agents": {},
+      "durations": {
+        "count": 0,
+        "median": null,
+        "p90": null,
+        "max": null
+      },
+      "failed_observations": []
+    },
+    "unclassified": {
+      "verdict": "INCOMPLETE",
+      "observations": 0,
+      "failures": 0,
+      "missing_measurements": 0,
+      "agents": {},
+      "durations": {
+        "count": 0,
+        "median": null,
+        "p90": null,
+        "max": null
+      },
+      "failed_observations": []
+    }
+  }
+}
