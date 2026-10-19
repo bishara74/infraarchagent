@@ -3,10 +3,15 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import type {ResultsResponse} from '../../src/api/types';
 export const API_KEY='phase8-e2e-only';
+export const USERNAME='committee';export const PASSWORD='phase9h-browser-password';
 export const headers={'X-API-Key':API_KEY};
+export const originHeaders={Origin:'http://127.0.0.1:5173'};
 export async function submit(page:Page){
- await page.goto('/');await page.getByLabel('API key',{exact:true}).fill(API_KEY);await page.getByRole('button',{name:'Continue',exact:true}).click();await page.getByText('Configuration options',{exact:true}).click();await page.getByLabel('LLM provider').selectOption('stub');await page.getByLabel('Infrastructure description').fill('Create an AWS web service with Terraform and secure access.');
- const request=page.waitForRequest(request=>request.url().endsWith('/api/pipeline/run')&&request.method()==='POST');await page.getByRole('button',{name:'Generate',exact:true}).click();const submitted=await request;expect(submitted.postDataJSON().config.provider).toBe('stub');expect(submitted.headers()['x-api-key']).toBeUndefined();expect(await page.evaluate(()=>sessionStorage.getItem('infraarch.apiKey'))).toBeNull();await expect(page).toHaveURL(/\/runs\/[a-f0-9-]+$/);return page.url().split('/').at(-1)!;
+ await page.goto('/');const status=await (await page.request.get('/api/auth/session')).json();if(!status.authenticated){await page.getByLabel('Username',{exact:true}).fill(USERNAME);await page.getByLabel('Password',{exact:true}).fill(PASSWORD);if(status.setup_required)await page.getByLabel('Confirm password',{exact:true}).fill(PASSWORD);await page.getByRole('button',{name:status.setup_required?'Create admin account':'Log in',exact:true}).click();}
+ await expect(page.getByRole('heading',{name:'Generate infrastructure'})).toBeVisible();
+ await page.request.post('/api/providers/environment',{headers:originHeaders});const preferences=await(await page.request.get('/api/me/preferences')).json();await page.request.put('/api/me/preferences',{headers:originHeaders,data:{revision:preferences.revision,data:{}}});await page.reload();
+ await page.getByLabel('Infrastructure description').fill('Create an AWS web service with Terraform and secure access.');
+ const request=page.waitForRequest(request=>request.url().endsWith('/api/pipeline/run')&&request.method()==='POST');await page.getByRole('button',{name:'Generate',exact:true}).click();const submitted=await request;expect(submitted.postDataJSON().config.provider).toBeUndefined();expect(submitted.headers()['x-api-key']).toBeUndefined();expect(await page.evaluate(()=>sessionStorage.getItem('infraarch.apiKey'))).toBeNull();await expect(page).toHaveURL(/\/runs\/[a-f0-9-]+$/);return page.url().split('/').at(-1)!;
 }
 export async function pendingPackage(page:Page,id:string){await expect(page.getByRole('link',{name:'View results'})).toBeVisible();await page.getByRole('link',{name:'View results'}).click();await expect(page.getByRole('heading',{name:'Select a variant'})).toBeVisible();await page.goto(`/runs/${id}/packages/security`);await expect(page.getByRole('heading',{name:'Pending review',exact:true})).toBeVisible();}
 export async function results(page:Page,id:string):Promise<ResultsResponse>{const response=await page.request.get(`/api/pipeline/${id}/results`);expect(response.ok()).toBe(true);return await response.json() as ResultsResponse;}

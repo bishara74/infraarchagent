@@ -1,17 +1,30 @@
 """Root-handler logging setup with secret redaction."""
 
+import hashlib
 import logging
+import os
 import re
 import traceback
 
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
 from app.core.config import Settings
 
-DYNAMIC_SECRETS: set[str] = set()
+DYNAMIC_SECRETS: dict[bytes, tuple[bytes, bytes]] = {}
+
+
+_MEMORY_CIPHER = AESGCM(os.urandom(32))
 
 
 def register_secret(value: str) -> None:
     if value:
-        DYNAMIC_SECRETS.add(value)
+        digest = hashlib.sha256(value.encode()).digest()
+        if digest not in DYNAMIC_SECRETS:
+            nonce = os.urandom(12)
+            DYNAMIC_SECRETS[digest] = (
+                nonce,
+                _MEMORY_CIPHER.encrypt(nonce, value.encode(), digest),
+            )
 
 
 REDACTED = "[REDACTED]"
@@ -33,8 +46,12 @@ class RedactingFilter(logging.Filter):
         self.keys = tuple(key for key in (api_key, *additional_keys) if key)
 
     def redact(self, value: str) -> str:
-        for key in sorted(set(self.keys) | DYNAMIC_SECRETS, key=len, reverse=True):
+        for key in sorted(self.keys, key=len, reverse=True):
             value = value.replace(key, REDACTED)
+        # Retain only process-encrypted material between calls, not plaintext keys.
+        for digest, (nonce, ciphertext) in tuple(DYNAMIC_SECRETS.items()):
+            transient = _MEMORY_CIPHER.decrypt(nonce, ciphertext, digest).decode()
+            value = value.replace(transient, REDACTED)
         for pattern in KEY_PATTERNS:
             value = pattern.sub(REDACTED, value)
         value = BEARER.sub(f"Bearer {REDACTED}", value)

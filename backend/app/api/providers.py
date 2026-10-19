@@ -14,6 +14,7 @@ from pydantic import (
     ValidationError,
     model_validator,
 )
+from starlette.requests import ClientDisconnect
 
 from app.api.auth import failure
 from app.api.deps import require_admin
@@ -30,7 +31,7 @@ class ProviderInput(BaseModel):
     provider: Literal["openrouter", "openai", "anthropic", "custom"]
     label: str = Field(default="My provider", min_length=1, max_length=120)
     base_url: str = ""
-    api_key: SecretStr = Field(min_length=1, max_length=4096)
+    api_key: SecretStr = Field(min_length=8, max_length=4096)
 
     @model_validator(mode="after")
     def preset(self) -> "ProviderInput":
@@ -80,6 +81,13 @@ async def listing(request: Request) -> dict[str, object]:
                     "base_url": r.base_url,
                     "last4": r.last4,
                     "revoked": r.revoked_at is not None,
+                    "created_by": str(r.created_by) if r.created_by else None,
+                    "created_at": r.created_at.isoformat(),
+                    "last_used_at": r.last_used_at.isoformat()
+                    if r.last_used_at
+                    else None,
+                    "revoked_at": r.revoked_at.isoformat() if r.revoked_at else None,
+                    "key_version": r.key_version,
                     "credential_type": r.credential_type,
                     "api_protocol": r.api_protocol,
                 }
@@ -100,7 +108,7 @@ async def probe_entered(request: Request) -> JSONResponse:
             body.material(), getattr(request.app.state, "provider_http", None)
         )
         return JSONResponse(PublicDataSafety(request.app.state.settings).value(result))
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(400, "invalid_request", "Check provider URL and key.")
 
 
@@ -108,6 +116,11 @@ async def probe_entered(request: Request) -> JSONResponse:
 async def create(request: Request) -> JSONResponse:
     try:
         body = ProviderInput.model_validate(await request.json())
+        from app.core.logging import register_secret
+
+        register_secret(body.api_key.get_secret_value())
+        if body.api_key.get_secret_value() in body.base_url:
+            raise ValueError("Credential cannot be part of URL")
         async with request.app.state.session_factory() as session, session.begin():
             row = await ProviderRepository(session).create(
                 body.provider,
@@ -125,7 +138,7 @@ async def create(request: Request) -> JSONResponse:
             "Set CREDENTIAL_ENCRYPTION_KEY to a base64-encoded 32-byte key "
             "before saving credentials.",
         )
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(400, "invalid_request", "Check provider URL and key.")
 
 
@@ -134,6 +147,7 @@ async def test_saved(credential_id: UUID, request: Request) -> JSONResponse:
     try:
         async with request.app.state.session_factory() as session, session.begin():
             material = await ProviderRepository(session).material(credential_id)
+        request.app.state.catalog_cache.clear()
         return JSONResponse(
             PublicDataSafety(request.app.state.settings).value(
                 await probe(material, getattr(request.app.state, "provider_http", None))
@@ -168,3 +182,11 @@ async def revoke(credential_id: UUID, request: Request) -> dict[str, bool]:
         await ProviderRepository(session).revoke(credential_id)
     request.app.state.catalog_cache = {}
     return {"revoked": True}
+
+
+@router.post("/environment")
+async def environment_default(request: Request) -> dict[str, bool]:
+    async with request.app.state.session_factory() as session, session.begin():
+        await ProviderRepository(session).select(None)
+    request.app.state.catalog_cache.clear()
+    return {"selected": True}

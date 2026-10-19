@@ -27,6 +27,37 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 7 — Complete committee account/configuration flows
+
+**Summary:** Add consistent account, provider/model settings and Recent runs navigation,
+reactive mocked key/catalog setup, supported thinking controls, cost/context details,
+server-hydrated drafts, and authenticated review identity. Extend isolated browser
+fixtures to cover the complete first-run flow and cross-browser/reload restoration.
+
+**Requirements addressed:** FR-UI-01, FR-UI-07, FR-P-04, NFR-01.
+
+**Files:** frontend screens/components/API/stores/styles and Playwright fixtures;
+backend account/provider/model/preferences APIs, safe error/redaction handling,
+agent factory/native adapter, benchmark metadata and regression tests;
+README, D-50–D-53 and mocked screenshots under docs/evals/phase9h-verification-20261019.
+
+**Decisions:** Preserve native controls and existing design tokens. Provider requests
+cancel obsolete probes and discard aborted responses. Account hydration gates the UI.
+Bootstrap ends anonymous streams; validation errors exclude submitted values. Native
+managed transport avoids duplicate /v1 paths. Frozen adapters avoid constructing an
+unused legacy client. Historical results keep unknown model metadata as null.
+
+**Tests:** Isolated Playwright: 7 passed (4.1m), including first-admin → automatic
+mocked provider/catalog → role/thinking selection → submit/reload → account review.
+Frontend: 110 passed in 17 files; production build passed (147 modules). Focused
+backend regressions: 42 passed; native adapter wire tests: 5 passed. Full backend
+and final lint/benchmark results are recorded in section 8 after final verification.
+Screenshots use synthetic credentials and mocked providers at 1280×800.
+
+**Known gaps / follow-ups:** No real provider or consumer OAuth was exercised.
+pgAdmin runtime awaits an author image pull. Performance verdicts remain measured,
+not inferred from successful functional flows.
+
 ## 2026-10-19 — Phase 9h section 6 — Document harness-driven tools
 
 **Summary:** Document each agent's LLM/local-tool path, decision ownership,

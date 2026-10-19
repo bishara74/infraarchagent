@@ -1834,6 +1834,17 @@ metadata or semantic naming inference is a later design decision.
 
 ## Thesis text to update (collected)
 
+- Phase 9h / Chapters 4–6: accounts and authenticated identity (D-50), encrypted
+  provider credentials and key rotation (D-51), five resolved model/thinking
+  choices with preserved benchmark defaults (D-52), server-authoritative user
+  persistence and browser fallback (D-53). Incorporate the upgrade/backup path,
+  read-only database inspection and docs/agent-tools.md harness sequence.
+- Future work (D-51/D-52): evaluate authorised OpenAI Sign in with ChatGPT using
+  Responses and refresh-token handling without schema changes. Consumer OAuth
+  and network/HTTPS deployment remain unimplemented; subscription entitlement
+  and provider policy must be verified when that work is undertaken.
+
+
 - R1 amendment / Chapters 3–4 and state diagrams (D-47): replace the old
   production-ready outcome with checks_passed for strict automatic scan-clean
   plus valid validation only. Human approval is engineer_approved, rejection is

@@ -15,6 +15,10 @@ from app.domain.run_config import RunConfig
 from app.llm.catalog import normalize, probe
 
 
+class ModelSelectionError(ValueError):
+    """Only fixed public guidance, never provider/user input."""
+
+
 class ModelSelectionService:
     def __init__(
         self,
@@ -117,7 +121,7 @@ class ModelSelectionService:
         use_catalog = interactive or bool(config.agent_models)
         catalog = await self.catalog() if use_catalog else None
         if set(config.agent_models) - {*ROLES, "generators"}:
-            raise ValueError("Unknown agent role.")
+            raise ModelSelectionError("Unknown agent role.")
         choices = {
             **(catalog or {}).get("defaults", {}),
             **(personal or {}),
@@ -135,7 +139,9 @@ class ModelSelectionService:
                 or self.settings.llm_model
             )
             if not model:
-                raise ValueError("Select models in Settings before submitting.")
+                raise ModelSelectionError(
+                    "Select models in Settings before submitting."
+                )
             config = config.model_copy(update={"provider": provider, "model": model})
         resolved = config.resolve(self.settings)
         selections = {}
@@ -169,7 +175,7 @@ class ModelSelectionService:
                     (role.startswith("generator_") or role == "fixer")
                     and item["structured_output"] is not True
                 ):
-                    raise ValueError(
+                    raise ModelSelectionError(
                         "Choose a structured-output model for Generators and Fixer."
                     )
                 if (
@@ -177,13 +183,13 @@ class ModelSelectionService:
                     and choice.thinking_mode != "off"
                     and choice.thinking_mode not in item["thinking_modes"]
                 ):
-                    raise ValueError("Choose a supported thinking mode.")
+                    raise ModelSelectionError("Choose a supported thinking mode.")
                 if (
                     choice.thinking_mode == "off"
                     and item.get("reasoning") is True
                     and "off" not in item["thinking_modes"]
                 ):
-                    raise ValueError("This model cannot disable reasoning.")
+                    raise ModelSelectionError("This model cannot disable reasoning.")
                 assert catalog is not None
                 selections[role] = AgentSelection(
                     model=choice.model,
@@ -200,7 +206,7 @@ class ModelSelectionService:
                 )
             else:
                 selections[role] = AgentSelection(
-                    model=model or "",
+                    model=model or "unconfigured",
                     provider=provider,
                     thinking_mode=effort if provider != LLMProvider.ANTHROPIC else None,
                     configured_thinking=effort,

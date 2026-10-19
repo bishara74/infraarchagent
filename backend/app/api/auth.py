@@ -1,6 +1,5 @@
 """Account HTTP endpoints; passwords never enter public validation errors."""
 
-from datetime import UTC, datetime
 from uuid import UUID
 
 import anyio
@@ -14,11 +13,13 @@ from pydantic import (
     ValidationError,
     field_validator,
 )
+from starlette.requests import ClientDisconnect
 
 from app.api.deps import require_admin, require_api_key
 from app.core.auth import COOKIE_NAME, key_matches, origin_allowed
+from app.core.logging import register_secret
 from app.core.passwords import DUMMY_HASH, hash_password, verify_password
-from app.db.models import User
+from app.core.safety import PublicDataSafety
 from app.db.repositories.users import UserRepository
 
 router = APIRouter(prefix="/api/auth")
@@ -91,6 +92,7 @@ async def setup(request: Request) -> JSONResponse:
     local = (
         request.client is not None
         and request.client.host == "127.0.0.1"
+        and request.url.hostname in {"127.0.0.1", "localhost"}
         and not any(
             h in request.headers
             for h in ("forwarded", "x-forwarded-for", "x-forwarded-host")
@@ -111,6 +113,12 @@ async def setup(request: Request) -> JSONResponse:
         return failure(429, "rate_limited", "Too many attempts. Try again later.")
     try:
         body = AccountInput.model_validate(await request.json())
+        if (
+            body.username == body.password.get_secret_value()
+            or PublicDataSafety(request.app.state.settings).text(body.username)
+            != body.username
+        ):
+            raise ValueError("Invalid username")
         encoded = await anyio.to_thread.run_sync(
             hash_password, body.password.get_secret_value()
         )
@@ -118,13 +126,14 @@ async def setup(request: Request) -> JSONResponse:
             user = await UserRepository(session).create(
                 body.username, encoded, first=True
             )
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(
             409,
             "setup_unavailable",
             "Setup is complete or account details are invalid. "
             "Use a password of at least 12 characters.",
         )
+    register_secret(body.password.get_secret_value())
     return cookie_response(request, await request.app.state.auth.login(user.id))
 
 
@@ -152,7 +161,7 @@ async def login(request: Request) -> JSONResponse:
                 return cookie_response(request, await auth.login())
             return failure(401, "unauthorized", "Invalid username or password.")
         body = AccountInput.model_validate(raw)
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(401, "unauthorized", "Invalid username or password.")
     async with auth.sessions() as session, session.begin():
         user = await UserRepository(session).find(body.username)
@@ -163,7 +172,8 @@ async def login(request: Request) -> JSONResponse:
         )
         if not valid or user is None or user.disabled_at is not None:
             return failure(401, "unauthorized", "Invalid username or password.")
-        user.last_login_at = datetime.now(UTC)
+        register_secret(body.password.get_secret_value())
+        await UserRepository(session).record_login(user.id)
     return cookie_response(request, await auth.login(user.id))
 
 
@@ -185,15 +195,22 @@ async def users(request: Request) -> list[dict[str, object]]:
 async def create_user(request: Request) -> JSONResponse:
     try:
         body = AccountInput.model_validate(await request.json())
+        if (
+            body.username == body.password.get_secret_value()
+            or PublicDataSafety(request.app.state.settings).text(body.username)
+            != body.username
+        ):
+            raise ValueError("Invalid username")
         encoded = await anyio.to_thread.run_sync(
             hash_password, body.password.get_secret_value()
         )
         async with request.app.state.session_factory() as session, session.begin():
             user = await UserRepository(session).create(body.username, encoded)
+        register_secret(body.password.get_secret_value())
         return JSONResponse(
             {"id": str(user.id), "username": user.username}, status_code=201
         )
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(
             400,
             "invalid_request",
@@ -217,7 +234,7 @@ async def change(request: Request, user_id: UUID, *, own: bool = False) -> JSONR
     try:
         body = PasswordInput.model_validate(await request.json())
         async with request.app.state.session_factory() as session, session.begin():
-            user = await session.get(User, user_id, with_for_update=True)
+            user = await UserRepository(session).get(user_id, lock=True)
             if user is None or (
                 own
                 and not await anyio.to_thread.run_sync(
@@ -229,12 +246,13 @@ async def change(request: Request, user_id: UUID, *, own: bool = False) -> JSONR
                 )
             ):
                 return failure(401, "unauthorized", "Password could not be changed.")
+            register_secret(body.password.get_secret_value())
             encoded = await anyio.to_thread.run_sync(
                 hash_password, body.password.get_secret_value()
             )
             await UserRepository(session).modify(user_id, password_hash=encoded)
         return JSONResponse({"updated": True})
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(
             400, "invalid_request", "Use a password of at least 12 characters."
         )

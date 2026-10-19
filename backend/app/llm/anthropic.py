@@ -53,7 +53,9 @@ class AnthropicAdapter(LLMAdapter):
                 material.secret.get_secret_value(),
                 reasoning_effort=self.reasoning_effort,
             )
-            delegate.client.base_url = material.base_url.rstrip("/") + "/"
+            delegate.client.base_url = (
+                material.base_url.rstrip("/").removesuffix("/v1") + "/"
+            )
             delegate.request_style, delegate.reasoning_capable = (
                 self.request_style,
                 self.reasoning_capable,

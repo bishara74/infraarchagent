@@ -2,10 +2,12 @@
 
 import json
 from pathlib import Path
+
 import httpx
 import httpx2
 import pytest
 from pydantic import SecretStr
+
 from app.agents.factory import AgentFactory
 from app.core.config import get_settings
 from app.core.model_selection import ModelSelectionService
@@ -14,7 +16,7 @@ from app.domain.enums import LLMProvider, Variant
 from app.domain.run_config import RunConfig
 from app.llm.catalog import normalize
 from app.llm.openai import OpenAIAdapter
-from tests.integration.test_phase9g_auth import authenticated, KEY
+from tests.integration.test_phase9g_auth import KEY, authenticated
 
 BASELINE = json.loads(
     (Path(__file__).parents[1] / "fixtures/phase9h-baseline-wire.json").read_text()
@@ -66,7 +68,7 @@ async def test_header_run_matches_baseline_wire_byte_for_byte(db_engines, case):
     for role, adapter in adapters.items():
         actual = []
 
-        def handler(request):
+        def handler(request, actual=actual, adapter=adapter):
             body = json.loads(request.content)
             actual.append(
                 {
@@ -105,7 +107,7 @@ async def test_header_run_matches_baseline_wire_byte_for_byte(db_engines, case):
             ).client
             adapter._structured_request.set(role != "architect")
             await adapter.send_prompt("baseline", max_output_tokens=100, timeout=1)
-        # Same serialization as the baseline fixture; includes complete schema and omissions.
+        # Baseline serialization includes complete schemas and omitted fields.
         assert (
             json.dumps(actual[0], separators=(",", ":")).encode()
             == json.dumps(case["parameters"][role], separators=(",", ":")).encode()
@@ -140,3 +142,74 @@ async def test_offline_catalog_capabilities_and_selections(db_engines):
         "custom",
     )
     assert declared["source"] == "admin" and declared["thinking_modes"] == ["low"]
+
+
+@pytest.mark.req("NFR-01", "FR-P-04")
+async def test_saved_offline_catalog_defaults_rejection_and_revocation(
+    db_engines, monkeypatch
+):
+    from tests.integration.test_phase9h_credentials import MASTER
+
+    monkeypatch.setenv("CREDENTIAL_ENCRYPTION_KEY", MASTER)
+    app, _ = await authenticated(db_engines[0])
+    app.state.provider_http = httpx.AsyncClient(
+        transport=httpx.MockTransport(
+            lambda request: pytest.fail("Offline catalog must not use HTTP")
+        )
+    )
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://127.0.0.1",
+        headers={"X-API-Key": KEY},
+    ) as client:
+        saved = await client.post(
+            "/api/providers",
+            json={
+                "provider": "custom",
+                "base_url": "https://custom.invalid/v1",
+                "api_key": "offline-key-canary",
+            },
+        )
+        identity = saved.json()["id"]
+        await client.post(f"/api/providers/{identity}/default")
+        defaults = {
+            "architect": {"model": "manual", "thinking_mode": "low"},
+            "generators": {"model": "manual", "thinking_mode": "low"},
+            "fixer": {"model": "manual", "thinking_mode": "low"},
+        }
+        body = {
+            "defaults": defaults,
+            "static_models": [
+                {
+                    "credential_id": identity,
+                    "id": "manual",
+                    "capabilities": {
+                        "structured_output": True,
+                        "reasoning": True,
+                        "thinking_modes": ["low"],
+                    },
+                }
+            ],
+        }
+        assert (await client.put("/api/models/defaults", json=body)).status_code == 200
+        catalog = (await client.get("/api/models")).json()
+        assert (
+            catalog["status"] == "offline" and catalog["models"][0]["source"] == "admin"
+        )
+        service = ModelSelectionService(
+            app.state.session_factory, app.state.settings, {}, app.state.provider_http
+        )
+        resolved = await service.resolve(RunConfig(), interactive=True)
+        assert len(resolved.resolved_agents) == 5 and resolved.credential_id is not None
+        with pytest.raises(ValueError):
+            await service.resolve(
+                RunConfig(
+                    agent_models={"fixer": {"model": "manual", "thinking_mode": "high"}}
+                ),
+                interactive=True,
+            )
+        bad = {**body, "static_models": [{"id": "manual", "api_key": "must-not-store"}]}
+        assert (await client.put("/api/models/defaults", json=bad)).status_code == 400
+        await client.post(f"/api/providers/{identity}/revoke")
+        assert (await client.get("/api/models")).status_code == 409
+    await app.state.provider_http.aclose()

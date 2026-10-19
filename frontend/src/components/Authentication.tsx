@@ -1,6 +1,18 @@
-import {useState} from 'react';
-import {api,errorMessage} from '../api/client';
-export function Authentication({onSaved,setup=false}:{onSaved:()=>void;setup?:boolean}){
- const [username,setUsername]=useState(''); const [password,setPassword]=useState(''); const [confirmation,setConfirmation]=useState('');const [busy,setBusy]=useState(false);const [error,setError]=useState<unknown>(null);
- return <form className="panel auth" onSubmit={event=>{event.preventDefault();if(busy)return;if(setup&&password!==confirmation){setError(new Error('Passwords must match.'));return;}setBusy(true);setError(null);void api.login(username,password,setup).then(onSaved).catch(setError).finally(()=>{setBusy(false);setPassword('');setConfirmation('');});}}><h2>{setup?'Create admin account':'Log in'}</h2>{setup&&<p>Create the first administrator from 127.0.0.1. Use at least 12 characters for your password.</p>}<label>Username<input name="username" autoComplete="username" value={username} onChange={event=>setUsername(event.target.value)} required maxLength={120}/></label><label>Password<input name="password" type="password" autoComplete={setup?'new-password':'current-password'} value={password} onChange={event=>setPassword(event.target.value)} required minLength={12}/></label>{setup&&<label>Confirm password<input type="password" autoComplete="new-password" value={confirmation} onChange={event=>setConfirmation(event.target.value)} required minLength={12}/></label>}<button disabled={busy} type="submit">{setup?'Create admin account':'Log in'}{busy?'…':''}</button>{error?<p role="alert">{error instanceof Error&&error.message==='Passwords must match.'?error.message:errorMessage(error)}</p>:null}</form>;
+import { registerBrowserSecret } from '../lib/preferences';
+import { useState } from 'react';
+import { api, errorMessage } from '../api/client';
+export function Authentication({ onSaved, setup = false }: {
+    onSaved: () => void;
+    setup?: boolean;
+}) {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmation, setConfirmation] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<unknown>(null);
+    return <form className="panel auth" onSubmit={event => { event.preventDefault(); if (busy)
+        return; if (setup && password !== confirmation) {
+        setError(new Error('Passwords must match.'));
+        return;
+    } registerBrowserSecret(password); setBusy(true); setError(null); void api.login(username, password, setup).then(onSaved).catch(setError).finally(() => { setBusy(false); setPassword(''); setConfirmation(''); }); }}><h2>{setup ? 'Create admin account' : 'Log in'}</h2>{setup && <p>Create the first administrator from 127.0.0.1. Use at least 12 characters for your password.</p>}<label>Username<input name="username" autoComplete="username" value={username} onChange={event => setUsername(event.target.value)} required maxLength={120}/></label><label>Password<input name="password" type="password" autoComplete={setup ? 'new-password' : 'current-password'} value={password} onChange={event => setPassword(event.target.value)} required minLength={12}/></label>{setup && <label>Confirm password<input type="password" autoComplete="new-password" value={confirmation} onChange={event => setConfirmation(event.target.value)} required minLength={12}/></label>}<button disabled={busy} type="submit">{setup ? 'Create admin account' : 'Log in'}{busy ? '…' : ''}</button>{error ? <p role="alert">{error instanceof Error && error.message === 'Passwords must match.' ? error.message : errorMessage(error)}</p> : null}</form>;
 }

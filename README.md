@@ -1261,3 +1261,31 @@ truncate application data. Protect pgAdmin's own volume and credentials.
 
 The [agent harness tool reference](docs/agent-tools.md) describes every model and
 local-tool invocation, bounds and failure path, with a sequence diagram.
+
+## Phase 9h guided first run
+
+1. Start the migrated backend on `127.0.0.1` and open the UI. Create the first
+   administrator using a username and a password of at least 12 characters.
+   Browser users do not need the backend API_KEY. The optional local-mode path
+   exists only before the first account.
+2. Open Settings → Provider. Follow the OpenRouter key link, paste the provider
+   key and wait for the automatic test/catalog result. Check provider credit if
+   the result says no credit. Save and use the provider. Keys are encrypted in
+   PostgreSQL; only their final four characters are subsequently shown.
+3. Open Settings → Models. Pick Architect, Generators and Fixer defaults;
+   Advanced permits individual generator overrides. Thinking choices follow
+   the selected model's capabilities. Context and pricing are shown when known.
+   Administrator defaults and personal defaults are separate controls.
+4. Return to New request, describe the infrastructure and generate. Optional
+   run overrides are collapsed by default. Recent runs reopen saved requests.
+5. Review reports and diffs. Account identity is recorded automatically for
+   approvals/rejections; provide a decision reason. Settings → Users creates,
+   disables or resets reviewers; Account changes your own password/preferences.
+
+<!-- Screenshot placeholder: first-admin setup form at 1280x800. -->
+<!-- Screenshot placeholder: model/thinking controls and context/pricing. -->
+
+[Mocked provider setup screenshot](docs/evals/phase9h-verification-20261019/provider-mocked.png) ·
+[Authenticated review screenshot](docs/evals/phase9h-verification-20261019/account-review-mocked.png).
+These demonstrate the UI with synthetic credentials and mocked model HTTP,
+not real-provider reliability or deployment quality.

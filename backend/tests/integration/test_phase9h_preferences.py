@@ -2,8 +2,9 @@
 
 import httpx
 import pytest
+
 from tests.integration.test_phase9g_auth import authenticated
-from tests.integration.test_phase9h_accounts import PASSWORD, ORIGIN
+from tests.integration.test_phase9h_accounts import ORIGIN, PASSWORD
 
 
 @pytest.mark.req("NFR-01", "FR-UI-01", "FR-P-04")

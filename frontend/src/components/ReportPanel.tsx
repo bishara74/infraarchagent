@@ -1,10 +1,11 @@
 import {ProfileAssessments} from './ProfileAssessments';
-import { useRef,useState } from 'react';
+import {usePreferences,updatePreferences} from '../lib/preferences';
+import { useRef } from 'react';
 import type { PackageResult } from '../api/types';
 import { securityView,validationView,fixSeverities,strings,text } from '../lib/reportView';
 import { StatusBadge } from './StatusBadge';
 export function ReportPanel({item,onFile}:{item:PackageResult;onFile:(file:string)=>void}){
- const [tab,setTab]=useState<'security'|'validation'>('security');const tabs=useRef<HTMLDivElement>(null);const view=securityView(item.security_report);const validation=validationView(item.validation_report);
+ const preferences=usePreferences();const tab=preferences.data.ui.report_tab;const setTab=(report_tab:'security'|'validation')=>updatePreferences({ui:{...preferences.data.ui,report_tab}});const tabs=useRef<HTMLDivElement>(null);const view=securityView(item.security_report);const validation=validationView(item.validation_report);
  function choose(next:'security'|'validation'){setTab(next);tabs.current?.querySelector<HTMLButtonElement>(`[data-tab="${next}"]`)?.focus();}
  return <aside className="panel reports"><div ref={tabs} className="tabs" role="tablist" aria-label="Package reports" onKeyDown={event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();choose(event.key==='Home'?'security':event.key==='End'?'validation':tab==='security'?'validation':'security');}}}>{(['security','validation'] as const).map(name=><button key={name} id={`tab-${name}`} data-tab={name} role="tab" aria-selected={tab===name} aria-controls={`report-${name}`} tabIndex={tab===name?0:-1} onClick={()=>setTab(name)}>{name==='security'?'Security fixes':'Validation report'}</button>)}</div>
  <div id={`report-${tab}`} role="tabpanel" aria-labelledby={`tab-${tab}`} tabIndex={0}>

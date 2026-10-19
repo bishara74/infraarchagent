@@ -27,6 +27,7 @@ from app.api.schemas import (
 )
 from app.core.config import Settings
 from app.core.credentials import CredentialError
+from app.core.model_selection import ModelSelectionError
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.preferences import PreferenceRepository
@@ -178,13 +179,20 @@ async def submit_run(
         resolved = config.resolve(settings)
         if not config.credential_id:
             build_adapter(settings, provider=resolved.provider, model=resolved.model)
+    except ModelSelectionError as error:
+        return failure(400, "invalid_model", str(error))
+    except CredentialError:
+        return failure(
+            409,
+            "credential_unavailable",
+            "Select an active provider and check the encryption key.",
+        )
     except RunConfigError as error:
         return failure(400, "invalid_request", error.message)
     except (
         ValidationError,
         ValueError,
         LLMConfigurationError,
-        CredentialError,
     ) as error:
         message = (
             str(error)
@@ -323,6 +331,8 @@ async def stream_run(
     safety = PublicDataSafety(request.app.state.settings)
 
     async def active_session() -> bool:
+        if getattr(request.state, "auth_mode", None) == "local":
+            return not await request.app.state.auth.has_users()
         digest = getattr(request.state, "session_hash", None)
         return (
             digest is None or await request.app.state.auth.activity(digest) is not None

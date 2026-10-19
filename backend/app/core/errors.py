@@ -38,3 +38,11 @@ async def forbidden_error_handler(request: Request, exc: Exception) -> JSONRespo
         status_code=403,
         content={"error": "forbidden", "message": "Same-origin request required."},
     )
+
+
+async def validation_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Never echo invalid path/query values or Pydantic exception details."""
+    return JSONResponse(
+        status_code=422,
+        content={"error": "invalid_request", "message": "Invalid request parameters."},
+    )

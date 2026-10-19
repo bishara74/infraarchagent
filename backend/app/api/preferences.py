@@ -6,6 +6,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from starlette.requests import ClientDisconnect
 
 from app.api.auth import failure
 from app.api.deps import require_api_key
@@ -77,7 +78,7 @@ async def save_preferences(request: Request) -> JSONResponse:
                 "your unsaved draft is retained.",
             )
         return JSONResponse({"revision": body.revision + 1, "data": data})
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(
             400,
             "invalid_request",
@@ -105,7 +106,7 @@ async def visit(run_id: UUID, request: Request) -> JSONResponse:
         return failure(401, "unauthorized", "Log in with an account.")
     try:
         body = CursorInput.model_validate(await request.json())
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(400, "invalid_request", "Invalid event cursor.")
     async with request.app.state.session_factory() as session, session.begin():
         found = await PreferenceRepository(session).visit(

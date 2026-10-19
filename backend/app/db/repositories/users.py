@@ -13,6 +13,14 @@ class UserRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    async def get(self, user_id: UUID, *, lock: bool = False) -> User | None:
+        return await self.session.get(User, user_id, with_for_update=lock)
+
+    async def record_login(self, user_id: UUID) -> None:
+        user = await self.get(user_id)
+        if user:
+            user.last_login_at = datetime.now(UTC)
+
     async def any(self) -> bool:
         return bool(await self.session.scalar(select(User.id).limit(1)))
 

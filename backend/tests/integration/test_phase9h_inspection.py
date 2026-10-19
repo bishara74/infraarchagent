@@ -27,7 +27,8 @@ async def test_inspection_select_only(db_engines):
             for privilege in ("INSERT", "UPDATE", "DELETE", "TRUNCATE"):
                 assert not await connection.scalar(
                     text(
-                        "SELECT has_table_privilege('infraarch_readonly', :table, :privilege)"
+                        "SELECT has_table_privilege("
+                        "'infraarch_readonly', :table, :privilege)"
                     ),
                     {"table": table, "privilege": privilege},
                 )

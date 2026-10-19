@@ -59,7 +59,8 @@ def normalize(item: dict[str, Any], provider: str) -> dict[str, Any]:
         "reasoning": reasoning if isinstance(reasoning, bool) else None,
         "thinking_modes": [m for m in modes if m in {"off", "low", "medium", "high"}],
         "source": "provider"
-        if isinstance(supported, list) or provider == "anthropic"
+        if isinstance(supported, list)
+        or (provider == "anthropic" and isinstance(declared.get("thinking"), dict))
         else "admin"
         if declared
         else "unknown",
@@ -109,6 +110,19 @@ async def probe(
                 data = key.json().get("data", {})
                 balance = data.get("limit_remaining")
                 if isinstance(balance, (int, float)) and balance <= 0:
+                    state = "no_credit"
+            credits = await transport.get(
+                material.base_url.rstrip("/") + "/credits", headers=headers
+            )
+            if credits.status_code == 200:
+                data = credits.json().get("data", {})
+                data = data if isinstance(data, dict) else {}
+                total, usage = data.get("total_credits"), data.get("total_usage")
+                if (
+                    isinstance(total, (int, float))
+                    and isinstance(usage, (int, float))
+                    and total - usage <= 0
+                ):
                     state = "no_credit"
         return {"status": state, "models": models}
     except (httpx.HTTPError, ValueError, TypeError, AttributeError):

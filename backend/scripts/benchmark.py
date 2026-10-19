@@ -835,11 +835,61 @@ class Harness:
     def finish(
         self, row: dict, snapshot: dict, local: list[dict], elapsed: float
     ) -> None:
-        self.resolved_agent_selections[row["run_id"]] = (
-            self.redactor.value(snapshot["run"].get("agent_models"))
-            if hasattr(self.redactor, "value")
-            else snapshot["run"].get("agent_models")
-        )
+        raw_selections = snapshot["run"].get("agent_models")
+        safe_selections = None
+        if isinstance(raw_selections, dict):
+            safe_selections = {}
+            for role in (
+                "architect",
+                "generator_cost",
+                "generator_performance",
+                "generator_security",
+                "fixer",
+            ):
+                selection = raw_selections.get(role)
+                if not isinstance(selection, dict):
+                    continue
+                safe = {}
+                for key in (
+                    "model",
+                    "provider",
+                    "thinking_mode",
+                    "configured_thinking",
+                    "request_style",
+                    "reasoning_capable",
+                ):
+                    if key not in selection:
+                        continue
+                    value = selection[key]
+                    if key == "model":
+                        safe[key] = (
+                            self.redactor.redact(value)[:128]
+                            if isinstance(value, str)
+                            else None
+                        )
+                    elif key in {"thinking_mode", "configured_thinking"}:
+                        safe[key] = (
+                            value
+                            if value in {None, "off", "low", "medium", "high"}
+                            else None
+                        )
+                    elif key == "reasoning_capable":
+                        safe[key] = value if isinstance(value, bool) else None
+                    elif key == "provider":
+                        safe[key] = (
+                            value
+                            if isinstance(value, str)
+                            and value in {"stub", "openai", "anthropic"}
+                            else None
+                        )
+                    else:
+                        safe[key] = (
+                            value
+                            if value in {"legacy", "openrouter", "openai", "anthropic"}
+                            else None
+                        )
+                safe_selections[role] = safe
+        self.resolved_agent_selections[row["run_id"]] = safe_selections
         if self.output and (self.output / "environment.json").exists():
             path = self.output / "environment.json"
             metadata = json.loads(path.read_text())

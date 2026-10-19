@@ -72,9 +72,12 @@ async def test_results_one_statement_plan_and_failed_variant(db_engines):
         finally:
             event.remove(engine.sync_engine, "before_cursor_execute", count)
         assert response.status_code == 200
-        assert len(statements) == 1 and statements[0].lstrip().upper().startswith(
-            "SELECT"
-        )
+        auth_queries = [s for s in statements if "FROM users" in s]
+        result_queries = [s for s in statements if "FROM users" not in s]
+        assert len(auth_queries) == 1
+        assert len(result_queries) == 1 and result_queries[
+            0
+        ].lstrip().upper().startswith("SELECT")
         data = response.json()
         assert data["plan"] == expected_plan.model_dump(mode="json")
         assert [p["variant"] for p in data["packages"]] == ["cost"]
@@ -132,7 +135,9 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
         "max_iterations",
         "error_message",
         "policy_profile",
+        "agent_models",
     }
+    assert data["run"]["agent_models"] is None
     assert data["run"]["id"] == str(run_id)
     assert data["run"]["start_time"].endswith("Z") and data["run"]["end_time"].endswith(
         "Z"

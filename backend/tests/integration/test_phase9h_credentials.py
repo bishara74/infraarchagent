@@ -3,13 +3,15 @@
 import base64
 import json
 from uuid import uuid4
+
 import httpx
 import pytest
 from pydantic import SecretStr
+
 from app.core.credentials import CredentialError, CredentialMaterial, CredentialVault
 from app.db.repositories.providers import ProviderRepository
 from app.llm.catalog import PRESETS, probe
-from tests.integration.test_phase9g_auth import authenticated, KEY
+from tests.integration.test_phase9g_auth import KEY, authenticated
 
 SECRET = "phase9h-provider-canary-not-a-real-key"
 MASTER = base64.b64encode(bytes(range(32))).decode()
@@ -58,6 +60,8 @@ async def test_database_rotation_revoke_and_public_metadata(db_engines, monkeypa
         assert (
             await client.post(f"/api/providers/{identity}/default")
         ).status_code == 200
+        invalid = await client.post("/api/providers/not-a-uuid/test")
+        assert invalid.status_code == 422 and "not-a-uuid" not in invalid.text
         listing = (await client.get("/api/providers")).json()
         assert SECRET not in json.dumps(listing)
         async with app.state.session_factory() as session, session.begin():
@@ -114,3 +118,43 @@ async def test_mocked_presets(preset):
     assert result["models"][0]["id"] == "test-model"
     assert result["status"] == ("no_credit" if preset == "openrouter" else "ok")
     assert ("x-api-key" in seen[0].headers) == (preset == "anthropic")
+
+
+@pytest.mark.req("NFR-01")
+async def test_failed_rotation_rolls_back_every_ciphertext(db_engines, monkeypatch):
+    monkeypatch.setenv("CREDENTIAL_ENCRYPTION_KEY", MASTER)
+    app, _ = await authenticated(db_engines[0])
+    async with app.state.session_factory() as session, session.begin():
+        repository = ProviderRepository(session)
+        await repository.create(
+            "custom",
+            "one",
+            "https://custom.invalid/v1",
+            "chat_completions",
+            SecretStr(SECRET),
+            None,
+        )
+        await repository.create(
+            "custom",
+            "two",
+            "https://custom.invalid/v1",
+            "chat_completions",
+            SecretStr(SECRET),
+            None,
+        )
+        before = {row.id: row.ciphertext for row in await repository.list()}
+    with pytest.raises(CredentialError):
+        async with app.state.session_factory() as session, session.begin():
+            repository = ProviderRepository(session)
+            rows = await repository.list()
+            rows[1].ciphertext = b"tampered"
+            await session.flush()
+            await repository.rotate(
+                CredentialVault(),
+                CredentialVault(base64.b64encode(b"r" * 32).decode()),
+                2,
+            )
+    async with app.state.session_factory() as session:
+        assert {
+            row.id: row.ciphertext for row in await ProviderRepository(session).list()
+        } == before

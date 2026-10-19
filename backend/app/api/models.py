@@ -1,10 +1,9 @@
 """Safe model catalogs and explicit administrator defaults."""
 
-from typing import Any
-
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from starlette.requests import ClientDisconnect
 
 from app.api.auth import failure
 from app.api.deps import require_admin, require_api_key
@@ -33,6 +32,12 @@ async def models(request: Request) -> JSONResponse:
         from app.domain.run_config import RunConfig
 
         legacy = await service(request).resolve(RunConfig(), interactive=False)
+        settings = request.app.state.settings
+        catalog["output_token_limits"] = {
+            "architect": settings.llm_max_output_tokens,
+            "generators": settings.generator_max_output_tokens,
+            "fixer": settings.fix_max_output_tokens,
+        }
         catalog["environment_defaults"] = {
             k: v.model_dump(mode="json") for k, v in legacy.resolved_agents.items()
         }
@@ -45,10 +50,27 @@ async def models(request: Request) -> JSONResponse:
         )
 
 
+class Capabilities(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    structured_output: bool | None = None
+    reasoning: bool | None = None
+    thinking_modes: list[str] = Field(default_factory=list, max_length=4)
+
+
+class ModelDeclaration(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str = Field(min_length=1, max_length=128)
+    name: str = Field(default="", max_length=200)
+    credential_id: str | None = None
+    context_length: int | None = Field(default=None, gt=0)
+    pricing: dict[str, str | float] = Field(default_factory=dict)
+    capabilities: Capabilities = Field(default_factory=Capabilities)
+
+
 class ModelDefaults(BaseModel):
     model_config = ConfigDict(extra="forbid")
     defaults: dict[str, AgentChoice] = Field(default_factory=dict)
-    static_models: list[dict[str, Any]] = Field(default_factory=list, max_length=1000)
+    static_models: list[ModelDeclaration] = Field(default_factory=list, max_length=1000)
 
 
 @router.put("/defaults", dependencies=[Depends(require_admin)])
@@ -63,10 +85,19 @@ async def defaults(request: Request) -> JSONResponse:
             row.agent_defaults = safety.value(
                 {k: v.model_dump() for k, v in body.defaults.items()}
             )
-            row.static_models = safety.value(body.static_models)
+            row.static_models = safety.value(
+                [item.model_dump(mode="json") for item in body.static_models]
+            )
         request.app.state.catalog_cache.clear()
         return JSONResponse({"saved": True})
-    except (ValueError, ValidationError):
+    except (ValueError, ValidationError, ClientDisconnect):
         return failure(
             400, "invalid_request", "Check model defaults and capability declarations."
         )
+
+
+@router.get("/defaults", dependencies=[Depends(require_admin)])
+async def get_defaults(request: Request) -> dict[str, object]:
+    async with request.app.state.session_factory() as session, session.begin():
+        row = await ProviderRepository(session).settings()
+        return {"defaults": row.agent_defaults, "static_models": row.static_models}

@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.domain.enums import LLMProvider
 
@@ -18,7 +18,7 @@ Thinking = Literal["off", "low", "medium", "high"]
 
 class AgentChoice(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    model: str
+    model: str = Field(min_length=1, max_length=128)
     thinking_mode: Thinking | None = None
 
 

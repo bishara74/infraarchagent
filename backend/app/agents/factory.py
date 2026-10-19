@@ -86,18 +86,15 @@ class AgentFactory:
 
     def create_architect(self, run_config: RunConfig | None = None) -> ArchitectAgent:
         resolved = (run_config or RunConfig()).resolve(self.settings)
-        adapter = build_adapter(
-            self.settings.model_copy(
-                update={"llm_api_key": SecretStr("credential-resolved-at-call")}
-            )
-            if run_config and run_config.credential_id
-            else self.settings,
-            provider=resolved.provider,
-            model=resolved.model,
-        )
         if run_config and run_config.resolved_agents:
             adapter = self.selected_adapter(
                 run_config.resolved_agents["architect"], run_config
+            )
+        else:
+            adapter = build_adapter(
+                self.settings,
+                provider=resolved.provider,
+                model=resolved.model,
             )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
             adapter = PipelineDemoStub(None, adapter.policy, model=adapter.model)
@@ -121,18 +118,15 @@ class AgentFactory:
             Variant.SECURITY: SecurityGeneratorAgent,
         }
         resolved = (run_config or RunConfig()).resolve(self.settings)
-        adapter = build_adapter(
-            self.settings.model_copy(
-                update={"llm_api_key": SecretStr("credential-resolved-at-call")}
-            )
-            if run_config and run_config.credential_id
-            else self.settings,
-            provider=resolved.provider,
-            model=resolved.model,
-        )
         if run_config and run_config.resolved_agents:
             adapter = self.selected_adapter(
                 run_config.resolved_agents["generator_" + variant.value], run_config
+            )
+        else:
+            adapter = build_adapter(
+                self.settings,
+                provider=resolved.provider,
+                model=resolved.model,
             )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
             adapter = PipelineDemoStub(
@@ -170,19 +164,16 @@ class AgentFactory:
             provider = self.settings.security_fix_provider or provider
             model = self.settings.security_fix_model or model
             reasoning_effort = self.settings.security_fix_reasoning_effort
-        adapter = build_adapter(
-            self.settings.model_copy(
-                update={"llm_api_key": SecretStr("credential-resolved-at-call")}
-            )
-            if run_config.credential_id
-            else self.settings,
-            provider=provider,
-            model=model,
-            reasoning_effort=reasoning_effort,
-        )
         if run_config.resolved_agents:
             adapter = self.selected_adapter(
                 run_config.resolved_agents["fixer"], run_config
+            )
+        else:
+            adapter = build_adapter(
+                self.settings,
+                provider=provider,
+                model=model,
+                reasoning_effort=reasoning_effort,
             )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
             adapter = PipelineDemoFixStub(

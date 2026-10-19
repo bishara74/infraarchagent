@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pydantic import SecretStr
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.credentials import CredentialError, CredentialMaterial, CredentialVault
@@ -16,6 +16,7 @@ class ProviderRepository:
         self.session = session
 
     async def settings(self, *, lock: bool = False) -> LLMSettings:
+        await self.session.execute(text("SELECT pg_advisory_xact_lock(904002)"))
         row = await self.session.get(LLMSettings, 1, with_for_update=lock)
         if row is None:
             row = LLMSettings(id=1, agent_defaults={}, static_models=[])

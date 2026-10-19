@@ -85,8 +85,10 @@ class AuthService:
             await SessionRepository(session).revoke(token_hash(token), self.clock())
 
     async def has_users(self) -> bool:
-        async with self.sessions() as session:
-            return await UserRepository(session).any()
+        with anyio.CancelScope(shield=True):
+            async with self.sessions() as session:
+                return await UserRepository(session).any()
+        return False
 
     async def user(self, user_id: UUID | None) -> User | None:
         async with self.sessions() as session:

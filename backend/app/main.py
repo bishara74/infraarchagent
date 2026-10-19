@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from app.agents.factory import AgentFactory
@@ -26,6 +27,7 @@ from app.core.errors import (
     forbidden_error_handler,
     internal_error_handler,
     unauthorized_error_handler,
+    validation_error_handler,
 )
 from app.core.logging import configure_logging
 from app.core.safety import PublicDataSafety
@@ -145,6 +147,7 @@ def create_app(
     app.state.validators = validator_versions()
     app.state.provider_mirror_present = mirror_present()
     app.add_exception_handler(Exception, internal_error_handler)
+    app.add_exception_handler(RequestValidationError, validation_error_handler)
     app.add_exception_handler(UnauthorizedError, unauthorized_error_handler)
     app.add_exception_handler(ForbiddenError, forbidden_error_handler)
     app.include_router(health_router)
