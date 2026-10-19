@@ -1210,3 +1210,18 @@ Stop the backend for rotation, export the existing key plus
 run `make rotate-credential-key`, then restart with the new key/version. Keep
 old backup keys securely: rotating live rows does not re-encrypt old backups.
 The author-authorised dependency additions and licenses are listed in D-51.
+
+### Model configuration and benchmark comparability
+
+Interactive choices resolve run overrides, personal defaults, administrator
+defaults, then environment defaults. The UI groups Architect, Generators and
+Fixer; Advanced supports individual generator overrides. Models with unknown
+structured-output capability cannot be selected for Generators/Fixer. Thinking
+controls only offer supported modes. A custom compatible endpoint needs explicit
+admin capability declarations (and can use its configured static catalog offline).
+
+Header-authenticated benchmark runs without overrides retain the pre-9h
+environment requests: LLM_MODEL/LLM_REASONING_EFFORT and SECURITY_FIX_* fallback.
+Unset effort means omitted reasoning, never off. All five resolved selections
+are recorded. Future consumer-subscription OAuth/Responses work is described in
+D-51/D-52; it is not implemented.

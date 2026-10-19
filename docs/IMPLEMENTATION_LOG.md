@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-19 — Phase 9h section 3 — Freeze role selections and preserve benchmark requests
+
+**Summary:** Add catalog/default APIs, static capabilities, per-role resolution,
+frozen retry settings, lazy credential resolution and safe selection reporting.
+
+**Requirements addressed:** FR-P-04, FR-UI-01, FR-UI-06, NFR-01.
+
+**Files:** selection domain/service, adapters/factory, models/migration 0010,
+submission/results/archive/retry, benchmark environment and mocked wire tests.
+
+**Decisions:** D-52. Header defaults retain legacy env behavior, including omitted
+reasoning and fixer inheritance. Explicit configurations validate capabilities.
+Historical missing selections stay unknown. OAuth/Responses remain future work.
+
+**Tests:** Focused adapter/factory/selection/fixer suite: 89 passed, 0 failed;
+mypy passed 148 application sources before preference integration. Initial four
+new compatibility tests exposed an incorrect assertion in the no-catalog branch;
+corrected, then the full focused suite passed. No provider requests escaped mocks.
+
+**Known gaps / follow-ups:** Personal defaults/cache/UI integrate in sections 4/7;
+full benchmark environment and archive coverage is included in final verification.
+
 ## 2026-10-19 — Phase 9h section 2 — Encrypt provider credentials
 
 **Summary:** Add AES-GCM provider storage, metadata-only admin APIs, mocked

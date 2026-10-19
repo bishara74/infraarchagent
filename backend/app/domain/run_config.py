@@ -1,9 +1,11 @@
 """Per-run LLM and remediation choices, without transport concerns."""
 
 from typing import TYPE_CHECKING, Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.domain.agent_selection import AgentChoice, AgentSelection
 from app.domain.enums import LLMProvider
 
 if TYPE_CHECKING:
@@ -35,6 +37,10 @@ class RunConfig(BaseModel):
     provider: LLMProvider | None = None
     model: str | None = None
     max_iterations: int | None = Field(default=None, ge=1)
+
+    agent_models: dict[str, AgentChoice] = Field(default_factory=dict)
+    resolved_agents: dict[str, AgentSelection] = Field(default_factory=dict)
+    credential_id: UUID | None = None
 
     def resolve(self, settings: "Settings") -> ResolvedRunConfig:
         provider = self.provider if self.provider is not None else settings.llm_provider

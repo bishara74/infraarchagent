@@ -12,6 +12,7 @@ from typing import Any
 from urllib.parse import quote
 
 from app.core.config import ReasoningEffort, ResponseFormat, Settings, StructuredOutput
+from app.core.credentials import CredentialMaterial
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -107,6 +108,12 @@ class LLMAdapter(ABC):
         reasoning_effort: ReasoningEffort | None = None,
         response_format: ResponseFormat | None = None,
     ) -> None:
+        self.credential_resolver: Callable[[], Awaitable[CredentialMaterial]] | None = (
+            None
+        )
+        self.request_style = "legacy"
+        self.reasoning_capable = False
+        self.thinking_types: dict[str, object] = {}
         self.model = model
         self.policy = policy
         self.reasoning_effort = reasoning_effort

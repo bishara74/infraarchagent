@@ -15,6 +15,7 @@ class StrictResponse(BaseModel):
 
 
 class RunResult(StrictResponse):
+    agent_models: dict[str, Any] | None = None
     policy_profile: Literal["strict", "contextual-v1"] = "strict"
     id: UUID
     status: RunStatus

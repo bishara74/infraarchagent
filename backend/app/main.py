@@ -13,6 +13,7 @@ from app.api.auth import router as auth_router
 from app.api.benchmark import router as benchmark_router
 from app.api.frontend import DEFAULT_DIST, register_frontend
 from app.api.health import router as health_router
+from app.api.models import router as models_router
 from app.api.pipeline import router as pipeline_router
 from app.api.providers import router as providers_router
 from app.core.auth import AuthService
@@ -137,6 +138,7 @@ def create_app(
     app.state.runner = runner
     app.state.settings = configured
     app.state.session_factory = session_factory
+    app.state.catalog_cache = {}
     app.state.auth = AuthService(session_factory, configured)
     app.state.scanners = scanner_info
     app.state.validators = validator_versions()
@@ -147,6 +149,7 @@ def create_app(
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(providers_router)
+    app.include_router(models_router)
     app.include_router(benchmark_router)
     app.include_router(pipeline_router)
     register_frontend(app, frontend_dist if frontend_dist is not None else DEFAULT_DIST)

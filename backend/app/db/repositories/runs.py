@@ -1,6 +1,7 @@
 """Run persistence; status changes always use domain transitions."""
 
 from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import select
@@ -25,6 +26,8 @@ class RunRepository:
         policy_profile: str = "strict",
         run_id: UUID | None = None,
         user_id: UUID | None = None,
+        agent_models: dict[str, Any] | None = None,
+        credential_id: UUID | None = None,
     ) -> PipelineRun:
         if max_iterations < 1:
             raise ValueError("max_iterations must be positive")
@@ -32,6 +35,8 @@ class RunRepository:
             run_id=run_id or uuid4(),
             input_text=input_text,
             user_id=user_id,
+            agent_models=agent_models,
+            credential_id=credential_id,
             policy_profile=policy_profile,
             status=RunStatus.CREATED,
             start_time=datetime.now(UTC),

@@ -55,6 +55,7 @@ class ResultsService:
             variant=variant,
             status=status,
             model=snapshot.run.model,
+            agent_models=snapshot.run.agent_models,
             labelled_at=label.timestamp if label else None,
             review_action=label.payload.get("review_action") if label else None,
             feedback=row.review_feedback,
@@ -136,6 +137,7 @@ class ResultsService:
         return ResultsResponse(
             run=RunResult(
                 id=row.run_id,
+                agent_models=self.safety.value(row.agent_models),
                 policy_profile="contextual-v1"
                 if row.policy_profile == "contextual-v1"
                 else "strict",

@@ -210,7 +210,11 @@ class ReviewService:
                 raise ReviewRetryScanError("deployment plan unavailable")
             row = next(item for item in snapshot.packages if item.variant == variant)
             config = RunConfig(
-                policy_profile=snapshot.run.policy_profile or "strict",
+                resolved_agents=snapshot.run.agent_models or {},
+                credential_id=snapshot.run.credential_id,
+                policy_profile="contextual-v1"
+                if snapshot.run.policy_profile == "contextual-v1"
+                else "strict",
                 provider=LLMProvider(snapshot.run.llm_provider),
                 model=snapshot.run.model,
                 max_iterations=snapshot.run.max_iterations,

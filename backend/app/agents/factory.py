@@ -2,6 +2,7 @@
 
 import asyncio
 
+from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.agents.architect import ArchitectAgent
@@ -14,8 +15,12 @@ from app.agents.security.fix import FixAgent
 from app.agents.security.verification import TerraformVerifier
 from app.agents.validator import ValidatorAgent
 from app.core.config import Settings
+from app.core.credentials import CredentialMaterial
+from app.db.repositories.providers import ProviderRepository
+from app.domain.agent_selection import AgentSelection
 from app.domain.enums import LLMProvider, Variant
 from app.domain.run_config import RunConfig
+from app.llm.base import LLMAdapter
 from app.llm.factory import build_adapter
 from app.pipeline.demo_stub import PipelineDemoFixStub, PipelineDemoStub
 from app.scanners.runner import ProcessToolRunner
@@ -48,13 +53,52 @@ class AgentFactory:
             asyncio.Semaphore(settings.validator_max_parallel_tools),
         )
 
+    def selected_adapter(
+        self, selection: AgentSelection, config: RunConfig
+    ) -> LLMAdapter:
+        settings = self.settings
+        if config.credential_id:
+            settings = settings.model_copy(
+                update={"llm_api_key": SecretStr("credential-resolved-at-call")}
+            )
+        adapter = build_adapter(
+            settings,
+            provider=selection.provider,
+            model=selection.model,
+            reasoning_effort=selection.configured_thinking,
+        )
+        adapter.reasoning_effort = selection.thinking_mode
+        adapter.request_style = selection.request_style
+        adapter.reasoning_capable = selection.reasoning_capable
+        adapter.thinking_types = selection.thinking_types
+        if selection.request_style == "anthropic":
+            adapter.supports_structured_output = True
+        if config.credential_id:
+            identity = config.credential_id
+
+            async def resolve() -> CredentialMaterial:
+                assert self.session_factory is not None
+                async with self.session_factory() as session, session.begin():
+                    return await ProviderRepository(session).material(identity)
+
+            adapter.credential_resolver = resolve
+        return adapter
+
     def create_architect(self, run_config: RunConfig | None = None) -> ArchitectAgent:
         resolved = (run_config or RunConfig()).resolve(self.settings)
         adapter = build_adapter(
-            self.settings,
+            self.settings.model_copy(
+                update={"llm_api_key": SecretStr("credential-resolved-at-call")}
+            )
+            if run_config and run_config.credential_id
+            else self.settings,
             provider=resolved.provider,
             model=resolved.model,
         )
+        if run_config and run_config.resolved_agents:
+            adapter = self.selected_adapter(
+                run_config.resolved_agents["architect"], run_config
+            )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
             adapter = PipelineDemoStub(None, adapter.policy, model=adapter.model)
         return ArchitectAgent(
@@ -78,8 +122,18 @@ class AgentFactory:
         }
         resolved = (run_config or RunConfig()).resolve(self.settings)
         adapter = build_adapter(
-            self.settings, provider=resolved.provider, model=resolved.model
+            self.settings.model_copy(
+                update={"llm_api_key": SecretStr("credential-resolved-at-call")}
+            )
+            if run_config and run_config.credential_id
+            else self.settings,
+            provider=resolved.provider,
+            model=resolved.model,
         )
+        if run_config and run_config.resolved_agents:
+            adapter = self.selected_adapter(
+                run_config.resolved_agents["generator_" + variant.value], run_config
+            )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
             adapter = PipelineDemoStub(
                 variant,
@@ -117,11 +171,19 @@ class AgentFactory:
             model = self.settings.security_fix_model or model
             reasoning_effort = self.settings.security_fix_reasoning_effort
         adapter = build_adapter(
-            self.settings,
+            self.settings.model_copy(
+                update={"llm_api_key": SecretStr("credential-resolved-at-call")}
+            )
+            if run_config.credential_id
+            else self.settings,
             provider=provider,
             model=model,
             reasoning_effort=reasoning_effort,
         )
+        if run_config.resolved_agents:
+            adapter = self.selected_adapter(
+                run_config.resolved_agents["fixer"], run_config
+            )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
             adapter = PipelineDemoFixStub(
                 adapter.policy,

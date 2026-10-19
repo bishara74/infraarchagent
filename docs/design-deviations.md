@@ -1622,6 +1622,29 @@ Dependency inventory: cryptography 50.0.2 (Apache-2.0 OR BSD-3-Clause), cffi 2.1
 (MIT-0), pycparser 3.11 (BSD-3-Clause), exact locked distributions. cryptography
 is the sole new direct dependency; the other two are its required transitives.
 
+### D-52 — Per-agent models, thinking and request compatibility (Phase 9h)
+
+FR-P-04 / NFR-01: freeze five effective role selections and retain provider,
+model, configured effort, effective effort and request style. Three UI controls
+have optional per-generator overrides. Explicit interactive configuration uses
+one provider credential; metadata or admin-declared capabilities govern valid
+combinations. Unknown structured-output capability cannot qualify explicit
+Generator/Fixer selections. Native thinking/structured output is opt-in new
+configuration, preserving the legacy native adapter's omitted parameters.
+
+Header runs without explicit selections retain environment resolution, including
+SECURITY_FIX_* fallback and omitted reasoning; unset is never rewritten as off.
+The baseline commit 26ef29f's captured golden request parameters include complete
+strict schemas/routing and are compared as serialized bytes. Legacy environment
+requests remain usable without a new catalog dependency; capability enforcement
+applies to explicit model selections. No readiness/blocking rule changes.
+
+OAuth with consumer subscriptions (ChatGPT/Codex/Anthropic) and future OpenAI
+Sign in with ChatGPT/Responses transport are out of scope. D-51 reserves typed
+credential/protocol fields and encrypted envelope capacity, without implementing
+OAuth, refresh tokens or Responses. Future work requires provider-policy and
+availability verification; no consumer subscription entitlement is assumed.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

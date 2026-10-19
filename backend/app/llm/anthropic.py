@@ -1,6 +1,6 @@
 """Anthropic Messages implementation of the LLM provider contract."""
 
-from typing import Any
+from typing import Any, cast
 
 import anthropic
 import httpx2
@@ -45,12 +45,64 @@ class AnthropicAdapter(LLMAdapter):
         max_output_tokens: int,
         timeout: float,
     ) -> LLMResponse:
+        if self.credential_resolver is not None:
+            material = await self.credential_resolver()
+            delegate = AnthropicAdapter(
+                self.model,
+                self.policy,
+                material.secret.get_secret_value(),
+                reasoning_effort=self.reasoning_effort,
+            )
+            delegate.client.base_url = material.base_url.rstrip("/") + "/"
+            delegate.request_style, delegate.reasoning_capable = (
+                self.request_style,
+                self.reasoning_capable,
+            )
+            delegate.thinking_types = self.thinking_types
+            delegate.structured_output, delegate.output_schema = (
+                self.structured_output,
+                self.output_schema,
+            )
+            delegate._structured_request.set(self._structured_request.get())
+            try:
+                return await delegate.send_prompt(
+                    prompt,
+                    system=system,
+                    max_output_tokens=max_output_tokens,
+                    timeout=timeout,
+                )
+            finally:
+                await delegate.client.close()
         params: dict[str, Any] = {
             "model": self.model,
             "max_tokens": max_output_tokens,
             "messages": [{"role": "user", "content": prompt}],
             "timeout": timeout,
         }
+        if self.request_style == "anthropic":
+            if self.reasoning_capable and self.reasoning_effort is not None:
+                if self.reasoning_effort == "off":
+                    params["thinking"] = {"type": "disabled"}
+                elif isinstance(self.thinking_types.get("adaptive"), dict) and cast(
+                    dict[str, Any], self.thinking_types["adaptive"]
+                ).get("supported"):
+                    params["thinking"] = {"type": "adaptive"}
+                    params["output_config"] = {"effort": self.reasoning_effort}
+                else:
+                    budget = {"low": 1024, "medium": 2048, "high": 4096}[
+                        self.reasoning_effort
+                    ]
+                    if budget >= max_output_tokens:
+                        raise LLMPermanentError("request_rejected")
+                    params["thinking"] = {"type": "enabled", "budget_tokens": budget}
+            if (
+                self._structured_request.get()
+                and self.structured_output == "json_schema"
+            ):
+                params.setdefault("output_config", {})["format"] = {
+                    "type": "json_schema",
+                    "schema": self.output_schema,
+                }
         if system is not None:
             params["system"] = system
         failure: LLMError | None = None

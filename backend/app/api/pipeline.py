@@ -18,6 +18,7 @@ from app.api.deps import (
     get_state_writer,
     require_api_key,
 )
+from app.api.models import service as model_service
 from app.api.schemas import (
     ResultsResponse,
     RetryResponse,
@@ -25,6 +26,7 @@ from app.api.schemas import (
     ReviewResponse,
 )
 from app.core.config import Settings
+from app.core.credentials import CredentialError
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
@@ -155,15 +157,28 @@ async def submit_run(
         status = 422 if error.code == "no_infrastructure_intent" else 400
         return failure(status, error.code, error.message)
     try:
+        if isinstance(body.get("config"), dict) and (
+            {"resolved_agents", "credential_id"} & set(body["config"])
+        ):
+            raise ValueError("Private configuration fields")
         config = RunConfig.model_validate(body.get("config") or {})
         if body.get("config") is not None and not isinstance(body["config"], dict):
             raise ValueError("config must be an object")
         settings: Settings = request.app.state.settings
+        config = await model_service(request).resolve(
+            config, interactive=request.state.auth_mode == "account"
+        )
         resolved = config.resolve(settings)
-        build_adapter(settings, provider=resolved.provider, model=resolved.model)
+        if not config.credential_id:
+            build_adapter(settings, provider=resolved.provider, model=resolved.model)
     except RunConfigError as error:
         return failure(400, "invalid_request", error.message)
-    except (ValidationError, ValueError, LLMConfigurationError) as error:
+    except (
+        ValidationError,
+        ValueError,
+        LLMConfigurationError,
+        CredentialError,
+    ) as error:
         message = (
             str(error)
             if isinstance(error, LLMConfigurationError)
@@ -186,6 +201,13 @@ async def submit_run(
                     policy_profile=resolved.policy_profile,
                     model=PublicDataSafety(settings).value(resolved.model),
                     user_id=request.state.user.id if request.state.user else None,
+                    agent_models=PublicDataSafety(settings).value(
+                        {
+                            k: v.model_dump(mode="json")
+                            for k, v in config.resolved_agents.items()
+                        }
+                    ),
+                    credential_id=config.credential_id,
                 )
                 run_id = row.run_id
         await event_log.append(
@@ -193,7 +215,14 @@ async def submit_run(
             AgentName.ORCHESTRATOR,
             RunStatus.CREATED,
             message="pipeline accepted",
-            payload={**run_status_payload(), "policy_profile": resolved.policy_profile},
+            payload={
+                **run_status_payload(),
+                "policy_profile": resolved.policy_profile,
+                "agent_models": {
+                    k: v.model_dump(mode="json")
+                    for k, v in config.resolved_agents.items()
+                },
+            },
         )
         runner.start(run_id, text, config)
     except Exception:

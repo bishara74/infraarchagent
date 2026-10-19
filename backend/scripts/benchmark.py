@@ -331,6 +331,7 @@ class Harness:
         self.fixing_model = None
         self.expected_provider = None
         self.quality_inputs = {}
+        self.resolved_agent_selections = {}
 
     async def credit(self) -> CreditSnapshot:
         return (
@@ -834,6 +835,16 @@ class Harness:
     def finish(
         self, row: dict, snapshot: dict, local: list[dict], elapsed: float
     ) -> None:
+        self.resolved_agent_selections[row["run_id"]] = (
+            self.redactor.value(snapshot["run"].get("agent_models"))
+            if hasattr(self.redactor, "value")
+            else snapshot["run"].get("agent_models")
+        )
+        if self.output and (self.output / "environment.json").exists():
+            path = self.output / "environment.json"
+            metadata = json.loads(path.read_text())
+            metadata["resolved_agent_selections"] = self.resolved_agent_selections
+            write_json(path, metadata)
         self.quality_inputs[row["run_id"]] = {
             p["variant"]: quality_snapshot(p, self.redactor)
             for p in snapshot.get("packages", [])

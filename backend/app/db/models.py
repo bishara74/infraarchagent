@@ -28,6 +28,10 @@ class PipelineRun(Base):
         String(32), default="strict", server_default="strict"
     )
     user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    agent_models: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    credential_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("provider_credentials.id")
+    )
     input_text: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     start_time: Mapped[datetime] = mapped_column(

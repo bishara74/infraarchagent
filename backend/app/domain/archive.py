@@ -18,6 +18,7 @@ def readiness_document(
     variant: Variant,
     status: PackageStatus,
     model: str | None,
+    agent_models: dict[str, Any] | None = None,
     labelled_at: datetime | None,
     review_action: str | None,
     feedback: str | None,
@@ -63,6 +64,11 @@ def readiness_document(
             f"Run ID: {run_id}",
             f"Variant: {variant.value}",
             f"Model: {model or 'unavailable'}",
+            "Agent models and thinking modes:",
+            *[
+                f"- {role}: {selection}"
+                for role, selection in (agent_models or {}).items()
+            ],
             f"Labelled at: {timestamp}",
             f"Label origin: {origin}",
             "",

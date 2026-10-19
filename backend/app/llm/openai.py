@@ -61,6 +61,36 @@ class OpenAIAdapter(LLMAdapter):
         max_output_tokens: int,
         timeout: float,
     ) -> LLMResponse:
+        if self.credential_resolver is not None:
+            material = await self.credential_resolver()
+            delegate = OpenAIAdapter(
+                self.model,
+                self.policy,
+                material.secret.get_secret_value(),
+                base_url=material.base_url,
+                reasoning_effort=self.reasoning_effort,
+                response_format=self.response_format,
+                prompt_cache=self.prompt_cache,
+            )
+            delegate.request_style, delegate.reasoning_capable = (
+                self.request_style,
+                self.reasoning_capable,
+            )
+            (
+                delegate.structured_output,
+                delegate.output_schema,
+                delegate.output_schema_name,
+            ) = self.structured_output, self.output_schema, self.output_schema_name
+            delegate._structured_request.set(self._structured_request.get())
+            try:
+                return await delegate.send_prompt(
+                    prompt,
+                    system=system,
+                    max_output_tokens=max_output_tokens,
+                    timeout=timeout,
+                )
+            finally:
+                await delegate.client.close()
         messages: list[dict[str, Any]] = []
         if system is not None:
             content: Any = system
@@ -82,7 +112,17 @@ class OpenAIAdapter(LLMAdapter):
             "messages": messages,
             "timeout": timeout,
         }
-        if self.reasoning_effort == "off":
+        if (
+            self.request_style == "openai"
+            and self.reasoning_capable
+            and self.reasoning_effort is not None
+        ):
+            params["reasoning_effort"] = (
+                "none" if self.reasoning_effort == "off" else self.reasoning_effort
+            )
+        elif self.request_style != "legacy" and not self.reasoning_capable:
+            pass
+        elif self.reasoning_effort == "off":
             params["extra_body"] = {"reasoning": {"enabled": False}}
         elif self.reasoning_effort is not None:
             params["extra_body"] = {"reasoning": {"effort": self.reasoning_effort}}
