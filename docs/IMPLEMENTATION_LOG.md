@@ -32,6 +32,26 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Immutable offline replay baseline
+
+**Summary:** Add a settings-free replay runner and immutable input inventory;
+record fresh validation/scans separately from historical results.
+
+**Requirements addressed:** FR-V-01, FR-S-04, NFR-01.
+
+**Files:** scripts/phase9i_replay.py; tests/unit/test_phase9i_replay.py;
+Phase 9i input-manifest.json; README; D-56; this log.
+
+**Decisions:** D-56. All 81 packages/28 runs, including static-site controls;
+three missing variants retained. No source snapshots copied into evidence.
+
+**Tests:** Focused replay tests: 2 passed / 0 failed / 0 skipped (0.14 s).
+Full offline baseline is running; final results belong in the evidence commit.
+
+**Known gaps / follow-ups:** Implement approved repairs and v2; complete replay
+and full lint/test/E2E verification. No real LLM calls or operator settings.
+
+
 ## 2026-10-20 — Phase 9b section 6 — Freeze final report and verification
 
 **Summary:** Generate the final report and traceability artifact from immutable

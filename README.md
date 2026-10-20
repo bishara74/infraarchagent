@@ -1393,3 +1393,14 @@ from the repository root while no other verification workload runs. The script
 also disables dotenv explicitly, refuses non-test settings and restores the real
 session guard after its measurement-only control. No browser, image or package
 download is needed. A new destination is required; existing evidence is immutable.
+
+### Phase 9i offline replay
+
+From `backend/`, run `.venv/bin/python -m scripts.phase9i_replay` to inventory
+and replay the two saved final sets into `docs/evals/phase9i-offline/`.
+Original cached snapshots are required and are never rewritten. The runner
+uses mirrored providers and offline scanners, never operator settings or LLMs.
+For verification without dotenv, put `backend/tests/bootstrap` and `backend`
+first on `PYTHONPATH`, set `INFRAARCH_TEST_BOOTSTRAP=1`, and provide explicit
+synthetic test-database URLs for a disposable PostgreSQL instance before
+running `make test`. Never use an author's normal database for this command.

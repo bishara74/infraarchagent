@@ -1746,6 +1746,22 @@ blobs and uses that documented identifier lookup, with unknown for unlisted
 historical stub commits. Final-set pooling rejects dirty/mismatched code,
 settings, tool versions, selections or exact-text schedules.
 
+### D-56 — Phase 9i guarded repairs and versioned offline assessments
+
+FR-G-02, FR-S-04/09, FR-V-01/03, FR-UI-05 and NFR-01: author-approved
+Phase 9i adds bounded schema guidance, documented equivalent/format repairs,
+dependency-aware subnet defaults and guarded VPC/RDS defaults. contextual-v2
+will be an independent experimental assessment; contextual-v1 and strict
+acceptance remain frozen. Run profile selection and persistence are unchanged.
+No threshold, deadline or dependency changes are authorised.
+
+Offline evidence lives in `docs/evals/phase9i-offline/`. Its input manifest
+hashes all 81 generated packages from the two final sets, retaining three
+missing variants. Stored results and fresh observations are distinct. The
+replay never instantiates operator settings or invokes an LLM. Raw generated
+source remains in the original read-only snapshots, outside committed evidence.
+Per-change and cumulative outcomes will be recorded as implementation completes.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
