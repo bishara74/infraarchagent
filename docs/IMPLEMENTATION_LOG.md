@@ -28,6 +28,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 ---
 
 
+
+## 2026-10-21 — Phase 9i — Broad scenario pre-registration (section 1)
+
+**Summary:** Register ten fixed prompts and complexity categories before any broad
+benchmark. Default order is 1–10 then 10–1, alternating direction for extra rounds.
+
+**Requirements addressed:** PR-01, NFR-01 (descriptive evaluation preparation).
+
+**Files:** docs/evals/scenarios/broad-v1.json; scenarios/README.md;
+backend/tests/unit/test_phase9i_broad_scenarios.py; this log.
+
+**Decisions:** Anchors 2/9/10 reuse final-set texts verbatim; the other seven copy
+the task descriptions. Complexity is an ordinal pre-assignment with approximate
+resource scales, never inferred from output. No spec or runtime change.
+
+**Tests:** dotenv-disabled focused pytest: 4 passed, 0 failed, 0 skipped.
+Focused Ruff check and format check passed. Full verification follows in section 4.
+
+**Known gaps / follow-ups:** No rehearsal or real benchmark has run. Sections 2–4
+add execution, reporting and D-57. No model calls, dotenv reads or installs.
+
+
 ## 2026-10-20 — Phase 9i — Kubernetes risks and replay findings
 
 **Summary:** Publish the follow-up thesis interpretation, per-prompt totals,
