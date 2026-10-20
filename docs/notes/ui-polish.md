@@ -1,0 +1,4 @@
+- Provider: Save should also work without credit (with a warning)
+- Models: show 'Declare model capabilities' only when the selected provider is 'Custom OpenAI-compatible', never for OpenRouter/OpenAI/Anthropic
+- Models: every 'Use default' option must show the resolved model and thinking mode, e.g. 'Use default: openai/gpt-oss-120b:nitro · thinking low' (Generators currently shows only 'Use default')
+- Models: always show the thinking-mode control, also for 'Use default' (showing the default's mode, e.g. low); only hide it for models without reasoning support

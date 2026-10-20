@@ -1,0 +1,2 @@
+- results.csv contains fields >128 KB (runtime telemetry); keep the CSV compact and move large telemetry to results.json or a separate file
+- PR-04: re-measure download latency on a quiet machine (9h stub: median 1.99 s, FAIL); check whether the per-request session check slows downloads
