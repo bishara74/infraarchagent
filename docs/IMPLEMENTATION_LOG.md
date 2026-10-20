@@ -29,6 +29,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-21 — Phase 9i — Descriptive broad reporting (section 3)
+
+**Summary:** Append committed broad scenario/complexity statistics, chart CSV and
+anchor comparisons without changing historical report/CSV rows. Stub evidence
+has its own labelled tables and never enters real-provider comparisons.
+
+**Requirements addressed:** PR-01/05, NFR-01.
+
+**Files:** backend/scripts/phase9b_report.py, phase9i_broad_report.py;
+backend/tests/unit/test_phase9i_broad_report.py; this log.
+
+**Decisions:** Hash/ancestry checks establish pre-registration and schedule identity.
+Generated packages are quality denominators; settled-run missing variants,
+unstarted slots and incomplete accepted runs remain distinct. Wilson intervals
+and two-sided Fisher package/run comparisons are descriptive. Historical v2 is
+unavailable, not recomputed. Run sensitivity includes complete failed runs. No
+historical final-report files are modified. D-57 follows in section 4.
+
+**Tests:** Dotenv-disabled broad/historical report and CSV tests: 32 passed,
+0 failed, 0 skipped. Focused Ruff checks and formatting passed. Regression
+comparison confirms rates/costs/timings/blockers CSV bytes and historical report
+prefix are unchanged when broad evidence is appended.
+
+**Known gaps / follow-ups:** No real broad evidence exists; the author must run and
+commit it before generating the real report. Full verification and stub rehearsal
+follow in section 4. No real calls, dotenv reads, new dependencies or downloads.
+
+
 ## 2026-10-21 — Phase 9i — Quality-only broad schedule (section 2)
 
 **Summary:** Add bench-broad with committed-file verification, alternating rounds,

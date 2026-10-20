@@ -337,10 +337,14 @@ def generate(evidence: Evidence, output: Path) -> None:
     if output.resolve().is_relative_to(evidence.root / ".cache"):
         raise ValueError("Cache is read-only")
     inventory = []
+    broad_folders = []
     datasets = {}
     for path in sorted(evidence.paths):
         if re.fullmatch(r"docs/evals/phase9-bench-[^/]+/results.json", path):
             folder = path.split("/")[2]
+            if folder.startswith("phase9-bench-broad-"):
+                broad_folders.append(folder)
+                continue
             inventory.append(load_benchmark(evidence, folder))
     by_folder = {b["folder"]: b for b in inventory}
     rates, costs, timings, blockers, main = [], [], [], [], []
@@ -1052,6 +1056,9 @@ def generate(evidence: Evidence, output: Path) -> None:
     write_csv(output / "blockers.csv", blockers)
     write_csv(output / "timings.csv", timings)
     write_csv(output / "costs.csv", costs)
+    from scripts.phase9i_broad_report import append_broad_report
+
+    append_broad_report(evidence, broad_folders, datasets, output)
     write_json(
         output / "input-manifest.json",
         {
