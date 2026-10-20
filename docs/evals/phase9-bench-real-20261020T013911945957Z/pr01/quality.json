@@ -1,0 +1,679 @@
+{
+  "counts": {
+    "packages": 29,
+    "missing_variants": 1,
+    "unavailable_runs": 0,
+    "checks_passed": 8
+  },
+  "checks_passed_rate": 0.27586206896551724,
+  "legacy_labels_mapped": 0,
+  "status_counts": {
+    "pending_review": 21,
+    "checks_passed": 8
+  },
+  "profile_rates": {
+    "strict": {
+      "passed": 8,
+      "packages": 29
+    },
+    "contextual-v1": {
+      "passed": 8,
+      "packages": 29
+    }
+  },
+  "review_reason_counts": {
+    "validation_failed": 17,
+    "unresolved_security_findings": 16
+  },
+  "failed_check_counts": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported argument",
+      "count": 14
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Terraform configuration diagnostic",
+      "count": 5
+    },
+    {
+      "check_id": "helm.lint",
+      "message": "helm optional lint failed",
+      "count": 4
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "check_id": "grafana.panels",
+      "message": "Dashboard requires panels",
+      "count": 1
+    },
+    {
+      "check_id": "terraform.validate",
+      "message": "Unsupported attribute",
+      "count": 1
+    }
+  ],
+  "remaining_finding_counts": {
+    "AWS-0053": 12,
+    "CKV_AWS_91": 10,
+    "AWS-0164": 7,
+    "CKV_AWS_130": 7,
+    "CKV_AWS_378": 6,
+    "CKV_AWS_144": 5,
+    "CKV_AWS_157": 4,
+    "KSV-0125": 4,
+    "AWS-0090": 4,
+    "CKV_AWS_21": 4,
+    "CKV_AWS_260": 3,
+    "CKV_AWS_18": 3,
+    "CKV2_AWS_12": 2,
+    "AWS-0104": 2,
+    "AWS-0077": 2,
+    "AWS-0039": 2,
+    "AWS-0040": 2,
+    "AWS-0041": 2,
+    "CKV_AWS_38": 2,
+    "CKV_AWS_39": 2,
+    "CKV_AWS_58": 2,
+    "AWS-0054": 2,
+    "CKV2_AWS_20": 2,
+    "CKV_AWS_103": 2,
+    "CKV_AWS_2": 2,
+    "AWS-0052": 2,
+    "AWS-0132": 1,
+    "CKV_AWS_145": 1,
+    "CKV_AWS_354": 1,
+    "CKV_K8S_40": 1
+  },
+  "final_failure_origins": {
+    "generated": 23,
+    "unknown": 3
+  },
+  "measurements": {
+    "durations": {
+      "deterministic_repairs": {
+        "count": 121,
+        "median": 0.06932832900020003,
+        "p90": 0.2765271770003892,
+        "max": 0.834743059000175
+      },
+      "final_security_scan": {
+        "count": 29,
+        "median": 5.279237241000374,
+        "p90": 7.383039817999816,
+        "max": 8.852246371001456
+      },
+      "final_validation": {
+        "count": 29,
+        "median": 0.0031392839991895016,
+        "p90": 0.42121422400123265,
+        "max": 0.6981037999994442
+      },
+      "generation_gate": {
+        "count": 29,
+        "median": 13.773086966999472,
+        "p90": 24.10218286700001,
+        "max": 26.507330099000683
+      },
+      "initial_validation": {
+        "count": 29,
+        "median": 0.0029039569999440573,
+        "p90": 0.7756405560012354,
+        "max": 4.157495392999408
+      },
+      "post_security_validation": {
+        "count": 29,
+        "median": 0.0026803640012076357,
+        "p90": 0.5505637030000798,
+        "max": 3.910164278000593
+      },
+      "security_iteration_verification": {
+        "count": 92,
+        "median": 22.306064374500238,
+        "p90": 44.567443938001816,
+        "max": 52.37685303900071
+      },
+      "validation_repair_round": {
+        "count": 55,
+        "median": 5.459819572000924,
+        "p90": 11.0941998720009,
+        "max": 16.576151481000124
+      }
+    },
+    "iterations": {
+      "attempted_fix_iterations": 92,
+      "deadline_only_rollbacks": 8,
+      "deadline_before_candidate": 0,
+      "multiple_cause_deadline_rollbacks": 4,
+      "validity_regression_rollbacks": 8
+    },
+    "initialization": {
+      "init_runs": 52,
+      "init_reused": 359,
+      "reinitializations": 9
+    },
+    "repair_deadline_stops": {}
+  },
+  "repair_outcomes_by_class": [
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Dashboard requires panels",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 4
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 12
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "phase": "after_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "helm optional lint failed",
+      "count": 4
+    },
+    {
+      "phase": "before_security",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Dashboard requires panels",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 4
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 13
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "phase": "before_security",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "helm optional lint failed",
+      "count": 4
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Missing required argument",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported argument",
+      "count": 3
+    },
+    {
+      "phase": "generation",
+      "outcome": "accepted",
+      "reason": "improved",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Dashboard requires panels",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Generation syntax check failed",
+      "count": 4
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported argument",
+      "count": 2
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "invalid_patch",
+      "error_class": "helm optional lint failed",
+      "count": 4
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 3
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported argument",
+      "count": 10
+    },
+    {
+      "phase": "generation",
+      "outcome": "rejected",
+      "reason": "no_improvement",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "phase": "generation",
+      "outcome": "stopped",
+      "reason": "round_limit",
+      "error_class": "unknown",
+      "count": 2
+    }
+  ],
+  "gate_outcomes": {
+    "invalid": 18,
+    "valid": 11
+  },
+  "init_categories": {
+    "validation_cached": 18,
+    "initialized": 10,
+    "reused": 1
+  },
+  "security_context_coverage": {
+    "terraform": {
+      "total": 92,
+      "positive": 92,
+      "zero": 0,
+      "missing": 0,
+      "reasons": {
+        "schema_available": 92
+      }
+    },
+    "other": {
+      "total": 20,
+      "positive": 0,
+      "zero": 20,
+      "missing": 0,
+      "reasons": {
+        "not_terraform": 20
+      }
+    },
+    "unknown": {
+      "total": 0,
+      "positive": 0,
+      "zero": 0,
+      "missing": 0,
+      "reasons": {}
+    }
+  },
+  "schema_context_chars": {
+    "generator": {
+      "count": 29,
+      "median": 4202,
+      "p90": 5503,
+      "max": 5503
+    },
+    "repair": {
+      "count": 57,
+      "median": 15958,
+      "p90": 15994,
+      "max": 16000
+    },
+    "security": {
+      "count": 112,
+      "median": 11572.0,
+      "p90": 14170,
+      "max": 15983
+    }
+  },
+  "security_outcomes_by_class": [
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 6
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Unsupported argument",
+      "count": 23
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "outcome": "accepted",
+      "reason": "",
+      "error_class": "unknown",
+      "count": 19
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "",
+      "error_class": "Unsupported argument",
+      "count": 10
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "",
+      "error_class": "unknown",
+      "count": 4
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "iteration_deadline",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "iteration_deadline",
+      "error_class": "Unsupported argument",
+      "count": 2
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "iteration_deadline",
+      "error_class": "unknown",
+      "count": 8
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 2
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Unsupported argument",
+      "count": 2
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "Unsupported block type",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings",
+      "error_class": "unknown",
+      "count": 2
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings,iteration_deadline",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings,iteration_deadline",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "new_blocking_findings,iteration_deadline",
+      "error_class": "unknown",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "reference_regression",
+      "error_class": "Unsupported argument",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "reference_regression",
+      "error_class": "Unsupported attribute",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "reference_regression",
+      "error_class": "unknown",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Reference to undeclared resource",
+      "count": 2
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 4
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Unsupported argument",
+      "count": 5
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression",
+      "error_class": "Unsupported block type",
+      "count": 2
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression,iteration_deadline",
+      "error_class": "Terraform configuration diagnostic",
+      "count": 1
+    },
+    {
+      "outcome": "rolled_back",
+      "reason": "terraform_regression,iteration_deadline",
+      "error_class": "Unsupported argument",
+      "count": 1
+    }
+  ],
+  "package_initialization": {
+    "packages_measured": 29,
+    "packages_unknown": 0,
+    "init_runs": 53,
+    "init_reused": 479,
+    "reinitializations": 10,
+    "init_seconds": 219.7666425460011,
+    "validate_seconds": 1127.0440557300135
+  },
+  "phase9f": {
+    "generation_syntax_paths": {
+      "unchanged": 26,
+      "normalization": 1,
+      "regeneration": 2
+    },
+    "packages_measured": 29,
+    "packages_unknown": 0,
+    "near_misses": {
+      "1": 0,
+      "2-3": 1,
+      "4+": 3
+    },
+    "validation_unknown": 0,
+    "catalogue_retained_by_rule": {
+      "CKV_AWS_103": 9
+    },
+    "template_outcomes": [
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "count": 74
+      },
+      {
+        "template": "access_logs",
+        "status": "retained",
+        "count": 3
+      },
+      {
+        "template": "flow_logs",
+        "status": "retained",
+        "count": 9
+      },
+      {
+        "template": "kms",
+        "status": "retained",
+        "count": 14
+      },
+      {
+        "template": "kms",
+        "status": "skipped",
+        "count": 5
+      }
+    ],
+    "template_introduced_rules": {
+      "CKV_AWS_18": 45,
+      "AWS-0132": 45,
+      "CKV_AWS_145": 54,
+      "CKV_AWS_144": 29
+    },
+    "partial_groups": {
+      "kept": 52,
+      "discarded": 43,
+      "unevaluated": 9
+    },
+    "existing_file_proposals": {
+      "normalized": 3,
+      "retained": 1
+    },
+    "fixer_models": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "sessions": 29,
+        "fix_attempt_timeout_seconds": [
+          45.0
+        ],
+        "iteration_timeout_seconds": [
+          60.0
+        ],
+        "security_stage_timeout_seconds": [
+          240.0
+        ],
+        "fix_max_resources": [
+          2
+        ],
+        "fix_max_findings": [
+          12
+        ],
+        "partial_max_groups": [
+          6
+        ],
+        "findings_per_call": {
+          "count": 112,
+          "median": 4.0,
+          "p90": 8,
+          "max": 12
+        },
+        "calls_missing_measurements": 0
+      }
+    ]
+  }
+}

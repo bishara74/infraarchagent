@@ -1,0 +1,903 @@
+{
+  "status": "pending_review",
+  "legacy_label_mapped": false,
+  "profile_assessments": {
+    "strict": {
+      "checks_passed": false,
+      "remaining_blocking": 10,
+      "excepted": []
+    },
+    "contextual-v1": {
+      "checks_passed": false,
+      "remaining_blocking": 10,
+      "excepted": [],
+      "approval": "experimental; supervisor approval required"
+    }
+  },
+  "validation_result": "invalid",
+  "phase9f": {
+    "measured": true,
+    "catalogue": [
+      {
+        "control": "imds",
+        "resource": "aws_instance.grafana",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "AWS-0028"
+        ]
+      },
+      {
+        "control": "ebs",
+        "resource": "aws_instance.grafana",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "AWS-0131",
+          "CKV_AWS_8"
+        ]
+      },
+      {
+        "control": "imds",
+        "resource": "aws_instance.nginx",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "AWS-0028"
+        ]
+      },
+      {
+        "control": "ebs",
+        "resource": "aws_instance.nginx",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "AWS-0131",
+          "CKV_AWS_8"
+        ]
+      },
+      {
+        "control": "imds",
+        "resource": "aws_instance.prometheus",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "AWS-0028"
+        ]
+      },
+      {
+        "control": "ebs",
+        "resource": "aws_instance.prometheus",
+        "status": "retained",
+        "reason": "secure_default",
+        "rules": [
+          "AWS-0131",
+          "CKV_AWS_8"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: subnet routing unresolved",
+        "rules": [
+          "AWS-0164",
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: subnet routing unresolved",
+        "rules": [
+          "AWS-0164",
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "tls",
+        "resource": "aws_lb_listener.http",
+        "status": "skipped",
+        "reason": "context: TLS listener and certificate required",
+        "rules": [
+          "CKV_AWS_103"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: subnet routing unresolved",
+        "rules": [
+          "AWS-0164",
+          "CKV_AWS_130"
+        ]
+      },
+      {
+        "control": "subnet",
+        "resource": "aws_subnet.public",
+        "status": "skipped",
+        "reason": "context: subnet routing unresolved",
+        "rules": [
+          "AWS-0164",
+          "CKV_AWS_130"
+        ]
+      }
+    ],
+    "templates": [
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "CKV_AWS_144": 1,
+          "CKV_AWS_145": 1
+        }
+      },
+      {
+        "template": "kms",
+        "status": "retained",
+        "reason": "supporting_resources",
+        "introduced_rules": {}
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "CKV_AWS_144": 1,
+          "CKV_AWS_145": 1
+        }
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "CKV_AWS_144": 1,
+          "CKV_AWS_145": 1
+        }
+      },
+      {
+        "template": "access_logs",
+        "status": "rejected",
+        "reason": "new_blocking_findings",
+        "introduced_rules": {
+          "CKV_AWS_144": 1,
+          "CKV_AWS_145": 1
+        }
+      }
+    ],
+    "partial_groups": {},
+    "existing_file_proposals": {
+      "normalized": 0,
+      "retained": 0
+    },
+    "fixer_calls": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 5,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 2,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 4,
+        "resources": 2
+      },
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "findings": 3,
+        "resources": 2
+      }
+    ],
+    "fixer_configurations": [
+      {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "reasoning": "low",
+        "fix_attempt_timeout_seconds": 45.0,
+        "iteration_timeout_seconds": 60.0,
+        "security_stage_timeout_seconds": 240.0,
+        "fix_max_resources": 2,
+        "fix_max_findings": 12,
+        "partial_max_groups": 6
+      }
+    ],
+    "generator_checklist_chars": 1010,
+    "generator_context_truncated": true,
+    "generation_syntax": {
+      "path": "unchanged",
+      "normalizations": 0,
+      "rounds": 0,
+      "regeneration": "not_needed"
+    },
+    "iteration_timings": [
+      {
+        "scan_seconds": 6.040775015999316,
+        "construction_seconds": 1.0306689150002057,
+        "syntax_verification_seconds": 0.4651819559985597,
+        "terraform_verification_seconds": 15.3761761809983,
+        "security_verification_seconds": 17.688405485998373,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "publication_seconds": 0.03543694499967387,
+        "iteration_elapsed_seconds": 43.93472907499927,
+        "deadline_overrun_seconds": 0.0,
+        "fault_recovery_seconds": null
+      },
+      {
+        "scan_seconds": 0.01563786400038225,
+        "construction_seconds": 0.04012431199953426,
+        "syntax_verification_seconds": 0.1535090620000119,
+        "terraform_verification_seconds": 4.232446223000807,
+        "security_verification_seconds": 6.2937941559994215,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "publication_seconds": 0.037518701999943005,
+        "iteration_elapsed_seconds": 14.196236945999772,
+        "deadline_overrun_seconds": 0.0,
+        "fault_recovery_seconds": null
+      },
+      {
+        "scan_seconds": 0.017105945998991956,
+        "construction_seconds": 0.059095777998663834,
+        "syntax_verification_seconds": 0.0003183210010320181,
+        "terraform_verification_seconds": 5.313698847001433,
+        "security_verification_seconds": 11.236108317998514,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "publication_seconds": 0.036771020999367465,
+        "iteration_elapsed_seconds": 18.826598944999205,
+        "deadline_overrun_seconds": 0.0,
+        "fault_recovery_seconds": null
+      },
+      {
+        "scan_seconds": 0.026763504998598364,
+        "construction_seconds": 0.05023980399892025,
+        "syntax_verification_seconds": 0.08917499700146436,
+        "terraform_verification_seconds": 7.292316197001128,
+        "security_verification_seconds": 8.709037132999583,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "publication_seconds": 0.04178156000125455,
+        "iteration_elapsed_seconds": 18.238623993000147,
+        "deadline_overrun_seconds": 0.0,
+        "fault_recovery_seconds": null
+      },
+      {
+        "scan_seconds": null,
+        "construction_seconds": null,
+        "syntax_verification_seconds": null,
+        "terraform_verification_seconds": null,
+        "security_verification_seconds": null,
+        "cancellation_seconds": null,
+        "restoration_seconds": null,
+        "publication_seconds": null,
+        "iteration_elapsed_seconds": null,
+        "deadline_overrun_seconds": null,
+        "fault_recovery_seconds": null
+      }
+    ],
+    "deadline_phases": [
+      {
+        "complete_iteration": 43.91802683199967,
+        "workspace": 15.376053763000527,
+        "event_publication": 0.08142234699880646,
+        "closing_state_event": 0.0552692979999847
+      },
+      {
+        "complete_iteration": 14.179656940999848,
+        "workspace": 4.233260972998323,
+        "event_publication": 0.0677184539999871,
+        "closing_state_event": 0.03084450700043817
+      },
+      {
+        "complete_iteration": 18.810710804998962,
+        "workspace": 5.313972678999562,
+        "event_publication": 0.06721127499986324,
+        "closing_state_event": 0.031899193998469855
+      },
+      {
+        "complete_iteration": 18.223204791998796,
+        "workspace": 7.29242180700021,
+        "event_publication": 0.09117066599719692,
+        "closing_state_event": 0.040459980999003164
+      },
+      {
+        "complete_iteration": null,
+        "workspace": null,
+        "event_publication": null,
+        "closing_state_event": null
+      }
+    ]
+  },
+  "fixer_attempts": {
+    "attempt_count": 7,
+    "unmeasured_calls_or_rounds": 0,
+    "attempt_details": [
+      {
+        "call_kind": "security_fixer",
+        "role": "fixer",
+        "model": "openai/gpt-oss-120b:nitro",
+        "phase": "security",
+        "run_id": "8c99c09e-e450-4b34-876c-960a9010b71c",
+        "attempt": 1,
+        "call_id": "bb84f22d-22ba-4820-a052-069126f5a4db",
+        "variant": "security",
+        "provider": "openai",
+        "iteration": 1,
+        "served_by": "Cerebras",
+        "started_at": "2026-10-20T01:17:07.384980+00:00",
+        "finished_at": "2026-10-20T01:17:10.182360+00:00",
+        "input_tokens": 9256,
+        "output_tokens": 8112,
+        "request_style": "legacy",
+        "elapsed_seconds": 2.7973661910000374,
+        "overrun_seconds": 0.0,
+        "package_attempt": 1,
+        "response_format": "json_schema",
+        "reasoning_tokens": 405,
+        "requested_effort": "low",
+        "deadline_exceeded": false,
+        "cached_input_tokens": 1408,
+        "response_characters": 26750,
+        "outcome": "success",
+        "category": "success",
+        "format_reason": null
+      },
+      {
+        "call_kind": "security_fixer",
+        "role": "fixer",
+        "model": "openai/gpt-oss-120b:nitro",
+        "phase": "security",
+        "run_id": "8c99c09e-e450-4b34-876c-960a9010b71c",
+        "attempt": 1,
+        "call_id": "0a617b37-f1c2-487f-a487-0796a5fe4054",
+        "variant": "security",
+        "provider": "openai",
+        "iteration": 2,
+        "served_by": "Cerebras",
+        "started_at": "2026-10-20T01:17:21.976385+00:00",
+        "finished_at": "2026-10-20T01:17:24.376973+00:00",
+        "input_tokens": 8719,
+        "output_tokens": 7732,
+        "request_style": "legacy",
+        "elapsed_seconds": 2.4005814399988594,
+        "overrun_seconds": 0.0,
+        "package_attempt": 1,
+        "response_format": "json_schema",
+        "reasoning_tokens": 196,
+        "requested_effort": "low",
+        "deadline_exceeded": false,
+        "cached_input_tokens": 1408,
+        "response_characters": 26600,
+        "outcome": "success",
+        "category": "success",
+        "format_reason": null
+      },
+      {
+        "call_kind": "security_fixer",
+        "role": "fixer",
+        "model": "openai/gpt-oss-120b:nitro",
+        "phase": "security",
+        "run_id": "8c99c09e-e450-4b34-876c-960a9010b71c",
+        "attempt": 1,
+        "call_id": "9833bc44-704b-4bc5-a5f1-8fc40a389d53",
+        "variant": "security",
+        "provider": "openai",
+        "iteration": 3,
+        "served_by": "Cerebras",
+        "started_at": "2026-10-20T01:17:29.515987+00:00",
+        "finished_at": "2026-10-20T01:17:31.268672+00:00",
+        "input_tokens": 9308,
+        "output_tokens": 4608,
+        "request_style": "legacy",
+        "elapsed_seconds": 1.7526781899996422,
+        "overrun_seconds": 0.0,
+        "package_attempt": 1,
+        "response_format": "json_schema",
+        "reasoning_tokens": 304,
+        "requested_effort": "low",
+        "deadline_exceeded": false,
+        "cached_input_tokens": 1408,
+        "response_characters": 15093,
+        "outcome": "success",
+        "category": "success",
+        "format_reason": null
+      },
+      {
+        "call_kind": "security_fixer",
+        "role": "fixer",
+        "model": "openai/gpt-oss-120b:nitro",
+        "phase": "security",
+        "run_id": "8c99c09e-e450-4b34-876c-960a9010b71c",
+        "attempt": 1,
+        "call_id": "67347dc6-189b-463f-ae5c-a362a5103e08",
+        "variant": "security",
+        "provider": "openai",
+        "iteration": 4,
+        "served_by": "Cerebras",
+        "started_at": "2026-10-20T01:17:51.963195+00:00",
+        "finished_at": "2026-10-20T01:17:53.570860+00:00",
+        "input_tokens": 8719,
+        "output_tokens": 4207,
+        "request_style": "legacy",
+        "elapsed_seconds": 1.6076561720001337,
+        "overrun_seconds": 0.0,
+        "package_attempt": 1,
+        "response_format": "json_schema",
+        "reasoning_tokens": 299,
+        "requested_effort": "low",
+        "deadline_exceeded": false,
+        "cached_input_tokens": 1408,
+        "response_characters": 13826,
+        "outcome": "success",
+        "category": "success",
+        "format_reason": null
+      },
+      {
+        "call_kind": "validation_repair",
+        "role": "fixer",
+        "model": "openai/gpt-oss-120b:nitro",
+        "phase": "generation",
+        "run_id": "8c99c09e-e450-4b34-876c-960a9010b71c",
+        "attempt": 1,
+        "call_id": "39fa89fc-ad78-4e24-aafd-57cb77b749f4",
+        "variant": "security",
+        "provider": "openai",
+        "iteration": 1,
+        "served_by": "Cerebras",
+        "started_at": "2026-10-20T01:16:12.431716+00:00",
+        "finished_at": "2026-10-20T01:16:14.176439+00:00",
+        "input_tokens": 9077,
+        "output_tokens": 4198,
+        "request_style": "legacy",
+        "elapsed_seconds": 1.7447227560005558,
+        "overrun_seconds": 0.0,
+        "package_attempt": 1,
+        "response_format": "json_schema",
+        "reasoning_tokens": 353,
+        "requested_effort": "low",
+        "deadline_exceeded": false,
+        "cached_input_tokens": 1408,
+        "response_characters": 13361,
+        "outcome": "success",
+        "category": "success",
+        "format_reason": null
+      },
+      {
+        "call_kind": "validation_repair",
+        "role": "fixer",
+        "model": "openai/gpt-oss-120b:nitro",
+        "phase": "before_security",
+        "run_id": "8c99c09e-e450-4b34-876c-960a9010b71c",
+        "attempt": 1,
+        "call_id": "60d54206-c8bb-4e4e-8199-4e8698ec403c",
+        "variant": "security",
+        "provider": "openai",
+        "iteration": 1,
+        "served_by": "Cerebras",
+        "started_at": "2026-10-20T01:16:18.513414+00:00",
+        "finished_at": "2026-10-20T01:16:20.678456+00:00",
+        "input_tokens": 9053,
+        "output_tokens": 4227,
+        "request_style": "legacy",
+        "elapsed_seconds": 2.1650353140012157,
+        "overrun_seconds": 0.0,
+        "package_attempt": 1,
+        "response_format": "json_schema",
+        "reasoning_tokens": 465,
+        "requested_effort": "low",
+        "deadline_exceeded": false,
+        "cached_input_tokens": 1408,
+        "response_characters": 13055,
+        "outcome": "success",
+        "category": "success",
+        "format_reason": null
+      },
+      {
+        "call_kind": "validation_repair",
+        "role": "fixer",
+        "model": "openai/gpt-oss-120b:nitro",
+        "phase": "after_security",
+        "run_id": "8c99c09e-e450-4b34-876c-960a9010b71c",
+        "attempt": 1,
+        "call_id": "38796b63-adce-494d-a66b-baf497b21af1",
+        "variant": "security",
+        "provider": "openai",
+        "iteration": 1,
+        "served_by": "Cerebras",
+        "started_at": "2026-10-20T01:18:01.737154+00:00",
+        "finished_at": "2026-10-20T01:18:03.434765+00:00",
+        "input_tokens": 9710,
+        "output_tokens": 4651,
+        "request_style": "legacy",
+        "elapsed_seconds": 1.697600486999363,
+        "overrun_seconds": 0.0,
+        "package_attempt": 1,
+        "response_format": "json_schema",
+        "reasoning_tokens": 201,
+        "requested_effort": "low",
+        "deadline_exceeded": false,
+        "cached_input_tokens": 1408,
+        "response_characters": 15650,
+        "outcome": "success",
+        "category": "success",
+        "format_reason": null
+      }
+    ],
+    "outcomes": {
+      "success": 7
+    },
+    "format_reasons": {
+      "none": 7
+    }
+  },
+  "review_reasons": [
+    "unresolved_security_findings",
+    "validation_failed"
+  ],
+  "failed_checks": [
+    {
+      "check_id": "terraform.validate",
+      "message": "Cycle",
+      "file_path": "terraform/main.tf",
+      "origin": "unknown",
+      "line_start": 1,
+      "line_end": null
+    }
+  ],
+  "remaining_findings": {
+    "AWS-0053": 1,
+    "AWS-0077": 1,
+    "AWS-0090": 1,
+    "AWS-0164": 1,
+    "CKV_AWS_130": 1,
+    "CKV_AWS_144": 1,
+    "CKV_AWS_157": 1,
+    "CKV_AWS_18": 1,
+    "CKV_AWS_21": 1,
+    "CKV_AWS_91": 1
+  },
+  "phase9e": {
+    "security_context_measurements": [
+      {
+        "file_type": "terraform",
+        "chars": 13155,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 10825,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 13155,
+        "reason": "schema_available"
+      },
+      {
+        "file_type": "terraform",
+        "chars": 10994,
+        "reason": "schema_available"
+      }
+    ],
+    "generator_schema_context_chars": 5503,
+    "initialization": {
+      "init_runs": 3,
+      "init_reused": 17,
+      "init_seconds": 12.781115781001063,
+      "validate_seconds": 48.668902884001,
+      "reinitializations": 1
+    },
+    "gate_outcome": "invalid",
+    "gate_failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "message": "Unsupported attribute"
+      }
+    ],
+    "init_categories": [
+      "validation_cached"
+    ],
+    "repair_rounds": [
+      {
+        "phase": "generation",
+        "outcome": "rejected",
+        "reason": "no_improvement",
+        "error_classes": [
+          "Unsupported argument",
+          "Unsupported attribute"
+        ],
+        "schema_context_chars": 15958
+      },
+      {
+        "phase": "before_security",
+        "outcome": "rejected",
+        "reason": "no_improvement",
+        "error_classes": [
+          "Unsupported argument",
+          "Unsupported attribute"
+        ],
+        "schema_context_chars": 15958
+      },
+      {
+        "phase": "after_security",
+        "outcome": "rejected",
+        "reason": "no_improvement",
+        "error_classes": [
+          "Cycle"
+        ],
+        "schema_context_chars": 15961
+      }
+    ],
+    "measurements": [
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.7076283090009383,
+        "phase": "generation",
+        "count": 12
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 5.629910071998893,
+        "phase": "generation",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "no_improvement"
+      },
+      {
+        "stage": "generation_gate",
+        "duration_seconds": 17.308257950000552,
+        "phase": "generation",
+        "init_runs": 1,
+        "init_reused": 2,
+        "reinitializations": 0,
+        "init_seconds": 7.135690518000047,
+        "validate_seconds": 7.5482611389998056,
+        "outcome": "invalid"
+      },
+      {
+        "stage": "initial_validation",
+        "duration_seconds": 0.0021827410000696545,
+        "phase": "before_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 8.233804207000503,
+        "phase": "before_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "no_improvement"
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.1074722630000906,
+        "phase": "security",
+        "iteration": 1,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 33.52976362299523,
+        "phase": "security",
+        "iteration": 1,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 0,
+        "init_reused": 4,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 15.357661490999817,
+        "terraform_verification_seconds": 15.3761761809983,
+        "security_verification_seconds": 17.688405485998373,
+        "scan_seconds": 6.040775015999316,
+        "construction_seconds": 1.0306689150002057,
+        "syntax_verification_seconds": 0.4651819559985597,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "accepted",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.08510762799960503,
+        "phase": "security",
+        "iteration": 2,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 10.67974944100024,
+        "phase": "security",
+        "iteration": 2,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 0,
+        "init_reused": 2,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 4.225900467999963,
+        "terraform_verification_seconds": 4.232446223000807,
+        "security_verification_seconds": 6.2937941559994215,
+        "scan_seconds": 0.01563786400038225,
+        "construction_seconds": 0.04012431199953426,
+        "syntax_verification_seconds": 0.1535090620000119,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": false,
+        "fix_started": true,
+        "outcome": "no_change",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.06455737000032968,
+        "phase": "security",
+        "iteration": 3,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 16.55012548600098,
+        "phase": "security",
+        "iteration": 3,
+        "before_failed": 2,
+        "after_failed": 2,
+        "init_runs": 0,
+        "init_reused": 3,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 5.306984480999745,
+        "terraform_verification_seconds": 5.313698847001433,
+        "security_verification_seconds": 11.236108317998514,
+        "scan_seconds": 0.017105945998991956,
+        "construction_seconds": 0.059095777998663834,
+        "syntax_verification_seconds": 0.0003183210010320181,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "accepted",
+        "reasons": []
+      },
+      {
+        "stage": "deterministic_repairs",
+        "duration_seconds": 0.07729820300119172,
+        "phase": "security",
+        "iteration": 4,
+        "count": 0
+      },
+      {
+        "stage": "security_iteration_verification",
+        "duration_seconds": 16.090528327002176,
+        "phase": "security",
+        "iteration": 4,
+        "before_failed": 2,
+        "after_failed": 1,
+        "init_runs": 0,
+        "init_reused": 3,
+        "reinitializations": 0,
+        "init_seconds": 0.0,
+        "validate_seconds": 7.281424868000613,
+        "terraform_verification_seconds": 7.292316197001128,
+        "security_verification_seconds": 8.709037132999583,
+        "scan_seconds": 0.026763504998598364,
+        "construction_seconds": 0.05023980399892025,
+        "syntax_verification_seconds": 0.08917499700146436,
+        "cancellation_seconds": 0.0,
+        "restoration_seconds": 0.0,
+        "deadline_only": false,
+        "candidate_created": true,
+        "fix_started": true,
+        "outcome": "accepted",
+        "reasons": []
+      },
+      {
+        "stage": "post_security_validation",
+        "duration_seconds": 0.0025030639990291093,
+        "phase": "after_security"
+      },
+      {
+        "stage": "validation_repair_round",
+        "duration_seconds": 2.098259242000495,
+        "phase": "after_security",
+        "iteration": 1,
+        "attempted": true,
+        "outcome": "rejected",
+        "reason": "no_improvement"
+      },
+      {
+        "stage": "final_validation",
+        "duration_seconds": 9.018718627001363,
+        "phase": ""
+      },
+      {
+        "stage": "final_security_scan",
+        "duration_seconds": 5.175047192999045,
+        "phase": ""
+      }
+    ],
+    "security_schema_context_chars": [
+      13155,
+      10825,
+      13155,
+      10994
+    ],
+    "security_iteration_repairs": [
+      {
+        "outcome": "accepted",
+        "error_classes": [
+          "Unsupported argument",
+          "Unsupported attribute"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "no_change",
+        "error_classes": [
+          "Unsupported argument",
+          "Unsupported attribute"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "accepted",
+        "error_classes": [
+          "Unsupported argument",
+          "Unsupported attribute"
+        ],
+        "reasons": []
+      },
+      {
+        "outcome": "accepted",
+        "error_classes": [
+          "Cycle"
+        ],
+        "reasons": []
+      }
+    ]
+  },
+  "counts": {
+    "failed_checks": 1,
+    "remaining_findings": 10,
+    "deterministic_repairs": 12,
+    "validation_repair_rounds": 3,
+    "security_iterations": 4
+  }
+}
