@@ -1,2 +1,6 @@
 - results.csv contains fields >128 KB (runtime telemetry); keep the CSV compact and move large telemetry to results.json or a separate file
 - PR-04: re-measure download latency on a quiet machine (9h stub: median 1.99 s, FAIL); check whether the per-request session check slows downloads
+- Final report: one reproducible table of all benchmarks (baseline -> final), Wilson CI, Fisher tests, incomplete sets marked
+- Traceability: tag UC-01..UC-07 tests, add the NFR-02 check, generate a traceability matrix
+- PR-03: document CPU-bound cause with evidence; draft a revised target for the supervisor (text only)
+- Thesis notes for Chapter 6: findings (Sonnet speed, Haiku prose_before, fixer schema 12/140 -> 47/49, Trivy JSON false positives, AWS log-target vs KMS conflict, Unsupported argument, plan-to-resource mapping)
