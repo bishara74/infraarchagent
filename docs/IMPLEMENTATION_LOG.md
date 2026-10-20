@@ -30,6 +30,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+
+## 2026-10-20 — Phase 9b section 5 — Prepare Chapter 6 evaluation material
+
+**Summary:** Add ready-to-adapt setup, methods, results, subgroup tables,
+statistics, performance/cost interpretation, validity threats and discussion
+findings. Thirteen of fifteen passes come from the static-site prompt; the
+run-level p=0.23017 sensitivity is adjacent to the optimistic package p=0.02121.
+
+**Requirements addressed:** PR-01, PR-03, PR-04, PR-05, NFR-01, NFR-02.
+
+**Files:** docs/thesis-notes/chapter6-evaluation.md and implementation log.
+
+**Decisions:** Values derive from the committed-input preview at 671c261.
+Separate partial Haiku excerpts, A3/smoke/final proposal acceptance, experimental
+contextual policy, provider-limited schedules and deployment claims. Correct
+fourteen prompts to fourteen runs across three texts. D-55 records the method.
+
+**Tests:** Documentation validation: 11 historical/combined table rows and
+18 subgroup rows reconciled to rates.csv; 15 local citation targets
+checked, with only the final-report link awaiting section 6 generation. No new
+runtime behavior or tests added. Full backend verification is in progress;
+section 4's focused suite remains 42 passed and final CSV rerun 2 passed.
+
+**Known gaps / follow-ups:** Final report artifact generation pending section 6;
+manual deployment and concrete recovery-contract limitations remain explicit.
+
 ## 2026-10-20 — Phase 9b section 4 — Keep benchmark CSV compact
 
 **Summary:** Export an explicit bounded CSV index while retaining complete runtime
