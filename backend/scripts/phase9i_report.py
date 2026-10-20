@@ -59,17 +59,26 @@ def proposal(name: str, files: dict[str, str], observation: dict[str, Any]):
 
 def compare(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
     old, new = fingerprints(before), fingerprints(after)
+    known = all(o.get("scan_outcome", "clean") != "unknown" for o in (before, after))
+    if not known:
+        old, new = set(), set()
+
+    def blocker_delta(name: str) -> int | None:
+        old_count = before["profiles"][name]["remaining_blocking"]
+        new_count = after["profiles"][name]["remaining_blocking"]
+        return (
+            new_count - old_count
+            if known and type(old_count) is int and type(new_count) is int
+            else None
+        )
+
     return {
         "validation_changed": before["validation"] != after["validation"],
         "failed_checks_before": len(before["failed_checks"]),
         "failed_checks_after": len(after["failed_checks"]),
         "removed": sorted(old - new),
         "introduced": sorted(new - old),
-        "blocker_deltas": {
-            name: after["profiles"][name]["remaining_blocking"]
-            - before["profiles"][name]["remaining_blocking"]
-            for name in PROFILES
-        },
+        "blocker_deltas": {name: blocker_delta(name) for name in PROFILES},
     }
 
 

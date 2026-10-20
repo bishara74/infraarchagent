@@ -1,0 +1,1526 @@
+{
+  "before": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_378"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_20"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 303,
+        "line_start": 303,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 33,
+        "line_start": 26,
+        "message": "Ensure VPC subnets do not assign public IP by default",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130",
+        "severity": "MEDIUM",
+        "title": "Ensure VPC subnets do not assign public IP by default",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 72,
+        "line_start": 70,
+        "message": "Ensure container insights are enabled on ECS cluster",
+        "resource": "aws_ecs_cluster.main",
+        "rule_id": "CKV_AWS_65",
+        "severity": "UNKNOWN",
+        "title": "Ensure container insights are enabled on ECS cluster",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 110,
+        "message": "Ensure IAM policies does not allow write access without constraints",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_290",
+        "severity": "UNKNOWN",
+        "title": "Ensure IAM policies does not allow write access without constraints",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 110,
+        "message": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_355",
+        "severity": "UNKNOWN",
+        "title": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:single-AZ database is the cost directive",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure that RDS instances have Multi-AZ enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157",
+        "severity": "MEDIUM",
+        "title": "Ensure that RDS instances have Multi-AZ enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:Performance Insights adds cost",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354",
+        "severity": "MEDIUM",
+        "title": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_91",
+        "severity": "MEDIUM",
+        "title": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure that Load Balancer has deletion protection enabled",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_150",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Load Balancer has deletion protection enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 172,
+        "line_start": 166,
+        "message": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_261",
+        "severity": "UNKNOWN",
+        "title": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Ensure ALB protocol is HTTPS",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2",
+        "severity": "HIGH",
+        "title": "Ensure ALB protocol is HTTPS",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 33,
+        "line_start": 26,
+        "message": "Ensure VPC subnets do not assign public IP by default",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130",
+        "severity": "MEDIUM",
+        "title": "Ensure VPC subnets do not assign public IP by default",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 21,
+        "message": "Ensure the default security group of every VPC restricts all traffic",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12",
+        "severity": "HIGH",
+        "title": "Ensure the default security group of every VPC restricts all traffic",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure public facing ALB are protected by WAF",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_28",
+        "severity": "UNKNOWN",
+        "title": "Ensure public facing ALB are protected by WAF",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 172,
+        "line_start": 166,
+        "message": "Ensure AWS Load Balancer doesn't use HTTP protocol",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_378",
+        "severity": "HIGH",
+        "title": "Ensure AWS Load Balancer doesn't use HTTP protocol",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure that ALB redirects HTTP requests into HTTPS ones",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_20",
+        "severity": "HIGH",
+        "title": "Ensure that ALB redirects HTTP requests into HTTPS ones",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Ensure that load balancer is using at least TLS 1.2",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103",
+        "severity": "MEDIUM",
+        "title": "Ensure that load balancer is using at least TLS 1.2",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0034",
+        "line_end": 72,
+        "line_start": 70,
+        "message": "Cluster does not have container insights enabled.",
+        "resource": "aws_ecs_cluster.main",
+        "rule_id": "AWS-0034",
+        "severity": "LOW",
+        "title": "ECS clusters should have container insights enabled",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+        "line_end": 158,
+        "line_start": 158,
+        "message": "Load balancer is exposed publicly.",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "AWS-0053",
+        "severity": "HIGH",
+        "title": "Load balancer is exposed to the internet.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0054",
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Listener for application load balancer does not use HTTPS.",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054",
+        "severity": "CRITICAL",
+        "title": "Use of plain HTTP.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0078",
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Instance Performance Insights enctyption does not use a customer-managed KMS key.",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0078",
+        "severity": "LOW",
+        "title": "Performance Insights encryption should use Customer Managed Keys",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0164",
+        "line_end": 31,
+        "line_start": 31,
+        "message": "Subnet associates public IP address.",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164",
+        "severity": "HIGH",
+        "title": "Instances in a subnet should not receive a public IP address by default.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0164",
+        "line_end": 31,
+        "line_start": 31,
+        "message": "Subnet associates public IP address.",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164",
+        "severity": "HIGH",
+        "title": "Instances in a subnet should not receive a public IP address by default.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 12
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "AWS-0164"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "AWS-0164"
+          }
+        ],
+        "remaining_blocking": 8
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 12
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "valid"
+  },
+  "before_sha256": "c927354130e7ac7d08e5d1656122c2a0cff464eb6ada05fac86a4350c90c0f61",
+  "candidate": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_378"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_20"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 303,
+        "line_start": 303,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 33,
+        "line_start": 26,
+        "message": "Ensure VPC subnets do not assign public IP by default",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130",
+        "severity": "MEDIUM",
+        "title": "Ensure VPC subnets do not assign public IP by default",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 72,
+        "line_start": 70,
+        "message": "Ensure container insights are enabled on ECS cluster",
+        "resource": "aws_ecs_cluster.main",
+        "rule_id": "CKV_AWS_65",
+        "severity": "UNKNOWN",
+        "title": "Ensure container insights are enabled on ECS cluster",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 110,
+        "message": "Ensure IAM policies does not allow write access without constraints",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_290",
+        "severity": "UNKNOWN",
+        "title": "Ensure IAM policies does not allow write access without constraints",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 110,
+        "message": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_355",
+        "severity": "UNKNOWN",
+        "title": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:single-AZ database is the cost directive",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure that RDS instances have Multi-AZ enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157",
+        "severity": "MEDIUM",
+        "title": "Ensure that RDS instances have Multi-AZ enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:Performance Insights adds cost",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354",
+        "severity": "MEDIUM",
+        "title": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_91",
+        "severity": "MEDIUM",
+        "title": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure that Load Balancer has deletion protection enabled",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_150",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Load Balancer has deletion protection enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 172,
+        "line_start": 166,
+        "message": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_261",
+        "severity": "UNKNOWN",
+        "title": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Ensure ALB protocol is HTTPS",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2",
+        "severity": "HIGH",
+        "title": "Ensure ALB protocol is HTTPS",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 33,
+        "line_start": 26,
+        "message": "Ensure VPC subnets do not assign public IP by default",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130",
+        "severity": "MEDIUM",
+        "title": "Ensure VPC subnets do not assign public IP by default",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 21,
+        "message": "Ensure the default security group of every VPC restricts all traffic",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12",
+        "severity": "HIGH",
+        "title": "Ensure the default security group of every VPC restricts all traffic",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure public facing ALB are protected by WAF",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_28",
+        "severity": "UNKNOWN",
+        "title": "Ensure public facing ALB are protected by WAF",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 172,
+        "line_start": 166,
+        "message": "Ensure AWS Load Balancer doesn't use HTTP protocol",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_378",
+        "severity": "HIGH",
+        "title": "Ensure AWS Load Balancer doesn't use HTTP protocol",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure that ALB redirects HTTP requests into HTTPS ones",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_20",
+        "severity": "HIGH",
+        "title": "Ensure that ALB redirects HTTP requests into HTTPS ones",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Ensure that load balancer is using at least TLS 1.2",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103",
+        "severity": "MEDIUM",
+        "title": "Ensure that load balancer is using at least TLS 1.2",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0034",
+        "line_end": 72,
+        "line_start": 70,
+        "message": "Cluster does not have container insights enabled.",
+        "resource": "aws_ecs_cluster.main",
+        "rule_id": "AWS-0034",
+        "severity": "LOW",
+        "title": "ECS clusters should have container insights enabled",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+        "line_end": 158,
+        "line_start": 158,
+        "message": "Load balancer is exposed publicly.",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "AWS-0053",
+        "severity": "HIGH",
+        "title": "Load balancer is exposed to the internet.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0054",
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Listener for application load balancer does not use HTTPS.",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054",
+        "severity": "CRITICAL",
+        "title": "Use of plain HTTP.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0078",
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Instance Performance Insights enctyption does not use a customer-managed KMS key.",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0078",
+        "severity": "LOW",
+        "title": "Performance Insights encryption should use Customer Managed Keys",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0164",
+        "line_end": 31,
+        "line_start": 31,
+        "message": "Subnet associates public IP address.",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164",
+        "severity": "HIGH",
+        "title": "Instances in a subnet should not receive a public IP address by default.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0164",
+        "line_end": 31,
+        "line_start": 31,
+        "message": "Subnet associates public IP address.",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164",
+        "severity": "HIGH",
+        "title": "Instances in a subnet should not receive a public IP address by default.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 12
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "AWS-0164"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "AWS-0164"
+          }
+        ],
+        "remaining_blocking": 8
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 12
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "valid"
+  },
+  "candidate_delta": {
+    "blocker_deltas": {
+      "contextual-v1": 0,
+      "contextual-v2": 0,
+      "strict": 0
+    },
+    "failed_checks_after": 0,
+    "failed_checks_before": 0,
+    "introduced": [],
+    "removed": [],
+    "validation_changed": false
+  },
+  "candidate_idempotent": true,
+  "candidate_sha256": "c927354130e7ac7d08e5d1656122c2a0cff464eb6ada05fac86a4350c90c0f61",
+  "change": "formats_and_pods",
+  "introduced": [],
+  "key": "2/94cf6e79-169f-4929-8bcf-fef1ac7e4ddc/cost",
+  "observed": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_378"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_20"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 303,
+        "line_start": 303,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 33,
+        "line_start": 26,
+        "message": "Ensure VPC subnets do not assign public IP by default",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130",
+        "severity": "MEDIUM",
+        "title": "Ensure VPC subnets do not assign public IP by default",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 72,
+        "line_start": 70,
+        "message": "Ensure container insights are enabled on ECS cluster",
+        "resource": "aws_ecs_cluster.main",
+        "rule_id": "CKV_AWS_65",
+        "severity": "UNKNOWN",
+        "title": "Ensure container insights are enabled on ECS cluster",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 110,
+        "message": "Ensure IAM policies does not allow write access without constraints",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_290",
+        "severity": "UNKNOWN",
+        "title": "Ensure IAM policies does not allow write access without constraints",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 110,
+        "message": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_355",
+        "severity": "UNKNOWN",
+        "title": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:single-AZ database is the cost directive",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure that RDS instances have Multi-AZ enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157",
+        "severity": "MEDIUM",
+        "title": "Ensure that RDS instances have Multi-AZ enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:Performance Insights adds cost",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354",
+        "severity": "MEDIUM",
+        "title": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_91",
+        "severity": "MEDIUM",
+        "title": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure that Load Balancer has deletion protection enabled",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV_AWS_150",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Load Balancer has deletion protection enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 172,
+        "line_start": 166,
+        "message": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_261",
+        "severity": "UNKNOWN",
+        "title": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Ensure ALB protocol is HTTPS",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2",
+        "severity": "HIGH",
+        "title": "Ensure ALB protocol is HTTPS",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 33,
+        "line_start": 26,
+        "message": "Ensure VPC subnets do not assign public IP by default",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130",
+        "severity": "MEDIUM",
+        "title": "Ensure VPC subnets do not assign public IP by default",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 21,
+        "message": "Ensure the default security group of every VPC restricts all traffic",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12",
+        "severity": "HIGH",
+        "title": "Ensure the default security group of every VPC restricts all traffic",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure public facing ALB are protected by WAF",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_28",
+        "severity": "UNKNOWN",
+        "title": "Ensure public facing ALB are protected by WAF",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 172,
+        "line_start": 166,
+        "message": "Ensure AWS Load Balancer doesn't use HTTP protocol",
+        "resource": "aws_lb_target_group.api_tg",
+        "rule_id": "CKV_AWS_378",
+        "severity": "HIGH",
+        "title": "Ensure AWS Load Balancer doesn't use HTTP protocol",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 164,
+        "line_start": 156,
+        "message": "Ensure that ALB redirects HTTP requests into HTTPS ones",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "CKV2_AWS_20",
+        "severity": "HIGH",
+        "title": "Ensure that ALB redirects HTTP requests into HTTPS ones",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Ensure that load balancer is using at least TLS 1.2",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103",
+        "severity": "MEDIUM",
+        "title": "Ensure that load balancer is using at least TLS 1.2",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0034",
+        "line_end": 72,
+        "line_start": 70,
+        "message": "Cluster does not have container insights enabled.",
+        "resource": "aws_ecs_cluster.main",
+        "rule_id": "AWS-0034",
+        "severity": "LOW",
+        "title": "ECS clusters should have container insights enabled",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+        "line_end": 158,
+        "line_start": 158,
+        "message": "Load balancer is exposed publicly.",
+        "resource": "aws_lb.nginx_alb",
+        "rule_id": "AWS-0053",
+        "severity": "HIGH",
+        "title": "Load balancer is exposed to the internet.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0054",
+        "line_end": 182,
+        "line_start": 174,
+        "message": "Listener for application load balancer does not use HTTPS.",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054",
+        "severity": "CRITICAL",
+        "title": "Use of plain HTTP.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0078",
+        "line_end": 153,
+        "line_start": 131,
+        "message": "Instance Performance Insights enctyption does not use a customer-managed KMS key.",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0078",
+        "severity": "LOW",
+        "title": "Performance Insights encryption should use Customer Managed Keys",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0164",
+        "line_end": 31,
+        "line_start": 31,
+        "message": "Subnet associates public IP address.",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164",
+        "severity": "HIGH",
+        "title": "Instances in a subnet should not receive a public IP address by default.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0164",
+        "line_end": 31,
+        "line_start": 31,
+        "message": "Subnet associates public IP address.",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164",
+        "severity": "HIGH",
+        "title": "Instances in a subnet should not receive a public IP address by default.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 12
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "AWS-0164"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "AWS-0164"
+          }
+        ],
+        "remaining_blocking": 8
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 12
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "valid"
+  },
+  "prompt": "ECS",
+  "provenance": {
+    "evaluator": "3c704cc944a39a375388c37afe7312ed110ebdcd57be5218eb877d550364147d",
+    "network_isolated": true,
+    "plan": "722572599d8c3449fb9dabc232089caa071f19f99e2c01cab0df38d452cc45fe",
+    "protocol": "kubernetes-1",
+    "providers": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      }
+    },
+    "tool_timeout": 60,
+    "tool_versions": {
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "helm": "v4.3.0+gbec5b06",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+      "terraform": "Terraform v1.16.4"
+    },
+    "validation_deadline": 120,
+    "variant": "cost"
+  },
+  "reason": "unchanged",
+  "records": [],
+  "removed": [],
+  "retained_delta": {
+    "blocker_deltas": {
+      "contextual-v1": 0,
+      "contextual-v2": 0,
+      "strict": 0
+    },
+    "failed_checks_after": 0,
+    "failed_checks_before": 0,
+    "introduced": [],
+    "removed": [],
+    "validation_changed": false
+  },
+  "retained_sha256": "c927354130e7ac7d08e5d1656122c2a0cff464eb6ada05fac86a4350c90c0f61"
+}

@@ -1,5 +1,6 @@
 """FR-S-04, NFR-01: image parameterisation never invents provenance."""
 
+import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -24,6 +25,7 @@ pytestmark = pytest.mark.req("FR-S-04", "FR-V-01", "NFR-01")
         "example/app:v1@sha256:abc123",
     ],
 )
+@pytest.mark.skipif(shutil.which("helm") is None, reason="offline Helm unavailable")
 async def test_actual_render_identity_preservation_and_idempotence(image):
     source = f"""apiVersion: apps/v1
 kind: Deployment
@@ -66,6 +68,7 @@ async def test_plain_manifests_unchanged_and_existing_bindings_preserved():
     assert repair_image_values(files, {}) == (files, [])
 
 
+@pytest.mark.skipif(shutil.which("helm") is None, reason="offline Helm unavailable")
 async def test_image_overrides_remain_useful():
     files = {
         "helm/app/Chart.yaml": "apiVersion: v2\nname: app\nversion: 1.0.0\n",

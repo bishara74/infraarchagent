@@ -6,7 +6,16 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 from yaml.nodes import SequenceNode  # type: ignore[import-untyped]
 
-from app.security.kubernetes import KINDS, _dump, _hash, _pairs, _path, _plain, _project
+from app.security.kubernetes import (
+    KINDS,
+    _dump,
+    _hash,
+    _pairs,
+    _path,
+    _plain,
+    _project,
+    values_document,
+)
 
 
 def image_parts(image: str) -> dict[str, str] | None:
@@ -35,7 +44,7 @@ def repair_image_values(
         chart = path.split("/templates/", 1)[0]
         values_path = chart + "/values.yaml"
         try:
-            values = yaml.safe_load(files.get(values_path, "")) or {}
+            values = values_document(files.get(values_path, ""))
             if not isinstance(values, dict) or "infraarchImages" in values:
                 continue
             edits, additions, local_records = [], {}, []
@@ -63,8 +72,27 @@ def repair_image_values(
                         image_node = fields.get("image")
                         if image_node is None:
                             continue
+                        if (
+                            "{{"
+                            in source[
+                                image_node.start_mark.index : image_node.end_mark.index
+                            ]
+                        ):
+                            continue
                         image = _plain(image_node, source)
-                        name = _plain(fields["name"], source)
+                        name_node = fields["name"]
+                        if (
+                            "{{"
+                            in source[
+                                name_node.start_mark.index : name_node.end_mark.index
+                            ]
+                        ):
+                            rendered_containers = pod.get(group, [])
+                            if len(rendered_containers) != len(sequence.value):
+                                continue
+                            name = rendered_containers[cindex].get("name")
+                        else:
+                            name = _plain(name_node, source)
                         if not isinstance(image, str):
                             continue
                         found = [

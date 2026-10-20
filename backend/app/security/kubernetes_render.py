@@ -7,8 +7,10 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from app.domain.paths import validate_file_map
 from app.scanners.runner import CommandToolRunner, ProcessToolRunner, ToolFailure
 from app.security.kubernetes import repair_pods
+from app.security.kubernetes_images import repair_image_values
 
 
 async def render_charts(
@@ -16,6 +18,7 @@ async def render_charts(
     runner: CommandToolRunner | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     runner = runner or ProcessToolRunner()
+    files = validate_file_map(files)
     rendered: dict[str, list[dict[str, Any]]] = {}
     with TemporaryDirectory(prefix="infraarch-pod-render-") as directory:
         root = Path(directory)
@@ -62,4 +65,30 @@ async def repair_kubernetes(
     files: dict[str, str],
     runner: CommandToolRunner | None = None,
 ) -> tuple[dict[str, str], list[dict[str, Any]]]:
-    return repair_pods(files, await render_charts(files, runner))
+    candidate, records = repair_pods(files, await render_charts(files, runner))
+    candidate, image_records = repair_image_values(
+        candidate, await render_charts(candidate, runner)
+    )
+    records.extend(image_records)
+    # An atomic candidate may change the same file through several entries.
+    from app.security.kubernetes import _hash
+
+    for record in records:
+        record["before_hash"] = _hash(files.get(record["file"], ""))
+        record["after_hash"] = _hash(candidate[record["file"]])
+    return candidate, records
+
+
+async def repair_formats_and_pods(
+    files: dict[str, str],
+) -> tuple[dict[str, str], list[dict[str, Any]]]:
+    from app.validation.formats import repair_formats
+
+    candidate, records = repair_formats(files)
+    candidate, pod_records = await repair_kubernetes(candidate)
+    records.extend(pod_records)
+    from app.security.kubernetes import _hash
+
+    for record in records:
+        record["after_hash"] = _hash(candidate[record["file"]])
+    return candidate, records

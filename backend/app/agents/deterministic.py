@@ -1,7 +1,8 @@
 """D-56: documented validation repairs use the existing candidate guard."""
 
 import asyncio
-from collections.abc import Callable
+import inspect
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from app.agents.budget import AgentBudget
@@ -12,8 +13,8 @@ from app.domain.plan import DeploymentPlan
 from app.domain.validation import ValidationReport
 from app.scanners.runner import ToolFailure
 from app.security.acceptance import CandidateGuard
+from app.security.kubernetes_render import repair_formats_and_pods
 from app.validation.equivalents import repair_equivalents
-from app.validation.formats import repair_formats
 
 
 async def checked_one(
@@ -24,11 +25,38 @@ async def checked_one(
     engine: ValidationService,
     security: SecurityAgent,
     budget: AgentBudget,
-    transform: Callable[[dict[str, str]], tuple[dict[str, str], list[dict[str, Any]]]],
+    transform: Callable[
+        [dict[str, str]],
+        tuple[dict[str, str], list[dict[str, Any]]]
+        | Awaitable[tuple[dict[str, str], list[dict[str, Any]]]],
+    ],
 ) -> tuple[dict[str, str], ValidationReport, list[dict[str, Any]]]:
-    candidate, records = transform(files)
+    proposal = transform(files)
+    if inspect.isawaitable(proposal):
+        try:
+            async with asyncio.timeout(max(0, budget.remaining())):
+                candidate, records = await proposal
+        except (TimeoutError, ToolFailure):
+            return (
+                files,
+                report,
+                [
+                    {
+                        "file": next(
+                            (p for p in files if p.startswith(("helm/", "k8s/"))),
+                            "README.md",
+                        ),
+                        "kind": "kubernetes_pod_defaults",
+                        "name": "catalogue",
+                        "outcome": "rejected",
+                        "reason": "verification_unavailable",
+                    }
+                ],
+            )
+    else:
+        candidate, records = proposal
     if candidate == files:
-        return files, report, []
+        return files, report, records
     if budget.remaining() < 1:
         for record in records:
             record.update(outcome="rejected", reason="verification_unavailable")
@@ -61,6 +89,8 @@ async def checked_one(
         reason = "verification_unavailable"
     retained = reason == "improved"
     for record in records:
+        if record.get("outcome") == "skipped":
+            continue
         record.update(outcome="accepted" if retained else "rejected", reason=reason)
     return (candidate, checked, records) if retained else (files, report, records)
 
@@ -75,7 +105,7 @@ async def checked_repairs(
     budget: AgentBudget,
 ) -> tuple[dict[str, str], ValidationReport, list[dict[str, Any]]]:
     records = []
-    for transform in (repair_equivalents, repair_formats):
+    for transform in (repair_equivalents, repair_formats_and_pods):
         files, report, changes = await checked_one(
             files, plan, variant, report, engine, security, budget, transform
         )

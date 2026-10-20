@@ -1,6 +1,7 @@
 """FR-S-04/09, FR-V-01: missing-only, reproducible pod hardening."""
 
 import copy
+import shutil
 
 import pytest
 import yaml
@@ -111,7 +112,9 @@ def test_comments_and_unrelated_content_preserved():
 )
 def test_malformed_and_ambiguous_inputs(source):
     files = {"k8s/app.yaml": source}
-    assert repair_pods(files) == (files, [])
+    result, records = repair_pods(files)
+    assert result == files
+    assert all(r["outcome"] == "skipped" for r in records)
 
 
 def test_windows_and_existing_mount_are_preserved():
@@ -145,6 +148,7 @@ def test_readiness_uses_only_current_retained_records():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(shutil.which("helm") is None, reason="offline Helm unavailable")
 async def test_actual_helm_render_and_values_overrides():
     from pathlib import Path
     from tempfile import TemporaryDirectory
@@ -166,6 +170,8 @@ async def test_actual_helm_render_and_values_overrides():
         "readOnlyRootFilesystem"
     ] = False
     values["infraarchSecurity"][wid]["c0"]["writablePaths"] = []
+    values["infraarchSecurity"][wid]["c0"]["securityContext"]["runAsUser"] = 22222
+    values["infraarchSecurity"][wid]["c0"]["securityContext"]["runAsGroup"] = 33333
     with TemporaryDirectory() as directory:
         root = Path(directory)
         for path, source in result.items():
@@ -182,6 +188,8 @@ async def test_actual_helm_render_and_values_overrides():
         assert (
             pod["containers"][0]["securityContext"]["readOnlyRootFilesystem"] is False
         )
+        assert pod["containers"][0]["securityContext"]["runAsUser"] == 22222
+        assert pod["containers"][0]["securityContext"]["runAsGroup"] == 33333
         assert not pod.get("volumes")
         assert not pod["containers"][0].get("volumeMounts")
     assert await repair_kubernetes(result) == (result, [])
@@ -192,9 +200,8 @@ def test_helm_requires_real_render_evidence_and_skips_control_flow():
     assert repair_pods(files) == (files, [])
     source = copy.deepcopy(files)
     source["helm/app/templates/app.yaml"] = (
-        "{{ if .Values.enabled }}\n" + next(iter(files.values())) + "{{ end }}\n"
+        "{{ range .Values.items }}\n" + next(iter(files.values())) + "{{ end }}\n"
     )
-    assert repair_pods(source, {"helm/app/templates/app.yaml": [workload()]}) == (
-        source,
-        [],
-    )
+    result, records = repair_pods(source, {"helm/app/templates/app.yaml": [workload()]})
+    assert result == source
+    assert records[0]["outcome"] == "skipped"

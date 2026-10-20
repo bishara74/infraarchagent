@@ -1,0 +1,964 @@
+{
+  "before": {
+    "blockers": [
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/security_support.tf",
+        "line_start": 40,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 89,
+        "line_start": 75,
+        "message": "Ensure every security group and rule has a description",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "CKV_AWS_23",
+        "severity": "UNKNOWN",
+        "title": "Ensure every security group and rule has a description",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 252,
+        "line_start": 252,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 89,
+        "line_start": 75,
+        "message": "Ensure that Security Groups are attached to another resource",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "CKV2_AWS_5",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Security Groups are attached to another resource",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 14,
+        "line_start": 1,
+        "message": "The default namespace should not be used",
+        "resource": "Service.default.app-service",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Image should use digest",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "The default namespace should not be used",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Prefer using secrets as files over secrets as environment variables",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_35",
+        "severity": "UNKNOWN",
+        "title": "Prefer using secrets as files over secrets as environment variables",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.default.app-deployment.app-app",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0110",
+        "line_end": 19,
+        "line_start": 16,
+        "message": "deployment app-deployment in default namespace should set metadata.namespace to a non-default namespace",
+        "resource": "",
+        "rule_id": "KSV-0110",
+        "severity": "LOW",
+        "title": "Workloads in the default namespace",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 63,
+        "line_start": 39,
+        "message": "Container app in deployment app-deployment (namespace: default) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 85,
+        "line_start": 80,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "before_sha256": "c1999d8fafd03312f3e5cd97bf7172b9487689dde44ffaf6b22b20a83ad17deb",
+  "candidate": {
+    "blockers": [
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/security_support.tf",
+        "line_start": 40,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 89,
+        "line_start": 75,
+        "message": "Ensure every security group and rule has a description",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "CKV_AWS_23",
+        "severity": "UNKNOWN",
+        "title": "Ensure every security group and rule has a description",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 252,
+        "line_start": 252,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 89,
+        "line_start": 75,
+        "message": "Ensure that Security Groups are attached to another resource",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "CKV2_AWS_5",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Security Groups are attached to another resource",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 14,
+        "line_start": 1,
+        "message": "The default namespace should not be used",
+        "resource": "Service.default.app-service",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Image should use digest",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "The default namespace should not be used",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Prefer using secrets as files over secrets as environment variables",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_35",
+        "severity": "UNKNOWN",
+        "title": "Prefer using secrets as files over secrets as environment variables",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.default.app-deployment.app-app",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0110",
+        "line_end": 19,
+        "line_start": 16,
+        "message": "deployment app-deployment in default namespace should set metadata.namespace to a non-default namespace",
+        "resource": "",
+        "rule_id": "KSV-0110",
+        "severity": "LOW",
+        "title": "Workloads in the default namespace",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 63,
+        "line_start": 39,
+        "message": "Container app in deployment app-deployment (namespace: default) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 85,
+        "line_start": 80,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "candidate_delta": {
+    "blocker_deltas": {
+      "contextual-v1": 0,
+      "contextual-v2": 0,
+      "strict": 0
+    },
+    "failed_checks_after": 2,
+    "failed_checks_before": 2,
+    "introduced": [],
+    "removed": [],
+    "validation_changed": false
+  },
+  "candidate_sha256": "c1999d8fafd03312f3e5cd97bf7172b9487689dde44ffaf6b22b20a83ad17deb",
+  "change": "defaults",
+  "introduced": [],
+  "key": "1/95c60392-4ffe-4afb-9882-ef802a45bcdd/performance",
+  "observed": {
+    "blockers": [
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/security_support.tf",
+        "line_start": 40,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 89,
+        "line_start": 75,
+        "message": "Ensure every security group and rule has a description",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "CKV_AWS_23",
+        "severity": "UNKNOWN",
+        "title": "Ensure every security group and rule has a description",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 252,
+        "line_start": 252,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 89,
+        "line_start": 75,
+        "message": "Ensure that Security Groups are attached to another resource",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "CKV2_AWS_5",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Security Groups are attached to another resource",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 193,
+        "line_start": 172,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 14,
+        "line_start": 1,
+        "message": "The default namespace should not be used",
+        "resource": "Service.default.app-service",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Image should use digest",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "The default namespace should not be used",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Prefer using secrets as files over secrets as environment variables",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_35",
+        "severity": "UNKNOWN",
+        "title": "Prefer using secrets as files over secrets as environment variables",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 64,
+        "line_start": 15,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.default.app-deployment.app-app",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0110",
+        "line_end": 19,
+        "line_start": 16,
+        "message": "deployment app-deployment in default namespace should set metadata.namespace to a non-default namespace",
+        "resource": "",
+        "rule_id": "KSV-0110",
+        "severity": "LOW",
+        "title": "Workloads in the default namespace",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 63,
+        "line_start": 39,
+        "message": "Container app in deployment app-deployment (namespace: default) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 85,
+        "line_start": 80,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 1
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "prompt": "EKS",
+  "provenance": {
+    "evaluator": "3c704cc944a39a375388c37afe7312ed110ebdcd57be5218eb877d550364147d",
+    "network_isolated": true,
+    "plan": "09cbc090c0782f64a01a3f3e9d67036737d55a764666453dc704c23f9c366f7b",
+    "protocol": "kubernetes-1",
+    "providers": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      }
+    },
+    "tool_timeout": 60,
+    "tool_versions": {
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "helm": "v4.3.0+gbec5b06",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+      "terraform": "Terraform v1.16.4"
+    },
+    "validation_deadline": 120,
+    "variant": "performance"
+  },
+  "reason": "unchanged",
+  "records": [],
+  "removed": [],
+  "retained_delta": {
+    "blocker_deltas": {
+      "contextual-v1": 0,
+      "contextual-v2": 0,
+      "strict": 0
+    },
+    "failed_checks_after": 2,
+    "failed_checks_before": 2,
+    "introduced": [],
+    "removed": [],
+    "validation_changed": false
+  },
+  "retained_sha256": "c1999d8fafd03312f3e5cd97bf7172b9487689dde44ffaf6b22b20a83ad17deb"
+}

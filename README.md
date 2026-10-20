@@ -1421,6 +1421,27 @@ and preserves rejected candidate findings. A newly captured baseline uses the
 checked-out implementation; the committed pre-change context measurements are
 historical evidence, not regenerated measurements of old code.
 
+The Kubernetes follow-up uses a separate evidence directory and reconstructs
+previous retained packages against pinned commit `c3be20c`, checking their hashes.
+It records all scanner findings, blocker/profile deltas and rejected candidates.
+From `backend/`, with the same bootstrap and offline mirrors:
+
+```bash
+unshare --user --map-root-user --net .venv/bin/python -m scripts.phase9i_kubernetes_replay \
+  --workers 3 --output /tmp/phase9i-kubernetes-replay
+unshare --user --map-root-user --net .venv/bin/python -m scripts.phase9i_kubernetes_report \
+  --verify-bytes --output /tmp/phase9i-kubernetes-replay
+```
+
+The follow-up pod catalogue fills missing security/resource settings and exposes
+new Helm defaults under `infraarchSecurity`, with writable paths defaulting to
+`/tmp`. Literal Helm images expose their existing identities under
+`infraarchImages`; latest/blank tags and untrusted registries can remain blocking.
+Ports and application configuration are preserved. Archives identify retained,
+current defaults as **runtime compatibility unverified**. UID/GID, read-only
+filesystems, writable paths and resources remain operator-overridable through
+Helm values. Static acceptance does not establish image startup compatibility.
+
 For dotenv-disabled verification, export `INFRAARCH_TEST_BOOTSTRAP=1` and put
 `backend/tests/bootstrap:backend` first on `PYTHONPATH` (absolute paths work from
 both the root and `backend/`). Explicitly set `LLM_PROVIDER=stub`, empty

@@ -1,0 +1,76 @@
+{
+  "dotenv_disabled_before_python_startup": true,
+  "real_llm_calls": 0,
+  "database": {
+    "disposable_containers": 2,
+    "version": "PostgreSQL 16.14",
+    "synthetic_credentials": true,
+    "removed_after_verification": true,
+    "app_privileges_unchanged": true
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "node": "24.21.0"
+  },
+  "commands": [
+    {
+      "command": "make lint",
+      "exit_code": 0,
+      "mypy_source_files": 164,
+      "log": "verification/lint.txt"
+    },
+    {
+      "command": "make test",
+      "passed": 1818,
+      "failed": 0,
+      "skipped": 0,
+      "performance_deselected": 6,
+      "seconds": 697.28,
+      "log": "verification/backend.txt"
+    },
+    {
+      "command": "make frontend-test",
+      "passed": 113,
+      "failed": 0,
+      "files": 17,
+      "seconds": 15.2,
+      "source": "recorded terminal result; verification/attempts.md"
+    },
+    {
+      "command": "make test-e2e",
+      "passed": 7,
+      "failed": 0,
+      "duration": "3.8m",
+      "log": "verification/e2e.txt"
+    },
+    {
+      "command": "pytest catalogue/images/integration -k not pinned",
+      "passed": 39,
+      "failed": 0,
+      "deselected": 1,
+      "seconds": 16.28,
+      "log": "verification/catalogue.txt"
+    },
+    {
+      "command": "pytest Kubernetes reporting and legacy reporting",
+      "passed": 8,
+      "failed": 0,
+      "seconds": 1.04,
+      "log": "verification/report.txt"
+    }
+  ],
+  "limitations": [
+    "Offline static validation/scanning; no image pull, Kubernetes deployment or workload startup verification.",
+    "No real model generation/repair or live pipeline deadline-quality measurement.",
+    "Six performance tests are deselected by the existing make test command; thresholds are unchanged.",
+    "Reporter robustness additions after full-suite collection have eight focused passing tests.",
+    "Actual Helm tests and cached-snapshot reconstruction require local tools/snapshots; capability skips apply when absent. All were present for this verification."
+  ],
+  "logs_sha256": {
+    "e2e.txt": "1b2ff8578121bc65942abf1363e685dcc1ec68a0d9b3fd110350ba526b669c4b",
+    "backend.txt": "84680622c5b114d212b500ab7a445bcab41f499daf79f0d83b0e57eb350a582b",
+    "lint.txt": "625977bfe3b08d93e72159469a409033d27560dda860f5fc4489c2faf60ab708",
+    "report.txt": "9bd2978ed56ba4d0666db706d3531cca0e661371b6717ec59b63c07fb38c30db",
+    "catalogue.txt": "6ffe1c632855e22b3e0e3b58b7ed370fc47d60297f40268be7842b2a145f7189"
+  }
+}

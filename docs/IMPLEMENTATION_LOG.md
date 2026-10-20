@@ -27,6 +27,56 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+
+## 2026-10-20 — Phase 9i — Guarded pod integration and offline replay
+
+**Summary:** Integrate atomic Helm/Grafana/pod candidates into validation repair
+and the same pod catalogue into security remediation. Replay all 81 packages,
+retaining original snapshots, previous evidence and three missing variants.
+
+**Requirements addressed:** FR-S-04/09, FR-V-01/03/04, FR-UI-06, NFR-01.
+
+**Files:** deterministic/security agents; Kubernetes catalogue/render/image code;
+validation repair metadata; phase9i_kubernetes_replay/report scripts; shared
+report comparison; catalogue/integration/report and recorded-loop tests;
+docs/evals/phase9i-kubernetes-offline/; README; D-56; this log.
+
+**Decisions:** D-56. Real Helm output binds names only with matching cardinality
+and unique rendered names. Whole-document conditionals preserve disabled output;
+inner branches and ambiguous structures skip. Preserve explicit values and
+privileged conflicts, including empty nested contexts and values aliases.
+Candidate construction consumes the enclosing budget. Existing strict guards,
+validation improvement, policies, labels, deadlines and thresholds are unchanged.
+No schema migration, dependency, prompt matching or real inference is added.
+Recorded LLM-only loop tests disable both automatic paths without changing their
+scenario assertions. Unknown comparison counts remain unavailable, never a
+claimed finding removal.
+
+**Replay:** 81 originals / 28 runs; zero stored/fresh baseline discrepancies;
+81 strict/v1 golden matches; 324 candidate idempotence checks; 648 reconstructed
+historical/candidate stage hash checks. Previous retained strict/v1/v2 blockers
+334/329/297 become 324/319/287. Ten catalogue proposals are retained; no new
+blocking or advisory findings are retained. Validity remains 45/81 and passes
+remain 20/81 under all three profiles. Twelve format candidates still fail the
+no-new-blocker guard; their new strict identities fall from the historical 189
+to 81. Historical candidate observations are explicitly separate from fresh scans.
+All nine observation stages have zero unknown scan/validation outcomes.
+
+**Tests:** `make lint` passes (164 mypy application files); `make test` → 1,818
+passed, six performance tests deselected, zero failed/skipped (697.28s).
+Frontend → 113 passed across 17 files. Stub E2E → seven passed (3.8m).
+Latest focused catalogue tests → 39 passed, one cached-snapshot test deselected
+(covered in full suite/replay); report regressions → eight passed after full-suite
+collection. Verification started with dotenv disabled and synthetic credentials;
+both disposable PostgreSQL 16.14 containers were removed. Exact logs and attempt
+history are retained in the new evidence directory.
+
+**Known gaps / follow-ups:** Runtime compatibility remains unverified. Explicit
+image trust/tag/port choices and unsupported bindings remain for operator/model
+repair. Offline guard results do not measure real model or live-pipeline latency.
+The publication entry follows with per-prompt totals and thesis interpretation.
+
+
 ## 2026-10-20 — Phase 9i — Honest image configuration
 
 **Summary:** Parameterise literal Helm images with operator repository/tag/digest

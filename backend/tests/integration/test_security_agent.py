@@ -513,6 +513,11 @@ async def test_loop_with_recorded_trivy_and_terraform(
     monkeypatch.setattr(
         "app.agents.security.agent.autofix", lambda files, findings: (files, [])
     )
+
+    async def no_pod_catalogue(files):
+        return files, []
+
+    monkeypatch.setattr("app.agents.security.agent.repair_kubernetes", no_pod_catalogue)
     monkeypatch.setattr(
         "app.agents.security.agent.template_requests", lambda files, findings: []
     )

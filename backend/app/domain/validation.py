@@ -148,6 +148,7 @@ class DeterministicRepair(BaseModel):
     catalogue_entry: str | None = None
     rule_ids: list[str] = Field(default_factory=list)
     changed_fields: list[str] = Field(default_factory=list)
+    skipped_reasons: list[str] = Field(default_factory=list)
     override_location: str | None = None
     runtime_compatibility: Literal["unverified"] | None = None
 

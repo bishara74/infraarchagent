@@ -42,6 +42,7 @@ from app.security.acceptance import CandidateGuard
 from app.security.catalogue import autofix
 from app.security.diff import package_diff
 from app.security.focus import RANK, focused_findings
+from app.security.kubernetes_render import repair_kubernetes
 from app.security.partial import RetainedCandidate, accept_groups, retained_metrics
 from app.security.policy import SECURITY_POLICY_VERSION
 from app.security.templates import build_template
@@ -431,6 +432,14 @@ class SecurityAgent:
             raise TimeoutError
         construction_started = time.monotonic()
         automatic, records = autofix(files, list(baseline_scan.violations))
+        if any(p.startswith(("helm/", "k8s/")) for p in automatic):
+            async with asyncio.timeout(budget.remaining()):
+                automatic, pod_records = await repair_kubernetes(automatic)
+            for record in pod_records:
+                record["status"] = (
+                    "skipped" if record.get("outcome") == "skipped" else "proposed"
+                )
+            records.extend(pod_records)
         verification["construction_seconds"] = time.monotonic() - construction_started
         verification["catalogue"] = records
         verification["verification_action"] = "catalogue"

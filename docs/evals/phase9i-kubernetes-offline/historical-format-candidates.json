@@ -1,0 +1,554 @@
+{
+  "current_new_blockers": 81,
+  "current_stage": "docs/evals/phase9i-kubernetes-offline/cumulative_formats",
+  "historical_new_blockers": 189,
+  "historical_stage": "docs/evals/phase9i-offline/cumulative_formats",
+  "method": "Join historical and current cumulative_formats by package key; assert equal before-package hashes; count unique introduced rule/path/resource identities for the historical new-blocker rejections. Historical candidate observations are labelled separately from current fresh scans.",
+  "packages": 12,
+  "per_rule": [
+    {
+      "current": 4,
+      "delta": -9,
+      "historical": 13,
+      "rule_id": "CKV_K8S_10"
+    },
+    {
+      "current": 4,
+      "delta": -9,
+      "historical": 13,
+      "rule_id": "CKV_K8S_11"
+    },
+    {
+      "current": 4,
+      "delta": -9,
+      "historical": 13,
+      "rule_id": "CKV_K8S_12"
+    },
+    {
+      "current": 4,
+      "delta": -9,
+      "historical": 13,
+      "rule_id": "CKV_K8S_13"
+    },
+    {
+      "current": 11,
+      "delta": 0,
+      "historical": 11,
+      "rule_id": "CKV_K8S_14"
+    },
+    {
+      "current": 5,
+      "delta": -9,
+      "historical": 14,
+      "rule_id": "CKV_K8S_20"
+    },
+    {
+      "current": 5,
+      "delta": -9,
+      "historical": 14,
+      "rule_id": "CKV_K8S_23"
+    },
+    {
+      "current": 5,
+      "delta": -9,
+      "historical": 14,
+      "rule_id": "CKV_K8S_40"
+    },
+    {
+      "current": 3,
+      "delta": -9,
+      "historical": 12,
+      "rule_id": "KSV-0001"
+    },
+    {
+      "current": 3,
+      "delta": -9,
+      "historical": 12,
+      "rule_id": "KSV-0012"
+    },
+    {
+      "current": 9,
+      "delta": 0,
+      "historical": 9,
+      "rule_id": "KSV-0013"
+    },
+    {
+      "current": 3,
+      "delta": -9,
+      "historical": 12,
+      "rule_id": "KSV-0014"
+    },
+    {
+      "current": 3,
+      "delta": -9,
+      "historical": 12,
+      "rule_id": "KSV-0104"
+    },
+    {
+      "current": 8,
+      "delta": 0,
+      "historical": 8,
+      "rule_id": "KSV-0117"
+    },
+    {
+      "current": 3,
+      "delta": -9,
+      "historical": 12,
+      "rule_id": "KSV-0118"
+    },
+    {
+      "current": 7,
+      "delta": 0,
+      "historical": 7,
+      "rule_id": "KSV-0125"
+    }
+  ],
+  "rows": [
+    {
+      "before_package_sha256": "efd87c870e29dd397fc39034931da0c916fd21b6dd20a5271aa7cd01d4387ad6",
+      "current_new_blockers": 3,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 1
+      },
+      "historical_new_blockers": 15,
+      "historical_observation_sha256": "4601fdb240e79cc6c21ec1bc10c2eaa049ff241d3d87963f630b94bb12acd5c0",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1
+      },
+      "key": "1/152dd2d2-e625-4f12-9a40-8f8ab0fc9c0b/cost",
+      "prompt": "EKS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "dea9cfe0f7f073b72f835fd6dae4af2870469dd37ab5bd9225b43fa45dd5a60c",
+      "current_new_blockers": 1,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "KSV-0117": 1
+      },
+      "historical_new_blockers": 13,
+      "historical_observation_sha256": "66afda969fba2c6bd396753bc260641a0225c4a4070004ae0d03a857d3b6a232",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1
+      },
+      "key": "1/152dd2d2-e625-4f12-9a40-8f8ab0fc9c0b/security",
+      "prompt": "EKS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "edf6373da35079ff3bdbfceeceee0fbd2ed90539c87df5731fb3558900b716e6",
+      "current_new_blockers": 16,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "historical_new_blockers": 16,
+      "historical_observation_sha256": "8d2d36b86cf1660fddc3983f97311bc96b742da898f93a5ff47ac2a53ac61b3c",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "key": "1/6e2ac28e-d152-453c-bbbb-28b72a3da099/performance",
+      "prompt": "EKS",
+      "skips": [
+        {
+          "after_hash": "10cade22730b5d621accc6e8c788a1376163fccf0543704fa154799e26f8dc73",
+          "before_hash": "10cade22730b5d621accc6e8c788a1376163fccf0543704fa154799e26f8dc73",
+          "file": "helm/eks-cluster/templates/workloads.yaml",
+          "kind": "kubernetes_pod_defaults",
+          "name": "unresolved",
+          "outcome": "skipped",
+          "reason": "dynamic_template_structure"
+        }
+      ]
+    },
+    {
+      "before_package_sha256": "1d9fc4bc4fc3f217a990ee24af4c891b4d031f0055143d2faa2f8e7639e54183",
+      "current_new_blockers": 1,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "KSV-0125": 1
+      },
+      "historical_new_blockers": 13,
+      "historical_observation_sha256": "76144574b2bf0b85d4ac7241a9ee8436251f7a21a5e77a2fe725a2e922fa2474",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "key": "1/6e2ac28e-d152-453c-bbbb-28b72a3da099/security",
+      "prompt": "EKS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "c61b238941ca702837c26bedc36e28d90f64f77ff584f4719cace7c7c994d9a1",
+      "current_new_blockers": 4,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 1,
+        "KSV-0125": 1
+      },
+      "historical_new_blockers": 16,
+      "historical_observation_sha256": "7d3c9a76c783bfaae0e6b305b808eda2392e410a018c938e53c1e6d3e4b79d2f",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "key": "1/95c60392-4ffe-4afb-9882-ef802a45bcdd/cost",
+      "prompt": "EKS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "82b9109b74240b46bc46e0adf5c6b96a61d442575bfeb6c50512ab3bee45e4af",
+      "current_new_blockers": 4,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 1,
+        "KSV-0125": 1
+      },
+      "historical_new_blockers": 16,
+      "historical_observation_sha256": "804d4562d3a625e41ec41fc0b309908478fe275cf73c7defca4709f57c8a9839",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "key": "1/95c60392-4ffe-4afb-9882-ef802a45bcdd/security",
+      "prompt": "EKS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "3173425baa48b72bb394b6c103a43b9486bb3bad1616c5b5ec6ac162b0bbf179",
+      "current_new_blockers": 31,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_10": 3,
+        "CKV_K8S_11": 3,
+        "CKV_K8S_12": 3,
+        "CKV_K8S_13": 3,
+        "CKV_K8S_14": 3,
+        "CKV_K8S_20": 3,
+        "CKV_K8S_23": 3,
+        "CKV_K8S_40": 3,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "historical_new_blockers": 31,
+      "historical_observation_sha256": "ce95190ec521aefeb704ff5cb97739efe8bad85715b7016489bdc8b221243122",
+      "historical_rules": {
+        "CKV_K8S_10": 3,
+        "CKV_K8S_11": 3,
+        "CKV_K8S_12": 3,
+        "CKV_K8S_13": 3,
+        "CKV_K8S_14": 3,
+        "CKV_K8S_20": 3,
+        "CKV_K8S_23": 3,
+        "CKV_K8S_40": 3,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "key": "2/464124e4-03d5-4be3-a1ac-f25ee0d6207f/security",
+      "prompt": "EKS",
+      "skips": [
+        {
+          "after_hash": "7c3176241d819be0393f50d3db976814f3cbb52916dbb467b61c146ebe824671",
+          "before_hash": "7c3176241d819be0393f50d3db976814f3cbb52916dbb467b61c146ebe824671",
+          "file": "helm/eks/templates/workloads.yaml",
+          "kind": "kubernetes_pod_defaults",
+          "name": "unresolved",
+          "outcome": "skipped",
+          "reason": "dynamic_template_structure"
+        }
+      ]
+    },
+    {
+      "before_package_sha256": "e6acb545a436ef48d8ce417bcb7fecad3fbd8ad7e331aebeb713edd59d63c790",
+      "current_new_blockers": 3,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 1
+      },
+      "historical_new_blockers": 15,
+      "historical_observation_sha256": "31dda02327404286843dc1fac0cc3610eb0c246ae6623cf310180c0b714d9e8f",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1
+      },
+      "key": "2/6460bfee-6f30-4185-9b60-e114da0d82d5/cost",
+      "prompt": "EKS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "9f19f7e6c40faf344729ac78700fa1a2f4bfd3b91e03ff6701546fc65b1b3f47",
+      "current_new_blockers": 4,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 1,
+        "KSV-0125": 1
+      },
+      "historical_new_blockers": 16,
+      "historical_observation_sha256": "1014df05bf7b4017c93503e818a323125815a9c0418c3f468200b15c9f5c61e3",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "key": "2/6460bfee-6f30-4185-9b60-e114da0d82d5/performance",
+      "prompt": "EKS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "3a3f4fdf48036e99e4272d8458b42674f37cf1884b95e14d9b4767dab2f37435",
+      "current_new_blockers": 3,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 1
+      },
+      "historical_new_blockers": 15,
+      "historical_observation_sha256": "aeef5bf0625025e0190ff045c790645f1f789e7f6b0bcf3ae6ee782ad875570a",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0117": 1,
+        "KSV-0118": 1
+      },
+      "key": "2/6460bfee-6f30-4185-9b60-e114da0d82d5/security",
+      "prompt": "EKS",
+      "skips": [
+        {
+          "after_hash": "126e555a7eec1e8755aec1c6f77171a6e62433d6ed6ae168dd949b6825db287e",
+          "before_hash": "126e555a7eec1e8755aec1c6f77171a6e62433d6ed6ae168dd949b6825db287e",
+          "file": "k8s/workloads.yaml",
+          "kind": "kubernetes_pod_defaults",
+          "name": "unresolved",
+          "outcome": "skipped",
+          "reason": "unresolved_binding"
+        }
+      ]
+    },
+    {
+      "before_package_sha256": "ba6c590905ca7ff8d329825a502703836cb5a7ed57ec1ee655b1ddf4edfe3075",
+      "current_new_blockers": 1,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "KSV-0125": 1
+      },
+      "historical_new_blockers": 13,
+      "historical_observation_sha256": "6812c5e484144204d6b9d30f2266c33d043ab081efcd043f0837a1734bc76ae0",
+      "historical_rules": {
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0118": 1,
+        "KSV-0125": 1
+      },
+      "key": "2/ce347154-cc1a-41d4-89d4-5d79e4e8860d/cost",
+      "prompt": "ECS",
+      "skips": []
+    },
+    {
+      "before_package_sha256": "e495a895b2a92966eee6a2606f11ac7fcd31cbffe4023e7e89be85dbb132b460",
+      "current_new_blockers": 10,
+      "current_outcome": "new_blocking_findings",
+      "current_rules": {
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0118": 1
+      },
+      "historical_new_blockers": 10,
+      "historical_observation_sha256": "b5aa0f70c0313b417fc5368bb68ae97dbd3c36766db052aed7cff6ac19ba00b7",
+      "historical_rules": {
+        "CKV_K8S_14": 1,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "KSV-0001": 1,
+        "KSV-0012": 1,
+        "KSV-0013": 1,
+        "KSV-0014": 1,
+        "KSV-0104": 1,
+        "KSV-0118": 1
+      },
+      "key": "2/ce347154-cc1a-41d4-89d4-5d79e4e8860d/security",
+      "prompt": "ECS",
+      "skips": [
+        {
+          "after_hash": "25d844f509266ab28b9ab180acf51b5a6a3cb6704f4182e72ffb29db87f7b7b2",
+          "before_hash": "25d844f509266ab28b9ab180acf51b5a6a3cb6704f4182e72ffb29db87f7b7b2",
+          "file": "helm/nodejs-api/templates/workloads.yaml",
+          "kind": "kubernetes_pod_defaults",
+          "name": "unresolved",
+          "outcome": "skipped",
+          "reason": "dynamic_template_structure"
+        }
+      ]
+    }
+  ]
+}

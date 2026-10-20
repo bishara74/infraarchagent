@@ -1,0 +1,692 @@
+{
+  "key": "2/6460bfee-6f30-4185-9b60-e114da0d82d5/cost",
+  "observed": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_58"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_38"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_39"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0040"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0041"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0052"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 214,
+        "message": "Unsupported argument"
+      }
+    ],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 86,
+        "line_start": 70,
+        "message": "Ensure every security group and rule has a description",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "CKV_AWS_23",
+        "severity": "UNKNOWN",
+        "title": "Ensure every security group and rule has a description",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 125,
+        "line_start": 112,
+        "message": "Ensure EKS Cluster has Secrets Encryption Enabled",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_58",
+        "severity": "HIGH",
+        "title": "Ensure EKS Cluster has Secrets Encryption Enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 125,
+        "line_start": 112,
+        "message": "Ensure Amazon EKS public endpoint not accessible to 0.0.0.0/0",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_38",
+        "severity": "HIGH",
+        "title": "Ensure Amazon EKS public endpoint not accessible to 0.0.0.0/0",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 125,
+        "line_start": 112,
+        "message": "Ensure Amazon EKS public endpoint disabled",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_39",
+        "severity": "HIGH",
+        "title": "Ensure Amazon EKS public endpoint disabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 169,
+        "line_start": 154,
+        "message": "Ensure AWS EKS node group does not have implicit SSH access from 0.0.0.0/0",
+        "resource": "aws_eks_node_group.mixed",
+        "rule_id": "CKV_AWS_100",
+        "severity": "UNKNOWN",
+        "title": "Ensure AWS EKS node group does not have implicit SSH access from 0.0.0.0/0",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 200,
+        "line_start": 190,
+        "message": "Ensure IAM policies does not allow write access without constraints",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_290",
+        "severity": "UNKNOWN",
+        "title": "Ensure IAM policies does not allow write access without constraints",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 200,
+        "line_start": 190,
+        "message": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "resource": "aws_iam_policy.rds_monitor_policy",
+        "rule_id": "CKV_AWS_355",
+        "severity": "UNKNOWN",
+        "title": "Ensure no IAM policies documents allow \"*\" as a statement's resource for restrictable actions",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:single-AZ database is the cost directive",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 229,
+        "line_start": 208,
+        "message": "Ensure that RDS instances have Multi-AZ enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157",
+        "severity": "MEDIUM",
+        "title": "Ensure that RDS instances have Multi-AZ enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "variant_exemption:Performance Insights adds cost",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 229,
+        "line_start": 208,
+        "message": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354",
+        "severity": "MEDIUM",
+        "title": "Ensure RDS Performance Insights are encrypted using KMS CMKs",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 229,
+        "line_start": 208,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 239,
+        "line_start": 232,
+        "message": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91",
+        "severity": "MEDIUM",
+        "title": "Ensure the ELBv2 (Application/Network) has access logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 239,
+        "line_start": 232,
+        "message": "Ensure that ALB drops HTTP headers",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_131",
+        "severity": "UNKNOWN",
+        "title": "Ensure that ALB drops HTTP headers",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 239,
+        "line_start": 232,
+        "message": "Ensure that Load Balancer has deletion protection enabled",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_150",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Load Balancer has deletion protection enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 247,
+        "line_start": 241,
+        "message": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "resource": "aws_lb_target_group.app_tg",
+        "rule_id": "CKV_AWS_261",
+        "severity": "UNKNOWN",
+        "title": "Ensure HTTP HTTPS Target group defines Healthcheck",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 239,
+        "line_start": 232,
+        "message": "Ensure public facing ALB are protected by WAF",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV2_AWS_28",
+        "severity": "UNKNOWN",
+        "title": "Ensure public facing ALB are protected by WAF",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 229,
+        "line_start": 208,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 229,
+        "line_start": 208,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "Image should use digest",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "The default namespace should not be used",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "Prefer using secrets as files over secrets as environment variables",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_35",
+        "severity": "UNKNOWN",
+        "title": "Prefer using secrets as files over secrets as environment variables",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.default.app-deployment",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 59,
+        "line_start": 48,
+        "message": "The default namespace should not be used",
+        "resource": "Service.default.app-service",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 66,
+        "line_start": 60,
+        "message": "The default namespace should not be used",
+        "resource": "Secret.default.db-credentials",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 47,
+        "line_start": 1,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.default.app-deployment.app-python-app",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "docker/eks-cluster/Dockerfile",
+        "guide_url": null,
+        "line_end": 15,
+        "line_start": 1,
+        "message": "Ensure that HEALTHCHECK instructions have been added to container images",
+        "resource": "/docker/eks-cluster/Dockerfile.",
+        "rule_id": "CKV_DOCKER_2",
+        "severity": "UNKNOWN",
+        "title": "Ensure that HEALTHCHECK instructions have been added to container images",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "docker/eks-cluster/Dockerfile",
+        "guide_url": "https://avd.aquasec.com/misconfig/ds-0026",
+        "line_end": null,
+        "line_start": null,
+        "message": "Add HEALTHCHECK instruction in your Dockerfile",
+        "resource": "",
+        "rule_id": "DS-0026",
+        "severity": "LOW",
+        "title": "No HEALTHCHECK defined",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0020",
+        "line_end": 46,
+        "line_start": 21,
+        "message": "Container 'python-app' of Deployment 'app-deployment' should set 'securityContext.runAsUser' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0020",
+        "severity": "LOW",
+        "title": "Runs with UID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 46,
+        "line_start": 21,
+        "message": "Container 'python-app' of Deployment 'app-deployment' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0110",
+        "line_end": 6,
+        "line_start": 3,
+        "message": "deployment app-deployment in default namespace should set metadata.namespace to a non-default namespace",
+        "resource": "",
+        "rule_id": "KSV-0110",
+        "severity": "LOW",
+        "title": "Workloads in the default namespace",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0039",
+        "line_end": 125,
+        "line_start": 112,
+        "message": "Cluster does not have secret encryption enabled.",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0039",
+        "severity": "HIGH",
+        "title": "EKS should have the encryption of secrets enabled",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0040",
+        "line_end": 119,
+        "line_start": 119,
+        "message": "Public cluster access is enabled.",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0040",
+        "severity": "CRITICAL",
+        "title": "EKS Clusters should have the public access disabled",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0041",
+        "line_end": 121,
+        "line_start": 121,
+        "message": "Cluster allows access from a public CIDR: 0.0.0.0/0",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0041",
+        "severity": "CRITICAL",
+        "title": "EKS cluster should not have open CIDR range for public access",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0052",
+        "line_end": 239,
+        "line_start": 232,
+        "message": "Application load balancer is not set to drop invalid headers.",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0052",
+        "severity": "HIGH",
+        "title": "Load balancers should drop invalid headers",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+        "line_end": 234,
+        "line_start": 234,
+        "message": "Load balancer is exposed publicly.",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053",
+        "severity": "HIGH",
+        "title": "Load balancer is exposed to the internet.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0078",
+        "line_end": 229,
+        "line_start": 208,
+        "message": "Instance Performance Insights enctyption does not use a customer-managed KMS key.",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0078",
+        "severity": "LOW",
+        "title": "Performance Insights encryption should use Customer Managed Keys",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 79,
+        "line_start": 74,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 85,
+        "line_start": 80,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.eks_nodes",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 9
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies.",
+            "resource": "aws_lb.app_alb",
+            "rule_id": "AWS-0053"
+          }
+        ],
+        "remaining_blocking": 8
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 9
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "prompt": "EKS",
+  "provenance": {
+    "evaluator": "3c704cc944a39a375388c37afe7312ed110ebdcd57be5218eb877d550364147d",
+    "network_isolated": true,
+    "plan": "5270f7d97606b6d6232eaa595c23c1260a3125afe4722c488bdaaae9c9dcff4f",
+    "protocol": "kubernetes-1",
+    "providers": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      }
+    },
+    "tool_timeout": 60,
+    "tool_versions": {
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "helm": "v4.3.0+gbec5b06",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+      "terraform": "Terraform v1.16.4"
+    },
+    "validation_deadline": 120,
+    "variant": "cost"
+  },
+  "reason": "baseline"
+}

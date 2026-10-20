@@ -1,0 +1,2780 @@
+{
+  "before": {
+    "blockers": [
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0077"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 6,
+        "message": "helm optional lint failed (undefined_named_template)"
+      }
+    ],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 100,
+        "line_start": 83,
+        "message": "Ensure every security group and rule has a description",
+        "resource": "aws_security_group.app",
+        "rule_id": "CKV_AWS_23",
+        "severity": "UNKNOWN",
+        "title": "Ensure every security group and rule has a description",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 212,
+        "line_start": 197,
+        "message": "Ensure that Load Balancer has deletion protection enabled",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_150",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Load Balancer has deletion protection enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 287,
+        "line_start": 287,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 212,
+        "line_start": 197,
+        "message": "Ensure public facing ALB are protected by WAF",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV2_AWS_28",
+        "severity": "UNKNOWN",
+        "title": "Ensure public facing ALB are protected by WAF",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Image should use digest",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Prefer using secrets as files over secrets as environment variables",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_35",
+        "severity": "UNKNOWN",
+        "title": "Prefer using secrets as files over secrets as environment variables",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Image should use digest",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Image should use digest",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.app-namespace.app-service.app-app-service",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.monitoring.prometheus.app-prometheus",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.monitoring.grafana.app-grafana",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 50,
+        "line_start": 27,
+        "message": "Container 'app' of Deployment 'app-service' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 191,
+        "line_start": 174,
+        "message": "Container 'grafana' of Deployment 'grafana' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 115,
+        "line_start": 93,
+        "message": "Container 'prometheus' of Deployment 'prometheus' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 50,
+        "line_start": 27,
+        "message": "Container app in deployment app-service (namespace: app-namespace) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 191,
+        "line_start": 174,
+        "message": "Container grafana in deployment grafana (namespace: monitoring) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 115,
+        "line_start": 93,
+        "message": "Container prometheus in deployment prometheus (namespace: monitoring) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+        "line_end": 199,
+        "line_start": 199,
+        "message": "Load balancer is exposed publicly.",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053",
+        "severity": "HIGH",
+        "title": "Load balancer is exposed to the internet.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0077",
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Instance has very low backup retention period.",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0077",
+        "severity": "MEDIUM",
+        "title": "RDS Cluster and RDS instance should have backup retention longer than default 1 day",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 92,
+        "line_start": 87,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.app",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 98,
+        "line_start": 93,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.app",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "An explicitly public application load balancer exposes HTTP only through a verified HTTPS redirect.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          }
+        ],
+        "remaining_blocking": 4
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          }
+        ],
+        "remaining_blocking": 4
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 5
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "before_sha256": "edf6373da35079ff3bdbfceeceee0fbd2ed90539c87df5731fb3558900b716e6",
+  "candidate": {
+    "blockers": [
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_20"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_12"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_23"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_11"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_10"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_13"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_40"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0001"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0012"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0014"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0104"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0117"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0118"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0118"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0077"
+      }
+    ],
+    "failed_checks": [],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 100,
+        "line_start": 83,
+        "message": "Ensure every security group and rule has a description",
+        "resource": "aws_security_group.app",
+        "rule_id": "CKV_AWS_23",
+        "severity": "UNKNOWN",
+        "title": "Ensure every security group and rule has a description",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 212,
+        "line_start": 197,
+        "message": "Ensure that Load Balancer has deletion protection enabled",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_150",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Load Balancer has deletion protection enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 287,
+        "line_start": 287,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 212,
+        "line_start": 197,
+        "message": "Ensure public facing ALB are protected by WAF",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV2_AWS_28",
+        "severity": "UNKNOWN",
+        "title": "Ensure public facing ALB are protected by WAF",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 54,
+        "line_start": 6,
+        "message": "Image should use digest",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 54,
+        "line_start": 6,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 54,
+        "line_start": 6,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 54,
+        "line_start": 6,
+        "message": "Prefer using secrets as files over secrets as environment variables",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_35",
+        "severity": "UNKNOWN",
+        "title": "Prefer using secrets as files over secrets as environment variables",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 54,
+        "line_start": 6,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 54,
+        "line_start": 6,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 128,
+        "line_start": 77,
+        "message": "Image should use digest",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 128,
+        "line_start": 77,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 128,
+        "line_start": 77,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 128,
+        "line_start": 77,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 128,
+        "line_start": 77,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 205,
+        "line_start": 163,
+        "message": "Image should use digest",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 205,
+        "line_start": 163,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 205,
+        "line_start": 163,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 205,
+        "line_start": 163,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 205,
+        "line_start": 163,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 54,
+        "line_start": 6,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.app-namespace.app-service.app-app-service",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 128,
+        "line_start": 77,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.monitoring.prometheus.app-prometheus",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 205,
+        "line_start": 163,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.monitoring.grafana.app-grafana",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Containers should not run with allowPrivilegeEscalation",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_20",
+        "severity": "HIGH",
+        "title": "Containers should not run with allowPrivilegeEscalation",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Memory requests should be set",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_12",
+        "severity": "MEDIUM",
+        "title": "Memory requests should be set",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Minimize the admission of root containers",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_23",
+        "severity": "HIGH",
+        "title": "Minimize the admission of root containers",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Image should use digest",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Apply security context to your containers",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_30",
+        "severity": "UNKNOWN",
+        "title": "Apply security context to your containers",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "CPU limits should be set",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_11",
+        "severity": "MEDIUM",
+        "title": "CPU limits should be set",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "CPU requests should be set",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_10",
+        "severity": "MEDIUM",
+        "title": "CPU requests should be set",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Apply security context to your pods and containers",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_29",
+        "severity": "UNKNOWN",
+        "title": "Apply security context to your pods and containers",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Minimize the admission of containers with the NET_RAW capability",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_28",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of containers with the NET_RAW capability",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "The default namespace should not be used",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_21",
+        "severity": "UNKNOWN",
+        "title": "The default namespace should not be used",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Use read-only filesystem for containers where possible",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_22",
+        "severity": "UNKNOWN",
+        "title": "Use read-only filesystem for containers where possible",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Memory limits should be set",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_13",
+        "severity": "MEDIUM",
+        "title": "Memory limits should be set",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Ensure that the seccomp profile is set to docker/default or runtime/default",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_31",
+        "severity": "UNKNOWN",
+        "title": "Ensure that the seccomp profile is set to docker/default or runtime/default",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Minimize the admission of containers with capabilities assigned",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_37",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of containers with capabilities assigned",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Image Tag should be fixed - not latest or blank",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_14",
+        "severity": "MEDIUM",
+        "title": "Image Tag should be fixed - not latest or blank",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Containers should run as a high UID to avoid host conflict",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_40",
+        "severity": "MEDIUM",
+        "title": "Containers should run as a high UID to avoid host conflict",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.default.release-name-eks-cluster",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": null,
+        "line_end": 24,
+        "line_start": 4,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.default.release-name-eks-cluster.app-eks-cluster",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0001",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'securityContext.allowPrivilegeEscalation' to false",
+        "resource": "",
+        "rule_id": "KSV-0001",
+        "severity": "MEDIUM",
+        "title": "Can elevate its own privileges",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0003",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should add 'ALL' to 'securityContext.capabilities.drop'",
+        "resource": "",
+        "rule_id": "KSV-0003",
+        "severity": "LOW",
+        "title": "Default capabilities: some containers do not drop all",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0004",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of 'deployment' 'eks-cluster' in 'default' namespace should set securityContext.capabilities.drop",
+        "resource": "",
+        "rule_id": "KSV-0004",
+        "severity": "LOW",
+        "title": "Default capabilities: some containers do not drop any",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0011",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'resources.limits.cpu'",
+        "resource": "",
+        "rule_id": "KSV-0011",
+        "severity": "LOW",
+        "title": "CPU not limited",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0012",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'securityContext.runAsNonRoot' to true",
+        "resource": "",
+        "rule_id": "KSV-0012",
+        "severity": "MEDIUM",
+        "title": "Runs as root user",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0013",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should specify an image tag",
+        "resource": "",
+        "rule_id": "KSV-0013",
+        "severity": "MEDIUM",
+        "title": "Image tag \":latest\" used",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0014",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'securityContext.readOnlyRootFilesystem' to true",
+        "resource": "",
+        "rule_id": "KSV-0014",
+        "severity": "HIGH",
+        "title": "Root file system is not read-only",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0015",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'resources.requests.cpu'",
+        "resource": "",
+        "rule_id": "KSV-0015",
+        "severity": "LOW",
+        "title": "CPU requests not specified",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0016",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'resources.requests.memory'",
+        "resource": "",
+        "rule_id": "KSV-0016",
+        "severity": "LOW",
+        "title": "Memory requests not specified",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0018",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'resources.limits.memory'",
+        "resource": "",
+        "rule_id": "KSV-0018",
+        "severity": "LOW",
+        "title": "Memory not limited",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0020",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'securityContext.runAsUser' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0020",
+        "severity": "LOW",
+        "title": "Runs with UID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container 'app' of Deployment 'eks-cluster' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0030",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Either Pod or Container should set 'securityContext.seccompProfile.type' to 'RuntimeDefault'",
+        "resource": "",
+        "rule_id": "KSV-0030",
+        "severity": "LOW",
+        "title": "Runtime/Default Seccomp profile not set",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0104",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "container \"app\" of deployment \"eks-cluster\" in \"default\" namespace should specify a seccomp profile",
+        "resource": "",
+        "rule_id": "KSV-0104",
+        "severity": "MEDIUM",
+        "title": "Seccomp policies disabled",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0106",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "container should drop all",
+        "resource": "",
+        "rule_id": "KSV-0106",
+        "severity": "LOW",
+        "title": "Container capabilities must only include NET_BIND_SERVICE",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0110",
+        "line_end": 8,
+        "line_start": 5,
+        "message": "deployment eks-cluster in default namespace should set metadata.namespace to a non-default namespace",
+        "resource": "",
+        "rule_id": "KSV-0110",
+        "severity": "LOW",
+        "title": "Workloads in the default namespace",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0117",
+        "line_end": null,
+        "line_start": null,
+        "message": "deployment eks-cluster in default namespace should not set spec.template.spec.containers.ports.containerPort to less than 1024",
+        "resource": "",
+        "rule_id": "KSV-0117",
+        "severity": "MEDIUM",
+        "title": "Prevent binding to privileged ports",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0118",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "container eks-cluster in default namespace is using the default security context",
+        "resource": "",
+        "rule_id": "KSV-0118",
+        "severity": "HIGH",
+        "title": "Default security context configured",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0118",
+        "line_end": 23,
+        "line_start": 18,
+        "message": "deployment eks-cluster in default namespace is using the default security context, which allows root privileges",
+        "resource": "",
+        "rule_id": "KSV-0118",
+        "severity": "HIGH",
+        "title": "Default security context configured",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 23,
+        "line_start": 20,
+        "message": "Container app in deployment eks-cluster (namespace: default) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 52,
+        "line_start": 28,
+        "message": "Container app in deployment app-service (namespace: app-namespace) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 197,
+        "line_start": 179,
+        "message": "Container grafana in deployment grafana (namespace: monitoring) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 119,
+        "line_start": 96,
+        "message": "Container prometheus in deployment prometheus (namespace: monitoring) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+        "line_end": 199,
+        "line_start": 199,
+        "message": "Load balancer is exposed publicly.",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053",
+        "severity": "HIGH",
+        "title": "Load balancer is exposed to the internet.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0077",
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Instance has very low backup retention period.",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0077",
+        "severity": "MEDIUM",
+        "title": "RDS Cluster and RDS instance should have backup retention longer than default 1 day",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 92,
+        "line_start": 87,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.app",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 98,
+        "line_start": 93,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.app",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "An explicitly public application load balancer exposes HTTP only through a verified HTTPS redirect.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          }
+        ],
+        "remaining_blocking": 21
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          }
+        ],
+        "remaining_blocking": 21
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 22
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "valid"
+  },
+  "candidate_delta": {
+    "blocker_deltas": {
+      "contextual-v1": 17,
+      "contextual-v2": 17,
+      "strict": 17
+    },
+    "failed_checks_after": 0,
+    "failed_checks_before": 1,
+    "introduced": [
+      [
+        "CKV_K8S_10",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "CKV_K8S_11",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "CKV_K8S_12",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "CKV_K8S_13",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "CKV_K8S_14",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "CKV_K8S_20",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "CKV_K8S_23",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "CKV_K8S_40",
+        "helm/eks-cluster/templates/workloads.yaml",
+        "Deployment.default.release-name-eks-cluster"
+      ],
+      [
+        "KSV-0001",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ],
+      [
+        "KSV-0012",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ],
+      [
+        "KSV-0013",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ],
+      [
+        "KSV-0014",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ],
+      [
+        "KSV-0104",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ],
+      [
+        "KSV-0117",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ],
+      [
+        "KSV-0118",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ],
+      [
+        "KSV-0125",
+        "helm/eks-cluster/templates/workloads.yaml",
+        ""
+      ]
+    ],
+    "removed": [],
+    "validation_changed": true
+  },
+  "candidate_idempotent": true,
+  "candidate_sha256": "fcca1754ddf1e540673f2bb0cc9056a8a1f04f4a87be8ef6f54530d561c47679",
+  "change": "formats_and_pods",
+  "introduced": [
+    [
+      "CKV_K8S_10",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_11",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_12",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_13",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_14",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_20",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_23",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_40",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "KSV-0001",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0012",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0013",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0014",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0104",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0117",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0118",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0125",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ]
+  ],
+  "key": "1/6e2ac28e-d152-453c-bbbb-28b72a3da099/performance",
+  "observed": {
+    "blockers": [
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0077"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 6,
+        "message": "helm optional lint failed (undefined_named_template)"
+      }
+    ],
+    "findings": [
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 100,
+        "line_start": 83,
+        "message": "Ensure every security group and rule has a description",
+        "resource": "aws_security_group.app",
+        "rule_id": "CKV_AWS_23",
+        "severity": "UNKNOWN",
+        "title": "Ensure every security group and rule has a description",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure DB instance gets all minor upgrades automatically",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_226",
+        "severity": "UNKNOWN",
+        "title": "Ensure DB instance gets all minor upgrades automatically",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 212,
+        "line_start": 197,
+        "message": "Ensure that Load Balancer has deletion protection enabled",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_150",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Load Balancer has deletion protection enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 287,
+        "line_start": 287,
+        "message": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "resource": "aws_availability_zones.available",
+        "rule_id": "CKV_AWS_394",
+        "severity": "UNKNOWN",
+        "title": "Ensure aws_availability_zones data source pins zone identity so its result set does not silently expand when AWS adds an Availability Zone",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 212,
+        "line_start": 197,
+        "message": "Ensure public facing ALB are protected by WAF",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV2_AWS_28",
+        "severity": "UNKNOWN",
+        "title": "Ensure public facing ALB are protected by WAF",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_30",
+        "severity": "UNKNOWN",
+        "title": "Ensure Postgres RDS as aws_db_instance has Query Logging enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": null,
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV2_AWS_60",
+        "severity": "UNKNOWN",
+        "title": "Ensure RDS instance with copy tags to snapshots is enabled",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Image should use digest",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Prefer using secrets as files over secrets as environment variables",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_35",
+        "severity": "UNKNOWN",
+        "title": "Prefer using secrets as files over secrets as environment variables",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.app-namespace.app-service",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Image should use digest",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Image should use digest",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_43",
+        "severity": "UNKNOWN",
+        "title": "Image should use digest",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Liveness Probe Should be Configured",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_8",
+        "severity": "UNKNOWN",
+        "title": "Liveness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Image Pull Policy should be Always",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_15",
+        "severity": "UNKNOWN",
+        "title": "Image Pull Policy should be Always",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Readiness Probe Should be Configured",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_9",
+        "severity": "UNKNOWN",
+        "title": "Readiness Probe Should be Configured",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Ensure that Service Account Tokens are only mounted where necessary",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_38",
+        "severity": "UNKNOWN",
+        "title": "Ensure that Service Account Tokens are only mounted where necessary",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 52,
+        "line_start": 6,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.app-namespace.app-service.app-app-service",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 124,
+        "line_start": 75,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.monitoring.prometheus.app-prometheus",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "unmapped_checkov",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": null,
+        "line_end": 199,
+        "line_start": 159,
+        "message": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "resource": "Pod.monitoring.grafana.app-grafana",
+        "rule_id": "CKV2_K8S_6",
+        "severity": "UNKNOWN",
+        "title": "Minimize the admission of pods which lack an associated NetworkPolicy",
+        "tool": "checkov"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 50,
+        "line_start": 27,
+        "message": "Container 'app' of Deployment 'app-service' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 191,
+        "line_start": 174,
+        "message": "Container 'grafana' of Deployment 'grafana' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0021",
+        "line_end": 115,
+        "line_start": 93,
+        "message": "Container 'prometheus' of Deployment 'prometheus' should set 'securityContext.runAsGroup' > 10000",
+        "resource": "",
+        "rule_id": "KSV-0021",
+        "severity": "LOW",
+        "title": "Runs with GID <= 10000",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 50,
+        "line_start": 27,
+        "message": "Container app in deployment app-service (namespace: app-namespace) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 191,
+        "line_start": 174,
+        "message": "Container grafana in deployment grafana (namespace: monitoring) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "k8s/workloads.yaml",
+        "guide_url": "https://avd.aquasec.com/misconfig/ksv-0125",
+        "line_end": 115,
+        "line_start": 93,
+        "message": "Container prometheus in deployment prometheus (namespace: monitoring) uses an image from an untrusted registry.",
+        "resource": "",
+        "rule_id": "KSV-0125",
+        "severity": "MEDIUM",
+        "title": "Restrict container images to trusted registries",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0053",
+        "line_end": 199,
+        "line_start": 199,
+        "message": "Load balancer is exposed publicly.",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053",
+        "severity": "HIGH",
+        "title": "Load balancer is exposed to the internet.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": null,
+        "blocking": true,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0077",
+        "line_end": 177,
+        "line_start": 154,
+        "message": "Instance has very low backup retention period.",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0077",
+        "severity": "MEDIUM",
+        "title": "RDS Cluster and RDS instance should have backup retention longer than default 1 day",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 92,
+        "line_start": 87,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.app",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      },
+      {
+        "advisory_reason": "low_severity",
+        "blocking": false,
+        "file_path": "terraform/main.tf",
+        "guide_url": "https://avd.aquasec.com/misconfig/aws-0124",
+        "line_end": 98,
+        "line_start": 93,
+        "message": "Security group rule does not have a description.",
+        "resource": "aws_security_group.app",
+        "rule_id": "AWS-0124",
+        "severity": "LOW",
+        "title": "Missing description for security group rule.",
+        "tool": "trivy"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "An explicitly public application load balancer exposes HTTP only through a verified HTTPS redirect.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          }
+        ],
+        "remaining_blocking": 4
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          }
+        ],
+        "remaining_blocking": 4
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 5
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "prompt": "EKS",
+  "provenance": {
+    "evaluator": "3c704cc944a39a375388c37afe7312ed110ebdcd57be5218eb877d550364147d",
+    "network_isolated": true,
+    "plan": "df5a860fea7f27896ead68bc0736fa6387867019f67641f26618ad8bc953f283",
+    "protocol": "kubernetes-1",
+    "providers": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      }
+    },
+    "tool_timeout": 60,
+    "tool_versions": {
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "helm": "v4.3.0+gbec5b06",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+      "terraform": "Terraform v1.16.4"
+    },
+    "validation_deadline": 120,
+    "variant": "performance"
+  },
+  "reason": "new_blocking_findings",
+  "records": [
+    {
+      "after_hash": "49aea3200234811fd9bfeaa5203f122166930791b1372827cfc25fce0196b263",
+      "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "file": "helm/eks-cluster/templates/_helpers.tpl",
+      "kind": "helm_helpers",
+      "name": "eks-cluster",
+      "outcome": "rejected",
+      "reason": "new_blocking_findings"
+    },
+    {
+      "after_hash": "10cade22730b5d621accc6e8c788a1376163fccf0543704fa154799e26f8dc73",
+      "before_hash": "10cade22730b5d621accc6e8c788a1376163fccf0543704fa154799e26f8dc73",
+      "file": "helm/eks-cluster/templates/workloads.yaml",
+      "kind": "kubernetes_pod_defaults",
+      "name": "unresolved",
+      "outcome": "skipped",
+      "reason": "dynamic_template_structure"
+    },
+    {
+      "after_hash": "cd5593da636276ba227fe9dfc7a610d1233602986a934c9881d93d1260cf8ab4",
+      "before_hash": "0eff5aa17e5be6e16052ab655c719897f9d62444aa2ce67d7286d51a5b8f878c",
+      "catalogue_entry": "pod_identity_seccomp",
+      "changed_fields": [
+        "pod.securityContext.runAsGroup"
+      ],
+      "container": "pod",
+      "file": "k8s/workloads.yaml",
+      "kind": "kubernetes_pod_defaults",
+      "name": "app-service",
+      "outcome": "rejected",
+      "override_location": "k8s/workloads.yaml",
+      "reason": "new_blocking_findings",
+      "rule_ids": [
+        "CKV_K8S_23",
+        "CKV_K8S_40",
+        "KSV-0012",
+        "KSV-0118",
+        "KSV-0104"
+      ],
+      "runtime_compatibility": "unverified",
+      "workload": "app-service"
+    },
+    {
+      "after_hash": "cd5593da636276ba227fe9dfc7a610d1233602986a934c9881d93d1260cf8ab4",
+      "before_hash": "0eff5aa17e5be6e16052ab655c719897f9d62444aa2ce67d7286d51a5b8f878c",
+      "catalogue_entry": "pod_security",
+      "changed_fields": [
+        "securityContext"
+      ],
+      "container": "app",
+      "file": "k8s/workloads.yaml",
+      "kind": "kubernetes_pod_defaults",
+      "name": "app-service",
+      "outcome": "rejected",
+      "override_location": "k8s/workloads.yaml",
+      "reason": "new_blocking_findings",
+      "rule_ids": [
+        "CKV_K8S_10",
+        "CKV_K8S_11",
+        "CKV_K8S_12",
+        "CKV_K8S_13",
+        "CKV_K8S_20",
+        "CKV_K8S_22",
+        "CKV_K8S_23",
+        "CKV_K8S_31",
+        "CKV_K8S_37",
+        "CKV_K8S_40",
+        "KSV-0001",
+        "KSV-0003",
+        "KSV-0004",
+        "KSV-0012",
+        "KSV-0014",
+        "KSV-0104",
+        "KSV-0106",
+        "KSV-0118"
+      ],
+      "runtime_compatibility": "unverified",
+      "skipped_reasons": [],
+      "workload": "app-service"
+    },
+    {
+      "after_hash": "cd5593da636276ba227fe9dfc7a610d1233602986a934c9881d93d1260cf8ab4",
+      "before_hash": "0eff5aa17e5be6e16052ab655c719897f9d62444aa2ce67d7286d51a5b8f878c",
+      "catalogue_entry": "pod_identity_seccomp",
+      "changed_fields": [
+        "pod.securityContext.runAsGroup"
+      ],
+      "container": "pod",
+      "file": "k8s/workloads.yaml",
+      "kind": "kubernetes_pod_defaults",
+      "name": "prometheus",
+      "outcome": "rejected",
+      "override_location": "k8s/workloads.yaml",
+      "reason": "new_blocking_findings",
+      "rule_ids": [
+        "CKV_K8S_23",
+        "CKV_K8S_40",
+        "KSV-0012",
+        "KSV-0118",
+        "KSV-0104"
+      ],
+      "runtime_compatibility": "unverified",
+      "workload": "prometheus"
+    },
+    {
+      "after_hash": "cd5593da636276ba227fe9dfc7a610d1233602986a934c9881d93d1260cf8ab4",
+      "before_hash": "0eff5aa17e5be6e16052ab655c719897f9d62444aa2ce67d7286d51a5b8f878c",
+      "catalogue_entry": "pod_security",
+      "changed_fields": [
+        "securityContext"
+      ],
+      "container": "prometheus",
+      "file": "k8s/workloads.yaml",
+      "kind": "kubernetes_pod_defaults",
+      "name": "prometheus",
+      "outcome": "rejected",
+      "override_location": "k8s/workloads.yaml",
+      "reason": "new_blocking_findings",
+      "rule_ids": [
+        "CKV_K8S_10",
+        "CKV_K8S_11",
+        "CKV_K8S_12",
+        "CKV_K8S_13",
+        "CKV_K8S_20",
+        "CKV_K8S_22",
+        "CKV_K8S_23",
+        "CKV_K8S_31",
+        "CKV_K8S_37",
+        "CKV_K8S_40",
+        "KSV-0001",
+        "KSV-0003",
+        "KSV-0004",
+        "KSV-0012",
+        "KSV-0014",
+        "KSV-0104",
+        "KSV-0106",
+        "KSV-0118"
+      ],
+      "runtime_compatibility": "unverified",
+      "skipped_reasons": [],
+      "workload": "prometheus"
+    },
+    {
+      "after_hash": "cd5593da636276ba227fe9dfc7a610d1233602986a934c9881d93d1260cf8ab4",
+      "before_hash": "0eff5aa17e5be6e16052ab655c719897f9d62444aa2ce67d7286d51a5b8f878c",
+      "catalogue_entry": "pod_identity_seccomp",
+      "changed_fields": [
+        "pod.securityContext.runAsGroup"
+      ],
+      "container": "pod",
+      "file": "k8s/workloads.yaml",
+      "kind": "kubernetes_pod_defaults",
+      "name": "grafana",
+      "outcome": "rejected",
+      "override_location": "k8s/workloads.yaml",
+      "reason": "new_blocking_findings",
+      "rule_ids": [
+        "CKV_K8S_23",
+        "CKV_K8S_40",
+        "KSV-0012",
+        "KSV-0118",
+        "KSV-0104"
+      ],
+      "runtime_compatibility": "unverified",
+      "workload": "grafana"
+    },
+    {
+      "after_hash": "cd5593da636276ba227fe9dfc7a610d1233602986a934c9881d93d1260cf8ab4",
+      "before_hash": "0eff5aa17e5be6e16052ab655c719897f9d62444aa2ce67d7286d51a5b8f878c",
+      "catalogue_entry": "pod_security",
+      "changed_fields": [
+        "securityContext"
+      ],
+      "container": "grafana",
+      "file": "k8s/workloads.yaml",
+      "kind": "kubernetes_pod_defaults",
+      "name": "grafana",
+      "outcome": "rejected",
+      "override_location": "k8s/workloads.yaml",
+      "reason": "new_blocking_findings",
+      "rule_ids": [
+        "CKV_K8S_10",
+        "CKV_K8S_11",
+        "CKV_K8S_12",
+        "CKV_K8S_13",
+        "CKV_K8S_20",
+        "CKV_K8S_22",
+        "CKV_K8S_23",
+        "CKV_K8S_31",
+        "CKV_K8S_37",
+        "CKV_K8S_40",
+        "KSV-0001",
+        "KSV-0003",
+        "KSV-0004",
+        "KSV-0012",
+        "KSV-0014",
+        "KSV-0104",
+        "KSV-0106",
+        "KSV-0118"
+      ],
+      "runtime_compatibility": "unverified",
+      "skipped_reasons": [],
+      "workload": "grafana"
+    }
+  ],
+  "removed": [],
+  "retained_delta": {
+    "blocker_deltas": {
+      "contextual-v1": 0,
+      "contextual-v2": 0,
+      "strict": 0
+    },
+    "failed_checks_after": 1,
+    "failed_checks_before": 1,
+    "introduced": [],
+    "removed": [],
+    "validation_changed": false
+  },
+  "retained_sha256": "edf6373da35079ff3bdbfceeceee0fbd2ed90539c87df5731fb3558900b716e6"
+}

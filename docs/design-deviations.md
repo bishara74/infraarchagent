@@ -1786,6 +1786,35 @@ blocking (CKV_K8S_14 / KSV-0013); parameterisation alone does not resolve
 KSV-0125 registry trust. No registry, digest or version is invented. KSV-0117
 (low ports) is outside this catalogue; ports, probes and Services are unchanged.
 
+Real render output also binds templated container names by position only when
+source/rendered cardinalities match and rendered names are unique. Whole-document
+`if` wrappers are supported without moving edits outside their closing action;
+disabling the condition still renders no resource. Inner branches, `else`, dynamic
+container ranges and ambiguous bindings remain untouched and recorded as skips.
+
+Kubernetes integration uses the same strict CandidateGuard as existing repairs.
+Validation constructs helpers/Grafana plus pod/image changes atomically and
+retains the existing failed-check improvement requirement. Security remediation
+uses the catalogue path with its existing guards; it does not impose a new
+validation-improvement threshold. Rendering/construction consume the enclosing
+budget. Candidate records distinguish skipped entries from accepted/rejected
+proposals; reason strings never contain raw tool output. Pod inheritance is
+added only when all regular/init identities are understood and compatible.
+Explicit Windows OS/node selectors skip Linux controls. Duplicate/aliased values
+files are not extended. The new report fields are additive; no database,
+selectable profile, policy or official label changes are introduced.
+
+The follow-up replay is separate: `docs/evals/phase9i-kubernetes-offline/`.
+Historical retained bytes use the unchanged pinned `c3be20c` transforms and
+recorded decisions, with before/candidate/retained hash checks for every stage.
+Fresh observations include all findings (including advisory findings), all three
+assessments, failed checks and unknown outcomes. Independent pod and atomic
+format proposals are reported alongside cumulative equivalents/addressing/
+formats/defaults/pod stages. Cached observations require matching source, plan,
+variant, tool/provider/configuration and evaluator fingerprints. Strict/v1 stored
+assessments remain golden-tested on all 81 original packages. No real inference,
+image pull, Kubernetes cluster deployment or runtime startup test is performed.
+
 Offline evidence lives in `docs/evals/phase9i-offline/`. Its input manifest
 hashes all 81 generated packages from the two final sets, retaining three
 missing variants. Stored results and fresh observations are distinct. The
