@@ -32,6 +32,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Lossless document formats and safe Helm feedback
+
+**Summary:** Unwrap recognised Grafana envelopes and supply only referenced,
+undefined standard helm-create helpers, including required helper dependencies.
+Retain structured safe helper names and actual package-relative error locations.
+
+**Requirements addressed:** FR-V-01/03/04, FR-S-09, NFR-01.
+
+**Files:** validation/formats.py and linters.py; agents/deterministic.py,
+validation_repair.py and prompts/quality.py; domain/validation.py;
+tests/unit/test_phase9i_formats.py; this log.
+
+**Decisions:** D-56. Custom helpers, ambiguous wrappers and escaped-expression
+repairs remain guidance/LLM work. Existing helpers never overwritten. Each
+repair family has independent existing validity/no-new-blocker verification.
+
+**Tests:** Format/linter/validation-repair tests: 55 passed / 0 failed /
+0 skipped (3.95 s). Mypy: no issues in 159 sources before final guard factoring.
+
+**Known gaps / follow-ups:** Complete offline candidate replay; rendered Helm
+may reveal later errors or new findings, which must prevent retention.
+
+
 ## 2026-10-20 — Phase 9i — Dependency-aware subnet defaults
 
 **Summary:** Resolve bounded literal/local Terraform instances and change

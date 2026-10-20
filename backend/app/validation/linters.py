@@ -243,7 +243,19 @@ def parse_lint(
         if result.exit_code != 0 and not checks:
             raise ValueError("nonzero linter without diagnostics")
     elif target.tool == "helm":
-        for line in (result.stdout + "\n" + result.stderr).splitlines():
+        output = result.stdout + "\n" + result.stderr
+        helper = re.search(r'no template "([a-zA-Z0-9_.-]{1,128})" associated', output)
+        template_location = None
+        for candidate in sorted(files):
+            if not candidate.startswith(target.path + "/templates/"):
+                continue
+            match = re.search(
+                re.escape(candidate.removeprefix("helm/")) + r":(\d+)(?::\d+)?", output
+            )
+            if match:
+                template_location = (candidate, int(match[1]))
+                break
+        for line in output.splitlines():
             match = re.search(r"\[(ERROR|WARNING|INFO)\]\s*(.*)", line)
             if not match:
                 continue
@@ -255,14 +267,22 @@ def parse_lint(
                 if helm_location and helm_location.group(2)
                 else None
             )
-            checks.append(
-                lint_check(
-                    target,
-                    "failed" if severity == "ERROR" else "warning",
-                    file_path=lint_location(raw_path, root, files, target),
-                    line=lint_line(raw_line),
-                )
+            check = lint_check(
+                target,
+                "failed" if severity == "ERROR" else "warning",
+                file_path=template_location[0]
+                if severity == "ERROR" and template_location
+                else lint_location(raw_path, root, files, target),
+                line=template_location[1]
+                if severity == "ERROR" and template_location
+                else lint_line(raw_line),
+                code="undefined_named_template"
+                if severity == "ERROR" and helper
+                else None,
             )
+            if severity == "ERROR" and helper:
+                check = check.model_copy(update={"template_name": helper[1]})
+            checks.append(check)
         if result.exit_code != 0 and not any(
             check.status == "failed" for check in checks
         ):

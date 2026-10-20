@@ -145,7 +145,9 @@ class ValidationRepair:
                         "file_path",
                         "line_start",
                         "line_end",
+                        "template_name",
                     )
+                    if key != "template_name" or check.template_name is not None
                 }
                 for check in report.failed_checks_for_remediation
             ]

@@ -48,6 +48,9 @@ DOCUMENT_GUIDANCE = "\n".join(
         "and useful queries. Do not substitute datasource configuration "
         "for dashboards.",
         "Helm charts require non-empty templates/ manifests, not just Chart.yaml.",
+        "Define every referenced named Helm helper in the same chart; use standard",
+        "helm-create helpers or explicit manifests, never undefined include calls.",
+        "Use ordinary quotes inside Go templates, not literal backslash-escaped quotes.",
         "All HCL, YAML and JSON documents must parse; preserve required file types.",
     )
 )

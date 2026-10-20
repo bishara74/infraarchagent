@@ -2,6 +2,7 @@
 
 import asyncio
 from typing import Any
+from collections.abc import Callable
 
 from app.agents.budget import AgentBudget
 from app.agents.remediation import ValidationService
@@ -12,9 +13,10 @@ from app.domain.validation import ValidationReport
 from app.scanners.runner import ToolFailure
 from app.security.acceptance import CandidateGuard
 from app.validation.equivalents import repair_equivalents
+from app.validation.formats import repair_formats
 
 
-async def checked_repairs(
+async def checked_one(
     files: dict[str, str],
     plan: DeploymentPlan,
     variant: Variant,
@@ -22,8 +24,9 @@ async def checked_repairs(
     engine: ValidationService,
     security: SecurityAgent,
     budget: AgentBudget,
+    transform: Callable[[dict[str, str]], tuple[dict[str, str], list[dict[str, Any]]]],
 ) -> tuple[dict[str, str], ValidationReport, list[dict[str, Any]]]:
-    candidate, records = repair_equivalents(files)
+    candidate, records = transform(files)
     if candidate == files or budget.remaining() < 1:
         return files, report, []
     reason = "verification_unavailable"
@@ -56,3 +59,21 @@ async def checked_repairs(
     for record in records:
         record.update(outcome="accepted" if retained else "rejected", reason=reason)
     return (candidate, checked, records) if retained else (files, report, records)
+
+
+async def checked_repairs(
+    files: dict[str, str],
+    plan: DeploymentPlan,
+    variant: Variant,
+    report: ValidationReport,
+    engine: ValidationService,
+    security: SecurityAgent,
+    budget: AgentBudget,
+) -> tuple[dict[str, str], ValidationReport, list[dict[str, Any]]]:
+    records = []
+    for transform in (repair_equivalents, repair_formats):
+        files, report, changes = await checked_one(
+            files, plan, variant, report, engine, security, budget, transform
+        )
+        records.extend(changes)
+    return files, report, records

@@ -47,6 +47,9 @@ class ValidationCheck(BaseModel):
     )
     diagnostic_key: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     origin: Literal["generated", "security_fix", "repair", "unknown"] = "unknown"
+    template_name: str | None = Field(
+        default=None, max_length=128, pattern=r"^[a-zA-Z0-9_.-]+$"
+    )
     _origin_scope: str | None = PrivateAttr(default=None)
 
     @field_validator("file_path")
@@ -129,6 +132,8 @@ class DeterministicRepair(BaseModel):
         "db_name",
         "route_cidr",
         "listener_path_pattern",
+        "grafana_envelope",
+        "helm_helpers",
     ]
     name: str
     line: int | None = None
