@@ -1756,6 +1756,29 @@ stored results remain frozen. Strict controls repair acceptance, readiness and
 downloads. Run profile selection and persistence are unchanged; no migration.
 No threshold, deadline or dependency changes are authorised.
 
+
+Kubernetes follow-up (FR-S-04/09, FR-V-01, FR-UI-06): a missing-only,
+source-preserving pod catalogue supports Deployment/StatefulSet/DaemonSet/Job,
+regular and init containers. Real offline Helm output establishes resource
+bindings. Dynamic control flow, ambiguous YAML and unsupported bindings skip
+edits; explicit and inherited values remain authoritative. New Helm defaults
+are operator-overridable under `infraarchSecurity.<workload-id>.<container-id>`.
+Accepted, still-current records annotate archives with **runtime compatibility
+unverified**. Static acceptance never proves image startup compatibility.
+
+| Entry | Rules | Change / justification | Functional risk |
+|---|---|---|---|
+| Identity | CKV_K8S_23/40; KSV-0012/0118 | Missing non-root identity, UID/GID 10001; avoid root and low host UIDs | Image files, entrypoints and low ports may require another identity |
+| Escalation | CKV_K8S_20; KSV-0001 | Missing allowPrivilegeEscalation=false | setuid-based startup can fail; privileged/SYS_ADMIN conflicts skip |
+| Filesystem | CKV_K8S_22; KSV-0014 | Missing readOnlyRootFilesystem=true; emptyDir /tmp; Helm writablePaths override | Other writes may fail; /tmp is ephemeral; existing/overlapping mounts survive |
+| Capabilities | CKV_K8S_37; KSV-0003/0004/0106 | Missing capabilities.drop=[ALL]; preserve explicit lists | Applications requiring capabilities may fail |
+| Seccomp | CKV_K8S_31; KSV-0104 | Missing RuntimeDefault; retain explicit profiles | Runtime default may deny application syscalls |
+| Resources | CKV_K8S_10/11/12/13 | Missing requests 100m/128Mi and limits 500m/512Mi; fill only consistent pairs | Scheduling pressure, CPU throttling, OOM; these are starting defaults, not capacity estimates |
+
+No permission-changing init containers or PVC ownership changes are introduced.
+Linux controls skip explicitly Windows pods. Catalogue construction is separate
+from integration; existing guards remain the sole authority for retention.
+
 Offline evidence lives in `docs/evals/phase9i-offline/`. Its input manifest
 hashes all 81 generated packages from the two final sets, retaining three
 missing variants. Stored results and fresh observations are distinct. The

@@ -63,6 +63,7 @@ class ResultsService:
             feedback=row.review_feedback,
             security_report=row.security_report,
             validation_report=row.validation_report,
+            files=row.files,
             retried=retried,
             decision=row.review_decision,
             policy_profile=snapshot.run.policy_profile or "strict",

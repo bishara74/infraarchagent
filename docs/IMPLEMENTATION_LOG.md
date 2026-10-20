@@ -28,6 +28,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 ---
 
 
+## 2026-10-20 — Phase 9i — Kubernetes pod security catalogue
+
+**Summary:** Add source-preserving, missing-only pod defaults and offline Helm
+render evidence, with per-container Helm overrides and retained-record archive
+warnings. No runtime compatibility is claimed.
+
+**Requirements addressed:** FR-S-04/09, FR-V-01, FR-UI-06, NFR-01.
+
+**Files:** security/kubernetes.py, kubernetes_render.py; domain validation/archive;
+pipeline/results.py; test_kubernetes_catalogue.py; D-56; this log.
+
+**Decisions:** D-56 documents every entry and functional risk. Preserve explicit
+and inherited configuration; skip ambiguous bindings and control flow. UID/GID
+10001, requests 100m/128Mi and limits 500m/512Mi are operator-overridable.
+Readiness labels and acceptance remain unchanged; integration follows separately.
+
+**Tests:** Focused catalogue/archive tests: 26 passed. Full required verification
+is scheduled after integration; no real LLM calls or dotenv reads.
+
+**Known gaps / follow-ups:** Static tests do not establish runtime compatibility.
+Image parameterisation, production integration and full replay follow separately.
+
+
+
 
 
 

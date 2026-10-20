@@ -134,6 +134,8 @@ class DeterministicRepair(BaseModel):
         "listener_path_pattern",
         "grafana_envelope",
         "helm_helpers",
+        "kubernetes_pod_defaults",
+        "kubernetes_image_values",
     ]
     name: str
     line: int | None = None
@@ -141,6 +143,13 @@ class DeterministicRepair(BaseModel):
     after_hash: str | None = None
     outcome: Literal["accepted", "rejected", "skipped"] | None = None
     reason: str | None = None
+    workload: str | None = None
+    container: str | None = None
+    catalogue_entry: str | None = None
+    rule_ids: list[str] = Field(default_factory=list)
+    changed_fields: list[str] = Field(default_factory=list)
+    override_location: str | None = None
+    runtime_compatibility: Literal["unverified"] | None = None
 
 
 class RepairRound(BaseModel):

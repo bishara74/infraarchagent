@@ -1,5 +1,6 @@
 """Deterministic labelled IaC ZIPs (FR-UI-06, FR-S-10, PR-04)."""
 
+import hashlib
 from datetime import datetime
 from io import BytesIO
 from typing import Any
@@ -10,6 +11,51 @@ from app.domain.enums import PackageStatus, Variant
 from app.domain.paths import validate_file_map, validate_relative_path
 from app.domain.review import security_final
 from app.domain.states import is_downloadable
+
+
+def runtime_defaults_notes(
+    files: dict[str, str],
+    *reports: dict[str, Any] | None,
+) -> list[str]:
+    """Only retained, still-current catalogue evidence belongs in an archive."""
+    rows: set[str] = set()
+
+    def visit(value: Any) -> None:
+        if isinstance(value, list):
+            for item in value:
+                visit(item)
+        elif isinstance(value, dict):
+            if (
+                value.get("kind") == "kubernetes_pod_defaults"
+                and (
+                    value.get("outcome") == "accepted"
+                    or value.get("status") == "retained"
+                )
+                and value.get("runtime_compatibility") == "unverified"
+                and isinstance(value.get("file"), str)
+                and value["file"] in files
+                and value.get("after_hash")
+                == hashlib.sha256(files[value["file"]].encode()).hexdigest()
+            ):
+
+                def clean(key: str) -> str:
+                    return (
+                        str(value.get(key) or "unavailable")
+                        .replace("`", "")
+                        .replace("\n", " ")[:256]
+                    )
+
+                rows.add(
+                    f"- {clean('workload')} / {clean('container')} "
+                    f"({clean('file')}): runtime compatibility unverified. "
+                    f"Configuration: {clean('override_location')}."
+                )
+            for item in value.values():
+                visit(item)
+
+    for report in reports:
+        visit(report)
+    return sorted(rows)
 
 
 def readiness_document(
@@ -28,6 +74,7 @@ def readiness_document(
     decision: dict[str, Any] | None = None,
     policy_profile: str = "strict",
     assessments: dict[str, Any] | None = None,
+    files: dict[str, str] | None = None,
 ) -> str:
     if not is_downloadable(status):
         raise ValueError("package is not downloadable")
@@ -124,6 +171,12 @@ def readiness_document(
             ],
             "No label implies a successful cloud deployment. "
             "These are static checks only.",
+            "",
+            "## Kubernetes catalogue defaults",
+            *(
+                runtime_defaults_notes(files or {}, security_report, validation_report)
+                or ["No retained, current catalogue records available."]
+            ),
             "",
         ]
     )
