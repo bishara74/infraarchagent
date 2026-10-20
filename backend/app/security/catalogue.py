@@ -6,6 +6,7 @@ from typing import Any
 
 from app.domain.models import Violation
 from app.security.addressing import repair_addressing
+from app.security.defaults import repair_defaults
 from app.security.terraform import (
     TerraformPackage,
     edit_resource,
@@ -232,6 +233,19 @@ def autofix(
             }
         )
     records.extend(subnet_records)
+    default_targets = {
+        (str(PurePosixPath(f.file_path).parent), f.resource.split("[", 1)[0])
+        for f in findings
+        if f.blocking and f.rule_id in {"AWS-0077", "CKV2_AWS_12"}
+    }
+    current, default_records = repair_defaults(current, default_targets)
+    for default_record in default_records:
+        default_record["rule_ids"] = (
+            ["AWS-0077"]
+            if default_record["control"] == "backup_retention"
+            else ["CKV2_AWS_12"]
+        )
+    records.extend(default_records)
     seen = set()
     for finding in sorted(findings, key=lambda f: (f.file_path, f.resource, f.rule_id)):
         if not finding.blocking:

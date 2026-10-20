@@ -32,6 +32,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Guarded VPC and RDS defaults
+
+**Summary:** Propose seven-day backup retention while preserving longer or
+unresolved settings. Manage actual default security groups only when resolved
+consumers prove the default group unused; leave live/unknown rules untouched.
+
+**Requirements addressed:** FR-S-02/09, FR-V-01, NFR-01.
+
+**Files:** security/defaults.py, catalogue.py, generation.py;
+tests/unit/test_phase9i_defaults.py; this log.
+
+**Decisions:** D-56. Defaults flow through existing strict catalogue candidate
+verification. No unsupported argument removal and no availability-intent loss.
+
+**Tests:** Default/catalogue/supporting-template tests: 93 passed / 0 failed /
+0 skipped (1.72 s). Full lint and replay follow; unrelated new v2 typing issue
+was detected by the concurrent mypy run and corrected separately.
+
+**Known gaps / follow-ups:** Unresolved launches/default-group consumers stay
+for schema-grounded repair. Actual retained gains depend on unchanged guards.
+
+
 ## 2026-10-20 — Phase 9i — Lossless document formats and safe Helm feedback
 
 **Summary:** Unwrap recognised Grafana envelopes and supply only referenced,

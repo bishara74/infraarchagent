@@ -75,13 +75,16 @@ def supporting_guidance(types: set[str]) -> list[str]:
         lines.append(
             "VPC: flow logs need an encrypted CloudWatch group "
             "and scoped delivery role/policy. "
-            "Resolve subnet route tables; preserve public subnet connectivity."
+            "Resolve subnet route tables; preserve public subnet connectivity. "
+            "Manage unused VPC default groups with explicit empty ingress/egress; "
+            "preserve rules required by actual consumers."
         )
     if "aws_db_instance" in types:
         lines.append(
             "RDS: enhanced monitoring needs a "
             "monitoring.rds.amazonaws.com role/policy; "
-            "use compatible engine features and preserve configured encryption keys."
+            "use compatible engine features and preserve configured encryption keys. "
+            "Keep at least seven days of backups, preserving longer retention."
         )
     if "aws_cloudwatch_log_group" in types:
         lines.append(
