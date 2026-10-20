@@ -1736,6 +1736,16 @@ reference. Large runtime/attempt detail stays in JSON. Historical oversized CSV
 readers raise and restore the parser field limit; historical files are untouched.
 LF CSV output avoids Git newline normalization changing reproduction bytes.
 
+The complete counts-only cached-input audit additionally hashes the empty failed
+A3 snapshot: 42 source snapshots correspond to 119 generated-package records.
+The final matrix uses committed section 2 collection evidence; later reporting
+unit tests are listed in the implementation log, without misrepresenting the
+collection as an execution result. Prompt version identifiers were captured from
+the recorded source commits during investigation; generation reads only evidence
+blobs and uses that documented identifier lookup, with unknown for unlisted
+historical stub commits. Final-set pooling rejects dirty/mismatched code,
+settings, tool versions, selections or exact-text schedules.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -159,6 +159,8 @@ comparisons. Exact observed totals and unknown counts are in costs.csv.
 ## Threats to validity
 
 - One resource-constrained WSL2 machine and uncontrolled physical-host load.
+  The new download experiment records kernel 6.18 versus historical 5.15, so
+  historical/new download latency is not a controlled auth before/after result.
 - One model family in the matched final comparison, with provider routing/load
   variability; historical Sonnet/Haiku runs are differently configured evidence.
 - Three prompt texts with unequal repeated exposure, not fourteen independent

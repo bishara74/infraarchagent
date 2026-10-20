@@ -52,6 +52,21 @@ BENCHMARKS = (
     ),
     ("final set 2", "20261020T013911945957Z", "Matched repeat of final set 1"),
 )
+# Identifiers captured from immutable source-commit inspection in section 0.
+# Generation reads no historical source files, cached inputs or working-tree data.
+PROMPT_VERSIONS = {
+    "973926bc": "3/1/2",
+    "9d703230": "4/1/2",
+    "77eefd1a": "5/2/2",
+    "dede5c88": "6/3/2",
+    "887a4b77": "6/4/2",
+    "27d6a124": "7/5/2",
+    "acafb82d": "8/6/2",
+    "6c0073b9": "9/6/2",
+    "84c0198f": "9/7/2",
+    "20281387": "9/7/2",
+}
+
 SUPPLEMENT = "docs/evals/phase9b-supplement/proposal-counts.json"
 
 
@@ -261,16 +276,6 @@ def load_benchmark(evidence: Evidence, folder: str) -> dict:
         ),
         Decimal(0),
     )
-    versions = []
-    for name in ("generator", "security_fix", "architect"):
-        try:
-            source = evidence.git(
-                "show", f"{env['git_commit']}:backend/app/agents/prompts/{name}.py"
-            ).decode()
-            match = re.search(r"^\w*PROMPT_VERSION\s*=\s*[\"']([^\"']+)", source, re.M)
-            versions.append(match[1] if match else "unknown")
-        except subprocess.CalledProcessError:
-            versions.append("unknown")
     return {
         "folder": folder,
         "environment": env,
@@ -280,17 +285,56 @@ def load_benchmark(evidence: Evidence, folder: str) -> dict:
         "data": data,
         "summary": summary,
         "cost": costs,
-        "prompt_versions": "/".join(versions),
+        "prompt_versions": PROMPT_VERSIONS.get(env["git_commit"][:8], "unknown"),
         "verdicts": {
             key: verdict(summary, key) for key in ("pr01", "pr03", "pr04", "pr05")
         },
     }
 
 
+def assert_comparable(left: dict, right: dict) -> None:
+    """Do not silently pool different prompts, code or effective settings."""
+    for key in ("git_commit", "generator_settings", "model", "fixing_model", "tools"):
+        if left["environment"].get(key) != right["environment"].get(key):
+            raise ValueError("Final benchmark settings are not comparable")
+    for benchmark in (left, right):
+        if benchmark["environment"].get("git_tracked_dirty") is not False:
+            raise ValueError("Final benchmark code provenance is not clean")
+
+    def selections(benchmark):
+        return {
+            json.dumps(value, sort_keys=True)
+            for value in benchmark["environment"]
+            .get("resolved_agent_selections", {})
+            .values()
+        }
+
+    if not selections(left) or selections(left) != selections(right):
+        raise ValueError("Final resolved selections are not comparable")
+
+    def schedule(benchmark):
+        return Counter(
+            (row.get("measurement"), row.get("prompt")) for row in benchmark["rows"]
+        )
+
+    if schedule(left) != schedule(right):
+        raise ValueError("Final prompt schedules are not comparable")
+
+
 def generate(evidence: Evidence, output: Path) -> None:
     if output.exists():
         raise ValueError("Report destination already exists; use a fresh --output-dir")
-    if output.resolve().is_relative_to(ROOT / ".cache"):
+    historical_folders = {
+        evidence.root / "docs/evals" / path.split("/")[2]
+        for path in evidence.paths
+        if path.startswith("docs/evals/")
+    }
+    if any(
+        output.resolve().is_relative_to(folder.resolve())
+        for folder in historical_folders
+    ):
+        raise ValueError("Output cannot be nested in committed evidence")
+    if output.resolve().is_relative_to(evidence.root / ".cache"):
         raise ValueError("Cache is read-only")
     inventory = []
     datasets = {}
@@ -432,6 +476,7 @@ def generate(evidence: Evidence, output: Path) -> None:
                 )
         if label.startswith("final"):
             rates.extend(breakdown(label, rows, packages))
+    assert_comparable(datasets["final set 1"], datasets["final set 2"])
     final_rows = datasets["final set 1"]["rows"] + datasets["final set 2"]["rows"]
     final_packages = (
         datasets["final set 1"]["packages"] + datasets["final set 2"]["packages"]
@@ -445,9 +490,21 @@ def generate(evidence: Evidence, output: Path) -> None:
         len(final_packages),
         3,
     )
+    contextual_combined = rate(
+        "final combined",
+        "all",
+        "all",
+        sum(
+            p["profile_assessments"]["contextual-v1"]["checks_passed"]
+            for p in final_packages
+        ),
+        len(final_packages),
+        3,
+        "contextual-v1",
+    )
     rates += [
         combined,
-        {**combined, "profile": "contextual-v1"},
+        contextual_combined,
         *breakdown("final combined", final_rows, final_packages),
     ]
     main.append(
@@ -456,7 +513,7 @@ def generate(evidence: Evidence, output: Path) -> None:
             "Only the matched final repetitions pooled",
             "28/28",
             interval(combined),
-            interval(combined),
+            interval(contextual_combined),
             3,
             "see individual sets",
             "FAIL both",
@@ -464,6 +521,42 @@ def generate(evidence: Evidence, output: Path) -> None:
             str(datasets["final set 1"]["cost"] + datasets["final set 2"]["cost"]),
         ]
     )
+    costs.append(
+        {
+            "benchmark": "final combined",
+            "known_cost_usd": str(
+                datasets["final set 1"]["cost"] + datasets["final set 2"]["cost"]
+            ),
+            "unknown_run_costs": sum(r.get("cost_usd") is None for r in final_rows),
+            "cohort_costs_counted_once": 2,
+        }
+    )
+    for stage, values in q["measurements"]["durations"].items():
+        timings.append({"benchmark": "final combined", "stage": stage, **values})
+    quiet_path = "docs/evals/phase9b-download-quiet/results.json"
+    if quiet_path in evidence.paths:
+        quiet = evidence.json(quiet_path)
+        for condition, values in quiet["summary"].items():
+            timings.append(
+                {"benchmark": "quiet stub PR-04", "stage": condition, **values}
+            )
+    for profile in ("strict", "contextual-v1"):
+        counts = Counter()
+        for item in blockers:
+            if (
+                item["benchmark"] in {"final set 1", "final set 2"}
+                and item["profile"] == profile
+            ):
+                counts[item["rule_id"]] += item["count"]
+        blockers.extend(
+            {
+                "benchmark": "final combined",
+                "profile": profile,
+                "rule_id": rule,
+                "count": n,
+            }
+            for rule, n in sorted(counts.items())
+        )
     lines += [
         table(
             [
@@ -735,6 +828,40 @@ def generate(evidence: Evidence, output: Path) -> None:
             "",
         ]
     lines += [
+        "### Final runtime telemetry",
+        "",
+        (
+            "Per-run interval-union wall time and summed invocation work are "
+            "distinct. Medians below are independent, non-additive and include"
+            " only recorded observations."
+        ),
+        "",
+        table(
+            ["Set", "Metric", "Runs", "Median", "Maximum"],
+            [
+                [label, metric, stats["count"], stats["median"], stats["max"]]
+                for label in ("final set 1", "final set 2")
+                for metric in (
+                    "tool_wall_seconds",
+                    "tool_invocation_seconds",
+                    "tool_queue_seconds",
+                    "tool_invocations",
+                    "cache_reuses",
+                )
+                for stats in [
+                    statistics_for(
+                        [
+                            r["runtime_attribution"][metric]
+                            for r in datasets[label]["rows"]
+                            if metric in (r.get("runtime_attribution") or {})
+                        ]
+                    )
+                ]
+            ],
+        ),
+        "",
+    ]
+    lines += [
         (
             "D-54 runtime attribution: independent stage medians are not "
             "additive, nested/parallel tool intervals require unions, and "
@@ -823,6 +950,8 @@ def generate(evidence: Evidence, output: Path) -> None:
                 b["prompt_versions"],
                 len(complete_rows(observed)),
                 len(observed),
+                3 if "smoke" in b["folder"] else 14,
+                statuses[None],
                 packages,
                 passed,
                 3 * len(observed) - packages,
@@ -861,6 +990,8 @@ def generate(evidence: Evidence, output: Path) -> None:
                 "Prompt G/F/A",
                 "Settled",
                 "Observed",
+                "Planned pipeline runs",
+                "Unknown variant slots",
                 "Packages",
                 "Passed",
                 "Missing observed",
@@ -906,11 +1037,15 @@ def generate(evidence: Evidence, output: Path) -> None:
         if path in evidence.paths:
             content = evidence.read(path).decode()
             if "traceability" in path:
-                trace = content
+                trace = content + (
+                    "\nCollection snapshot: committed section 2 evidence. Later "
+                    "reporting-tool tests are recorded in the implementation log; "
+                    "links do not assert passing results.\n"
+                )
             else:
                 lines += ["", "## " + title, "", content]
     output.mkdir(parents=True, exist_ok=False)
-    (output / "report.md").write_text("\n".join(lines) + "\n")
+    (output / "report.md").write_text("\n".join(lines).rstrip() + "\n")
     if "trace" in locals():
         (output / "traceability.md").write_text(trace)
     write_csv(output / "rates.csv", rates)

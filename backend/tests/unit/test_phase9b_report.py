@@ -220,3 +220,82 @@ def test_committed_baseline_legacy_label_reproduces_historical_rate():
     assert benchmark["quality"]["counts"]["checks_passed"] == 1
     assert benchmark["quality"]["counts"]["packages"] == 36
     assert run_rate(benchmark["rows"], benchmark["packages"]) == (1, 14)
+
+
+@pytest.mark.parametrize(
+    "change",
+    ["model", "generator_settings", "git_commit", "dirty", "selection", "prompt"],
+)
+def test_pooling_rejects_unmatched_final_sets(change):
+    from copy import deepcopy
+
+    from scripts.phase9b_report import assert_comparable
+
+    left = {
+        "environment": {
+            "git_commit": "a",
+            "git_tracked_dirty": False,
+            "generator_settings": {"attempt": 1},
+            "model": "stub",
+            "fixing_model": "stub",
+            "tools": {"terraform": "1"},
+            "resolved_agent_selections": {"run": {"architect": {"model": "stub"}}},
+        },
+        "rows": [{"measurement": "pr01", "prompt": "one"}],
+    }
+    right = deepcopy(left)
+    assert_comparable(left, right)
+    if change == "dirty":
+        right["environment"]["git_tracked_dirty"] = True
+    elif change == "selection":
+        right["environment"]["resolved_agent_selections"]["run"]["architect"][
+            "model"
+        ] = "other"
+    elif change == "prompt":
+        right["rows"][0]["prompt"] = "other"
+    else:
+        right["environment"][change] = "other"
+    with pytest.raises(ValueError):
+        assert_comparable(left, right)
+
+
+def test_report_reconciles_real_committed_inputs_and_is_deterministic(tmp_path):
+    from scripts.phase9_common import ROOT
+    from scripts.phase9_report import read_csv
+    from scripts.phase9b_report import generate
+
+    evidence = Evidence(ROOT)
+    first = tmp_path / "first"
+    second = tmp_path / "second"
+    generate(evidence, first)
+    generate(Evidence(ROOT), second)
+    assert {f.name: f.read_bytes() for f in first.iterdir()} == {
+        f.name: f.read_bytes() for f in second.iterdir()
+    }
+    rows = read_csv(first / "rates.csv")
+    final = next(
+        r
+        for r in rows
+        if r["benchmark"] == "final combined"
+        and r["dimension"] == "all"
+        and r["profile"] == "strict"
+    )
+    assert (final["passed"], final["total"]) == ("15", "81")
+    baseline = next(
+        r for r in rows if r["benchmark"] == "baseline" and r["dimension"] == "run"
+    )
+    assert (baseline["passed"], baseline["total"]) == ("1", "14")
+    assert "0.23017361543375287" in (first / "report.md").read_text()
+    assert len([r for r in rows if r["dimension"] == "prompt"]) == 9
+    assert len([r for r in rows if r["dimension"] == "variant"]) == 9
+    manifest = json.loads((first / "input-manifest.json").read_text())
+    assert all(
+        row["path"].startswith("docs/evals/") and len(row["sha256"]) == 64
+        for row in manifest["files"]
+    )
+    with pytest.raises(ValueError):
+        generate(evidence, first)
+    with pytest.raises(ValueError):
+        generate(evidence, ROOT / "docs/evals/phase9b-supplement/forbidden-output")
+    with pytest.raises(ValueError):
+        generate(evidence, ROOT / ".cache/forbidden-output")

@@ -31,6 +31,64 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+
+## 2026-10-20 — Phase 9b section 6 — Freeze final report and verification
+
+**Summary:** Generate the final report and traceability artifact from immutable
+committed inputs, including prompt/variant Wilson breakdowns and adjacent
+package/run-level Fisher comparisons. Add complete cached-input hash audit,
+matched-set pooling checks and byte-for-byte reproduction verification.
+
+**Requirements addressed:** PR-01, PR-02, PR-03, PR-04, PR-05, UC-01–UC-07,
+NFR-01, NFR-02.
+
+**Files:** final report.md / traceability.md / rates.csv / blockers.csv /
+timings.csv / costs.csv / input-manifest.json; phase9b report safeguards and tests;
+phase9b-supplement-inputs audit; new secret-scan evidence; README; D-55; this log.
+
+**Decisions:** Input revision e9756383b97538d8843a56d13f80eb66ab2eec1f.
+All 27 benchmark folders inventoried (11 real, 2 real-provider smoke, 14 stub).
+Only final sets pooled. Final combined 15/81 (18.52%), Wilson 11.56–28.33%;
+package Fisher versus baseline p=0.0212103, versus A3 p=0.0644783; repeatability
+p=1.0. Run sensitivity 8/28 versus 1/14, p=0.2301736. Thirteen passes come from
+the static-site prompt; three prompt texts repeat across fourteen runs per set.
+Proposal acceptance 12/140 A3 → 47/49 smoke → 142/147 and 153/157 final.
+Contextual exceptions remove 9/12 blockers but add no package passes. PR-03
+fails both final sets; historical PR-04 failures are preserved. The quiet new
+PR-04 run finds no clear session-check bottleneck and changes no runtime guard.
+No dependencies, thresholds, readiness changes or production quality optimization.
+The quiet download run records kernel 6.18 versus historical 5.15 and a dirty
+measurement-tooling tree; these are explicit limits on before/after interpretation.
+
+**Tests:** Final make lint passed: Ruff checks/format, mypy 154 application
+sources, frontend ESLint and both TypeScript projects. Final make test: 1,702
+passed / 0 failed / 0 skipped / 6 perf deselected (199.56 s). Earlier full run:
+1,695 passed / 6 deselected; seven later pooling/reproduction safeguards pass in
+the final run. Latest focused report/quality/CSV/download checks: 28 passed.
+make frontend-test: 111 passed / 0 failed in 17 files. make test-e2e: 7 passed /
+0 failed (1.3m); initial fixture-rate-limit failure is recorded in section 2.
+make secret-scan: 0 findings / 0 scan errors, working tree plus all refs/reflogs.
+make eval-report: 27 folders / 36 rate rows / 868 hashed committed inputs.
+Fresh pinned reproduction: all 7 generated files byte-identical; every one of
+868 input SHA-256 hashes verified. Final artifact whitespace normalization was
+followed by another pinned reproduction (7/7 byte-identical) and a targeted
+reproducibility regression: 1 passed / 19 deselected. Git reports no historical
+evidence changes.
+Complete cached-input audit: 42 snapshots / 119 package records, all original
+proposal-source hashes match; both counts-only projections secret-scan clean.
+Verification used a disposable PostgreSQL 16 container on port 55439 with
+synthetic credentials and dotenv disabled from process startup. No operator
+DB, real key, LLM request, install/download or push was used.
+
+**Known gaps / follow-ups:** NFR-04 clean-deployment evidence remains missing;
+NFR-02 concrete recovery/private metadata coupling requires manual review.
+Package independence is optimistic; repeated-prompt/provider dependence remains
+at run level. Contextual policy and proposed PR-03 wording need supervisor
+agreement. Historical absent telemetry stays unknown. Traceability is the
+committed section 2 collection snapshot, not a claim every later reporting test
+was in that collection. Author changes in notes, pre-existing untracked paths,
+all cached inputs and all historical benchmark folders remain untouched.
+
 ## 2026-10-20 — Phase 9b section 5 — Prepare Chapter 6 evaluation material
 
 **Summary:** Add ready-to-adapt setup, methods, results, subgroup tables,

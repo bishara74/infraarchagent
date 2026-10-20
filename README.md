@@ -1364,3 +1364,32 @@ and any omitted oversized compact value remain in `results.json`; `details_json`
 identifies the original row. Small format/token/deadline summaries remain in CSV.
 Readers accept historical CSV cells above 128 KiB without rewriting old evidence.
 New CSV exports use LF newlines for byte-stable committed reproductions.
+
+The committed final report uses input revision
+`e9756383b97538d8843a56d13f80eb66ab2eec1f`. Run the reproduction command from the
+final Phase 9b source tree; the revision selects evidence, not the generator
+implementation. `rates.csv` includes per-set/combined exact-prompt and variant
+breakdowns plus run-level sensitivity. Fisher results are descriptive; shared
+plans make package-level p-values optimistic. See
+[Chapter 6 material](docs/thesis-notes/chapter6-evaluation.md) and
+[performance gaps](docs/phase9b-performance-gaps.md).
+
+The [proposal supplement](docs/evals/phase9b-supplement/proposal-counts.json)
+contains identifiers/counts only. A separate
+[complete cached-input audit](docs/evals/phase9b-supplement-inputs/source-manifest.json)
+hashes all 42 source snapshots, including the zero-package failed-run snapshot;
+none of the cached source contents is committed. Both projections have a
+zero-finding secret scan. Report generation needs neither the cache nor live
+provider access. The traceability artifact is a committed collection snapshot;
+links are coverage evidence, not passing-test or deployment claims.
+
+To repeat the optional PR-04 attribution, explicitly configure a disposable,
+migrated `infraarch_test` database and export matching DATABASE_URL /
+TEST_DATABASE_URL and MIGRATION_DATABASE_URL / TEST_MIGRATION_DATABASE_URL.
+Use only synthetic credentials and `LLM_PROVIDER=stub`. With
+`INFRAARCH_TEST_BOOTSTRAP=1` and `PYTHONPATH=backend/tests/bootstrap:backend`, run
+`backend/.venv/bin/python -m scripts.phase9b_download --output-dir /tmp/infraarch-download-reproduction`
+from the repository root while no other verification workload runs. The script
+also disables dotenv explicitly, refuses non-test settings and restores the real
+session guard after its measurement-only control. No browser, image or package
+download is needed. A new destination is required; existing evidence is immutable.

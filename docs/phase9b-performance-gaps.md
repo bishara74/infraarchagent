@@ -73,3 +73,11 @@ uncommitted folder `phase9b-download/` is excluded from official report inputs;
 only `phase9b-download-quiet/` supports the result above. Existing historical
 folders remain unchanged. The new local HTTP measurement is not curl and is not
 a clean-machine or deployment proof; the report retains this method difference.
+
+The captured quiet-run kernel is 6.18.54.1-microsoft-standard-WSL2, whereas the
+historical benchmark metadata records 5.15.167.4-microsoft-standard-WSL2. CPU and
+approximately 8 GB RAM are comparable, but this OS difference further prevents
+interpreting the historical/new latency difference as a controlled auth speedup.
+The quiet evidence also records a dirty source tree while measurement tooling
+was being added; production authentication code was unchanged. Inspect its
+[environment metadata](evals/phase9b-download-quiet/environment.json).
