@@ -1688,6 +1688,10 @@ dependency or database migration. Legacy frozen selections retain their wire
 behavior; reporting marks missing catalog capability as unknown/unprobed.
 Historical missing counts remain unknown, including all A3 reasoning tokens.
 
+Offline replay and counterfactual PR-01 estimates are documented in
+phase9-runtime-attribution.md. No additional scan caching or duplicate-group
+optimization is implemented; those remain proposals pending measurement.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

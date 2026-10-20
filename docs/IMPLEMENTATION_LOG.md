@@ -27,6 +27,57 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-20 — Phase 9h follow-up — Record offline replay and runtime estimates
+
+**Summary:** Add offline fixed-input replay and generation-barrier-aware
+counterfactual estimates. Record attribution findings, six local replays and
+full verification of the integrated runtime changes.
+
+**Requirements addressed:** PR-01, PR-05, FR-P-04, FR-S-03, FR-S-09, FR-V-03,
+NFR-01.
+
+**Files:** backend/scripts/phase9_runtime.py; estimate regression in
+backend/tests/unit/test_runtime_telemetry.py; README;
+docs/phase9-runtime-attribution.md, design-deviations.md and implementation log.
+
+**Decisions:** D-54. Strict output, acceptance predicates, group limits,
+deadlines, readiness and app-role grants remain unchanged. Queue time and
+execution/cleanup are separate; interval unions avoid double-counting parallel
+tools and nested group spans. Correlation IDs permit deduplication after an
+interrupted publication. Historical missing reasoning counts stay unknown;
+legacy capability is unprobed, without suppressing configured effort. Optional
+file logging never emits raw messages/bodies or changes provider calls.
+No dependency or database schema migration was added.
+
+**Tests:** Final `make test`: 1,673 passed / 0 failed / 0 skipped / 6 deselected
+(292.66 s). Final `make lint` passed: Ruff checks/format, mypy 154 application
+sources, frontend ESLint and both TypeScript projects. Latest focused metadata,
+guard, Architect, fixer-wire and benchmark-export checks: 78 passed / 0 failed.
+Initial full make test: 1,657 passed / 11 failed / 6 deselected; failures exposed
+private rehearsal contexts without EventLog and an Architect test override
+missing the existing attempt-observer keyword. Corrected; focused rerun 56
+passed. New coverage exercises null/zero reasoning counts, failed/cancelled
+attempts, exports/results persistence, redaction and handler lifecycle, retry
+invocations, semaphore cancellation, nested intervals, partial-group counts,
+cache reuse and parallel-branch estimate arithmetic. Verification uses an
+isolated PostgreSQL 16 cluster and dotenv-disabled bootstrap, with no operator
+database or real credentials. Original inspection-role provisioning is retained.
+
+**Offline evidence:** Fixed original ECS packages had identical hashes, tool
+versions and outcomes in all six before/current/off/on/concurrency replays.
+Before/current-on cohort seconds: sequential 27.225/27.052; concurrent
+20.582/18.428. One repetition is descriptive, not a speedup or overhead claim;
+host load is not controlled. Counterfactual smoke median: 266.48 → 239.74 s,
+with 227.80–252.95 s sensitivity and 34 avoided batches. Instrumentation has no
+algorithmic saving. PR-01 is ≤300 s median over ten runs; three smoke samples
+cannot establish compliance. Details in phase9-runtime-attribution.md.
+
+**Known gaps / follow-ups:** No real-model PR-01 rerun. A3 call latency/reasoning
+counts are irretrievably unknown. Process crashes/exhausted publication windows
+may leave incomplete telemetry; existing deadlines are never extended for it.
+Additional whole-snapshot caching/duplicate-group reuse remains proposed only.
+No dotenv reads, real LLM requests, pushes, or changes to historical evidence.
+
 ## 2026-10-20 — Phase 9h follow-up — Persist isolated runtime telemetry and safe call logs
 
 **Summary:** Add correlated per-call reasoning/effort metadata and per-tool,

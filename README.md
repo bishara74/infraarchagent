@@ -790,7 +790,7 @@ submission. `bench-smoke` runs one of each example and writes
 `docs/evals/phase9-bench-smoke-*`; a three-sample smoke check does not establish
 full PR-01 acceptance. Budget guard stops can produce fewer than three runs.
 
-### Runtime attribution
+### Runtime attribution and offline replay
 
 Set `LOG_FILE=.cache/runtime-attribution/llm-calls.jsonl` in the backend process
 environment after creating that directory to keep benchmark call diagnostics.
@@ -812,6 +812,30 @@ interval-union wall time and nested group durations are distinct measures;
 never add group times to their child tool times. Benchmark results/events retain
 these fields and include runtime attribution summaries. Historical omissions
 stay unknown.
+
+Offline commands read saved JSON only and never resolve dotenv or call an LLM:
+
+```bash
+cd backend
+.venv/bin/python -m scripts.phase9_runtime estimate \
+  --benchmark ../docs/evals/phase9-bench-smoke-20261019T222520294388Z \
+  --results ../.cache/phase9h-smoke-results \
+  --output ../.cache/runtime-attribution/estimate.json
+.venv/bin/python -m scripts.phase9_runtime replay \
+  --snapshot ../.cache/phase9h-smoke-results/3951c593-06e8-4335-91f1-fb63c3b13ffd.json \
+  --mirror ../.cache/terraform-providers --concurrency 1 \
+  --instrumentation on --source-label current --repetitions 1 \
+  --output ../.cache/runtime-attribution/replay-current-1.json
+```
+
+Repeat replay at concurrency 3 and with instrumentation off, using fresh output
+paths, on a quiet machine. Replay keeps file content fixed, uses fresh package
+workspaces, and records input hashes, tool versions, load and CPU utilization.
+The same replay script can run against pre-change application source via
+`PYTHONPATH`; that source supports instrumentation off. This measures local work,
+not full PR-01. PR-01 requires a median ≤300 seconds over ten real runs; the
+three-run smoke median 266.48 seconds is descriptive only. See
+`docs/phase9-runtime-attribution.md` for the counterfactual estimate and limits.
 
 Settings precedence is explicit constructor arguments, then process environment,
 then dotenv, then defaults. Duplicate dotenv assignments use the last value;

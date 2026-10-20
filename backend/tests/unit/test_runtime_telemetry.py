@@ -387,3 +387,89 @@ def test_monotonic_invocation_times_separate_wait_and_execution(collector, monke
     assert row["queue_seconds"] == 4
     assert row["execution_seconds"] == 6
     assert row["attempt"] == 1
+
+
+def test_estimate_accounts_for_generator_barrier_and_parallel_finishes(tmp_path):
+    from scripts.phase9_runtime import estimate
+
+    run_id = str(uuid4())
+    events = []
+    packages = []
+    for variant, generated, finished in [
+        ("cost", 10, 100),
+        ("performance", 8, 98),
+        ("security", 6, 96),
+    ]:
+
+        def stamp(seconds):
+            from datetime import UTC, datetime, timedelta
+
+            return (
+                datetime(2026, 10, 20, tzinfo=UTC) + timedelta(seconds=seconds)
+            ).isoformat()
+
+        base = {"run_id": run_id, "variant": variant}
+        events.extend(
+            [
+                {
+                    **base,
+                    "kind": "agent_state",
+                    "agent": "generator_" + variant,
+                    "status": "completed",
+                    "timestamp": stamp(generated),
+                },
+                {
+                    **base,
+                    "kind": "package_status",
+                    "status": "pending_review",
+                    "timestamp": stamp(finished),
+                },
+                {
+                    **base,
+                    "kind": "stage_notice",
+                    "measurement": {
+                        "stage": "final_security_scan",
+                        "duration_seconds": 2,
+                    },
+                },
+            ]
+        )
+        rounds = (
+            [
+                {
+                    "phase": phase,
+                    "reason": "no_improvement",
+                    "duration_seconds": 10,
+                    "fixer_attempts": [{"elapsed_seconds": 2}],
+                }
+                for phase in ["generation", "before_security"]
+            ]
+            if variant == "cost"
+            else []
+        )
+        packages.append(
+            {
+                "variant": variant,
+                "validation_report": {"remediation": {"rounds": rounds}},
+            }
+        )
+    (tmp_path / "events.json").write_text(json.dumps(events))
+    (tmp_path / "results.json").write_text(
+        json.dumps(
+            {
+                "runs": [
+                    {
+                        "run_id": run_id,
+                        "measurement": "pr01",
+                        "complete": True,
+                        "seconds": 100,
+                    }
+                ]
+            }
+        )
+    )
+    (tmp_path / (run_id + ".json")).write_text(json.dumps({"packages": packages}))
+    result = estimate(tmp_path, tmp_path)
+    assert result["estimated_median_seconds"] == 96
+    assert result["runs"][0]["avoided_scan_batches"] == 4
+    assert result["threshold_seconds"] == 300 and result["required_runs"] == 10
