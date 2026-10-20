@@ -1815,6 +1815,37 @@ variant, tool/provider/configuration and evaluator fingerprints. Strict/v1 store
 assessments remain golden-tested on all 81 original packages. No real inference,
 image pull, Kubernetes cluster deployment or runtime startup test is performed.
 
+Measured Kubernetes follow-up results are published in
+`docs/evals/phase9i-kubernetes-offline/FINDINGS.md`. Ten packages retain defaults
+(three ECS, seven EKS). Strict blockers 334→324, v1 329→319, v2 297→287;
+all findings fall by 75 occurrences (ten blocking, 65 advisory), with zero new
+retained finding identities. Blocking reductions are CKV_K8S_40 −2, KSV-0104 −4
+and KSV-0118 −4. Capability/identity/seccomp controls also remove advisory
+CKV_K8S_28/29/31/37, KSV-0003/0004/0020/0021/0030/0106 occurrences;
+per-entry rule lists identify direct controls, while replay lists every observed
+consequential rule. Image parameterisation has synthetic preservation/override
+coverage and receives no retained-corpus improvement credit.
+
+Validity remains 45/81 and strict/v1/v2 passes remain 20/81: ECS valid 29/47,
+passes 5/47; EKS valid 3/16, passes 2/16; static valid/passes 13/18 under each
+profile. All twelve historical new-blocker format candidates remain rejected;
+new strict identities fall from the historical 189 to the current 81. Of those,
+35 concern tags, registry trust or low ports; the rest include preserved values
+and conservative source-structure limits. Historical candidate counts remain
+labelled separately from fresh current scans. Nonempty flow mappings at edited
+structures and inner/dynamic Go bindings are skipped; empty flow maps and safe
+whole-document if guards are supported. No intent or blocking rule is discarded.
+
+All 81 stored strict/v1 assessments match; baseline discrepancies and unknown
+scan/validation outcomes are zero. The follow-up proves 324 idempotent catalogue
+candidates and 648 reconstructed stage hashes. Full backend verification passes
+1,818 tests (six performance tests deselected), frontend 113 and stub E2E seven;
+report robustness adds eight focused passes after full-suite collection. Python
+starts with dotenv disabled and disposable PostgreSQL uses synthetic credentials.
+Runtime compatibility, application capacity, image existence/trust beyond scanner
+configuration and live-pipeline/model latency remain unverified. Existing deferred
+work and the main CloudFront VPC-origin architectural option remain unchanged.
+
 Offline evidence lives in `docs/evals/phase9i-offline/`. Its input manifest
 hashes all 81 generated packages from the two final sets, retaining three
 missing variants. Stored results and fresh observations are distinct. The

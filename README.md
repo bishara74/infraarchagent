@@ -1421,6 +1421,9 @@ and preserves rejected candidate findings. A newly captured baseline uses the
 checked-out implementation; the committed pre-change context measurements are
 historical evidence, not regenerated measurements of old code.
 
+[Kubernetes follow-up findings](docs/evals/phase9i-kubernetes-offline/FINDINGS.md)
+report retained and rejected candidate effects, per-prompt totals and runtime risks.
+
 The Kubernetes follow-up uses a separate evidence directory and reconstructs
 previous retained packages against pinned commit `c3be20c`, checking their hashes.
 It records all scanner findings, blocker/profile deltas and rejected candidates.

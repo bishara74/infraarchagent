@@ -28,6 +28,43 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 ---
 
 
+## 2026-10-20 — Phase 9i — Kubernetes risks and replay findings
+
+**Summary:** Publish the follow-up thesis interpretation, per-prompt totals,
+retained/advisory rule deltas and historical/current rejected-format comparison.
+Complete D-56 with measured coverage limits and runtime risks; link findings
+from README. No implementation, policy, threshold or readiness change here.
+
+**Requirements addressed:** FR-S-04/09, FR-V-01/03, FR-UI-06, NFR-01.
+
+**Files:** docs/evals/phase9i-kubernetes-offline/FINDINGS.md; D-56; README; this log.
+The machine-readable historical-format comparison and full evidence were included
+with the replay commit.
+
+**Decisions:** D-56. Distinguish ten retained blocking reductions from 108 fewer
+historical/current new identities in rejected candidates. Preserve all twelve
+new-blocker rejections and the no-improvement case. Report 65 advisory reductions,
+zero new retained findings and zero unknown outcomes. Keep image trust, tags,
+ports and unsupported structures explicit. No synthetic image identity is claimed
+as a security improvement. Deferred ranks and CloudFront VPC origins as the main
+architectural follow-up remain unchanged.
+
+**Tests:** Required verification is recorded in verification-results.json:
+lint passed; backend 1,818 passed / six performance deselected / zero failed or
+skipped; frontend 113 passed; stub E2E seven passed. Later reporting checks eight
+passed. All 81 package/profile goldens and 648 reconstruction checks pass.
+Documentation counts were recomputed from the committed JSON stage records;
+source/evaluator hashes and protected input paths were rechecked. No additional
+suite run is needed for this documentation-only change.
+
+**Known gaps / follow-ups:** Runtime compatibility is unverified. Explicit image
+trust/tag/port contracts, unsupported template shapes and workload-specific
+resource/write-path needs remain. No real inference, image pull, Kubernetes/cloud
+deployment or live-pipeline timing experiment was performed. No .env reads,
+dependencies, migration, pushes or history rewriting.
+
+
+
 ## 2026-10-20 — Phase 9i — Guarded pod integration and offline replay
 
 **Summary:** Integrate atomic Helm/Grafana/pod candidates into validation repair
