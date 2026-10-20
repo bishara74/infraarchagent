@@ -24,6 +24,7 @@ from tests.unit.test_generators import plan
 
 
 @pytest.mark.req("FR-UI-06", "FR-UI-07", "FR-G-07")
+@pytest.mark.req("UC-03")
 async def test_results_one_statement_plan_and_failed_variant(db_engines):
     engine, _ = db_engines
     app = create_app(get_settings(), engine)

@@ -258,6 +258,7 @@ async def _wait_for_package(
         (None, PackageStatus.SCAN_EXHAUSTED, RunStatus.PARTIAL_SUCCESS),
     ],
 )
+@pytest.mark.req("UC-02", "UC-03")
 async def test_partial_and_review_outcomes(
     db_engines: tuple[AsyncEngine, AsyncEngine],
     failed_variant: Variant | None,
@@ -287,6 +288,7 @@ async def test_partial_and_review_outcomes(
 
 
 @pytest.mark.req("FR-A-04", "FR-P-03")
+@pytest.mark.req("UC-07")
 async def test_architect_failure_never_constructs_generators(
     db_engines: tuple[AsyncEngine, AsyncEngine],
 ) -> None:
@@ -303,6 +305,7 @@ async def test_architect_failure_never_constructs_generators(
 
 
 @pytest.mark.req("FR-P-03")
+@pytest.mark.req("UC-07")
 async def test_all_generators_fail_and_run_settles(
     db_engines: tuple[AsyncEngine, AsyncEngine],
 ) -> None:
@@ -405,3 +408,65 @@ async def test_cancelled_run_is_failed(
     async with make_session_factory(engine)() as session:
         row = await RunRepository(session).get(run_id)
     assert row is not None and row.status == RunStatus.FAILED
+
+
+@pytest.mark.req("NFR-02")
+@pytest.mark.parametrize(
+    "role",
+    ["architect", "cost", "performance", "security_generator", "scanner", "validator"],
+)
+async def test_agent_contract_replacement_without_peer_or_orchestrator_changes(
+    db_engines, role
+):
+    """Swap one implementation at the documented injection seam, not peer code.
+
+    These doubles exercise contract dispatch/persistence. Production concrete-class
+    recovery and telemetry coupling additionally requires the documented review.
+    """
+    calls = []
+
+    class ReplacementArchitect(FakeArchitect):
+        async def generate_plan(self):
+            calls.append("architect")
+            return await super().generate_plan()
+
+    class ReplacementGenerator(FakeGenerator):
+        async def generate(self, plan):
+            calls.append(role)
+            return await super().generate(plan)
+
+    class ReplacementSecurity(FakeSecurity):
+        async def run(self, ctx, variant, package):
+            calls.append("scanner")
+            return await super().run(ctx, variant, package)
+
+    class ReplacementValidator(FakeValidation):
+        async def run(self, ctx, variant, package):
+            calls.append("validator")
+            return await super().run(ctx, variant, package)
+
+    selected = {
+        "cost": Variant.COST,
+        "performance": Variant.PERFORMANCE,
+        "security_generator": Variant.SECURITY,
+    }.get(role)
+    generators = [
+        ReplacementGenerator(v) if v == selected else FakeGenerator(v) for v in Variant
+    ]
+    factory = FakeFactory(generators)
+    if role == "architect":
+        factory.create_architect = lambda config: ReplacementArchitect()
+    orchestrator, run_id, _ = await make_orchestrator(
+        db_engines[0],
+        factory,
+        ReplacementSecurity() if role == "scanner" else FakeSecurity(),
+    )
+    if role == "validator":
+        orchestrator.validation_stage = ReplacementValidator()
+    assert await orchestrator.run() == RunStatus.SUCCESS
+    assert calls == [role] * (3 if role in {"scanner", "validator"} else 1)
+    async with make_session_factory(db_engines[0])() as session:
+        packages = await PackageRepository(session).list_for_run(run_id)
+        assert len(packages) == 3
+        assert all(p.status == PackageStatus.CHECKS_PASSED for p in packages)
+        assert all(p.files == {"terraform/main.tf": f"# {p.variant}"} for p in packages)

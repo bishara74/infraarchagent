@@ -25,6 +25,7 @@ def request_for(app: object) -> Request:
 
 
 @pytest.mark.req("FR-P-04", "PR-02")
+@pytest.mark.req("UC-02")
 async def test_replay_and_live_overlap_has_no_duplicate_or_gap(
     db_engines: tuple[AsyncEngine, AsyncEngine],
     monkeypatch: pytest.MonkeyPatch,

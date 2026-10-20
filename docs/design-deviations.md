@@ -1715,6 +1715,13 @@ execution reads the committed supplement rather than cached inputs. Proposals
 are distinct from LLM attempts and verified retained changes. Full historical
 attempt and reasoning coverage stays unknown.
 
+NFR-02 role-swap tests exercise the existing injection seams without peer or
+orchestrator edits. Concrete-class recovery checks and private generator runtime
+metadata remain explicit contract-review limitations; no unrestricted
+replaceability claim follows. NFR-04 clean deployment remains manual/unverified.
+The isolated E2E server uses a larger fixture login allowance to avoid cumulative
+rate-limit timing dependence; production authentication policy is unchanged.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

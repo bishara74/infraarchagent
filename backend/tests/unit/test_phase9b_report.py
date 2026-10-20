@@ -186,3 +186,37 @@ def test_compact_loader_preserves_profiles_and_catalogue_without_extra_source():
     assert clean["phase9f"]["catalogue"][0]["rules"] == ["CKV_AWS_145"]
     assert "DO-NOT-EXPORT" not in json.dumps(clean)
     assert compact_snapshot(clean, RedactingFilter()) == clean
+
+
+def test_traceability_distinguishes_links_and_manual_gaps():
+    from scripts.phase9b_traceability import render
+    from scripts.traceability import build_report
+
+    report = build_report(
+        {"UC-01", "NFR-02", "NFR-04"},
+        [
+            {
+                "framework": "pytest",
+                "node_id": "tests/test_swap.py::test_swap",
+                "file": "backend/tests/test_swap.py",
+                "ids": ["NFR-02"],
+            }
+        ],
+        {"groups": {}},
+    )
+    output = render(report, {})
+    assert "../../../backend/tests/test_swap.py" in output
+    assert "| UC-01 | UNLINKED" in output
+    assert "NFR-04 remains unlinked/unverified" in output
+    assert "concrete-class" in output
+
+
+def test_committed_baseline_legacy_label_reproduces_historical_rate():
+    from scripts.phase9_common import ROOT
+    from scripts.phase9b_report import load_benchmark
+
+    evidence = Evidence(ROOT)
+    benchmark = load_benchmark(evidence, "phase9-bench-real-20261015T124330508703Z")
+    assert benchmark["quality"]["counts"]["checks_passed"] == 1
+    assert benchmark["quality"]["counts"]["packages"] == 36
+    assert run_rate(benchmark["rows"], benchmark["packages"]) == (1, 14)

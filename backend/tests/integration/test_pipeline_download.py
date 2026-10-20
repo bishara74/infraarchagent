@@ -27,6 +27,7 @@ from tests.integration.test_pipeline_review import (
         ("reject", "REJECTED"),
     ],
 )
+@pytest.mark.req("UC-06")
 async def test_labelled_download_exact_files_and_repeat_bytes(
     db_engines, action, label
 ):
@@ -71,6 +72,7 @@ async def test_labelled_download_exact_files_and_repeat_bytes(
 
 
 @pytest.mark.req("FR-UI-06")
+@pytest.mark.req("UC-06")
 async def test_download_errors_and_failed_generation(db_engines):
     app, run_id = await pending_app(db_engines[0])
     async with app.state.session_factory() as session:

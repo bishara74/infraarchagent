@@ -152,6 +152,7 @@ def agent(
 
 
 @pytest.mark.req("FR-S-03", "FR-S-04", "FR-S-06", "FR-G-05")
+@pytest.mark.req("UC-04")
 async def test_two_fix_passes_and_three_first_scan_counts(
     db_engines: tuple[AsyncEngine, AsyncEngine],
 ) -> None:

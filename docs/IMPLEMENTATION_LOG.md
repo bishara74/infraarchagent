@@ -28,6 +28,41 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 ---
 
 
+
+## 2026-10-20 — Phase 9b section 2 — Link use cases and agent contracts
+
+**Summary:** Link UC-01–UC-07 to existing integration/E2E assertions, extend the
+review E2E with visible changed-diff assertions, and exercise six independent
+agent-role replacements. Collect all 59 requirements with linked tests and PR
+folders; NFR-04 remains the only unlinked requirement.
+
+**Requirements addressed:** UC-01–UC-07, NFR-01, NFR-02, FR-P-04, FR-UI-04/05.
+
+**Files:** pipeline/security integration tests; frontend review-flow E2E and
+Playwright configuration; phase9b traceability script/report evidence; report
+legacy-label regression; D-55 and implementation log.
+
+**Decisions:** NFR-02 mock swaps verify injection/persistence, not unrestricted
+replaceability: concrete-class recovery and private generator metadata coupling
+remain documented manual-review limitations. NFR-04 requires an author-run clean
+deployment. E2E alone receives a 100/minute login allowance because cumulative
+fixture logins hit the production default during faster execution; production
+limits and backend rate-limit tests are unchanged. Early committed compact
+benchmark snapshots omit validation_result; report loading preserves their
+recorded historical passing label when failures/blockers are absent.
+
+**Tests:** Contract/report/quality focused checks: 32 passed, 0 failed, 0 skipped;
+subsequent report/CSV compatibility checks: 29 passed, 0 failed. make frontend-test:
+111 passed in 17 files. make lint passed (154 mypy sources plus frontend checks).
+make test-e2e: 7 passed in 1.3m. Initial E2E: 6 passed / 1 failed due to the
+fixture login allowance; corrected and rerun. Initial six swap assertions treated
+stored variants as enums; corrected to their actual string representation.
+Traceability collection: 59 requirements, 1 unlinked, 0 collection failures.
+
+**Known gaps / follow-ups:** NFR-04 manual clean deployment remains unverified.
+NFR-02 recovery coupling remains a limitation. Full verification and final
+traceability refresh follow in section 6. No runtime agent or UI behavior changed.
+
 ## 2026-10-20 — Phase 9b section 1 — Reproduce final evidence and statistics
 
 **Summary:** Add committed-evidence report tooling, Wilson/Fisher calculations,

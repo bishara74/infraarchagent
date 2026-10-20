@@ -42,6 +42,7 @@ def _empty_scanner(repeats: int = 32) -> Scanner:
 
 
 @pytest.mark.req("FR-I-01", "FR-I-02", "FR-I-04", "FR-P-04")
+@pytest.mark.req("UC-01", "UC-02")
 async def test_demo_run_persists_before_work_and_replays_full_stream(
     db_engines: tuple[AsyncEngine, AsyncEngine],
     tmp_path,
@@ -117,6 +118,7 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
         ('{"text":"Deploy AWS service","config":{"provider":"bad"}}', 400),
     ],
 )
+@pytest.mark.req("UC-01")
 async def test_rejected_request_creates_no_run(
     db_engines: tuple[AsyncEngine, AsyncEngine],
     raw: str,

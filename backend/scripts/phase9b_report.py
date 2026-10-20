@@ -230,7 +230,16 @@ def load_benchmark(evidence: Evidence, folder: str) -> dict:
             or Path(path).stem not in VARIANTS
         ):
             continue
-        clean = compact_snapshot(evidence.json(path), RedactingFilter())
+        raw = evidence.json(path)
+        clean = compact_snapshot(raw, RedactingFilter())
+        if (
+            raw.get("status") == "production_ready"
+            and not raw.get("failed_checks")
+            and not raw.get("remaining_findings")
+        ):
+            # Pre-9e benchmark projections omitted validation_result. Preserve
+            # their recorded historical automatic label, not a new assessment.
+            clean["status"] = "checks_passed"
         packages.append({**clean, "run_id": parts[-2], "variant": Path(path).stem})
     quality, _ = quality_table(packages, missing=3 * len(rows) - len(packages))
     if not packages:
@@ -871,8 +880,9 @@ def generate(evidence: Evidence, output: Path) -> None:
             "All other phases are descriptive comparisons. A3/B are "
             "incomplete; B changes fixer model. Smoke samples cannot establish"
             " ten-run PR-01. Stub timings are rehearsal evidence, not real-"
-            "provider performance. Historical production_ready is mapped only "
-            "with stored valid validation and no blockers; automatic labels do"
+            "provider performance. Historical production_ready preserves the "
+            "recorded benchmark label when no failures/blockers were stored; "
+            "early validity metadata is absent. Automatic labels do"
             " not establish deployment success."
         ),
         "",
@@ -891,7 +901,7 @@ def generate(evidence: Evidence, output: Path) -> None:
     # Later numbered sections supply committed collection and latency evidence.
     for path, title in (
         ("docs/evals/phase9b-traceability/traceability.md", "Requirement traceability"),
-        ("docs/evals/phase9b-download/summary.md", "PR-04 attribution"),
+        ("docs/evals/phase9b-download-quiet/summary.md", "PR-04 attribution"),
     ):
         if path in evidence.paths:
             content = evidence.read(path).decode()
