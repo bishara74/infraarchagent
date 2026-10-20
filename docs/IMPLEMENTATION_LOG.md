@@ -32,6 +32,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Dependency-aware subnet defaults
+
+**Summary:** Resolve bounded literal/local Terraform instances and change
+subnet auto-addressing only when consumers have explicit/private behavior.
+
+**Requirements addressed:** FR-S-02/04/09, FR-V-01, NFR-01.
+
+**Files:** security/instances.py, addressing.py, catalogue.py;
+tests/unit/test_phase9i_instances.py and test_security_catalogue.py; this log.
+
+**Decisions:** D-56. Expansion limits: 64/declaration, 1,024/module, 16 local
+references. Variables/defaults, unsupported consumers and external modules
+cannot prove safety. Existing CandidateGuard verifies catalogue proposals.
+contextual-v1 keeps its original resolver and assessment behavior.
+
+**Tests:** Instance/catalogue/v1 profile tests: 109 passed / 0 failed /
+0 skipped (1.52 s). Mypy passed before the final conservative consumer checks.
+
+**Known gaps / follow-ups:** Intentionally conservative for unsupported network
+consumers and unresolved expressions. Replay records actual retained changes.
+
+
 ## 2026-10-20 — Phase 9i — Schema grounding and Terraform equivalents
 
 **Summary:** Include optional attribute names/types and nested block shapes in

@@ -146,9 +146,8 @@ def test_route_derived_subnet_intent(target, standalone):
     )
     assert subnet_intent(p, subnet) == expected
     candidate, records = autofix(files, [finding("AWS-0164", "aws_subnet")])
-    assert (candidate != files) == (expected == "private")
-    if expected == "public":
-        assert records[0]["reason"] == "context: public subnet"
+    assert candidate != files  # D-56: no compute consumer inherits addressing.
+    assert records[0]["reason"] == "explicit_or_private_consumers"
 
 
 @pytest.mark.req("FR-S-02", "NFR-01")

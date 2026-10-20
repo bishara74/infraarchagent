@@ -5,6 +5,7 @@ from pathlib import PurePosixPath
 from typing import Any
 
 from app.domain.models import Violation
+from app.security.addressing import repair_addressing
 from app.security.terraform import (
     TerraformPackage,
     edit_resource,
@@ -213,11 +214,55 @@ def autofix(
 ) -> tuple[dict[str, str], list[dict[str, Any]]]:
     current = dict(files)
     records: list[dict[str, Any]] = []
+    targets = {
+        (str(PurePosixPath(f.file_path).parent), f.resource.split("[", 1)[0])
+        for f in findings
+        if f.blocking and f.rule_id in {"CKV_AWS_130", "AWS-0164"}
+    }
+    current, subnet_records = repair_addressing(current, targets)
+    for subnet_record in subnet_records:
+        subnet_record["rule_ids"] = sorted(
+            {
+                f.rule_id
+                for f in findings
+                if f.blocking
+                and f.resource.split("[", 1)[0] == subnet_record["resource"]
+                and str(PurePosixPath(f.file_path).parent)
+                == str(PurePosixPath(subnet_record["file"]).parent)
+            }
+        )
+    records.extend(subnet_records)
     seen = set()
     for finding in sorted(findings, key=lambda f: (f.file_path, f.resource, f.rule_id)):
         if not finding.blocking:
             continue
         for control in CATALOGUE:
+            if (
+                control.name == "subnet"
+                and (
+                    str(PurePosixPath(finding.file_path).parent),
+                    finding.resource.split("[", 1)[0],
+                )
+                in targets
+            ):
+                # New consumer evidence supersedes only this repair; v1 keeps
+                # its original routing predicates and historical assessment.
+                if not any(
+                    r.get("resource") == finding.resource.split("[", 1)[0]
+                    and r.get("control") == "subnet_consumers"
+                    for r in records
+                ):
+                    records.append(
+                        {
+                            "file": finding.file_path,
+                            "resource": finding.resource,
+                            "control": "subnet_consumers",
+                            "rule_ids": [finding.rule_id],
+                            "status": "skipped",
+                            "reason": "context: subnet consumers unresolved or inherit IP",
+                        }
+                    )
+                continue
             key = (finding.file_path, finding.resource, control.name)
             if finding.rule_id not in control.rules or key in seen:
                 continue
