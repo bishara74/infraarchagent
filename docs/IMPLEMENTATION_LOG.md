@@ -29,6 +29,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-21 — Phase 9i — Quality-only broad schedule (section 2)
+
+**Summary:** Add bench-broad with committed-file verification, alternating rounds,
+finite sequential submission and scenario-linked evidence. Broad PR-01 timing is
+descriptive; PR-05 keeps existing thresholds. Historical commands are unchanged.
+
+**Requirements addressed:** PR-01/05, NFR-01.
+
+**Files:** Makefile; README; backend/scripts/phase9i_broad.py, benchmark.py,
+run_phase9_benchmarks.py; backend/tests/unit/test_phase9i_broad.py; this log.
+
+**Decisions:** Reuse sequential credit/usage guards, telemetry and compact quality
+snapshots. Persist metadata on unstarted slots and associated events/agents/quality
+records. No cohorts, downloads or unrelated scripted rehearsal. MODE defaults to
+real; MODE=stub is explicit. The schedule length supplies a finite run bound.
+D-57 will document this evaluation method in section 4; no runtime policy changes.
+
+**Tests:** Focused dotenv-disabled benchmark/registration regression suite: 60
+passed, 0 failed, 0 skipped. Focused Ruff check passed; changed files formatted.
+An initial check found empty PR-03 workload summaries; broad output now omits them.
+
+**Known gaps / follow-ups:** Report extension and full verification/stub rehearsal
+follow in sections 3–4. No real calls, dotenv reads, installs or downloads.
+
+
 ## 2026-10-21 — Phase 9i — Broad scenario pre-registration (section 1)
 
 **Summary:** Register ten fixed prompts and complexity categories before any broad

@@ -103,6 +103,15 @@ test-ui-perf:
 	$(BACKEND) .venv/bin/python -m scripts.measure_performance ui
 
 BASE_URL ?= http://127.0.0.1:8000
+RUNS_PER_SCENARIO ?= 2
+MODE ?= real
+.PHONY: bench-broad
+bench-broad: export PHASE9_BASE_URL = $(BASE_URL)
+bench-broad: export PHASE9_BUDGET = $(BUDGET)
+bench-broad: export PHASE9_RUNS_PER_SCENARIO = $(RUNS_PER_SCENARIO)
+bench-broad:
+	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks $(MODE) --broad
+
 .PHONY: bench-stub bench-real
 bench-stub: export PHASE9_BASE_URL = $(BASE_URL)
 bench-stub: export PHASE9_MAX_RUNS = $(MAX_RUNS)

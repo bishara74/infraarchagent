@@ -790,6 +790,18 @@ submission. `bench-smoke` runs one of each example and writes
 `docs/evals/phase9-bench-smoke-*`; a three-sample smoke check does not establish
 full PR-01 acceptance. Budget guard stops can produce fewer than three runs.
 
+### Broad quality schedule
+
+`make bench-broad BASE_URL=http://127.0.0.1:8765 BUDGET=2` runs the committed
+[broad-v1 registration](docs/evals/scenarios/README.md) sequentially, defaulting to
+two runs per scenario (1–10 then 10–1). Override `RUNS_PER_SCENARIO` with a positive
+integer; use `MODE=stub` for a free rehearsal against a stub backend. The runner
+checks the registration against Git HEAD, records its SHA-256 on every scheduled
+row and bounds submissions to the schedule length. PR-01 timing is descriptive;
+PR-05 retains its normal thresholds. No PR-03 or PR-04 runs are launched.
+Evidence is under `docs/evals/phase9-bench-broad-*`. Keep the existing matching
+`API_KEY`, server-side `LOG_FILE`, installed tools and credit-reserve setup above.
+
 ### Runtime attribution and offline replay
 
 Set `LOG_FILE=.cache/runtime-attribution/llm-calls.jsonl` in the backend process

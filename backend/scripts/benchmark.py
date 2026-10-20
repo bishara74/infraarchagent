@@ -68,6 +68,12 @@ VARIANTS = ("cost", "performance", "security")
 
 
 CSV_FIELDS = [
+    "benchmark_kind",
+    "scenario_sha256",
+    "scenario_id",
+    "complexity",
+    "round",
+    "sequence",
     "measurement",
     "run_id",
     "prompt",
@@ -397,6 +403,7 @@ class Harness:
         self.expected_provider = None
         self.quality_inputs = {}
         self.resolved_agent_selections = {}
+        self.benchmark_kind = None
 
     async def credit(self) -> CreditSnapshot:
         return (
@@ -429,6 +436,20 @@ class Harness:
     def flush(self) -> None:
         if self.output is None:
             return
+        broad_metadata = {}
+        if self.benchmark_kind == "broad":
+            from scripts.phase9i_broad import METADATA_FIELDS
+
+            broad_metadata = {
+                row["run_id"]: {key: row[key] for key in METADATA_FIELDS}
+                for row in self.rows
+                if row.get("run_id")
+            }
+            for row in [*self.agent_rows, *self.events]:
+                row.update(broad_metadata.get(row.get("run_id"), {}))
+        workloads = pr05_workloads(self.rows, self.agent_rows)
+        if self.benchmark_kind == "broad":
+            workloads = {k: v for k, v in workloads.items() if "pr03" not in k}
         metadata_path = self.output / "environment.json"
         if metadata_path.exists():
             metadata = json.loads(metadata_path.read_text())
@@ -447,7 +468,7 @@ class Harness:
                 "cohorts": self.cohorts,
                 "runner_capacity": self.capacity,
                 "stop_reason": self.stop_reason,
-                "pr05_workloads": pr05_workloads(self.rows, self.agent_rows),
+                "pr05_workloads": workloads,
             },
         )
         write_json(self.output / "events.json", self.events)
@@ -488,7 +509,10 @@ class Harness:
                 directory = self.output / "quality" / str(UUID(run_id))
                 directory.mkdir(parents=True, exist_ok=True)
                 for variant, package in variants.items():
-                    write_json(directory / f"{variant}.json", package)
+                    write_json(
+                        directory / f"{variant}.json",
+                        {**package, **broad_metadata.get(run_id, {})},
+                    )
             write_json(self.output / "quality.json", quality)
         lines, checks = ([quality_markdown] if self.quality_inputs else []), []
         descriptive, descriptive_table = measurement_summary(
@@ -541,6 +565,12 @@ class Harness:
                 f"failed/incomplete: {len(rows) - len(valid)}."
             )
             if measurement == "pr01":
+                if self.benchmark_kind == "broad":
+                    lines.append(
+                        "PR-01 descriptive timing only: broad scenario set; "
+                        "no PR-01 threshold verdict."
+                    )
+                    continue
                 verdict = (
                     "INCOMPLETE"
                     if len(valid) < 10
@@ -606,7 +636,7 @@ class Harness:
                 f"PR-05 individual thresholds: {verdict}. "
                 "Missing metrics unknown; Validator descriptive."
             )
-        for workload, data in pr05_workloads(self.rows, self.agent_rows).items():
+        for workload, data in workloads.items():
             lines.append(
                 f"PR-05 workload {workload} (additional view): " + json.dumps(data)
             )

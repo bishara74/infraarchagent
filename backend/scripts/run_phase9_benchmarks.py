@@ -13,6 +13,13 @@ import httpx
 from scripts.benchmark import Harness, configured_harness
 from scripts.phase9_common import evidence_directory, safe_main, write_json
 from scripts.phase9_report import summary
+from scripts.phase9i_broad import (
+    broad_schedule,
+    execute_broad,
+    mark_broad_not_started,
+    registered_scenarios,
+    scenario_digest,
+)
 from scripts.seed_benchmark_package import SeedConfigurationError, load_seed_settings
 
 
@@ -83,12 +90,33 @@ async def execute(harness: Harness, *, seeder=None, smoke: bool = False) -> None
 
 
 async def run(args) -> None:
+    registration = registered_scenarios() if args.broad else None
     directory = evidence_directory(
-        "bench-smoke" if args.smoke else "bench-" + args.mode,
+        "bench-broad"
+        if args.broad
+        else "bench-smoke"
+        if args.smoke
+        else "bench-" + args.mode,
         mode=args.mode,
         provider="stub" if args.mode == "stub" else None,
         model="stub" if args.mode == "stub" else None,
     )
+    slots = []
+    if registration:
+        data, raw, revision = registration
+        digest = scenario_digest(raw)
+        slots = broad_schedule(data, args.runs_per_scenario, digest)
+        (directory / "broad-v1.json").write_bytes(raw)
+        metadata_path = directory / "environment.json"
+        metadata = json.loads(metadata_path.read_text())
+        metadata.update(
+            benchmark_kind="broad",
+            scenario_sha256=digest,
+            registration_commit=revision,
+            runs_per_scenario=args.runs_per_scenario,
+            planned_runs=len(slots),
+        )
+        write_json(metadata_path, metadata)
     summary(
         directory / "summary.md",
         "Phase 9 benchmark set",
@@ -99,6 +127,8 @@ async def run(args) -> None:
         timeout=httpx.Timeout(60, connect=5), follow_redirects=False
     ) as client:
         harness = await configured_harness(args, directory, client)
+        if args.broad:
+            harness.benchmark_kind = "broad"
 
         async def seed():
             from app.db.session import make_database_engine, make_session_factory
@@ -117,7 +147,8 @@ async def run(args) -> None:
         try:
             # Do not submit a rehearsal to a backend lacking its local tool chain.
             if args.mode == "stub":
-                load_seed_settings()
+                if not args.broad:
+                    load_seed_settings()
                 response = await client.get(args.base_url.rstrip("/") + "/api/health")
                 health = response.json()
                 if (
@@ -133,8 +164,11 @@ async def run(args) -> None:
                         "scanners and provider mirror."
                     )
             if not harness.stop_reason:
-                await execute(harness, seeder=seed, smoke=args.smoke)
-                if args.mode == "stub" and not harness.stop_reason:
+                if args.broad:
+                    await execute_broad(harness, slots)
+                else:
+                    await execute(harness, seeder=seed, smoke=args.smoke)
+                if args.mode == "stub" and not harness.stop_reason and not args.broad:
                     from scripts.phase9e_rehearsal import verification_rehearsal
 
                     rehearsal = await verification_rehearsal()
@@ -159,8 +193,12 @@ async def run(args) -> None:
                 "Benchmark prerequisite or fixture preparation failed."
             )
         finally:
+            if args.broad:
+                # Also persist the entire schedule after prerequisite failures.
+                mark_broad_not_started(harness, slots)
             harness.flush()
-            section_reports(harness, directory)
+            if not args.broad:
+                section_reports(harness, directory)
     print(directory)
     if harness.stop_reason:
         raise SystemExit(2)
@@ -181,7 +219,20 @@ def main() -> None:
     )
     parser.add_argument("--timeout", type=float, default=1800)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--broad", action="store_true")
+    parser.add_argument(
+        "--runs-per-scenario",
+        type=int,
+        default=os.environ.get("PHASE9_RUNS_PER_SCENARIO") or 2,
+    )
     args = parser.parse_args()
+    if args.broad:
+        if args.smoke or args.runs_per_scenario < 1:
+            parser.error("Broad requires positive RUNS_PER_SCENARIO and no --smoke")
+        planned = 10 * args.runs_per_scenario
+        args.max_runs = (
+            min(args.max_runs, planned) if args.max_runs is not None else planned
+        )
     if args.smoke:
         if args.mode != "real":
             parser.error("Smoke is real mode only")
