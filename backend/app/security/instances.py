@@ -214,6 +214,8 @@ class Instances:
         if depth > self.MAX_LOCALS:
             raise Unresolved()
         if isinstance(value, dict):
+            if any(isinstance(k, str) and ("${" in k or "%{" in k) for k in value):
+                raise Unresolved()
             return {k: self.value(v, module, env, depth) for k, v in value.items()}
         if isinstance(value, list):
             return [self.value(v, module, env, depth) for v in value]
@@ -251,7 +253,7 @@ class Instances:
                 return Ref(value.module, value.address, name)
             if name not in value.resource.body:
                 raise Unresolved()
-            return self.get(value, name)
+            return self.value(value.resource.body[name], value.module, value.env, depth)
         if isinstance(value, dict):
             return value[name]
         raise Unresolved()
@@ -300,6 +302,8 @@ class Instances:
             index = next(c for c in children[1].children if isinstance(c, Tree))
             key = run(index)
             if type(key) not in (int, str):
+                raise Unresolved()
+            if type(key) is int and key < 0:
                 raise Unresolved()
             return run(children[0])[key]
         if kind in {"full_splat_expr_term", "attr_splat_expr_term"}:
@@ -377,14 +381,10 @@ class Instances:
             )
             if isinstance(iterable, dict):
                 pairs = sorted(iterable.items())
-            elif isinstance(iterable, (list, frozenset)):
-                pairs = list(
-                    enumerate(
-                        sorted(iterable)
-                        if isinstance(iterable, frozenset)
-                        else iterable
-                    )
-                )
+            elif isinstance(iterable, frozenset):
+                pairs = [(value, value) for value in sorted(iterable)]
+            elif isinstance(iterable, list):
+                pairs = list(enumerate(iterable))
             else:
                 raise Unresolved()
             if len(pairs) > self.MAX_DECLARATION or any(

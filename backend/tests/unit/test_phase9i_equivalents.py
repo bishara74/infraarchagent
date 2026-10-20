@@ -56,7 +56,10 @@ def test_conflicting_and_non_equivalent_arguments_are_untouched(body):
 
 
 def test_json_rename_preserves_unrelated_bytes():
-    source = '{"resource":{"aws_db_instance":{"db":{"name": "${var.db}", "multi_az": true}}}}'
+    source = (
+        '{"resource":{"aws_db_instance":{"db":{"name": "${v'
+        'ar.db}", "multi_az": true}}}}'
+    )
     result, records = repair_equivalents({"terraform/main.tf.json": source})
     assert result["terraform/main.tf.json"] == source.replace('"name"', '"db_name"')
     assert json.loads(result["terraform/main.tf.json"])
@@ -65,7 +68,32 @@ def test_json_rename_preserves_unrelated_bytes():
 
 def test_cidr_collection_with_multiple_destinations_is_not_collapsed():
     files = {
-        "terraform/main.tf": 'resource "aws_route_table" "rt" {\n route {\n cidr_blocks = ["a", "b"]\n }\n}\n'
+        "terraform/main.tf": (
+            'resource "aws_route_table" "rt" {\n route {\n cidr_b'
+            'locks = ["a", "b"]\n }\n}\n'
+        )
+    }
+    assert repair_equivalents(files) == (files, [])
+
+
+def test_competing_json_legacy_route_fields_are_untouched():
+    files = {
+        "terraform/main.tf.json": json.dumps(
+            {
+                "resource": {
+                    "aws_route_table": {
+                        "rt": {
+                            "route": [
+                                {
+                                    "cidr_ipv4": "10.0.0.0/8",
+                                    "cidr_blocks": ["0.0.0.0/0"],
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        )
     }
     assert repair_equivalents(files) == (files, [])
 

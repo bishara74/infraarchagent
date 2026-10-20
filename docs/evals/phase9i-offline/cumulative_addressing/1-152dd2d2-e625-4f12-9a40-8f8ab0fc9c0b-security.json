@@ -1,0 +1,270 @@
+{
+  "key": "1/152dd2d2-e625-4f12-9a40-8f8ab0fc9c0b/security",
+  "change": "addressing",
+  "reason": "unchanged",
+  "before": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "k8s.configmap_ref",
+        "file_path": "k8s/workloads.yaml",
+        "line_start": 115,
+        "message": "ConfigMap reference must resolve in its namespace"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "candidate": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "k8s.configmap_ref",
+        "file_path": "k8s/workloads.yaml",
+        "line_start": 115,
+        "message": "ConfigMap reference must resolve in its namespace"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "k8s.configmap_ref",
+        "file_path": "k8s/workloads.yaml",
+        "line_start": 115,
+        "message": "ConfigMap reference must resolve in its namespace"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "introduced": [],
+  "removed": [],
+  "records": [],
+  "before_sha256": "dea9cfe0f7f073b72f835fd6dae4af2870469dd37ab5bd9225b43fa45dd5a60c",
+  "candidate_sha256": "dea9cfe0f7f073b72f835fd6dae4af2870469dd37ab5bd9225b43fa45dd5a60c",
+  "retained_sha256": "dea9cfe0f7f073b72f835fd6dae4af2870469dd37ab5bd9225b43fa45dd5a60c",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "be66bae69759c30f17234943b98fecbf7a16300666438527a3d364f08126efb9",
+    "plan_sha256": "2401348931d6a57b3353e0012a9fbd589da54f2c647ff560af7ec0a2a35ef039",
+    "variant": "security",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

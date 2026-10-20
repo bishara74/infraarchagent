@@ -126,19 +126,14 @@ class EvidenceV2:
             # A separately unresolved private-subnet association cannot poison
             # an explicit public-subnet association whose identity is known.
             text = str(raw.body.get("subnet_id", ""))
-            if (
-                not re.search(r"aws_subnet\.[\w-]+", text)
-                or subnet.resource.address in text
-            ):
+            if not self.unrelated_subnet(text, subnet):
                 return False
         for item in graph.all(subnet.module, {"aws_route_table_association"}):
             try:
                 target = graph.get(item, "subnet_id")
             except Unresolved:
                 text = str(item.resource.body.get("subnet_id", ""))
-                if subnet.resource.address in text or not re.search(
-                    r"aws_subnet\.[\w-]+", text
-                ):
+                if not self.unrelated_subnet(text, subnet):
                     return False
                 continue
             if isinstance(target, Ref) and target.address == subnet.address:
@@ -177,10 +172,12 @@ class EvidenceV2:
             return False
         routes = objects(graph.get(table, "route", []))
         for raw in graph.unknown(subnet.module, {"aws_route"}):
-            if table.resource.address in str(raw.body) or not re.search(
-                r"aws_(?:default_)?route_table\.[\w-]+",
-                str(raw.body.get("route_table_id")),
-            ):
+            match = re.fullmatch(
+                r"\$\{(aws_(?:default_)?route_table\.[\w-]+)"
+                r"(?:\[[^\[\]]+\])?\.id\}",
+                str(raw.body.get("route_table_id", "")),
+            )
+            if not match or match[1] == table.resource.address:
                 return False
         for item in graph.all(subnet.module, {"aws_route"}):
             linked = graph.linked(item, "route_table_id")
@@ -199,13 +196,19 @@ class EvidenceV2:
                         )
                     }
                 )
+        defaults: set[str] = set()
+        public = False
         for route in routes:
             destination = route.get("cidr_block") or route.get("destination_cidr_block")
-            ipv6 = route.get(
-                "ipv6_cidr_block", route.get("destination_ipv6_cidr_block")
+            ipv6 = route.get("ipv6_cidr_block") or route.get(
+                "destination_ipv6_cidr_block"
             )
             if destination != "0.0.0.0/0" and ipv6 != "::/0":
                 continue
+            identity = "0.0.0.0/0" if destination == "0.0.0.0/0" else "::/0"
+            if identity in defaults:
+                return False
+            defaults.add(identity)
             gateway = route.get("gateway_id")
             if not isinstance(gateway, Ref):
                 continue
@@ -215,8 +218,15 @@ class EvidenceV2:
                 and igw.type == "aws_internet_gateway"
                 and graph.linked(igw, "vpc_id") == vpc
             ):
-                return True
-        return False
+                public = True
+        return public
+
+    @staticmethod
+    def unrelated_subnet(expression: str, subnet: Instance) -> bool:
+        match = re.fullmatch(
+            r"\$\{(aws_subnet\.[\w-]+)(?:\[[^\[\]]+\])?\.id\}", expression
+        )
+        return bool(match and match[1] != subnet.resource.address)
 
     def consumers(self, group: Instance) -> list[Instance]:
         graph = self.graph
@@ -326,6 +336,8 @@ class EvidenceV2:
                     )
                 }
                 if item.type == "aws_security_group_rule" and own["type"] != "ingress":
+                    return False
+                if (port(own["from_port"]), port(own["to_port"])) != (80, 80):
                     return False
                 rules.append(own)
             exact = False

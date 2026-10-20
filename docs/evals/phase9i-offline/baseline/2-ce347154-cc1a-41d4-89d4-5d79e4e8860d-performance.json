@@ -1,0 +1,272 @@
+{
+  "key": "2/ce347154-cc1a-41d4-89d4-5d79e4e8860d/performance",
+  "stored": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/nodejs-api/Chart.yaml",
+        "line_start": 1,
+        "message": "helm optional lint failed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 120,
+        "message": "Unsupported argument"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]"
+      },
+      {
+        "rule_id": "CKV_AWS_260",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.ingress_http"
+      },
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]"
+      },
+      {
+        "rule_id": "CKV2_AWS_12",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main"
+      },
+      {
+        "rule_id": "CKV_K8S_14",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus"
+      },
+      {
+        "rule_id": "CKV_K8S_40",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus"
+      },
+      {
+        "rule_id": "CKV_K8S_14",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana"
+      },
+      {
+        "rule_id": "CKV_K8S_40",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana"
+      },
+      {
+        "rule_id": "KSV-0013",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0013",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0104",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0104",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "AWS-0079",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_rds_cluster.postgres"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 18,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 18,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/nodejs-api/Chart.yaml",
+        "line_start": 1,
+        "message": "helm optional lint failed"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 120,
+        "message": "Unsupported argument"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]"
+      },
+      {
+        "rule_id": "CKV_AWS_260",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.ingress_http"
+      },
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]"
+      },
+      {
+        "rule_id": "CKV2_AWS_12",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main"
+      },
+      {
+        "rule_id": "CKV_K8S_14",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus"
+      },
+      {
+        "rule_id": "CKV_K8S_40",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus"
+      },
+      {
+        "rule_id": "CKV_K8S_14",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana"
+      },
+      {
+        "rule_id": "CKV_K8S_40",
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana"
+      },
+      {
+        "rule_id": "KSV-0013",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0013",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0104",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0104",
+        "file_path": "k8s/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "AWS-0079",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_rds_cluster.postgres"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 18,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 18,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "context": {
+    "schema": 4493,
+    "checklist": 1010,
+    "total": 5503,
+    "truncated": true,
+    "resource_types": [
+      "aws_db_instance",
+      "aws_ecs_service",
+      "aws_ecs_task_definition",
+      "aws_instance",
+      "aws_security_group",
+      "aws_subnet",
+      "aws_vpc"
+    ]
+  },
+  "versions": {
+    "terraform": "Terraform v1.16.4",
+    "helm": "v4.3.0+gbec5b06",
+    "hadolint": "Haskell Dockerfile Linter 2.15.1",
+    "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+    "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+  },
+  "evaluator_sha256": "a21e9d3e0fbfb8680df705251fa9521a2c7aea0267a564cd87a225eff0b145ee"
+}

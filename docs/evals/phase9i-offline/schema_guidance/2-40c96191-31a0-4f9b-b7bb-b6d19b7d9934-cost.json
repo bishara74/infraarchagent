@@ -1,0 +1,127 @@
+{
+  "key": "2/40c96191-31a0-4f9b-b7bb-b6d19b7d9934/cost",
+  "observed": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 39,
+        "message": "Terraform configuration diagnostic"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 48,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1a\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.public_alb"
+      },
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1b\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_378",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.api_tg"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.public_alb"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.nginx_sg"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1a\"]"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1b\"]"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.public_alb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "reason": "no_infrastructure_change",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "b7e5eccc5d631a313d3c4d6700eeb6dd978ddd53cf2873d3a7eee467888e3465",
+    "plan_sha256": "f93b3e61d121647612412408e15aeb582bdaef313923ae4b921ce2e6d4c4cfba",
+    "variant": "cost",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "key": "2/673d533b-6b84-47de-930d-078426b356d0/cost",
+  "change": "equivalents",
+  "reason": "accepted",
+  "before": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 309,
+        "message": "Unsupported argument"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.api_lb"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.api_lb"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 2,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 2,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.api_lb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "candidate": {
+    "validation": "valid",
+    "failed_checks": [],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.api_lb"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.api_lb"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 2,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 2,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.api_lb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "valid",
+    "failed_checks": [],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.api_lb"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.api_lb"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 2,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 2,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.api_lb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "introduced": [],
+  "removed": [],
+  "records": [
+    {
+      "file": "terraform/main.tf",
+      "kind": "db_name",
+      "name": "aws_db_instance.postgres",
+      "line": 309,
+      "before_hash": "088b2b5e493a9bcc03b5c0abaadd9a1b18794cfed86105646197bafb562c061e",
+      "after_hash": "9269b1e24475331ee4b43b6cda3f85b8209f8b7275a1c8dfe67d2885f8a769b1",
+      "outcome": "accepted",
+      "rejection_reason": null,
+      "package_before_sha256": "1bb6bf91ae92e29a03969b5770278e762b72830b1a9294d8e0ce8625d34f6d24",
+      "package_candidate_sha256": "9441d1bf2f9c415485fb312b5df37f293edc0e296767fdad6de0beb9fdc1ef2e"
+    }
+  ],
+  "before_sha256": "1bb6bf91ae92e29a03969b5770278e762b72830b1a9294d8e0ce8625d34f6d24",
+  "candidate_sha256": "9441d1bf2f9c415485fb312b5df37f293edc0e296767fdad6de0beb9fdc1ef2e",
+  "retained_sha256": "9441d1bf2f9c415485fb312b5df37f293edc0e296767fdad6de0beb9fdc1ef2e",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "1bb6bf91ae92e29a03969b5770278e762b72830b1a9294d8e0ce8625d34f6d24",
+    "plan_sha256": "56364707907a72322a07bf5190a76e94748dab4eafbb9f47a8c8efcda0256340",
+    "variant": "cost",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

@@ -1,0 +1,431 @@
+{
+  "key": "2/eef68d9a-4f49-4c0f-baaf-b7ff9e3d593e/security",
+  "change": "equivalents",
+  "reason": "accepted",
+  "before": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 300,
+        "message": "Unsupported argument"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_58",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_38",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_39",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_157",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "CKV_AWS_354",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_145",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0039",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0040",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0041",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all"
+      },
+      {
+        "rule_id": "AWS-0132",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "candidate": {
+    "validation": "valid",
+    "failed_checks": [],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_58",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_38",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_39",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_157",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "CKV_AWS_354",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_145",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0039",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0040",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0041",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all"
+      },
+      {
+        "rule_id": "AWS-0132",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "valid",
+    "failed_checks": [],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_58",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_38",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_39",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "CKV_AWS_157",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "CKV_AWS_354",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "CKV_AWS_130",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_145",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0039",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0040",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0041",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks"
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all"
+      },
+      {
+        "rule_id": "AWS-0132",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]"
+      },
+      {
+        "rule_id": "AWS-0164",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 19,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "introduced": [],
+  "removed": [],
+  "records": [
+    {
+      "file": "terraform/main.tf",
+      "kind": "db_name",
+      "name": "aws_db_instance.postgres",
+      "line": 300,
+      "before_hash": "3fdeda741637c8621dc634bfcd48fda2075f275b4e7610c5467b5982e15bfad7",
+      "after_hash": "f800f8f4559d2ab034d6bf1b37b2aa2219d264125991bc5593fff9f06b28a4f3",
+      "outcome": "accepted",
+      "rejection_reason": null,
+      "package_before_sha256": "798f259572ad6b632242f0aea3d9c202de82c6315bb229292be8b49497d4323c",
+      "package_candidate_sha256": "414bf51ec934d8a6cb773f1071db84df74784b343f0d0a0151bf6b19ea799f66"
+    }
+  ],
+  "before_sha256": "798f259572ad6b632242f0aea3d9c202de82c6315bb229292be8b49497d4323c",
+  "candidate_sha256": "414bf51ec934d8a6cb773f1071db84df74784b343f0d0a0151bf6b19ea799f66",
+  "retained_sha256": "414bf51ec934d8a6cb773f1071db84df74784b343f0d0a0151bf6b19ea799f66",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "798f259572ad6b632242f0aea3d9c202de82c6315bb229292be8b49497d4323c",
+    "plan_sha256": "3631aa9dd067696a53be46c86db11af4b366855f0f226a5dc16202c74c8d7fa8",
+    "variant": "security",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

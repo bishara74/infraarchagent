@@ -1,8 +1,8 @@
 """D-56: documented validation repairs use the existing candidate guard."""
 
 import asyncio
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 from app.agents.budget import AgentBudget
 from app.agents.remediation import ValidationService
@@ -27,8 +27,12 @@ async def checked_one(
     transform: Callable[[dict[str, str]], tuple[dict[str, str], list[dict[str, Any]]]],
 ) -> tuple[dict[str, str], ValidationReport, list[dict[str, Any]]]:
     candidate, records = transform(files)
-    if candidate == files or budget.remaining() < 1:
+    if candidate == files:
         return files, report, []
+    if budget.remaining() < 1:
+        for record in records:
+            record.update(outcome="rejected", reason="verification_unavailable")
+        return files, report, records
     reason = "verification_unavailable"
     checked = report
     try:

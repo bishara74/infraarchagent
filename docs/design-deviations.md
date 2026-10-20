@@ -1751,8 +1751,9 @@ settings, tool versions, selections or exact-text schedules.
 FR-G-02, FR-S-04/09, FR-V-01/03, FR-UI-05 and NFR-01: author-approved
 Phase 9i adds bounded schema guidance, documented equivalent/format repairs,
 dependency-aware subnet defaults and guarded VPC/RDS defaults. contextual-v2
-will be an independent experimental assessment; contextual-v1 and strict
-acceptance remain frozen. Run profile selection and persistence are unchanged.
+is an independent experimental assessment; contextual-v1 predicates, JSON and
+stored results remain frozen. Strict controls repair acceptance, readiness and
+downloads. Run profile selection and persistence are unchanged; no migration.
 No threshold, deadline or dependency changes are authorised.
 
 Offline evidence lives in `docs/evals/phase9i-offline/`. Its input manifest
@@ -1760,7 +1761,89 @@ hashes all 81 generated packages from the two final sets, retaining three
 missing variants. Stored results and fresh observations are distinct. The
 replay never instantiates operator settings or invokes an LLM. Raw generated
 source remains in the original read-only snapshots, outside committed evidence.
-Per-change and cumulative outcomes will be recorded as implementation completes.
+Independent and cumulative replay results include before/candidate/retained
+validity, failed checks, strict/v1/v2 blockers and exceptions, introduced/removed
+findings, rejection reasons and hashes. Final candidates and the final-validator
+baseline run in an isolated Linux user/network namespace with offline tools and
+mirrored providers. The original pre-change baseline used offline flags and
+dead proxies; these observations remain explicitly separate. Cache identity
+includes package/plan/variant, versions, schemas, evaluator and configuration.
+
+Generation prioritises required attributes, optional names/types and relevant
+nested shapes within the existing 4,500-character schema and 6,000-character
+envelope. Per-plan measurements include security-checklist size, total size,
+requested/included resource types and truncation. Guidance is not credited with
+package improvements without generated evidence; no real model calls were made.
+Only documented DB-name, inline-route CIDR and listener-path-map equivalents
+are transformed. Expressions/values survive; conflicts, ambiguous structures
+and unsupported schemas are skipped. Other invalid security/availability intent
+remains for schema-grounded model repair, never argument deletion.
+
+The new shared resolver is separate from v1: at most 64 instances/declaration,
+1,024/module and 16 local-reference levels. Literal collections, locals, bounded
+count/for_each, indexing, splats and supported collection operations resolve;
+variable defaults never establish deployment values. Cycles, overflow, external
+modules, unknown expressions and ambiguous references fail conservatively.
+Subnet defaults account for implicit EC2 addressing, explicit launch settings,
+ASGs, ECS public-IP choices, EKS placements and ENIs. Uncertain consumers skip
+repair. Backup retention rises to seven days only for known lower/missing
+values. Managing an actual VPC default SG requires proving that consumers do
+not need its rules; explicit required rules and unknown launch paths survive.
+
+Recognised Grafana envelopes preserve their dashboard object. Only statically
+referenced missing standard Helm helpers and their transitive dependencies are
+added within a chart. Custom helpers, existing definitions, remote dependencies
+and escaped expressions are not invented or overwritten. Diagnostics retain
+bounded helper identifiers and package-relative locations through public-data
+redaction. Deterministic format/equivalent records include kind, location,
+hashes and accepted/rejected outcomes. Existing syntax, validity-improvement
+and no-new-strict-blocker guards remain mandatory.
+
+v2 normalises numeric literal ports and protocol spelling for comparison only;
+invalid values and expressions remain unknown. Public ALBs qualify with HTTPS
+alone or HTTPS plus redirect-only HTTP, certificates and no redirect bypass.
+Public NLBs require exclusively TLS listeners, certificates and a checked-in
+TLS 1.2+ policy from AWS's protocol tables; unknown/default/older policies and
+TCP/UDP do not qualify. Routing needs bounded, unique, consistent subnet/table/
+IGW evidence. SG source-only traffic permissions do not establish attachments;
+actual non-LB consumers and unresolved potential consumers still deny exceptions.
+All three assessments are returned and displayed; old responses show v2 as
+unavailable. v2 exceptions never affect candidate acceptance.
+
+Measured limitations and exact outcomes are in the Phase 9i replay report.
+Across 81 packages, cumulative validity rises from 23 to 45 and strict blockers
+fall from 391 to 334 (57 removed, none introduced and retained). v1 blockers
+fall from 370 to 329; v2 reports 318 before infrastructure changes and 297 after.
+Strict passes rise from 15 to 20. Addressing removes 42 findings in 17 packages;
+backup retention removes 15 in 15 packages. No saved default-SG candidate has
+sufficient consumer evidence, so its tested implementation receives no corpus
+improvement credit. Twelve format candidates expose 189 strict findings and
+are rejected; two are retained and one has no validation improvement. Thirty-one
+equivalent candidates are retained; seven fail the unchanged improvement guard.
+All 648 independent/cumulative transformations match final candidate/retained
+hashes and are idempotent; no scan or Terraform verification outcome is unknown.
+
+Generation schema sizes are 595–4,493 characters before and 4,478–4,489 after;
+checklists 404–1,010 before and 404–1,190 after; total contexts 999–5,503 before
+and 4,889–5,668 after. Truncation rises from 43/81 to 81/81 as optional names,
+types and nested structures are added. Identical version fields are compacted;
+differences remain explicitly version-labelled. More context may affect model
+quality/cost/latency; none was measured through real inference. Repair-schema
+previews use the existing 16,000-character default and are not model requests;
+historical overrides cannot be recovered from package snapshots alone.
+
+Helm repairs can expose previously unrendered workload findings and be rejected;
+such findings are retained as candidate evidence, not counted as improvements.
+Static validation does not prove an AWS deployment, live deadline success,
+model-generation quality or end-to-end networking. Conservative omission remains
+the rule for launch settings, unresolved variables and unsupported expressions.
+No new spec ambiguity or open question was introduced.
+
+Ranks 4, 6, 7 and 8 remain deferred. Thesis future work includes image-registry
+trust (KSV-0125), compatible logging controls, broader unsupported-intent repair and
+architectural isolation. Rank 8's main option is CloudFront VPC origins to an
+internal ALB; both mirrored AWS versions expose `aws_cloudfront_vpc_origin`.
+This is future architecture, not a Phase 9i infrastructure change or policy fix.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -1931,6 +2014,21 @@ metadata or semantic naming inference is a later design decision.
 ---
 
 ## Thesis text to update (collected)
+
+- Phase 9i / Chapters 4–6 (D-56): explain guarded documented equivalents,
+  lossless document repairs, dependency-aware subnet/default-SG decisions and
+  seven-day recovery retention. Publish independent and cumulative replay of
+  all 81 packages, including rejected candidates, unknowns and context coverage.
+  Separate strict and frozen contextual-v1 results from experimental v2 policy
+  classification; preserve readiness/acceptance thresholds and historical sets.
+- Phase 9i future work: defer ranks 4, 6, 7 and 8. Workload/container hardening
+  and image-registry trust (KSV-0125), compatible log-bucket controls and broader
+  schema-grounded repairs
+  need separate validation. **Main architectural option (rank 8): CloudFront VPC
+  origins to an internal ALB**, supported by the mirrored provider schemas.
+  Evaluate regional/service restrictions, ingress trust, certificates, WAF and
+  operational costs before implementation. No architectural gain is claimed
+  from the current offline replay.
 
 - Phase 9h / Chapters 4–6: accounts and authenticated identity (D-50), encrypted
   provider credentials and key rotation (D-51), five resolved model/thinking

@@ -1,0 +1,444 @@
+{
+  "key": "2/6460bfee-6f30-4185-9b60-e114da0d82d5/security",
+  "change": "formats",
+  "reason": "new_blocking_findings",
+  "before": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 242,
+        "message": "Unsupported argument"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "AWS-0052",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb"
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 6,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 6,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 5,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.app_alb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "candidate": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 242,
+        "message": "Unsupported argument"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "CKV_K8S_20",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "CKV_K8S_12",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "CKV_K8S_23",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "CKV_K8S_11",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "CKV_K8S_10",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "CKV_K8S_13",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "CKV_K8S_14",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "CKV_K8S_40",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-eks-cluster"
+      },
+      {
+        "rule_id": "KSV-0001",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0012",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0013",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0014",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0104",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0117",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0118",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0118",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "AWS-0052",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb"
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 22,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 22,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 21,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.app_alb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 242,
+        "message": "Unsupported argument"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_18",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "CKV_AWS_21",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      },
+      {
+        "rule_id": "AWS-0052",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb"
+      },
+      {
+        "rule_id": "AWS-0090",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 6,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 6,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 5,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.app_alb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "introduced": [
+    [
+      "CKV_K8S_10",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_11",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_12",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_13",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_14",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_20",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_23",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "CKV_K8S_40",
+      "helm/eks-cluster/templates/workloads.yaml",
+      "Deployment.default.release-name-eks-cluster"
+    ],
+    [
+      "KSV-0001",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0012",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0013",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0014",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0104",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0117",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0118",
+      "helm/eks-cluster/templates/workloads.yaml",
+      ""
+    ]
+  ],
+  "removed": [],
+  "records": [
+    {
+      "file": "helm/eks-cluster/templates/_helpers.tpl",
+      "kind": "helm_helpers",
+      "name": "eks-cluster",
+      "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_hash": "49aea3200234811fd9bfeaa5203f122166930791b1372827cfc25fce0196b263",
+      "outcome": "rejected",
+      "rejection_reason": "new_blocking_findings",
+      "package_before_sha256": "3a3f4fdf48036e99e4272d8458b42674f37cf1884b95e14d9b4767dab2f37435",
+      "package_candidate_sha256": "c573007630963575af2bee44e5e94403c93e3095b521e1dff951909bbf1c737e"
+    }
+  ],
+  "before_sha256": "3a3f4fdf48036e99e4272d8458b42674f37cf1884b95e14d9b4767dab2f37435",
+  "candidate_sha256": "c573007630963575af2bee44e5e94403c93e3095b521e1dff951909bbf1c737e",
+  "retained_sha256": "3a3f4fdf48036e99e4272d8458b42674f37cf1884b95e14d9b4767dab2f37435",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "dcc8266972ae9ac097d2f22aa5b4cc4b0eb1ea978c3ea5a11334af02e698dc14",
+    "plan_sha256": "5270f7d97606b6d6232eaa595c23c1260a3125afe4722c488bdaaae9c9dcff4f",
+    "variant": "security",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

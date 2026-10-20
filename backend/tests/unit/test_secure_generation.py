@@ -1,5 +1,7 @@
 """FR-G-02/FR-S-02: resource-specific security input without larger token budgets."""
 
+import json
+
 import pytest
 
 from app.agents.prompts.generator import build_system_prompt
@@ -72,3 +74,31 @@ def test_context_cap_truncation_measurement_and_supporting_guidance():
 def test_untrusted_plan_text_is_not_copied_into_guidance():
     value = plan("S3 MALICIOUS_CANARY")
     assert "MALICIOUS_CANARY" not in generation_context(value).text
+
+
+@pytest.mark.req("FR-G-02", "FR-V-03", "NFR-01")
+def test_complex_guidance_preserves_network_shape_and_explicit_version_differences():
+    context = generation_context(plan("EC2", "RDS", "ECS"))
+    entries = {e["type"]: e for e in json.loads(context.text[: context.schema_chars])}
+    ecs = entries["aws_ecs_service"]
+    assert ecs["versions"] == ["5.100.0", "6.68.0"]
+    network = ecs["schema"]["blocks"]["network_configuration"]
+    assert network["required"]["subnets"] == ["set", "string"]
+    assert network["optional"]["assign_public_ip"] == "bool"
+    db = entries["aws_db_instance"]
+    assert "region" in db["version_fields"]["6.68.0"]["optional"]
+    assert "region" not in db["schema"]["optional"]
+    assert context.schema_chars <= 4500 and len(context.text) <= 6000
+
+
+@pytest.mark.req("FR-G-02", "NFR-01")
+def test_schema_guidance_remains_bounded_at_small_caps():
+    from app.validation.schema_context import generator_schema_context
+
+    for limit in (0, 120, 240, 500, 1000, 4499):
+        text = generator_schema_context(
+            limit, resource_types=("aws_vpc", "aws_ecs_service")
+        )
+        assert len(text) <= limit
+        if text:
+            assert isinstance(json.loads(text), list)

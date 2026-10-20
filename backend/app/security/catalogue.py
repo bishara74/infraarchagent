@@ -273,7 +273,9 @@ def autofix(
                             "control": "subnet_consumers",
                             "rule_ids": [finding.rule_id],
                             "status": "skipped",
-                            "reason": "context: subnet consumers unresolved or inherit IP",
+                            "reason": (
+                                "context: subnet consumers unresolved or inherit IP"
+                            ),
                         }
                     )
                 continue

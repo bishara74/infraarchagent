@@ -29,11 +29,45 @@ def test_grafana_envelope_preserves_dashboard_and_is_idempotent():
 
 def test_ambiguous_grafana_and_custom_helpers_are_untouched():
     files = {
-        "monitoring/grafana/dashboard.json": '{"dashboard":{"panels":[]},"custom":"keep"}',
+        "monitoring/grafana/dashboard.json": (
+            '{"dashboard":{"panels":[]},"custom":"keep"}'
+        ),
         "helm/app/Chart.yaml": "apiVersion: v2\nname: app\nversion: 1.0.0\n",
-        "helm/app/templates/deployment.yaml": '{{ include "other.fullname" . }}\n{{ include "app.custom" . }}',
+        "helm/app/templates/deployment.yaml": (
+            '{{ include "other.fullname" . }}\n{{ include "app.custom" . }}'
+        ),
     }
     assert repair_formats(files) == (files, [])
+
+
+@pytest.mark.parametrize("metadata", [{"overwrite": "unknown"}, {"meta": []}])
+def test_malformed_envelope_metadata_is_not_discarded(metadata):
+    files = {
+        "monitoring/grafana/a.json": json.dumps(
+            {"dashboard": {"panels": []}, **metadata}
+        )
+    }
+    assert repair_formats(files) == (files, [])
+
+
+def test_helper_identifiers_follow_public_secret_redaction():
+    from app.core.config import Settings
+    from app.core.safety import PublicDataSafety
+    from app.domain.validation import ValidationCheck
+
+    canary = "phase9i-private-helper-canary"
+    safety = PublicDataSafety(
+        Settings(_env_file=None, llm_provider="stub", api_key=canary)
+    )
+    check = ValidationCheck(
+        check_id="helm.lint",
+        tool="helm",
+        category="lint",
+        status="failed",
+        message="Undefined helper",
+        template_name=canary + ".fullname",
+    )
+    assert canary not in str(safety.value(check.model_dump(mode="json")))
 
 
 def test_helper_dependencies_are_added_without_overwriting_existing_definition():
@@ -41,7 +75,9 @@ def test_helper_dependencies_are_added_without_overwriting_existing_definition()
     files = {
         "helm/app/Chart.yaml": "apiVersion: v2\nname: app\nversion: 1.0.0\n",
         "helm/app/templates/_helpers.tpl": existing,
-        "helm/app/templates/deployment.yaml": '{{ include "app.fullname" . }}\n{{ include "app.labels" . }}',
+        "helm/app/templates/deployment.yaml": (
+            '{{ include "app.fullname" . }}\n{{ include "app.labels" . }}'
+        ),
     }
     result, records = repair_formats(files)
     helper = result["helm/app/templates/_helpers.tpl"]
@@ -64,7 +100,11 @@ def test_helm_diagnostics_retain_only_safe_identifier_and_package_location(tmp_p
     target = next(
         t for t in linter_targets(PackageDocuments.parse(files)) if t.tool == "helm"
     )
-    output = '[ERROR] templates/: app/templates/workloads.yaml:4:11\n template: no template "app.fullname" associated with template "gotpl" PRIVATE_CANARY\n'
+    output = (
+        "[ERROR] templates/: app/templates/workloads.yaml:4"
+        ':11\n template: no template "app.fullname" associat'
+        'ed with template "gotpl" PRIVATE_CANARY\n'
+    )
     checks = parse_lint(target, ToolResult(output, "", 1, 0), tmp_path, set(files))
     assert checks[0].template_name == "app.fullname"
     assert checks[0].file_path == "helm/app/templates/workloads.yaml"

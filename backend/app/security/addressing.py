@@ -127,9 +127,17 @@ def safe_subnet(graph: Instances, subnet: Instance) -> bool:
                     # unresolved/external launch configuration is not evidence.
                     linked = graph.linked(item, "launch_configuration")
                     templates = graph.get(item, "launch_template", [])
-                    if linked is None and not any(
-                        isinstance(t.get("id"), Ref) or isinstance(t.get("name"), Ref)
+                    resolved_templates = [
+                        graph.find(r.module, r.address)
                         for t in templates
+                        for r in refs(t.get("id", t.get("name")))
+                    ]
+                    if not (
+                        linked and linked.type == "aws_launch_configuration"
+                    ) and not (
+                        len(templates) == len(resolved_templates) == 1
+                        and resolved_templates[0] is not None
+                        and resolved_templates[0].type == "aws_launch_template"
                     ):
                         return False
             elif item.type in {"aws_eks_fargate_profile"}:

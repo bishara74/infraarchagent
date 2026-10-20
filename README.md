@@ -1396,11 +1396,44 @@ download is needed. A new destination is required; existing evidence is immutabl
 
 ### Phase 9i offline replay
 
-From `backend/`, run `.venv/bin/python -m scripts.phase9i_replay` to inventory
-and replay the two saved final sets into `docs/evals/phase9i-offline/`.
-Original cached snapshots are required and are never rewritten. The runner
-uses mirrored providers and offline scanners, never operator settings or LLMs.
-For verification without dotenv, put `backend/tests/bootstrap` and `backend`
-first on `PYTHONPATH`, set `INFRAARCH_TEST_BOOTSTRAP=1`, and provide explicit
-synthetic test-database URLs for a disposable PostgreSQL instance before
-running `make test`. Never use an author's normal database for this command.
+[Results and limitations](docs/evals/phase9i-offline/README.md) distinguish
+historical results, the immutable pre-change baseline and final isolated replay.
+The 81 original packages, 28 plans and three missing variants are hashed;
+source snapshots are required locally and are never rewritten or published by
+the replay. No operator settings or LLMs are used. Reproduce into a separate
+directory, with the existing local provider/schema mirrors and scanner binaries:
+
+```bash
+cd backend
+export INFRAARCH_TEST_BOOTSTRAP=1
+export PYTHONPATH="$PWD/tests/bootstrap:$PWD"
+.venv/bin/python -m scripts.phase9i_replay --mode baseline --output /tmp/phase9i-replay
+unshare --user --map-root-user --net .venv/bin/python -m scripts.phase9i_replay \
+  --mode changes --network-isolated --workers 3 --output /tmp/phase9i-replay
+.venv/bin/python -m scripts.phase9i_report --output /tmp/phase9i-replay
+```
+
+Linux user/network namespaces must be available for the final replay. Provider
+downloads, remote Helm dependency fetches, scanner updates/uploads/telemetry and
+external network access are disabled. Fingerprinted caches distinguish isolated
+observations. The report verifies all candidate/retained bytes and idempotence,
+and preserves rejected candidate findings. A newly captured baseline uses the
+checked-out implementation; the committed pre-change context measurements are
+historical evidence, not regenerated measurements of old code.
+
+For dotenv-disabled verification, export `INFRAARCH_TEST_BOOTSTRAP=1` and put
+`backend/tests/bootstrap:backend` first on `PYTHONPATH` (absolute paths work from
+both the root and `backend/`). Explicitly set `LLM_PROVIDER=stub`, empty
+`LLM_API_KEY`/`API_KEY`, and synthetic `TEST_DATABASE_URL` and
+`TEST_MIGRATION_DATABASE_URL` for a disposable PostgreSQL database provisioned
+with the repository's owner/app/read-only roles. Also set `DATABASE_URL` and
+`MIGRATION_DATABASE_URL` to those test URLs. Then run `make lint`, `make test`,
+`npm --prefix frontend test -- --run` and `make test-e2e`. Never use an author's
+normal database or credentials for these commands.
+
+Documented Terraform equivalents, standard missing Helm helpers and recognised
+Grafana API envelopes have guarded deterministic repairs. Subnet, backup and VPC
+default-SG repairs require proven dependencies. All other invalid arguments use
+schema-grounded model repair. Strict alone governs acceptance and readiness;
+contextual-v1 is preserved, and experimental contextual-v2 appears alongside it
+in API, archive and UI reports. Existing responses without v2 show unavailable.

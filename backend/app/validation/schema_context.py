@@ -344,31 +344,76 @@ def generator_schema_context(
         "aws_ecs_service",
     )
     for name in resource_types if resource_types is not None else names:
-        profiles: dict[str, list[str]] = {}
+        profiles: dict[str, dict[str, Any]] = {}
         for version in ("5.100.0", "6.68.0"):
             index = index_for("aws", version, directory)
             schema = index.resource_schema(name)
             if schema:
-                small = generation_shape(schema)
-                profiles.setdefault(json.dumps(small, sort_keys=True), []).append(
-                    version
+                profiles[version] = generation_shape(schema)
+        if not profiles:
+            continue
+        first = next(iter(profiles.values()))
+        common = {
+            section: {
+                key: shape
+                for key, shape in values.items()
+                if all(
+                    key in p[section] and p[section][key] == shape
+                    for p in profiles.values()
                 )
-        entries.extend(
-            {"type": name, "versions": versions, "schema": json.loads(raw)}
-            for raw, versions in profiles.items()
-        )
+            }
+            for section, values in first.items()
+        }
+        differences = {
+            version: {
+                section: {
+                    key: shape
+                    for key, shape in values.items()
+                    if key not in common[section]
+                }
+                for section, values in shape.items()
+            }
+            for version, shape in profiles.items()
+        }
+        entry: dict[str, Any] = {
+            "type": name,
+            "versions": list(profiles),
+            "schema": common,
+        }
+        if any(values for diff in differences.values() for values in diff.values()):
+            entry["version_fields"] = {
+                version: {
+                    section: sorted(values)
+                    for section, values in diff.items()
+                    if values
+                }
+                for version, diff in differences.items()
+                if any(diff.values())
+            }
+            entry["version_schema"] = differences
+        entries.append(entry)
     # Keep a version-labelled skeleton for every selected type before spending
     # the remaining cap on optional fields. Never let one large RDS schema
     # displace every subsequent network/compute resource.
     retained: list[dict[str, Any]] = []
-    pending = []
+    pending: list[
+        tuple[dict[str, Any], list[tuple[str, Any]], list[tuple[str, Any]]]
+    ] = []
     for entry in entries:
         schema = entry["schema"]
-        skeleton = {
+        skeleton: dict[str, Any] = {
             **entry,
             "schema": {"required": schema["required"], "optional": {}, "blocks": {}},
-            "truncated": True,
+            "truncated": False,
         }
+        if "version_schema" in entry:
+            skeleton["version_schema"] = {
+                version: {"required": shape["required"]}
+                for version, shape in entry["version_schema"].items()
+                if shape["required"]
+            }
+            if not skeleton["version_schema"]:
+                del skeleton["version_schema"]
         if len(json.dumps([*retained, skeleton], separators=(",", ":"))) <= limit:
             retained.append(skeleton)
             pending.append(
@@ -378,13 +423,32 @@ def generator_schema_context(
                     list(schema["blocks"].items()),
                 )
             )
+            for version, shape in entry.get("version_schema", {}).items():
+                pending.append(
+                    (
+                        {
+                            "schema": skeleton.get("version_schema", {}).get(
+                                version, {}
+                            ),
+                            "owner": skeleton,
+                            "version": version,
+                        },
+                        list(shape["optional"].items()),
+                        list(shape["blocks"].items()),
+                    )
+                )
     for section, part in (
         ("optional", "priority"),
         ("blocks", "all"),
+        ("optional", "versions"),
         ("optional", "rest"),
+        ("blocks", "versions"),
     ):
-        queues = []
+        queues: list[tuple[dict[str, Any], list[tuple[str, Any]]]] = []
         for entry, optional, nested_blocks in pending:
+            if ("owner" in entry) != (part == "versions"):
+                queues.append((entry, []))
+                continue
             ordered = sorted(
                 optional,
                 key=lambda item: (
@@ -406,9 +470,11 @@ def generator_schema_context(
             queue = (
                 nested_blocks
                 if section == "blocks"
-                else ordered[:6]
+                else ordered[:2]
                 if part == "priority"
-                else ordered[6:]
+                else ordered
+                if part == "versions"
+                else ordered[2:]
             )
             queues.append((entry, list(queue)))
         while any(queue for _, queue in queues):
@@ -416,13 +482,26 @@ def generator_schema_context(
                 if not queue:
                     continue
                 name, shape = queue.pop(0)
-                entry["schema"][section][name] = shape
+                entry["schema"].setdefault(section, {})[name] = shape
+                if "owner" in entry:
+                    entry["owner"].setdefault("version_schema", {})[
+                        entry["version"]
+                    ] = entry["schema"]
                 if len(json.dumps(retained, separators=(",", ":"))) > limit:
                     del entry["schema"][section][name]
+                    if "owner" in entry and not entry["schema"][section]:
+                        del entry["schema"][section]
+                    if "owner" in entry and not entry["schema"]:
+                        del entry["owner"]["version_schema"][entry["version"]]
+                        if not entry["owner"]["version_schema"]:
+                            del entry["owner"]["version_schema"]
+    for entry in retained:
+        entry["truncated"] = False
     for entry, optional, nested_blocks in pending:
-        entry["truncated"] = len(entry["schema"]["optional"]) != len(optional) or len(
-            entry["schema"]["blocks"]
-        ) != len(nested_blocks)
+        owner = entry.get("owner", entry)
+        owner["truncated"] |= len(entry["schema"].get("optional", {})) != len(
+            optional
+        ) or len(entry["schema"].get("blocks", {})) != len(nested_blocks)
     return json.dumps(retained, separators=(",", ":")) if retained else ""
 
 

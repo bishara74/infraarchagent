@@ -1,0 +1,376 @@
+{
+  "key": "1/95c60392-4ffe-4afb-9882-ef802a45bcdd/cost",
+  "change": "formats",
+  "reason": "new_blocking_findings",
+  "before": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 1,
+        "message": "Dashboard requires panels"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 235,
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 339,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "blockers": [],
+    "scan_outcome": "clean",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 0,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 0,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 0,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "candidate": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 235,
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 339,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_K8S_20",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "CKV_K8S_12",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "CKV_K8S_23",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "CKV_K8S_11",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "CKV_K8S_10",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "CKV_K8S_13",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "CKV_K8S_14",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "CKV_K8S_40",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-app"
+      },
+      {
+        "rule_id": "KSV-0001",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0012",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0013",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0014",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0104",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0117",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0118",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0118",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      },
+      {
+        "rule_id": "KSV-0125",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "resource": ""
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 17,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 17,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 17,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/app/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 1,
+        "message": "Dashboard requires panels"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 235,
+        "message": "Unsupported argument"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 339,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "blockers": [],
+    "scan_outcome": "clean",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 0,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 0,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 0,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "introduced": [
+    [
+      "CKV_K8S_10",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "CKV_K8S_11",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "CKV_K8S_12",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "CKV_K8S_13",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "CKV_K8S_14",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "CKV_K8S_20",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "CKV_K8S_23",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "CKV_K8S_40",
+      "helm/app/templates/workloads.yaml",
+      "Deployment.default.release-name-app"
+    ],
+    [
+      "KSV-0001",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0012",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0013",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0014",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0104",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0117",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0118",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ],
+    [
+      "KSV-0125",
+      "helm/app/templates/workloads.yaml",
+      ""
+    ]
+  ],
+  "removed": [],
+  "records": [
+    {
+      "file": "monitoring/grafana/dashboard.json",
+      "kind": "grafana_envelope",
+      "name": "dashboard",
+      "before_hash": "518a4fa6707db707081698ffbf666a22e61414fee5c55f7339838086bf0608cb",
+      "after_hash": "3a91867bdbe77f7647407de9922caba094d3c235a9ed7bc7756dc9bc6e3020b5",
+      "outcome": "rejected",
+      "rejection_reason": "new_blocking_findings",
+      "package_before_sha256": "b1211a900624f09a9404c7d2f4b9b3cb3f62035d6e529ffa3bffa25c06926464",
+      "package_candidate_sha256": "51327290644a79a2bbb830c97161112fd9768d5600ac0254e63714165904c4ae"
+    },
+    {
+      "file": "helm/app/templates/_helpers.tpl",
+      "kind": "helm_helpers",
+      "name": "app",
+      "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "after_hash": "b63a3f19c8e91147983126c8d3452fa8a3eb97fd4a6b4c8869470e7ccddd24a1",
+      "outcome": "rejected",
+      "rejection_reason": "new_blocking_findings",
+      "package_before_sha256": "b1211a900624f09a9404c7d2f4b9b3cb3f62035d6e529ffa3bffa25c06926464",
+      "package_candidate_sha256": "51327290644a79a2bbb830c97161112fd9768d5600ac0254e63714165904c4ae"
+    }
+  ],
+  "before_sha256": "b1211a900624f09a9404c7d2f4b9b3cb3f62035d6e529ffa3bffa25c06926464",
+  "candidate_sha256": "51327290644a79a2bbb830c97161112fd9768d5600ac0254e63714165904c4ae",
+  "retained_sha256": "b1211a900624f09a9404c7d2f4b9b3cb3f62035d6e529ffa3bffa25c06926464",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "b1211a900624f09a9404c7d2f4b9b3cb3f62035d6e529ffa3bffa25c06926464",
+    "plan_sha256": "09cbc090c0782f64a01a3f3e9d67036737d55a764666453dc704c23f9c366f7b",
+    "variant": "cost",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

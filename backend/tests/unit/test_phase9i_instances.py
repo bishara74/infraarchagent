@@ -82,7 +82,10 @@ resource "aws_subnet" "public" {
 
 def test_unknown_consumer_and_external_module_prevent_repair():
     for extra in (
-        'resource "aws_emr_cluster" "other" {\n ec2_attributes { subnet_id = aws_subnet.public[0].id }\n}\n',
+        (
+            'resource "aws_emr_cluster" "other" {\n ec2_attribut'
+            "es { subnet_id = aws_subnet.public[0].id }\n}\n"
+        ),
         'module "external" { source = "./external" }\n',
     ):
         value = files(extra)
@@ -103,3 +106,29 @@ def test_total_instance_limit_and_local_depth_are_enforced():
         "local.x0",
     )
     assert not Instances(value).all("terraform", {"aws_subnet"})
+
+
+def test_set_iteration_keys_and_dynamic_map_keys():
+    graph = Instances(files())
+    assert graph.value('${{for k, v in toset(["a", "b"]) : k => v}}', "terraform") == {
+        "a": "a",
+        "b": "b",
+    }
+    with pytest.raises(Unresolved):
+        graph.value({"${var.key}": "value"}, "terraform")
+    graph.local_values["terraform", "negative"] = -1
+    with pytest.raises(Unresolved):
+        graph.value("${aws_subnet.public[local.negative].id}", "terraform")
+
+
+@pytest.mark.parametrize(
+    "template", ["aws_security_group.other.id", "aws_launch_template.missing.id"]
+)
+def test_asg_launch_reference_must_resolve_to_a_launch_template(template):
+    value = files(
+        'resource "aws_security_group" "other" {}\n'
+        'resource "aws_autoscaling_group" "app" {\n'
+        " vpc_zone_identifier = [aws_subnet.public[0].id]\n"
+        " launch_template { id = " + template + " }\n}\n"
+    )
+    assert repair_addressing(value) == (value, [])

@@ -176,3 +176,91 @@ def test_counted_subnet_associations_and_unresolved_variables():
         ]["remaining_blocking"]
         == 1
     )
+
+
+def test_unresolved_conditional_is_not_proven_unrelated():
+    from app.security.instances import Instances
+    from app.security.profiles_v2 import EvidenceV2
+
+    graph = Instances({"terraform/main.tf": 'resource "aws_subnet" "public" {}'})
+    subnet = graph.find("terraform", "aws_subnet.public")
+    assert not EvidenceV2.unrelated_subnet(
+        "${var.test ? aws_subnet.private.id : local.public_id}", subnet
+    )
+    assert EvidenceV2.unrelated_subnet("${aws_subnet.private[count.index].id}", subnet)
+
+
+def test_nlb_with_mixed_tcp_listener_stays_blocking():
+    resources = network("network", "TLS")
+    resources["aws_lb_listener"]["plain"] = {
+        "load_balancer_arn": "${aws_lb.edge.arn}",
+        "port": 80,
+        "protocol": "TCP",
+    }
+    assert not assess(package(resources))["contextual-v2"]["checks_passed"]
+
+
+def test_all_saved_final_packages_keep_exact_strict_and_v1_assessments():
+    from scripts.phase9i_replay import inventory
+
+    try:
+        packages, _ = inventory()
+    except FileNotFoundError:
+        pytest.skip("read-only final-set snapshots are unavailable")
+    assert len(packages) == 81
+    for item in packages:
+        actual = assess(item["package"])
+        for profile in ("strict", "contextual-v1"):
+            assert actual[profile] == item["package"]["profile_assessments"][profile], (
+                item["key"]
+            )
+
+
+@pytest.mark.parametrize("conflict", ["duplicate", "unknown_binding"])
+def test_public_subnet_requires_unique_known_default_routes(conflict):
+    resources = {
+        "aws_vpc": {"v": {}},
+        "aws_subnet": {"public": {"vpc_id": "${aws_vpc.v.id}"}},
+        "aws_internet_gateway": {"igw": {"vpc_id": "${aws_vpc.v.id}"}},
+        "aws_route_table": {
+            "public": {
+                "vpc_id": "${aws_vpc.v.id}",
+                "route": [
+                    {
+                        "cidr_block": "0.0.0.0/0",
+                        "gateway_id": "${aws_internet_gateway.igw.id}",
+                    }
+                ],
+            }
+        },
+        "aws_route_table_association": {
+            "public": {
+                "subnet_id": "${aws_subnet.public.id}",
+                "route_table_id": "${aws_route_table.public.id}",
+            }
+        },
+    }
+    value = package(resources, "CKV_AWS_130", "aws_subnet.public")
+    assert assess(value)["contextual-v2"]["remaining_blocking"] == 0
+    if conflict == "duplicate":
+        resources["aws_route_table"]["public"]["route"].append(
+            {
+                "cidr_block": "0.0.0.0/0",
+                "nat_gateway_id": "${aws_nat_gateway.nat.id}",
+            }
+        )
+    else:
+        resources["aws_route"] = {
+            "ambiguous": {
+                "count": "${var.count}",
+                "route_table_id": (
+                    "${var.choice ? aws_route_table.other.id : local.public_table}"
+                ),
+            }
+        }
+    assert (
+        assess(package(resources, "CKV_AWS_130", "aws_subnet.public"))["contextual-v2"][
+            "remaining_blocking"
+        ]
+        == 1
+    )

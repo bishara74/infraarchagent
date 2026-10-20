@@ -1,0 +1,198 @@
+{
+  "key": "1/fc77f4a8-0d04-4eb3-aba6-756eab6dbc80/security",
+  "change": "addressing",
+  "reason": "unchanged",
+  "before": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 135,
+        "message": "Invalid index"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 136,
+        "message": "Invalid index"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 138,
+        "message": "Invalid index"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "candidate": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 135,
+        "message": "Invalid index"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 136,
+        "message": "Invalid index"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 138,
+        "message": "Invalid index"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "invalid",
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 135,
+        "message": "Invalid index"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 136,
+        "message": "Invalid index"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 138,
+        "message": "Invalid index"
+      }
+    ],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_144",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log_bucket"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 1,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "introduced": [],
+  "removed": [],
+  "records": [],
+  "before_sha256": "039d704194a2fa1c031bccbb35676534aae68365b8b51cc8598f342e79c91c36",
+  "candidate_sha256": "039d704194a2fa1c031bccbb35676534aae68365b8b51cc8598f342e79c91c36",
+  "retained_sha256": "039d704194a2fa1c031bccbb35676534aae68365b8b51cc8598f342e79c91c36",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "039d704194a2fa1c031bccbb35676534aae68365b8b51cc8598f342e79c91c36",
+    "plan_sha256": "0b31c63b28217e976272b53ca2c104689d33627c74aa47d735eab7cbab430202",
+    "variant": "security",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

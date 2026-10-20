@@ -45,6 +45,11 @@ def repair_equivalents(
                 )
                 if not new or new in parent:
                     continue
+                if (
+                    new == "cidr_block"
+                    and {"cidr_ipv4", "cidr_blocks"} <= parent.keys()
+                ):
+                    continue
                 if old == "cidr_blocks":
                     if not isinstance(value, list) or len(value) != 1:
                         continue

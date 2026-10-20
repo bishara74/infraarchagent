@@ -1,0 +1,273 @@
+{
+  "key": "1/b0f4701c-ffff-420f-bebd-64df235c1187/cost",
+  "change": "formats",
+  "reason": "unchanged",
+  "before": {
+    "validation": "valid",
+    "failed_checks": [],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_260",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.nginx_sg"
+      },
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "CKV2_AWS_12",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main"
+      },
+      {
+        "rule_id": "CKV_AWS_378",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.prometheus_tg"
+      },
+      {
+        "rule_id": "CKV_AWS_378",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.grafana_tg"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "AWS-0077",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.private_sg"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.app_lb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "candidate": {
+    "validation": "valid",
+    "failed_checks": [],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_260",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.nginx_sg"
+      },
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "CKV2_AWS_12",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main"
+      },
+      {
+        "rule_id": "CKV_AWS_378",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.prometheus_tg"
+      },
+      {
+        "rule_id": "CKV_AWS_378",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.grafana_tg"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "AWS-0077",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.private_sg"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.app_lb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "observed": {
+    "validation": "valid",
+    "failed_checks": [],
+    "blockers": [
+      {
+        "rule_id": "CKV_AWS_260",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.nginx_sg"
+      },
+      {
+        "rule_id": "CKV_AWS_91",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "CKV2_AWS_12",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main"
+      },
+      {
+        "rule_id": "CKV_AWS_378",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.prometheus_tg"
+      },
+      {
+        "rule_id": "CKV_AWS_378",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.grafana_tg"
+      },
+      {
+        "rule_id": "AWS-0053",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb"
+      },
+      {
+        "rule_id": "AWS-0077",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres"
+      },
+      {
+        "rule_id": "AWS-0104",
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.private_sg"
+      }
+    ],
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "profiles": {
+      "strict": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": []
+      },
+      "contextual-v1": {
+        "checks_passed": false,
+        "remaining_blocking": 8,
+        "excepted": [],
+        "approval": "experimental; supervisor approval required"
+      },
+      "contextual-v2": {
+        "checks_passed": false,
+        "remaining_blocking": 7,
+        "excepted": [
+          {
+            "rule_id": "AWS-0053",
+            "file_path": "terraform/main.tf",
+            "resource": "aws_lb.app_lb",
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies."
+          }
+        ],
+        "approval": "experimental; supervisor approval required"
+      }
+    }
+  },
+  "introduced": [],
+  "removed": [],
+  "records": [],
+  "before_sha256": "cb9f0796edcd51910d13104d26395e81289e686ba04af50601c79677789e4642",
+  "candidate_sha256": "cb9f0796edcd51910d13104d26395e81289e686ba04af50601c79677789e4642",
+  "retained_sha256": "cb9f0796edcd51910d13104d26395e81289e686ba04af50601c79677789e4642",
+  "provenance": {
+    "evaluator_sha256": "c78b98356d2cb68507d68685920a97e3ce368514b36b553366d9ef0cbb181e7a",
+    "files_sha256": "3597cb1cec9f635b63048c997af627cbc80508b682982dbf19f7f6566d8a7e3e",
+    "plan_sha256": "9acda0e7834c768b08005b06a439c391306979823bf835ab53b0ea33d8a17fca",
+    "variant": "cost",
+    "versions": {
+      "terraform": "Terraform v1.16.4",
+      "helm": "v4.3.0+gbec5b06",
+      "hadolint": "Haskell Dockerfile Linter 2.15.1",
+      "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1",
+      "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)"
+    },
+    "scanner_versions": {
+      "checkov": {
+        "available": true,
+        "version": "3.3.21"
+      },
+      "trivy": {
+        "available": true,
+        "version": "Version: 0.69.3"
+      },
+      "terraform": {
+        "available": true,
+        "version": "Terraform v1.16.4"
+      }
+    },
+    "network_isolated": true,
+    "provider_manifest_sha256": "304d7eca8c96c442e11e39d27d50309405df8623462d22474f4687a6d84f74de",
+    "tool_timeout": 60,
+    "validation_deadline": 120,
+    "protocol": 2,
+    "assessment_evaluator_sha256": "66fc5888cc6d87597a583cd6b1f16c084be2074250853bb1f2dcc78403cdde31",
+    "secondary_assessment_recomputed": true
+  }
+}

@@ -9,7 +9,9 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 HELPERS = {
-    "name": '{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}',
+    "name": (
+        '{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}'
+    ),
     "fullname": """{{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -20,7 +22,10 @@ HELPERS = {
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}""",
-    "chart": '{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}',
+    "chart": (
+        '{{- printf "%s-%s" .Chart.Name .Chart.Version | re'
+        'place "+" "_" | trunc 63 | trimSuffix "-" }}'
+    ),
     "selectorLabels": """app.kubernetes.io/name: {{ include "PREFIX.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}""",
     "labels": """helm.sh/chart: {{ include "PREFIX.chart" . }}
@@ -59,6 +64,8 @@ def repair_formats(
                 isinstance(data, dict)
                 and isinstance(data.get("dashboard"), dict)
                 and set(data) <= {"dashboard", "overwrite", "meta"}
+                and ("overwrite" not in data or type(data["overwrite"]) is bool)
+                and ("meta" not in data or isinstance(data["meta"], dict))
             ):
                 dashboard = data["dashboard"]
                 if not isinstance(dashboard.get("panels"), list):

@@ -32,6 +32,68 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Replay findings and thesis follow-ups
+
+**Summary:** Publish the immutable pre-change baseline, all independent and
+cumulative candidate/retained observations, per-package deltas, measured context
+coverage and verification evidence. Complete evidence-driven edge cases and
+compact common provider-version guidance so complex plans retain nested shapes.
+
+**Requirements addressed:** FR-G-02, FR-S-02/04/09, FR-V-01/03/04, FR-UI-05,
+NFR-01.
+
+**Files:** scripts/phase9i_replay.py and phase9i_report.py; Phase 9i unit tests;
+schema_context.py; equivalents.py; formats.py; instances.py; addressing.py;
+profiles_v2.py; deterministic.py; quality reporting; docs/evals/phase9i-offline/;
+README; D-56 and thesis follow-ups; this log.
+
+**Decisions:** D-56. Preserve all original final-set/snapshot hashes and three
+missing variants. Fresh tool observations run in isolated temporary workspaces
+inside a Linux user/network namespace, with local mirrors and no downloads.
+Cache identities include package/plan/variant, evaluator, provider manifest,
+tool versions and configuration. Preserve execution fingerprints; recompute
+secondary policy assessments. Prove generator-only schema compaction leaves
+every validator function's AST unchanged, then refresh guidance sizes separately.
+No readiness/acceptance criteria, thresholds, deadlines, selectable profiles,
+dependencies or migrations change. No spec file is edited.
+
+**Measured replay:** 81 packages / 28 runs. Validity 23→45; strict passes 15→20;
+strict blockers 391→334; v1 370→329; v2 318→297. All 81 stored strict/v1
+assessments match exactly. All 648 independent/cumulative transformations match
+final candidate/retained hashes and are idempotent. Zero unknown scanner or
+Terraform verification outcomes and zero new retained strict findings.
+Equivalents: 31 retained, seven rejected without improvement. Addressing:
+17 packages, 42 findings removed. Defaults: 15 retention proposals retained,
+15 findings removed; no corpus default-SG candidate proves safe. Formats: two
+retained, twelve rejected with 189 newly observable strict findings, one without
+improvement; four of six Grafana wrappers roll back alongside helper proposals.
+Baseline validity/finding identities are unchanged; metadata flags, fourteen
+Helm diagnostic improvements and five finding-order differences are explicit.
+Schema contexts grow from 595–4,493 to 4,478–4,489 characters; total generation
+contexts from 999–5,503 to 4,889–5,668. Truncation 43/81→81/81; caps unchanged.
+
+**Tests:** `make lint` passed (28 scripts, 319 app/test files, mypy 161 sources,
+frontend ESLint/TypeScript). `make test`: 1,771 passed / 0 failed / 0 skipped,
+six performance tests deselected (340.61 s). Frontend suite: 113 passed / 0
+failed in 17 files. Stub Playwright E2E: seven passed / 0 failed (2.3m).
+Final guidance/report/acceptance regressions: 25 passed / 0 failed (2.49 s),
+including tiny caps, measured baselines, rejected strict blockers, unavailable
+verification and expired-budget audit records after full-suite collection.
+Python verification uses dotenv-disabled bootstrap and disposable PostgreSQL
+16.14 with synthetic credentials and unchanged app privileges. Scoped secret
+scan: zero findings; exact file count is in secret-scan.json. No real LLM calls,
+.env reads or push. Test logs and command scope are in verification.json.
+
+**Known gaps / follow-ups:** No cloud deployment or live model-quality/timing
+measurement. Larger guidance contexts remain truncated and may affect model
+latency/quality. Repair previews use the existing 16,000-character default;
+historical overrides cannot be recovered from saved packages. Replay evaluates
+approved logical changes, not a complete live loop with every legacy control.
+Unresolved consumers, variables and external modules remain conservative skips.
+Ranks 4, 6, 7 and 8 remain future work; KSV-0125 is registry trust. CloudFront VPC
+origins to an internal ALB remains the main future architectural option.
+
+
 ## 2026-10-20 — Phase 9i — Adjacent assessments in API, archives and UI
 
 **Summary:** Display strict/v1/v2 totals and profile-labelled exceptions, with

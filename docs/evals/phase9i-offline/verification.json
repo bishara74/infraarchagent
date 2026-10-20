@@ -1,0 +1,69 @@
+{
+  "dotenv_disabled": true,
+  "llm_provider": "stub",
+  "real_llm_calls": 0,
+  "database": {
+    "disposable": true,
+    "version": "PostgreSQL 16.14",
+    "synthetic_credentials": true,
+    "app_role_privileges_unchanged": true,
+    "container_removed_after_verification": true
+  },
+  "runtime": {
+    "python": "3.12.3",
+    "node": "24.21.0"
+  },
+  "commands": [
+    {
+      "command": "make lint",
+      "exit_code": 0,
+      "ruff_scripts": 28,
+      "ruff_app_tests_files": 319,
+      "mypy_source_files": 161,
+      "frontend_lint": true,
+      "log": "verification/lint.txt"
+    },
+    {
+      "command": "make test",
+      "passed": 1771,
+      "failed": 0,
+      "skipped": 0,
+      "perf_deselected": 6,
+      "seconds": 340.61,
+      "log": "verification/backend.txt"
+    },
+    {
+      "command": "npm --prefix frontend test -- --run",
+      "passed": 113,
+      "failed": 0,
+      "files": 17,
+      "source": "recorded terminal result during assessment UI change"
+    },
+    {
+      "command": "make test-e2e",
+      "passed": 7,
+      "failed": 0,
+      "duration": "2.3m",
+      "log": "verification/e2e.txt"
+    },
+    {
+      "command": "pytest -q tests/unit/test_secure_generation.py tests/unit/test_schema_context.py tests/unit/test_generator_schema.py tests/unit/test_phase9i_report.py tests/unit/test_phase9i_deterministic.py",
+      "passed": 25,
+      "failed": 0,
+      "seconds": 2.49,
+      "log": "verification/guidance-report.txt"
+    }
+  ],
+  "limitations": [
+    "No AWS deployment or live cloud plan",
+    "No real LLM generation/repair or pipeline deadline-quality measurement",
+    "Six performance tests explicitly deselected by make test; no threshold changes",
+    "Final guidance, baseline-report and deterministic-wrapper regressions have 25 focused passing tests after full-suite collection; validator AST unchanged"
+  ],
+  "logs_sha256": {
+    "backend.txt": "9cfdf9cdd6a0a4eead40c3352d580fb15c5b4a1ac8e0df7c913e41298eee40a2",
+    "e2e.txt": "1d03dd7f25228fce4e1f59f80fdeb47f0cb751504e1a5756e0333db33936797f",
+    "guidance-report.txt": "b517e9dc181bd3c08570b555a368ac5ba0ee3339d43bf557872674ea7bf5b67f",
+    "lint.txt": "9f6fe3194d802de3bfe92c1b02606ca86d673854a728860df147ee0037c04d28"
+  }
+}
