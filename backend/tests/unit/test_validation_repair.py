@@ -136,6 +136,9 @@ async def test_acceptance_and_atomic_rollback(counts, new, accepted, reason):
     assert (fixed.files != package.files) == (reason == "improved")
     assert report.summary.failed == (0 if reason == "improved" else 1)
     assert len(metadata.rounds) == 1
+    assert len(repair.security.scanner.inputs) == (
+        2 if reason in {"improved", "new_blocking_findings"} else 0
+    )
     call = repair.security.fix_agent.calls[0]
     assert call["validation_failures"][0]["check_id"] == "document.parse"
     assert set(call["validation_failures"][0]) == {
@@ -184,7 +187,7 @@ async def test_deadline_and_scan_failure_never_apply_patch():
     )
     assert fixed.files == package.files and metadata.rounds[0].reason == "deadline"
     assert not repair.security.fix_agent.calls
-    repair, ctx, package = setup([1], failure=True)
+    repair, ctx, package = setup([1, 0], failure=True)
     fixed, _, metadata = await repair.run(
         ctx,
         Variant.COST,

@@ -27,6 +27,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-20 — Phase 9h follow-up — Short-circuit rejected validation repairs
+
+**Summary:** Move baseline and candidate security scans after proposal, syntax
+and validation-improvement checks. Improved candidates still require both scans
+and the existing blocker comparison before acceptance.
+
+**Requirements addressed:** PR-01, FR-S-09, FR-V-03.
+
+**Files:** backend/app/agents/validation_repair.py;
+backend/tests/unit/test_validation_repair.py; docs/design-deviations.md.
+
+**Decisions:** D-54 records the execution-order optimization. Strict output,
+acceptance predicates, deadlines, readiness and partial-group limits are unchanged.
+No extra scan caching is introduced.
+
+**Tests:** Isolated scan-fix commit slice: 9 passed, 0 failed. Fresh combined
+validation-repair and telemetry checks: 25 passed, 0 failed. Full implementation
+verification: make test 1,673 passed, 0 failed,
+0 skipped, 6 deselected; make lint passed. Regressions cover rejected candidates
+avoiding scans, improved candidates retaining both scans, blocker rejection and
+scan failure rollback.
+
+**Known gaps / follow-ups:** Runtime savings remain counterfactual until rerun.
+No real LLM calls, dotenv reads or benchmark artifact changes.
+
 ## 2026-10-19 — Phase 9h section 8 — Record upgrade and verification evidence
 
 **Summary:** Finish the author upgrade/backup and encryption/provider/defaults/cache

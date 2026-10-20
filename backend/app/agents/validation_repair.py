@@ -139,7 +139,6 @@ class ValidationRepair:
             record = record.model_copy(update={"attempted": True})
             try:
                 async with asyncio.timeout(budget.remaining()):
-                    baseline = await scan_files(self.security.scanner, files, variant)
                     candidate, proposals, _ = await self.security._fix_pass(
                         ctx,
                         variant,
@@ -177,18 +176,22 @@ class ValidationRepair:
                     else:
                         candidate = self.security.safety.value(candidate)
                         checked = await validate_files(self.engine, ctx.plan, candidate)
-                        scanned = await scan_files(
-                            self.security.scanner, candidate, variant
-                        )
                         reason = (
                             "verification_unavailable"
                             if checked.summary.result == "error"
                             else "no_improvement"
                             if checked.summary.failed >= before
-                            else "new_blocking_findings"
-                            if fingerprints(scanned) - fingerprints(baseline)
                             else "improved"
                         )
+                        if reason == "improved":
+                            baseline = await scan_files(
+                                self.security.scanner, files, variant
+                            )
+                            scanned = await scan_files(
+                                self.security.scanner, candidate, variant
+                            )
+                            if fingerprints(scanned) - fingerprints(baseline):
+                                reason = "new_blocking_findings"
                         accepted = reason == "improved"
                         record = record.model_copy(
                             update={

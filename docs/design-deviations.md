@@ -1664,6 +1664,15 @@ using the same historical-label interpretation. Hydration failure replays from
 zero. The API returns history in pages of 500; current EventLog retrieval still
 loads the run history internally and is not a large-history optimization.
 
+### D-54 — Runtime attribution and rejected-repair scan short-circuit (Phase 9h follow-up)
+
+PR-01/05, FR-P-04, FR-S-03/09, FR-V-03 and NFR-01: validation repairs defer
+baseline/candidate scans until proposal/syntax checks pass and validation improves.
+Every improved candidate still passes both scans and the existing new-blocker
+comparison. Strict output, acceptance, partial-group limits, deadlines and
+readiness remain unchanged. This is an execution-order optimization, not a
+relaxation of the acceptance predicate.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
