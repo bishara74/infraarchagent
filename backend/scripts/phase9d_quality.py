@@ -454,6 +454,152 @@ def quality_table(
     return result, "\n".join(lines)
 
 
+def compact_phase9f(raw: object, redactor: RedactingFilter) -> dict:
+    """Only known source-free metrics survive historical compact reloading."""
+    keys = set(
+        (
+            "measured catalogue templates partial_groups "
+            "existing_file_proposals fixer_calls fixer_configurations "
+            "generator_checklist_chars generator_context_truncated "
+            "generation_syntax iteration_timings deadline_phases control "
+            "resource status reason rules template introduced_rules normalized"
+            " retained model provider reasoning findings resources path "
+            "normalizations rounds regeneration fix_attempt_timeout_seconds "
+            "iteration_timeout_seconds security_stage_timeout_seconds "
+            "fix_max_resources fix_max_findings partial_max_groups kept "
+            "discarded unevaluated unknown scan_seconds construction_seconds "
+            "syntax_verification_seconds terraform_verification_seconds "
+            "security_verification_seconds cancellation_seconds "
+            "restoration_seconds publication_seconds iteration_elapsed_seconds"
+            " deadline_overrun_seconds fault_recovery_seconds "
+            "complete_iteration workspace event_publication "
+            "closing_state_event"
+        ).split()
+    )
+
+    def clean(value):
+        if isinstance(value, dict):
+            return {
+                key: clean(item)
+                for key, item in value.items()
+                if key in keys
+                or re.fullmatch(r"(?:CKV[A-Z0-9_]*|AWS-[0-9]+|KSV-[0-9]+)", key)
+            }
+        if isinstance(value, list):
+            return [clean(item) for item in value]
+        if isinstance(value, str):
+            return safe_text(value, redactor)
+        return value if value is None or type(value) in {bool, int, float} else None
+
+    return clean(raw) if isinstance(raw, dict) else {}
+
+
+def compact_snapshot(raw: dict, redactor: RedactingFilter) -> dict:
+    """Re-allowlist saved compact data without discarding measured extensions."""
+    extra = raw.get("phase9e", {})
+    # Re-allowlist historical compact data before exporting it.
+    pseudo = {
+        "status": raw.get("status"),
+        "legacy_label_mapped": raw.get("legacy_label_mapped") is True,
+        "review_reasons": raw.get("review_reasons", []),
+        "validation_report": {
+            "summary": {"result": raw.get("validation_result")},
+            "checks": [{**c, "status": "failed"} for c in raw.get("failed_checks", [])],
+            "remediation": {
+                "initialization": extra.get("initialization"),
+                "generator_schema_context_chars": extra.get(
+                    "generator_schema_context_chars"
+                ),
+                "rounds": extra.get("repair_rounds", []),
+                "measurements": extra.get("measurements", []),
+                "gate": {
+                    "outcome": extra.get("gate_outcome"),
+                    "failed_checks": extra.get("gate_failed_checks", []),
+                    "terraform": [
+                        {"init_outcome": c} for c in extra.get("init_categories", [])
+                    ],
+                },
+            },
+        },
+        "security_report": {
+            "iterations": [
+                *[
+                    {"verification": v}
+                    for v in extra.get("security_iteration_repairs", [])
+                ],
+                {
+                    "fixes": [
+                        {
+                            "schema_context_chars": r.get("chars"),
+                            "schema_context_reason": r.get("reason"),
+                            "file": "terraform/context.tf"
+                            if r.get("file_type") == "terraform"
+                            else "other"
+                            if r.get("file_type") == "other"
+                            else None,
+                        }
+                        for r in extra.get("security_context_measurements", [])
+                    ]
+                    if "security_context_measurements" in extra
+                    else [
+                        {"schema_context_chars": n}
+                        for n in extra.get("security_schema_context_chars", [])
+                    ]
+                },
+            ],
+            "final": {
+                "outcome": "clean"
+                if raw.get("status") == "checks_passed"
+                else "exhausted",
+                "remaining_blocking": [
+                    {"rule_id": rule}
+                    for rule, count in raw.get("remaining_findings", {}).items()
+                    for _ in range(count)
+                ],
+            },
+        },
+    }
+    result = quality_snapshot(pseudo, redactor)
+    result["fixer_attempts"] = compact_evidence(raw.get("fixer_attempts"))
+    for key in result["counts"]:
+        value = raw.get("counts", {}).get(key)
+        if type(value) is int and value >= 0:
+            result["counts"][key] = value
+    result["phase9f"] = compact_phase9f(raw.get("phase9f"), redactor)
+    if (
+        raw.get("status") == "production_ready"
+        and raw.get("validation_result") == "valid"
+        and not raw.get("remaining_findings")
+    ):
+        result["status"] = "checks_passed"
+    profiles = raw.get("profile_assessments", {})
+    result["profile_assessments"] = {}
+    for name in ("strict", "contextual-v1"):
+        view = profiles.get(name)
+        if not isinstance(view, dict):
+            continue
+        result["profile_assessments"][name] = {
+            "checks_passed": view.get("checks_passed") is True,
+            "remaining_blocking": max(0, view.get("remaining_blocking", 0)),
+            "excepted": [
+                {
+                    key: safe_text(entry[key], redactor)
+                    for key in (
+                        "rule_id",
+                        "file_path",
+                        "resource",
+                        "classification",
+                        "entry_id",
+                        "justification",
+                    )
+                    if key in entry
+                }
+                for entry in view.get("excepted", [])
+            ],
+        }
+    return result
+
+
 def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) -> None:
     results_dir, snapshots_dir, output_dir = (
         p.resolve() for p in (results_dir, snapshots_dir, output_dir)
@@ -491,89 +637,7 @@ def recompute_quality(results_dir: Path, snapshots_dir: Path, output_dir: Path) 
                 path = compact / f"{variant}.json"
                 if path.is_file():
                     raw = json.loads(path.read_text())
-                    extra = raw.get("phase9e", {})
-                    # Re-allowlist historical compact data before exporting it.
-                    pseudo = {
-                        "status": raw.get("status"),
-                        "legacy_label_mapped": raw.get("legacy_label_mapped") is True,
-                        "review_reasons": raw.get("review_reasons", []),
-                        "validation_report": {
-                            "summary": {"result": raw.get("validation_result")},
-                            "checks": [
-                                {**c, "status": "failed"}
-                                for c in raw.get("failed_checks", [])
-                            ],
-                            "remediation": {
-                                "initialization": extra.get("initialization"),
-                                "generator_schema_context_chars": extra.get(
-                                    "generator_schema_context_chars"
-                                ),
-                                "rounds": extra.get("repair_rounds", []),
-                                "measurements": extra.get("measurements", []),
-                                "gate": {
-                                    "outcome": extra.get("gate_outcome"),
-                                    "failed_checks": extra.get(
-                                        "gate_failed_checks", []
-                                    ),
-                                    "terraform": [
-                                        {"init_outcome": c}
-                                        for c in extra.get("init_categories", [])
-                                    ],
-                                },
-                            },
-                        },
-                        "security_report": {
-                            "iterations": [
-                                *[
-                                    {"verification": v}
-                                    for v in extra.get("security_iteration_repairs", [])
-                                ],
-                                {
-                                    "fixes": [
-                                        {
-                                            "schema_context_chars": r.get("chars"),
-                                            "schema_context_reason": r.get("reason"),
-                                            "file": "terraform/context.tf"
-                                            if r.get("file_type") == "terraform"
-                                            else "other"
-                                            if r.get("file_type") == "other"
-                                            else None,
-                                        }
-                                        for r in extra.get(
-                                            "security_context_measurements", []
-                                        )
-                                    ]
-                                    if "security_context_measurements" in extra
-                                    else [
-                                        {"schema_context_chars": n}
-                                        for n in extra.get(
-                                            "security_schema_context_chars", []
-                                        )
-                                    ]
-                                },
-                            ],
-                            "final": {
-                                "outcome": "clean"
-                                if raw.get("status") == "checks_passed"
-                                else "exhausted",
-                                "remaining_blocking": [
-                                    {"rule_id": rule}
-                                    for rule, count in raw.get(
-                                        "remaining_findings", {}
-                                    ).items()
-                                    for _ in range(count)
-                                ],
-                            },
-                        },
-                    }
-                    current[variant] = quality_snapshot(pseudo, redactor)
-                    current[variant]["fixer_attempts"] = compact_evidence(
-                        raw.get("fixer_attempts")
-                    )
-                    for key in current[variant]["counts"]:
-                        value = raw.get("counts", {}).get(key)
-                        if type(value) is int and value >= 0:
-                            current[variant]["counts"][key] = value
+                    current[variant] = compact_snapshot(raw, redactor)
             missing += 3 - len(current)
         else:
             unavailable += 1

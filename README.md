@@ -1340,3 +1340,20 @@ not real-provider reliability or deployment quality.
 
 Phase 9h verification results and limitations are recorded in the
 [isolated verification report](docs/evals/phase9h-verification-20261019/summary.md).
+
+## Reproducing the evaluation
+
+Phase 9b adds `make eval-report`. It reads evidence blobs from Git HEAD, never
+`.cache`, dirty or untracked evidence. To preserve immutable evidence, the default
+`docs/evals/phase9-final-report/` must not exist when generating. Reproduce a
+committed report into a fresh destination with:
+
+```sh
+make eval-report EVAL_REPORT_ARGS="--revision INPUT_REVISION --output-dir /tmp/infraarch-eval-reproduction"
+```
+
+Use the input revision from `input-manifest.json`; compare report/CSV contents
+and SHA-256 input hashes. No provider, database, dotenv, scanner execution,
+installation or network service is needed for report generation. Run with the
+already-installed backend environment. See D-55 for descriptive statistics,
+run clustering and the counts-only supplemental evidence provenance.

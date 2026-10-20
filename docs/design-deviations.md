@@ -1692,6 +1692,29 @@ Offline replay and counterfactual PR-01 estimates are documented in
 phase9-runtime-attribution.md. No additional scan caching or duplicate-group
 optimization is implemented; those remain proposals pending measurement.
 
+### D-55 — Final evaluation method and descriptive statistics (Phase 9b)
+
+PR-01/03/04/05, NFR-01/02: the final report reads immutable committed evidence,
+records SHA-256 inputs and never rewrites historical benchmark folders. Only the
+two matched final sets are pooled. Missing variants are disclosed and excluded
+from generated-package rates. Historical contextual assessments remain unknown
+unless stored; they are experimental and never alter strict readiness (D-48).
+Wilson 95% intervals and probability-ordered two-sided Fisher exact tests use
+standard-library arithmetic. Package-level independence is unrealistic because
+three variants share one plan; p-values are optimistic and descriptive. An
+adjacent run-level sensitivity includes complete failed runs and counts runs
+with at least one passing package. Repeated prompts still limit inference.
+The schedule is fourteen runs across three prompt texts per final set, not
+fourteen distinct prompts. No threshold or acceptance guard changes.
+
+The author approved a counts-and-identifiers-only supplemental folder projected
+from read-only cached snapshots: source filenames/hashes, run/variant IDs and
+proposal acceptance counts. No generated content, diffs, prompts, model outputs
+or secrets are exported. Its built-in secret scan precedes commitment. Reporter
+execution reads the committed supplement rather than cached inputs. Proposals
+are distinct from LLM attempts and verified retained changes. Full historical
+attempt and reasoning coverage stays unknown.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

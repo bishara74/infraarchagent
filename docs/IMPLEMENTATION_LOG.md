@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+
+## 2026-10-20 — Phase 9b section 1 — Reproduce final evidence and statistics
+
+**Summary:** Add committed-evidence report tooling, Wilson/Fisher calculations,
+exact-text prompt/variant breakdowns and run-level clustering sensitivity. Extract
+lossless allowlisted compact quality loading and create the approved counts-only
+proposal supplement with source SHA-256 provenance and a zero-finding secret scan.
+
+**Requirements addressed:** PR-01, PR-03, PR-05, FR-V-04, NFR-01.
+
+**Files:** phase9b report/statistics/supplement scripts; phase9d quality loader;
+report unit tests; Makefile; README; D-55; phase9b-supplement evidence.
+
+**Decisions:** D-55. Final report is generated after all section inputs are
+committed. Only final sets are pooled; three prompt texts repeat across fourteen
+runs. Cached snapshots remain read-only and never committed. No dependency,
+threshold, policy or readiness changes.
+
+**Tests:** Focused report/quality checks: 16 passed, 0 failed, 0 skipped.
+An initial boundary assertion failed on floating-point all-pass Wilson output;
+explicit exact endpoints corrected it. Supplement: 119 package records;
+secret scan 0 findings / 0 errors. Full verification follows in section 6.
+
+**Known gaps / follow-ups:** Historical unmeasured attempts stay unknown;
+run-level test does not remove repeated-prompt/provider dependence. PR-03 and
+PR-04 failure evidence is preserved. Final report generation and full suite pending.
+
 ## 2026-10-20 — Phase 9h follow-up — Record offline replay and runtime estimates
 
 **Summary:** Add offline fixed-input replay and generation-barrier-aware

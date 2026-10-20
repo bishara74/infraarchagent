@@ -133,3 +133,7 @@ prepare-db-tools:
 
 db-tools:
 	docker compose --profile tools up -d --pull never pgadmin
+
+.PHONY: eval-report
+eval-report:
+	$(BACKEND) .venv/bin/python -m scripts.phase9b_report $(EVAL_REPORT_ARGS)
