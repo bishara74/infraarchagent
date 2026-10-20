@@ -32,6 +32,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Isolated contextual-v2 assessment
+
+**Summary:** Add literal listener normalisation, HTTPS-only ALBs, explicit
+TLS-1.2+ NLB policy evidence, bounded subnet associations and SG source/attachment
+separation in a new experimental evaluator and profile.
+
+**Requirements addressed:** FR-S-04, FR-UI-05, NFR-01.
+
+**Files:** security/profiles.py, profiles_v2.py and profiles/contextual-v2.json;
+tests/unit/test_phase9i_profiles.py; this log.
+
+**Decisions:** D-56. v1 predicate implementation and JSON unchanged; v2 never
+participates in strict labels or acceptance. No selectable-profile or DB changes.
+NLB protocol mapping cites the AWS protocol tables; unknown policies fail closed.
+
+**Tests:** Profile tests: 62 passed / 0 failed / 0 skipped (0.34 s). All 81 saved
+snapshots reproduce stored strict/v1 assessment dictionaries exactly. Original
+blocker totals: strict 391, v1 370, v2 318. Mypy: 161 sources clean.
+
+**Known gaps / follow-ups:** These are policy-only changes; infrastructure
+security and official readiness do not improve from an exception assessment.
+
+
 ## 2026-10-20 — Phase 9i — Guarded VPC and RDS defaults
 
 **Summary:** Propose seven-day backup retention while preserving longer or

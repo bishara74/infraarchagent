@@ -17,7 +17,7 @@ from app.security.terraform import (
 )
 from app.validation.documents import blocks
 
-PROFILE_IDS = ("strict", "contextual-v1")
+PROFILE_IDS = ("strict", "contextual-v1", "contextual-v2")
 LB_TYPES = {"aws_lb", "aws_alb"}
 LISTENERS = {"aws_lb_listener", "aws_alb_listener"}
 RULES = {
@@ -359,7 +359,7 @@ class Evidence:
         return False
 
 
-def assess(
+def assess_v1(
     package: Mapping[str, Any], files: Mapping[str, str] | None = None
 ) -> dict[str, Any]:
     final = security_final(package.get("security_report"))
@@ -414,4 +414,19 @@ def assess(
             "excepted": exceptions,
             "approval": "experimental; supervisor approval required",
         },
+    }
+
+
+def assess(
+    package: Mapping[str, Any], files: Mapping[str, str] | None = None
+) -> dict[str, Any]:
+    """Add v2 without changing the frozen strict/v1 evaluator."""
+    from app.security.profiles_v2 import assess_v2
+
+    legacy = assess_v1(package, files)
+    return {
+        **legacy,
+        "contextual-v2": assess_v2(
+            package, files if files is not None else package.get("files") or {}, legacy
+        ),
     }
