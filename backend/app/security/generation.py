@@ -15,6 +15,10 @@ SERVICE_TYPES = {
     "fargate": {"aws_ecs_service", "aws_ecs_task_definition"},
     "rds": {"aws_db_instance"},
     "s3": {"aws_s3_bucket"},
+    "cloudfront": {
+        "aws_cloudfront_distribution",
+        "aws_cloudfront_origin_access_control",
+    },
     "alb": {"aws_lb", "aws_lb_listener"},
     "elb": {"aws_lb", "aws_lb_listener"},
     "nlb": {"aws_lb", "aws_lb_listener"},
@@ -30,7 +34,16 @@ def plan_resource_types(plan: DeploymentPlan) -> set[str]:
             if token in tokens:
                 types.update(selected)
         if tokens & {"ec2", "eks", "ecs", "fargate", "rds", "alb", "elb", "nlb"}:
-            types.update({"aws_vpc", "aws_subnet", "aws_security_group"})
+            types.update(
+                {
+                    "aws_vpc",
+                    "aws_subnet",
+                    "aws_security_group",
+                    "aws_route_table",
+                    "aws_route_table_association",
+                    "aws_internet_gateway",
+                }
+            )
         if "load" in tokens and "balancer" in tokens:
             types.update({"aws_lb", "aws_lb_listener", "aws_subnet", "aws_vpc"})
     for storage in plan.storage:

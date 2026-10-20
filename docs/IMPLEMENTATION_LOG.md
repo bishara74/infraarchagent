@@ -32,6 +32,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Schema grounding and Terraform equivalents
+
+**Summary:** Include optional attribute names/types and nested block shapes in
+balanced, version-labelled guidance. Add only documented RDS-name, route-CIDR
+and listener-condition equivalents, retaining values and unrelated source.
+
+**Requirements addressed:** FR-G-02, FR-V-01/03, FR-S-09, NFR-01.
+
+**Files:** validation/equivalents.py and schema_context.py; security/generation.py;
+agents/deterministic.py and validation_repair.py; domain/validation.py;
+tests/unit/test_phase9i_equivalents.py; this log.
+
+**Decisions:** D-56. Existing strict candidate guard and validation-improvement
+checks decide retention. Conflicts and other unsupported arguments stay for
+schema-grounded LLM repair. No LLM calls were made. Caps remain unchanged.
+
+**Tests:** Focused schema/generation/equivalence/repair tests: 29 passed,
+0 failed, 0 skipped (4.45 s). Mypy passed before the final guidance coverage
+addition. Final full checks and per-change replay remain scheduled.
+
+**Known gaps / follow-ups:** Offline guidance changes are measured by context
+size/coverage, not attributed generated-package improvements without inference.
+
+
 ## 2026-10-20 — Phase 9i — Immutable offline replay baseline
 
 **Summary:** Add a settings-free replay runner and immutable input inventory;

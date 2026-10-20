@@ -5,12 +5,18 @@ import time
 from typing import Literal
 
 from app.agents.budget import AgentBudget
+from app.agents.deterministic import checked_repairs
 from app.agents.remediation import ValidationService, scan_files, validate_files
 from app.agents.security.agent import SecurityAgent
 from app.core.telemetry import scope
 from app.domain.enums import AgentName, PackageStatus, Variant
 from app.domain.models import IaCPackage, Violation
-from app.domain.validation import RemediationReport, RepairRound, ValidationReport
+from app.domain.validation import (
+    DeterministicRepair,
+    RemediationReport,
+    RepairRound,
+    ValidationReport,
+)
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
 from app.pipeline.telemetry import traced
@@ -67,6 +73,19 @@ class ValidationRepair:
             and not workspace.observed
         ):
             workspace.observe(list(report.checks), "generated", files)
+        if report.summary.result == "invalid":
+            repaired, report, records = await checked_repairs(
+                files, ctx.plan, variant, report, self.engine, self.security, budget
+            )
+            files = repaired
+            metadata = metadata.model_copy(
+                update={
+                    "deterministic_repairs": [
+                        *metadata.deterministic_repairs,
+                        *(DeterministicRepair.model_validate(r) for r in records),
+                    ]
+                }
+            )
         history = list(metadata.rounds)
         if report.abort_reason == "deadline":
             history.append(

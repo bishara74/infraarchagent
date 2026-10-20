@@ -349,18 +349,7 @@ def generator_schema_context(
             index = index_for("aws", version, directory)
             schema = index.resource_schema(name)
             if schema:
-                summary = brief_schema(schema)
-                small = {
-                    "required": summary["required"],
-                    "blocks": {
-                        n: {
-                            k: v
-                            for k, v in b.items()
-                            if k in {"nesting_mode", "min_items", "max_items"}
-                        }
-                        for n, b in summary["blocks"].items()
-                    },
-                }
+                small = generation_shape(schema)
                 profiles.setdefault(json.dumps(small, sort_keys=True), []).append(
                     version
                 )
@@ -368,4 +357,130 @@ def generator_schema_context(
             {"type": name, "versions": versions, "schema": json.loads(raw)}
             for raw, versions in profiles.items()
         )
-    return bounded_entries(entries, limit)
+    # Keep a version-labelled skeleton for every selected type before spending
+    # the remaining cap on optional fields. Never let one large RDS schema
+    # displace every subsequent network/compute resource.
+    retained: list[dict[str, Any]] = []
+    pending = []
+    for entry in entries:
+        schema = entry["schema"]
+        skeleton = {
+            **entry,
+            "schema": {"required": schema["required"], "optional": {}, "blocks": {}},
+            "truncated": True,
+        }
+        if len(json.dumps([*retained, skeleton], separators=(",", ":"))) <= limit:
+            retained.append(skeleton)
+            pending.append(
+                (
+                    skeleton,
+                    list(schema["optional"].items()),
+                    list(schema["blocks"].items()),
+                )
+            )
+    for section, part in (
+        ("optional", "priority"),
+        ("blocks", "all"),
+        ("optional", "rest"),
+    ):
+        queues = []
+        for entry, optional, nested_blocks in pending:
+            ordered = sorted(
+                optional,
+                key=lambda item: (
+                    GUIDANCE_PRIORITY.index(item[0])
+                    if item[0] in GUIDANCE_PRIORITY
+                    else len(GUIDANCE_PRIORITY),
+                    item[0],
+                ),
+            )
+            nested_blocks = sorted(
+                nested_blocks,
+                key=lambda item: (
+                    GUIDANCE_PRIORITY.index(item[0])
+                    if item[0] in GUIDANCE_PRIORITY
+                    else len(GUIDANCE_PRIORITY),
+                    item[0],
+                ),
+            )
+            queue = (
+                nested_blocks
+                if section == "blocks"
+                else ordered[:6]
+                if part == "priority"
+                else ordered[6:]
+            )
+            queues.append((entry, list(queue)))
+        while any(queue for _, queue in queues):
+            for entry, queue in queues:
+                if not queue:
+                    continue
+                name, shape = queue.pop(0)
+                entry["schema"][section][name] = shape
+                if len(json.dumps(retained, separators=(",", ":"))) > limit:
+                    del entry["schema"][section][name]
+    for entry, optional, nested_blocks in pending:
+        entry["truncated"] = len(entry["schema"]["optional"]) != len(optional) or len(
+            entry["schema"]["blocks"]
+        ) != len(nested_blocks)
+    return json.dumps(retained, separators=(",", ":")) if retained else ""
+
+
+GUIDANCE_PRIORITY = (
+    "db_name",
+    "backup_retention_period",
+    "multi_az",
+    "storage_encrypted",
+    "internal",
+    "load_balancer_type",
+    "map_public_ip_on_launch",
+    "subnet_id",
+    "subnet_ids",
+    "vpc_id",
+    "security_groups",
+    "network_configuration",
+    "assign_public_ip",
+    "cidr_block",
+    "gateway_id",
+    "port",
+    "protocol",
+    "certificate_arn",
+    "ssl_policy",
+    "drop_invalid_header_fields",
+)
+
+
+def generation_shape(schema: dict[str, Any], depth: int = 0) -> dict[str, Any]:
+    def order(name: str) -> tuple[int, str]:
+        return (
+            GUIDANCE_PRIORITY.index(name)
+            if name in GUIDANCE_PRIORITY
+            else len(GUIDANCE_PRIORITY),
+            name,
+        )
+
+    attrs = schema.get("attributes", {})
+    return {
+        "required": {
+            n: a.get("type", a.get("nested_type"))
+            for n, a in sorted(attrs.items())
+            if a.get("required")
+        },
+        "optional": {
+            n: attrs[n].get("type", attrs[n].get("nested_type"))
+            for n in sorted(attrs, key=order)
+            if attrs[n].get("optional")
+        },
+        "blocks": {
+            n: {
+                "mode": b["nesting_mode"],
+                **({"min": b["min_items"]} if b.get("min_items") else {}),
+                **({"max": b["max_items"]} if b.get("max_items") else {}),
+                **generation_shape(b["block"], depth + 1),
+            }
+            for n, b in sorted(
+                schema.get("block_types", {}).items(), key=lambda item: order(item[0])
+            )
+            if depth < 2
+        },
+    }

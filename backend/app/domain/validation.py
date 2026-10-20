@@ -126,11 +126,16 @@ class DeterministicRepair(BaseModel):
         "empty_default_security_group_rule",
         "flow_log_placeholders",
         "multiline_arguments",
+        "db_name",
+        "route_cidr",
+        "listener_path_pattern",
     ]
     name: str
     line: int | None = None
     before_hash: str | None = None
     after_hash: str | None = None
+    outcome: Literal["accepted", "rejected", "skipped"] | None = None
+    reason: str | None = None
 
 
 class RepairRound(BaseModel):
