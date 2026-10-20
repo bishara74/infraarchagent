@@ -1731,6 +1731,11 @@ The quiet session maximum is 0.721118 s; historical failures remain failures.
 No clear auth bottleneck justifies a runtime fix. PR-03's revised wording is an
 unadopted supervisor-review draft in phase9b-performance-gaps.md.
 
+Benchmark CSV exports now use explicit bounded columns and a results.json row
+reference. Large runtime/attempt detail stays in JSON. Historical oversized CSV
+readers raise and restore the parser field limit; historical files are untouched.
+LF CSV output avoids Git newline normalization changing reproduction bytes.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

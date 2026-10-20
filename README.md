@@ -1357,3 +1357,10 @@ and SHA-256 input hashes. No provider, database, dotenv, scanner execution,
 installation or network service is needed for report generation. Run with the
 already-installed backend environment. See D-55 for descriptive statistics,
 run clustering and the counts-only supplemental evidence provenance.
+
+Benchmark `results.csv` is a compact index with explicit columns and bounded
+cells (16 KiB maximum). Full `telemetry`, `runtime_attribution`, detailed attempts
+and any omitted oversized compact value remain in `results.json`; `details_json`
+identifies the original row. Small format/token/deadline summaries remain in CSV.
+Readers accept historical CSV cells above 128 KiB without rewriting old evidence.
+New CSV exports use LF newlines for byte-stable committed reproductions.

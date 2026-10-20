@@ -2,7 +2,6 @@
 
 import argparse
 import asyncio
-import csv
 import json
 import math
 import os
@@ -33,7 +32,7 @@ from scripts.phase9_budget import (
     numeric,
 )
 from scripts.phase9_common import ROOT, evidence_directory, safe_main, write_json
-from scripts.phase9_report import statistics_for, summary, write_csv
+from scripts.phase9_report import read_csv, statistics_for, summary, write_csv
 from scripts.phase9c_metrics import (
     FAILURES,
     attempt_details,
@@ -66,6 +65,69 @@ EVENT_KINDS = {
     "plan_created",
 }
 VARIANTS = ("cost", "performance", "security")
+
+
+CSV_FIELDS = [
+    "measurement",
+    "run_id",
+    "prompt",
+    "mode",
+    "seconds",
+    "complete",
+    "run_status",
+    "provider",
+    "model",
+    "cost_usd",
+    "cost_attribution",
+    "cost_before_usd",
+    "cost_after_usd",
+    "remaining_before_usd",
+    "remaining_after_usd",
+    "ratio_to_baseline",
+    "ratio_to_pr01_prompt_median",
+    "pr01_prompt_median_seconds",
+    "pr01_reference_count",
+    "cost_variant_status",
+    "performance_variant_status",
+    "security_variant_status",
+    "generator_llm_attempts",
+    "generator_attempt_count",
+    "generator_attempts_by_format_reason",
+    "generator_output_tokens_per_attempt",
+    "generator_deadlines",
+    "failure_categories",
+    "generator_input_tokens",
+    "generator_output_tokens",
+    "fixer_input_tokens",
+    "fixer_output_tokens",
+    "prompt_index",
+    "role",
+    "execution_status",
+    "policy_profile",
+    "fixer_attempt_count",
+    "details_json",
+]
+
+
+def compact_csv_rows(rows: list[dict]) -> list[dict]:
+    """Bound cells, retaining complete original records in results.json."""
+    result = []
+    for index, row in enumerate(rows):
+        compact = {"details_json": f"results.json#runs/{index}"}
+        for key in CSV_FIELDS:
+            if key not in row or key == "details_json":
+                continue
+            value = row[key]
+            encoded = (
+                json.dumps(value, sort_keys=True)
+                if isinstance(value, (dict, list))
+                else value
+            )
+            compact[key] = (
+                None if isinstance(encoded, str) and len(encoded) > 16_384 else encoded
+            )
+        result.append(compact)
+    return result
 
 
 def prompts() -> list[str]:
@@ -391,54 +453,8 @@ class Harness:
         write_json(self.output / "events.json", self.events)
         write_csv(
             self.output / "results.csv",
-            [
-                {
-                    key: json.dumps(value, sort_keys=True)
-                    if isinstance(value, (dict, list))
-                    else value
-                    for key, value in row.items()
-                }
-                for row in self.rows
-            ],
-            list(
-                dict.fromkeys(
-                    [
-                        "measurement",
-                        "run_id",
-                        "prompt",
-                        "mode",
-                        "seconds",
-                        "complete",
-                        "run_status",
-                        "provider",
-                        "model",
-                        "cost_usd",
-                        "cost_attribution",
-                        "cost_before_usd",
-                        "cost_after_usd",
-                        "remaining_before_usd",
-                        "remaining_after_usd",
-                        "ratio_to_baseline",
-                        "ratio_to_pr01_prompt_median",
-                        "pr01_prompt_median_seconds",
-                        "pr01_reference_count",
-                        "cost_variant_status",
-                        "performance_variant_status",
-                        "security_variant_status",
-                        "generator_llm_attempts",
-                        "generator_attempt_count",
-                        "generator_attempts_by_format_reason",
-                        "generator_output_tokens_per_attempt",
-                        "generator_deadlines",
-                        "failure_categories",
-                        "generator_input_tokens",
-                        "generator_output_tokens",
-                        "fixer_input_tokens",
-                        "fixer_output_tokens",
-                    ]
-                    + [key for row in self.rows for key in row]
-                )
-            ),
+            compact_csv_rows(self.rows),
+            CSV_FIELDS,
         )
         write_csv(
             self.output / "agents.csv",
@@ -1264,8 +1280,7 @@ def load_reference(path: Path | None) -> list[dict] | None:
         raise ValueError("Reference must be a CSV or JSON measurement report")
     if path.suffix == ".json":
         return json.loads(path.read_text())["runs"]
-    with path.open(newline="") as handle:
-        rows = list(csv.DictReader(handle))
+    rows = read_csv(path)
     for row in rows:
         row["complete"] = row["complete"] == "True"
         row["seconds"] = float(row["seconds"]) if row["seconds"] else None

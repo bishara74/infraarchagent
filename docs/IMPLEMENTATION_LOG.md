@@ -30,6 +30,29 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9b section 4 — Keep benchmark CSV compact
+
+**Summary:** Export an explicit bounded CSV index while retaining complete runtime
+and attempt detail in results.json. Historical reference readers accept cells
+larger than 128 KiB and restore the process CSV limit afterward.
+
+**Requirements addressed:** PR-01, NFR-01.
+
+**Files:** benchmark.py; phase9_report.py; test_phase9b_csv.py; README; D-55.
+
+**Decisions:** Compact columns retain existing small format/token/deadline fields;
+oversized values become empty with a details_json original-row reference. Unknown
+future row fields cannot silently inflate CSV. JSON retains exact full records.
+New CSV uses LF for stable Git reproduction; historical evidence is unchanged.
+
+**Tests:** CSV/benchmark/runtime focused suite: 42 passed, 0 failed, 0 skipped.
+Final LF/oversized-reader focused rerun: 2 passed, 0 failed, 0 skipped. Regressions
+exercise 262,535-character historical telemetry, malformed references, limit
+restoration, compact bounded output, retained JSON and JSON/CSV equivalence.
+
+**Known gaps / follow-ups:** Existing large historical exports remain large by
+design. Full verification follows in section 6.
+
 ## 2026-10-20 — Phase 9b section 3 — Measure download auth and document gaps
 
 **Summary:** Add offline loopback-HTTP PR-04 attribution against disposable

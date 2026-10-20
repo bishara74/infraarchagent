@@ -3,6 +3,7 @@
 import csv
 import math
 import statistics
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -23,7 +24,7 @@ def write_csv(
     columns = fields or list(dict.fromkeys(key for row in rows for key in row))
     temporary = path.with_suffix(".csv.tmp")
     with temporary.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=columns)
+        writer = csv.DictWriter(handle, fieldnames=columns, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     temporary.replace(path)
@@ -33,3 +34,20 @@ def summary(path: Path, title: str, status: str, lines: list[str]) -> None:
     path.write_text(
         f"# {title}\n\nStatus: **{status}**\n\n" + "\n\n".join(lines) + "\n"
     )
+
+
+def read_csv(path: Path) -> list[dict[str, str]]:
+    """Historical telemetry cells exceed the stdlib's default 128 KiB limit."""
+    previous = csv.field_size_limit()
+    limit = sys.maxsize
+    while True:
+        try:
+            csv.field_size_limit(limit)
+            break
+        except OverflowError:
+            limit //= 10
+    try:
+        with path.open(newline="") as handle:
+            return list(csv.DictReader(handle))
+    finally:
+        csv.field_size_limit(previous)
