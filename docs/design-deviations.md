@@ -1779,6 +1779,13 @@ No permission-changing init containers or PVC ownership changes are introduced.
 Linux controls skip explicitly Windows pods. Catalogue construction is separate
 from integration; existing guards remain the sole authority for retention.
 
+Image configuration follow-up: literal Helm images gain repository/tag/digest
+values under `infraarchImages`, preserving their rendered identity exactly.
+Existing bindings and plain manifest images survive. Blank/latest tags remain
+blocking (CKV_K8S_14 / KSV-0013); parameterisation alone does not resolve
+KSV-0125 registry trust. No registry, digest or version is invented. KSV-0117
+(low ports) is outside this catalogue; ports, probes and Services are unchanged.
+
 Offline evidence lives in `docs/evals/phase9i-offline/`. Its input manifest
 hashes all 81 generated packages from the two final sets, retaining three
 missing variants. Stored results and fresh observations are distinct. The

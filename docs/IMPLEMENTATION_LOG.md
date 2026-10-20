@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-20 — Phase 9i — Honest image configuration
+
+**Summary:** Parameterise literal Helm images with operator repository/tag/digest
+values while preserving rendered identities, including blank/latest tags.
+
+**Requirements addressed:** FR-S-04, FR-V-01, NFR-01.
+
+**Files:** security/kubernetes_images.py, kubernetes_render.py; image tests; D-56;
+this log. Also complete a catalogue typing correction verified by mypy.
+
+**Decisions:** D-56. No invented image versions, registries or digests. Trust and
+pinning remain separate blockers; no infrastructure improvement is claimed merely
+from parameterisation. Plain images and existing template bindings are preserved.
+
+**Tests:** Image tests: 13 passed using actual offline Helm rendering, including
+registry ports, tags/digests, operator overrides and idempotence. Mypy: success
+on 164 source files. Full verification follows integration.
+
+**Known gaps / follow-ups:** KSV-0125 trust, latest/blank tags and KSV-0117 low
+ports can still prevent atomic format repair retention.
+
+
 
 ## 2026-10-20 — Phase 9i — Kubernetes pod security catalogue
 

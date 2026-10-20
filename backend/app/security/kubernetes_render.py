@@ -11,10 +11,10 @@ from app.scanners.runner import CommandToolRunner, ProcessToolRunner, ToolFailur
 from app.security.kubernetes import repair_pods
 
 
-async def repair_kubernetes(
+async def render_charts(
     files: dict[str, str],
     runner: CommandToolRunner | None = None,
-) -> tuple[dict[str, str], list[dict[str, Any]]]:
+) -> dict[str, list[dict[str, Any]]]:
     runner = runner or ProcessToolRunner()
     rendered: dict[str, list[dict[str, Any]]] = {}
     with TemporaryDirectory(prefix="infraarch-pod-render-") as directory:
@@ -55,4 +55,11 @@ async def repair_kubernetes(
                         rendered.setdefault(source_path, []).append(data)
             except (ToolFailure, yaml.YAMLError):
                 continue
-    return repair_pods(files, rendered)
+    return rendered
+
+
+async def repair_kubernetes(
+    files: dict[str, str],
+    runner: CommandToolRunner | None = None,
+) -> tuple[dict[str, str], list[dict[str, Any]]]:
+    return repair_pods(files, await render_charts(files, runner))
