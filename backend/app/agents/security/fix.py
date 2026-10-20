@@ -16,6 +16,7 @@ from app.agents.prompts.security_fix import system_prompt, user_prompt
 from app.agents.security.fix_schema import validate_output, wire_schema
 from app.core.config import StructuredOutput
 from app.core.logging import RedactingFilter
+from app.core.telemetry import scope
 from app.domain.models import Violation
 from app.domain.package_layout import package_structure_errors
 from app.domain.paths import UnsafePathError, validate_relative_path
@@ -339,38 +340,41 @@ class FixAgent:
             else "security_fixer"
         )
         try:
-            response = await self.adapter.complete_json(
-                user_prompt(
-                    plan=plan,
-                    path=path,
-                    content=files[path],
-                    findings=findings,
-                    feedback=feedback,
-                    validation_failures=validation_failures,
-                    schema_context=context,
-                    previous_attempt=RedactingFilter().redact(previous_attempt)[:4000],
-                    existing_paths=sorted(files),
-                    catalogue_guidance=guidance(
-                        {f.resource.split(".")[0] for f in findings}
+            with scope(role="fixer", call_kind=call_kind):
+                response = await self.adapter.complete_json(
+                    user_prompt(
+                        plan=plan,
+                        path=path,
+                        content=files[path],
+                        findings=findings,
+                        feedback=feedback,
+                        validation_failures=validation_failures,
+                        schema_context=context,
+                        previous_attempt=RedactingFilter().redact(previous_attempt)[
+                            :4000
+                        ],
+                        existing_paths=sorted(files),
+                        catalogue_guidance=guidance(
+                            {f.resource.split(".")[0] for f in findings}
+                        ),
+                        related_files={
+                            name: text
+                            for name, text in files.items()
+                            if name != path
+                            and path.startswith("terraform/")
+                            and PurePosixPath(name).parent == PurePosixPath(path).parent
+                            and name.endswith((".tf", ".tf.json"))
+                        },
                     ),
-                    related_files={
-                        name: text
-                        for name, text in files.items()
-                        if name != path
-                        and path.startswith("terraform/")
-                        and PurePosixPath(name).parent == PurePosixPath(path).parent
-                        and name.endswith((".tf", ".tf.json"))
-                    },
-                ),
-                system=system_prompt(
-                    directive, syntax_only=syntax_only, wire_files=self.wire_files
-                ),
-                deadline=remaining,
-                attempt_timeout=self.attempt_timeout,
-                max_output_tokens=self.max_output_tokens,
-                response_validator=self.output_validator,
-                attempt_observer=attempts.append,
-            )
+                    system=system_prompt(
+                        directive, syntax_only=syntax_only, wire_files=self.wire_files
+                    ),
+                    deadline=remaining,
+                    attempt_timeout=self.attempt_timeout,
+                    max_output_tokens=self.max_output_tokens,
+                    response_validator=self.output_validator,
+                    attempt_observer=attempts.append,
+                )
         except LLMRetryExhausted as error:
             return FixProposal(
                 path,

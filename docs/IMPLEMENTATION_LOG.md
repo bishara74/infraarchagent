@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-20 — Phase 9h follow-up — Persist isolated runtime telemetry and safe call logs
+
+**Summary:** Add correlated per-call reasoning/effort metadata and per-tool,
+verification and partial-group timings through EventLog, results and benchmark
+exports. Add optional allowlisted redacted LOG_FILE diagnostics and report
+unprobed legacy capabilities without changing configured effort serialization.
+
+**Requirements addressed:** PR-05, FR-P-04, FR-S-03, FR-S-09, FR-V-03, NFR-01.
+
+**Files:** backend/app/core, llm, agents, scanners, validation, security,
+pipeline, domain/agent_selection.py, api/schemas.py, db/repositories/results.py;
+benchmark/metrics/verification scripts; runtime unit and persistence integration
+tests; README, .env.example, .gitignore and docs/design-deviations.md.
+
+**Decisions:** D-54. Context-local collectors isolate concurrent variants/runs;
+bounded EventLog publication uses existing deadlines. Invocation counts, queue
+wait, execution and interval-union wall times remain distinct. Missing historical
+counts stay unknown; zero is retained. File logs exclude raw messages and bodies.
+No dependency or database migration is required.
+
+**Tests:** Fresh focused validation-repair and telemetry checks: 25 passed,
+0 failed. make lint passed. Full implementation verification: make test 1,673
+passed, 0 failed, 0 skipped, 6 deselected. Coverage includes failed/cancelled
+attempts, safe log lifecycle/redaction, retries, semaphore cancellation, cache
+reuse, concurrent isolation and results/events/export persistence.
+
+**Known gaps / follow-ups:** Crashes or exhausted publication deadlines may
+leave incomplete observations. A3 reasoning counts remain unknown. Timing adds
+overhead; the separate offline replay report records its measurement limits.
+
 ## 2026-10-20 — Phase 9h follow-up — Short-circuit rejected validation repairs
 
 **Summary:** Move baseline and candidate security scans after proposal, syntax

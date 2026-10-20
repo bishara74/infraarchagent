@@ -35,6 +35,7 @@ from app.domain.validation import ValidationCheck
 from app.events.kinds import stage_notice_payload
 from app.llm.errors import SAFE_MESSAGES
 from app.pipeline.stages import StageContext
+from app.pipeline.telemetry import traced
 from app.scanners.runner import ToolFailure, cleanup_times, measure_cleanup
 from app.scanners.scan import Scanner, ScanResult
 from app.security.acceptance import CandidateGuard
@@ -279,6 +280,7 @@ class SecurityAgent:
             ctx, variant, package, kind="automated", iteration_started=iteration_started
         )
 
+    @traced("final_security_scan", "security")
     async def confirm_final(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
     ) -> PackageStatus:
@@ -364,6 +366,7 @@ class SecurityAgent:
             target_files=target_files,
         )
 
+    @traced("security", "security")
     async def _loop(
         self,
         ctx: StageContext,
@@ -381,6 +384,7 @@ class SecurityAgent:
             finally:
                 workspace.close()
 
+    @traced("security", "fixer")
     async def _fix_iteration(
         self,
         ctx: StageContext,

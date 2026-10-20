@@ -7,12 +7,15 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from contextvars import ContextVar
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import quote
+from uuid import uuid4
 
 from app.core.config import ReasoningEffort, ResponseFormat, Settings, StructuredOutput
 from app.core.credentials import CredentialMaterial
+from app.core.telemetry import observe, tags
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -91,6 +94,23 @@ class LLMAttempt:
     package_attempt: int = 1
     deadline_exceeded: bool = False
     overrun_seconds: float = 0.0
+    reasoning_tokens: int | None = None
+    call_id: str | None = None
+    run_id: str | None = None
+    role: str | None = None
+    variant: str | None = None
+    phase: str | None = None
+    call_kind: str | None = None
+    iteration: int | None = None
+    started_at: str | None = None
+    finished_at: str | None = None
+    requested_effort: str | None = None
+    response_format: str | None = None
+    request_style: str | None = None
+    served_by: str | None = None
+    provider: str | None = None
+    model: str | None = None
+    cached_input_tokens: int | None = None
 
 
 class LLMAdapter(ABC):
@@ -178,6 +198,7 @@ class LLMAdapter(ABC):
             )
             timeout = min(selected_timeout, remaining)
             attempt_started = self._clock()
+            started_at = datetime.now(UTC).isoformat()
             response: LLMResponse | None = None
             last_stats = None
             retry_after: float | None = None
@@ -301,26 +322,77 @@ class LLMAdapter(ABC):
                     fields.append(f"reasoning_tokens={response.reasoning_tokens}")
                 if format_reason is not None:
                     fields.append(f"format_reason={format_reason}")
-                logger.info("%s", " ".join(fields))
-                if attempt_observer is not None:
-                    attempt_observer(
-                        LLMAttempt(
-                            attempt=attempt,
-                            outcome=category,
-                            category=log_category,
-                            format_reason=format_reason,
-                            elapsed_seconds=max(0.0, self._clock() - attempt_started),
-                            input_tokens=cached_tokens(stats.input_tokens)
-                            if stats
-                            else None,
-                            output_tokens=cached_tokens(stats.output_tokens)
-                            if stats
-                            else None,
-                            response_characters=stats.response_characters
-                            if stats
-                            else None,
-                        )
+                call_id = str(uuid4())
+                context = tags.get() or {}
+                requested_effort = (
+                    self.reasoning_effort
+                    if self.request_style == "legacy" or self.reasoning_capable
+                    else None
+                )
+                requested_format = (
+                    (self.structured_output if response_validator else None)
+                    or self.response_format
+                    or "off"
+                )
+                if self.provider == "anthropic":
+                    requested_effort = (
+                        self.reasoning_effort
+                        if self.request_style == "anthropic" and self.reasoning_capable
+                        else None
                     )
+                    requested_format = (
+                        "json_schema"
+                        if self.request_style == "anthropic"
+                        and response_validator
+                        and self.structured_output == "json_schema"
+                        else "off"
+                    )
+                detail = LLMAttempt(
+                    attempt=attempt,
+                    outcome=category,
+                    category=log_category,
+                    format_reason=format_reason,
+                    elapsed_seconds=max(0.0, self._clock() - attempt_started),
+                    input_tokens=cached_tokens(stats.input_tokens) if stats else None,
+                    output_tokens=cached_tokens(stats.output_tokens) if stats else None,
+                    response_characters=stats.response_characters if stats else None,
+                    reasoning_tokens=cached_tokens(response.reasoning_tokens)
+                    if response
+                    else None,
+                    call_id=call_id,
+                    run_id=context.get("run_id"),
+                    role=context.get("role"),
+                    variant=context.get("variant"),
+                    phase=context.get("phase"),
+                    call_kind=context.get("call_kind"),
+                    iteration=context.get("iteration"),
+                    started_at=started_at,
+                    finished_at=datetime.now(UTC).isoformat(),
+                    requested_effort=requested_effort,
+                    response_format=requested_format,
+                    request_style=self.request_style,
+                    served_by=response.served_by if response else None,
+                    provider=self.provider,
+                    model=self.model,
+                    cached_input_tokens=cached_tokens(response.cached_input_tokens)
+                    if response
+                    else None,
+                )
+                diagnostic = observe(
+                    {
+                        **asdict(detail),
+                        "id": call_id,
+                        "kind": "llm",
+                        "model": self.model,
+                        "executed": True,
+                        "completed": category == "success",
+                    }
+                )
+                logger.info(
+                    "%s", " ".join(fields), extra={"llm_diagnostic": diagnostic}
+                )
+                if attempt_observer is not None:
+                    attempt_observer(detail)
             elapsed = self._clock() - started
             if self._clock() >= ends_at:
                 raise LLMDeadlineExceeded(attempt, elapsed)

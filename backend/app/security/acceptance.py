@@ -13,6 +13,7 @@ from app.agents.security.verification import (
     failure_count,
     terraform_files,
 )
+from app.core.telemetry import span, timed
 from app.domain.enums import Variant
 from app.domain.validation import ValidationCheck
 from app.scanners.scan import Scanner, ScanResult
@@ -60,8 +61,12 @@ class CandidateGuard:
                 self.record["terraform_verification_seconds"] += (
                     time.monotonic() - started
                 )
+        else:
+            with span("cache", operation="terraform.validate"):
+                pass
         return self.check_cache[key]
 
+    @timed("verification")
     async def evaluate(
         self,
         before: dict[str, str],
@@ -162,8 +167,12 @@ class CandidateGuard:
         key = ValidationWorkspace.fingerprint(candidate)
         if candidate == before and not force_scan:
             scanned = scan
+            with span("cache", action="baseline_scan"):
+                pass
         elif key in self.scan_cache:
             scanned = self.scan_cache[key]
+            with span("cache", action="candidate_scan"):
+                pass
         else:
             started = time.monotonic()
             try:

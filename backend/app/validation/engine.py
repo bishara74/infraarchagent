@@ -5,6 +5,7 @@ import time
 from collections.abc import Awaitable
 from pathlib import Path
 
+from app.core.telemetry import execution_started, queue_wait, tool_observed
 from app.domain.package_layout import (
     MAX_FILE_BYTES,
     MAX_FILES,
@@ -39,6 +40,7 @@ class BoundedRunner:
         self.runner = runner
         self.semaphore = semaphore
 
+    @tool_observed
     async def run_command(
         self,
         tool: ToolName,
@@ -49,7 +51,15 @@ class BoundedRunner:
         environment_dir: Path | None = None,
         allow_provider_download: bool = False,
     ) -> ToolResult:
-        async with self.semaphore:
+        started = time.monotonic()
+        try:
+            await self.semaphore.acquire()
+        finally:
+            waits = queue_wait.get()
+            if waits is not None:
+                waits.append(time.monotonic() - started)
+        try:
+            execution_started()
             return await self.runner.run_command(
                 tool,
                 args,
@@ -58,6 +68,8 @@ class BoundedRunner:
                 environment_dir=environment_dir,
                 allow_provider_download=allow_provider_download,
             )
+        finally:
+            self.semaphore.release()
 
 
 class ValidationEngine:

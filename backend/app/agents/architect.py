@@ -12,7 +12,7 @@ from app.agents.prompts.architect import (
 )
 from app.domain.input_rules import validate_request_text
 from app.domain.plan import DeploymentPlan, plan_validation_errors
-from app.llm.base import LLMAdapter
+from app.llm.base import LLMAdapter, LLMAttempt
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -66,6 +66,7 @@ class ArchitectRunInfo:
     validation_error_counts: tuple[int, ...]
     validation_errors_by_attempt: tuple[tuple[str, ...], ...]
     cached_input_tokens: int | None = None
+    attempt_details: tuple[LLMAttempt, ...] = ()
 
 
 class ArchitectAgent:
@@ -108,6 +109,7 @@ class ArchitectAgent:
         cached_input_tokens: int | None = 0
         error_counts: list[int] = []
         error_history: list[tuple[str, ...]] = []
+        attempt_details: list[LLMAttempt] = []
         try:
             for _ in range(self.max_plan_attempts):
                 user_prompt = build_user_prompt(
@@ -122,6 +124,7 @@ class ArchitectAgent:
                         user_prompt,
                         system=ARCHITECT_SYSTEM_PROMPT,
                         deadline=remaining,
+                        attempt_observer=attempt_details.append,
                     )
                 except LLMDeadlineExceeded as error:
                     if llm_attempts is not None:
@@ -177,4 +180,5 @@ class ArchitectAgent:
                 prompt_version=ARCHITECT_PROMPT_VERSION,
                 validation_error_counts=tuple(error_counts),
                 validation_errors_by_attempt=tuple(error_history),
+                attempt_details=tuple(attempt_details),
             )

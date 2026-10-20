@@ -5,6 +5,7 @@ from typing import Any
 from app.domain.enums import AgentName, PackageStatus, Variant
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
+from app.pipeline.telemetry import publish
 from app.validation.workspace import current_workspace
 
 STAGES = frozenset(
@@ -77,4 +78,5 @@ async def publish_measurement(
             variant, "stage measurement", {"measurement": record}
         ),
     )
+    await publish(ctx.writer, ctx.run_id)
     return record

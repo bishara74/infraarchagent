@@ -7,7 +7,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.api.schemas import MissingVariant, PackageResult, ResultsResponse, RunResult
 from app.core.config import Settings
 from app.core.safety import PublicDataSafety
+from app.core.telemetry import safe_records
 from app.db.repositories.results import ResultsRepository
+from app.domain.agent_selection import reported_selections
 from app.domain.archive import package_zip, readiness_document
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.plan import DeploymentPlan
@@ -135,9 +137,10 @@ class ResultsService:
                     )
                 )
         return ResultsResponse(
+            telemetry=self.safety.value(safe_records(snapshot.telemetry)) or None,
             run=RunResult(
                 id=row.run_id,
-                agent_models=self.safety.value(row.agent_models),
+                agent_models=self.safety.value(reported_selections(row.agent_models)),
                 policy_profile="contextual-v1"
                 if row.policy_profile == "contextual-v1"
                 else "strict",

@@ -85,7 +85,8 @@ async def test_results_one_statement_plan_and_failed_variant(db_engines):
             {"variant": "performance", "error": "package generation failed"}
         ]
         assert data["run"]["status"] == "running"
-        assert set(data) == {"run", "plan", "packages", "missing_variants"}
+        assert set(data) == {"run", "plan", "packages", "missing_variants", "telemetry"}
+        assert data["telemetry"] is None
         assert (
             "ResultsResponse"
             in (await client.get("/openapi.json")).json()["components"]["schemas"]

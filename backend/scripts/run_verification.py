@@ -30,6 +30,7 @@ def verification_environment(settings: Settings) -> dict[str, str]:
         INFRAARCH_TEST_BOOTSTRAP="1",
         LLM_PROVIDER="stub",
         LLM_MODEL="",
+        LOG_FILE="",
         LLM_API_KEY="",
         API_KEY="",
         CREDENTIAL_ENCRYPTION_KEY="",

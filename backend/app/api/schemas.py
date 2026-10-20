@@ -66,6 +66,7 @@ class MissingVariant(StrictResponse):
 
 
 class ResultsResponse(StrictResponse):
+    telemetry: list[dict[str, Any]] | None = None
     run: RunResult
     plan: DeploymentPlan | None
     packages: list[PackageResult]

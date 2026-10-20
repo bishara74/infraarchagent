@@ -3,6 +3,7 @@
 import math
 from collections import Counter
 
+from app.core.telemetry import safe_records
 from app.domain.package_layout import LAYOUT, classify_path
 from app.domain.plan import FileType
 from app.llm.errors import SAFE_MESSAGES, LLMResponseFormatError
@@ -45,6 +46,11 @@ def attempt_details(value):
         )
         rows.append(
             {
+                **{
+                    k: v
+                    for k, v in safe_records([{**item, "kind": "llm"}])[0].items()
+                    if k not in {"kind", "outcome", "category", "format_reason"}
+                },
                 "attempt": integer(item.get("attempt")),
                 "package_attempt": integer(item.get("package_attempt")),
                 "outcome": item["outcome"],
@@ -56,6 +62,7 @@ def attempt_details(value):
                 "elapsed_seconds": number(item.get("elapsed_seconds")),
                 "input_tokens": integer(item.get("input_tokens")),
                 "output_tokens": integer(item.get("output_tokens")),
+                "reasoning_tokens": integer(item.get("reasoning_tokens")),
                 "response_characters": integer(item.get("response_characters")),
                 "deadline_exceeded": item.get("deadline_exceeded")
                 if type(item.get("deadline_exceeded")) is bool

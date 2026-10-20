@@ -3,6 +3,7 @@
 import asyncio
 import json
 import re
+import time
 from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Any
@@ -11,6 +12,7 @@ import hcl2
 from lark import Tree
 from lark.exceptions import LarkError
 
+from app.core.telemetry import span, unevaluated_group
 from app.domain.validation import ValidationCheck
 from app.scanners.scan import ScanResult
 from app.security.acceptance import CandidateGuard
@@ -243,23 +245,34 @@ async def accept_groups(
         records.append(record)
         if evaluated >= limit or guard.budget.expired():
             record.update(
+                evaluation_started=False,
+                evaluation_completed=False,
+                evaluation_seconds=None,
                 status="unevaluated",
                 reason="group_limit" if evaluated >= limit else "iteration_deadline",
             )
+            unevaluated_group(record["reason"])
             continue
         proposed = retained
         for change in group:
             proposed = change.apply(proposed)
         evaluated += 1
         guard.record["verification_action"] = "partial_group"
+        started = time.monotonic()
+        record.update(evaluation_started=True, evaluation_completed=False)
         try:
-            result = await guard.evaluate(retained, proposed, checks, scan)
+            with span("partial_group", action="partial_group") as observation:
+                record["evaluation_id"] = observation["id"]
+                result = await guard.evaluate(retained, proposed, checks, scan)
+            record["evaluation_completed"] = True
         except asyncio.CancelledError:
             record.update(status="unevaluated", reason="iteration_deadline")
             raise
         except TimeoutError:
             record.update(status="unevaluated", reason="iteration_deadline")
             continue
+        finally:
+            record["evaluation_seconds"] = time.monotonic() - started
         record.update(
             status="discarded" if result.reason else "kept",
             reason=result.reason or "guards_passed",

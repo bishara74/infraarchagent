@@ -16,6 +16,7 @@ from tempfile import TemporaryDirectory
 from typing import Literal, Protocol
 
 from app.core.deadlines import active_deadline
+from app.core.telemetry import execution_started, tool_observed
 
 cleanup_times: ContextVar[list[float] | None] = ContextVar(
     "scanner_cleanup", default=None
@@ -202,6 +203,7 @@ class ProcessToolRunner:
             cwd.mkdir(exist_ok=True)
         return await self.run_command(tool, args, workdir, cwd=cwd)
 
+    @tool_observed
     async def run_command(
         self,
         tool: ToolName,
@@ -232,6 +234,7 @@ class ProcessToolRunner:
             ):
                 env.pop(key, None)
         started = time.monotonic()
+        execution_started()
         command = list(args)
         if tool == "ansible-playbook" and shutil.which(tool) is None:
             lint = shutil.which("ansible-lint")

@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from app.core.telemetry import execution_started, invocation, scope, tags, timed
 from app.domain.enums import Variant
 from app.domain.models import Violation
 from app.domain.paths import validate_file_map
@@ -49,7 +50,15 @@ class Scanner:
         started = time.monotonic()
         category = "ok"
         try:
-            return await self.runner.run(tool, root)
+            with (
+                scope(
+                    attempt=attempt,
+                    iteration=(tags.get() or {}).get("iteration", iteration),
+                ),
+                invocation("terraform.validate" if tool == "terraform" else tool),
+            ):
+                execution_started()
+                return await self.runner.run(tool, root)
         except ToolFailure as error:
             category = error.category
             raise
@@ -67,6 +76,7 @@ class Scanner:
                     )
                 )
 
+    @timed("scan")
     async def scan(
         self, files: dict[str, str], variant: Variant, *, iteration: int = 0
     ) -> ScanResult:

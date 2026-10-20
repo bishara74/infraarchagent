@@ -529,6 +529,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `SECURITY_MAX_PARALLEL_FIXES` | Maximum concurrent file fixes | `4` |
 | `PACKAGE_RETENTION_DAYS` | Package sweep cutoff | `30` |
 | `LOG_LEVEL` | Python log level | `INFO` |
+| `LOG_FILE` | Optional append-only JSONL file containing allowlisted, redacted LLM call diagnostics; parent directory must exist; relative paths resolve against this repository | unset |
 
 When `LLM_REASONING_EFFORT` is unset, requests omit reasoning controls.
 With the OpenAI-compatible adapter, `off` sends OpenRouter's
@@ -788,6 +789,29 @@ through them. Empty, duplicate and out-of-range indices are rejected before
 submission. `bench-smoke` runs one of each example and writes
 `docs/evals/phase9-bench-smoke-*`; a three-sample smoke check does not establish
 full PR-01 acceptance. Budget guard stops can produce fewer than three runs.
+
+### Runtime attribution
+
+Set `LOG_FILE=.cache/runtime-attribution/llm-calls.jsonl` in the backend process
+environment after creating that directory to keep benchmark call diagnostics.
+It is disabled by default. New files have mode 0600. Only structured
+`app.llm.base` fields are written, through the existing redactors; prompts,
+responses, arbitrary log messages and stack traces are excluded. Existing
+console logging is unchanged. Keep generated logs untracked; retention is an
+operator responsibility.
+
+Results expose nullable `telemetry`, also persisted as batched `stage_notice`
+events through EventLog. Per-call records retain reported `reasoning_tokens`
+(including zero; absent means unknown), requested effort/format and serving
+provider. Legacy env/header capability metadata is reported as unprobed rather
+than a claim that the model lacks reasoning; configured effort is unchanged.
+Per-invocation tool observations cover Checkov, Trivy and Terraform init/validate,
+with separate semaphore wait and execution/cleanup time, retry/outcome metadata,
+cache reuse, parent evaluations and partial-group timings. Invocation totals,
+interval-union wall time and nested group durations are distinct measures;
+never add group times to their child tool times. Benchmark results/events retain
+these fields and include runtime attribution summaries. Historical omissions
+stay unknown.
 
 Settings precedence is explicit constructor arguments, then process environment,
 then dotenv, then defaults. Duplicate dotenv assignments use the last value;

@@ -1673,6 +1673,21 @@ comparison. Strict output, acceptance, partial-group limits, deadlines and
 readiness remain unchanged. This is an execution-order optimization, not a
 relaxation of the acceptance predicate.
 
+Additive result telemetry and batched immutable stage-notice events retain safe
+per-attempt reasoning counts and per-invocation/local-evaluation timings. A
+context-local collector isolates concurrent work. Timestamped interval unions
+distinguish elapsed wall time from overlapping invocation totals; group spans
+contain their child tool spans. Cache reuse is explicit, with no invented tool
+invocations. Observed cancellations are retained; a process crash or exhausted
+publication deadline can still leave incomplete telemetry. Existing absolute
+deadlines are not extended to make reporting complete.
+
+Optional LOG_FILE writes only allowlisted app.llm.base structured diagnostics,
+redacted with existing filters, to an operator-owned untracked file. No new
+dependency or database migration. Legacy frozen selections retain their wire
+behavior; reporting marks missing catalog capability as unknown/unprobed.
+Historical missing counts remain unknown, including all A3 reasoning tokens.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

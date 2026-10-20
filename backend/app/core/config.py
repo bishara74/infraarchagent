@@ -21,6 +21,12 @@ class ConfigurationError(ValueError):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=ROOT / ".env", extra="ignore")
+    log_file: Path | None = None
+
+    @field_validator("log_file", mode="before")
+    @classmethod
+    def optional_log_file(cls, value: object) -> object:
+        return None if value == "" else value
 
     database_url: SecretStr
     migration_database_url: SecretStr

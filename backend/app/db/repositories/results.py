@@ -1,10 +1,11 @@
 """One-statement current run/package/plan snapshot."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import aggregate_order_by
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import AgentEvent, GeneratedPackage, PipelineRun
@@ -17,6 +18,7 @@ class ResultsSnapshot:
     run: PipelineRun
     packages: list[GeneratedPackage]
     plan: dict[str, Any] | None
+    telemetry: list[dict[str, Any]] = field(default_factory=list)
 
 
 class ResultsRepository:
@@ -69,6 +71,19 @@ class ResultsRepository:
         )
 
     async def snapshot(self, run_id: UUID) -> ResultsSnapshot | None:
+        telemetry = (
+            select(
+                func.jsonb_agg(
+                    aggregate_order_by(AgentEvent.payload["telemetry"], AgentEvent.seq)
+                )
+            )
+            .where(
+                AgentEvent.run_id == PipelineRun.run_id,
+                AgentEvent.payload["notice"].astext == "runtime telemetry",
+            )
+            .correlate(PipelineRun)
+            .scalar_subquery()
+        )
         plan = (
             select(AgentEvent.payload["plan"])
             .where(
@@ -82,7 +97,7 @@ class ResultsRepository:
         )
         rows = (
             await self.session.execute(
-                select(PipelineRun, GeneratedPackage, plan)
+                select(PipelineRun, GeneratedPackage, plan, telemetry)
                 .outerjoin(
                     GeneratedPackage, GeneratedPackage.run_id == PipelineRun.run_id
                 )
@@ -93,5 +108,8 @@ class ResultsRepository:
         if not rows:
             return None
         return ResultsSnapshot(
-            rows[0][0], [row[1] for row in rows if row[1] is not None], rows[0][2]
+            rows[0][0],
+            [row[1] for row in rows if row[1] is not None],
+            rows[0][2],
+            [record for batch in rows[0][3] or [] for record in batch],
         )

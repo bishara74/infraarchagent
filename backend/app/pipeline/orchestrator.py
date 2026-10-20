@@ -46,6 +46,8 @@ from app.events.kinds import (
 )
 from app.pipeline.stages import SecurityStage, StageContext, ValidationStage
 from app.pipeline.state import PipelineStateWriter
+from app.pipeline.telemetry import publish as publish_telemetry
+from app.pipeline.telemetry import traced
 from app.scanners.runner import ToolFailure
 from app.security.generation import generation_context
 from app.validation.gate import GateRepairEngine, GenerationGate
@@ -397,6 +399,7 @@ class PipelineOrchestrator:
             }
         )
 
+    @traced("generation", "generator")
     async def _generate_inside(
         self, generator: GeneratorAgent, plan: object
     ) -> tuple[Variant, IaCPackage | None]:
@@ -608,6 +611,7 @@ class PipelineOrchestrator:
         with workspace.activate():
             return await self._post_generation_inside(ctx, variant, package)
 
+    @traced("post_generation", "fixer")
     async def _post_generation_inside(
         self, ctx: StageContext, variant: Variant, package: IaCPackage
     ) -> PackageStatus:
@@ -822,6 +826,7 @@ class PipelineOrchestrator:
                 message=str(error),
                 failure_category=getattr(error, "llm_category", error.category),
             )
+            await publish_telemetry(self.writer, self.run_id)
             await self.writer.run_transition(
                 self.run_id,
                 RunStatus.FAILED,
@@ -869,6 +874,7 @@ class PipelineOrchestrator:
             if package is not None:
                 packages[variant] = package
         if not packages:
+            await publish_telemetry(self.writer, self.run_id)
             await self.writer.run_transition(
                 self.run_id,
                 RunStatus.FAILED,
@@ -895,12 +901,14 @@ class PipelineOrchestrator:
             rows = await PackageRepository(session).list_for_run(self.run_id)
         statuses = {Variant(row.variant): PackageStatus(row.status) for row in rows}
         target = classify_run(True, statuses)
+        await publish_telemetry(self.writer, self.run_id)
         await self.writer.run_transition(
             self.run_id, target, message=f"pipeline {target.value}"
         )
         return target
 
     async def _fail_unexpected(self, message: str) -> None:
+        await publish_telemetry(self.writer, self.run_id)
         async with self.session_factory() as session:
             row = await RunRepository(session).get(self.run_id)
         if row is not None and RunStatus(row.status) in {
@@ -914,6 +922,7 @@ class PipelineOrchestrator:
                 error_message=message,
             )
 
+    @traced("pipeline", "architect")
     async def run(self) -> RunStatus:
         try:
             return await self._run_core()

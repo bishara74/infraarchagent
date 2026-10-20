@@ -61,22 +61,34 @@ class RecordingStub(StubAdapter):
         self.deadlines: list[float | None] = []
 
     async def complete_json(
-        self, prompt: str, *, system: str | None = None, deadline: float | None = None
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        deadline: float | None = None,
+        **kwargs: Any,
     ) -> LLMResult:
         self.deadlines.append(deadline)
-        return await super().complete_json(prompt, system=system, deadline=deadline)
+        return await super().complete_json(
+            prompt, system=system, deadline=deadline, **kwargs
+        )
 
 
 @pytest.mark.req("FR-A-01", "NFR-01")
 @pytest.mark.parametrize("cached", [None, 0, 17])
 async def test_architect_cache_metrics_preserve_unknown_and_zero(cached):
     adapter = StubAdapter(
-        script=[LLMResponse(json.dumps(plan()), cached_input_tokens=cached)]
+        script=[
+            LLMResponse(
+                json.dumps(plan()), cached_input_tokens=cached, reasoning_tokens=cached
+            )
+        ]
     )
     agent = ArchitectAgent(adapter, deadline_seconds=150)
     agent.parse_input("build a web app")
     await agent.generate_plan()
     assert agent.last_run.cached_input_tokens == cached
+    assert agent.last_run.attempt_details[0].reasoning_tokens == cached
 
 
 @pytest.mark.req("FR-A-01", "FR-A-02")

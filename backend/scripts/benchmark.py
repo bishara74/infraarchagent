@@ -20,6 +20,8 @@ from pydantic import SecretStr
 
 from app.core.generator_settings import GeneratorSettings
 from app.core.logging import RedactingFilter
+from app.core.telemetry import safe_records
+from app.core.telemetry import summary as telemetry_summary
 from app.domain.enums import AgentName, PackageStatus, RunStatus
 from scripts.phase9_budget import (
     BudgetGuard,
@@ -139,6 +141,7 @@ def normalized_event(item: dict) -> dict:
         if type(payload.get("iteration")) is int
         else None,
         "metrics": safe_metrics,
+        "telemetry": safe_records(payload.get("telemetry")),
         "measurement": safe_measurement(payload.get("measurement")),
         "failure_category": failure
         if isinstance(failure, str) and failure in FAILURES
@@ -835,6 +838,10 @@ class Harness:
     def finish(
         self, row: dict, snapshot: dict, local: list[dict], elapsed: float
     ) -> None:
+        observations = safe_records(snapshot.get("telemetry"))
+        if observations:
+            row["telemetry"] = observations
+            row["runtime_attribution"] = telemetry_summary(observations)
         raw_selections = snapshot["run"].get("agent_models")
         safe_selections = None
         if isinstance(raw_selections, dict):
@@ -857,6 +864,7 @@ class Harness:
                     "configured_thinking",
                     "request_style",
                     "reasoning_capable",
+                    "reasoning_capability_source",
                 ):
                     if key not in selection:
                         continue
@@ -874,7 +882,14 @@ class Harness:
                             else None
                         )
                     elif key == "reasoning_capable":
-                        safe[key] = value if isinstance(value, bool) else None
+                        safe[key] = (
+                            value
+                            if isinstance(value, bool)
+                            and selection.get("request_style") != "legacy"
+                            else None
+                        )
+                    elif key == "reasoning_capability_source":
+                        safe[key] = value if value in {"catalog", "unprobed"} else None
                     elif key == "provider":
                         safe[key] = (
                             value
@@ -888,6 +903,17 @@ class Harness:
                             if value in {"legacy", "openrouter", "openai", "anthropic"}
                             else None
                         )
+                if selection.get("request_style") in {
+                    "legacy",
+                    "openrouter",
+                    "openai",
+                    "anthropic",
+                }:
+                    safe["reasoning_capability_source"] = (
+                        "unprobed"
+                        if selection["request_style"] == "legacy"
+                        else "catalog"
+                    )
                 safe_selections[role] = safe
         self.resolved_agent_selections[row["run_id"]] = safe_selections
         if self.output and (self.output / "environment.json").exists():

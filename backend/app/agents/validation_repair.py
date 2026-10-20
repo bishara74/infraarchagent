@@ -7,11 +7,13 @@ from typing import Literal
 from app.agents.budget import AgentBudget
 from app.agents.remediation import ValidationService, scan_files, validate_files
 from app.agents.security.agent import SecurityAgent
+from app.core.telemetry import scope
 from app.domain.enums import AgentName, PackageStatus, Variant
 from app.domain.models import IaCPackage, Violation
 from app.domain.validation import RemediationReport, RepairRound, ValidationReport
 from app.events.kinds import stage_notice_payload
 from app.pipeline.stages import StageContext
+from app.pipeline.telemetry import traced
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import ScanResult
 from app.validation.gate import patch_syntax_failure
@@ -28,6 +30,7 @@ class ValidationRepair:
         self.security = security
         self.engine = engine
 
+    @traced("validation_repair", "fixer")
     async def run(
         self,
         ctx: StageContext,
@@ -138,74 +141,87 @@ class ValidationRepair:
             started = time.monotonic()
             record = record.model_copy(update={"attempted": True})
             try:
-                async with asyncio.timeout(budget.remaining()):
-                    candidate, proposals, _ = await self.security._fix_pass(
-                        ctx,
-                        variant,
-                        files,
-                        targets,
-                        budget,
-                        feedback=None,
-                        validation_failures=failures,
-                    )
-                    record = record.model_copy(
-                        update={
-                            "fixer_attempts": [
-                                a
-                                for p in proposals
-                                for a in p.get("attempt_details", [])
-                            ],
-                            "schema_context_chars": sum(
-                                int(p.get("schema_context_chars", 0)) for p in proposals
-                            ),
-                        }
-                    )
-                    touched = {
-                        p
-                        for p in files.keys() | candidate.keys()
-                        if files.get(p) != candidate.get(p)
-                    }
-                    if (
-                        not proposals
-                        or any(not p["accepted"] for p in proposals)
-                        or await patch_syntax_failure(files, candidate, touched)
-                    ):
-                        record = record.model_copy(
-                            update={"outcome": "rejected", "reason": "invalid_patch"}
+                with scope(iteration=index):
+                    async with asyncio.timeout(budget.remaining()):
+                        candidate, proposals, _ = await self.security._fix_pass(
+                            ctx,
+                            variant,
+                            files,
+                            targets,
+                            budget,
+                            feedback=None,
+                            validation_failures=failures,
                         )
-                    else:
-                        candidate = self.security.safety.value(candidate)
-                        checked = await validate_files(self.engine, ctx.plan, candidate)
-                        reason = (
-                            "verification_unavailable"
-                            if checked.summary.result == "error"
-                            else "no_improvement"
-                            if checked.summary.failed >= before
-                            else "improved"
-                        )
-                        if reason == "improved":
-                            baseline = await scan_files(
-                                self.security.scanner, files, variant
-                            )
-                            scanned = await scan_files(
-                                self.security.scanner, candidate, variant
-                            )
-                            if fingerprints(scanned) - fingerprints(baseline):
-                                reason = "new_blocking_findings"
-                        accepted = reason == "improved"
                         record = record.model_copy(
                             update={
-                                "after_failed": checked.summary.failed,
-                                "outcome": "accepted" if accepted else "rejected",
-                                "reason": reason,
+                                "fixer_attempts": [
+                                    a
+                                    for p in proposals
+                                    for a in p.get("attempt_details", [])
+                                ],
+                                "schema_context_chars": sum(
+                                    int(p.get("schema_context_chars", 0))
+                                    for p in proposals
+                                ),
                             }
                         )
-                        if accepted:
-                            files, report = candidate, checked
-                            if workspace is not None:
-                                workspace.observe(
-                                    list(checked.checks), "repair", candidate
-                                )
+                        touched = {
+                            p
+                            for p in files.keys() | candidate.keys()
+                            if files.get(p) != candidate.get(p)
+                        }
+                        if (
+                            not proposals
+                            or any(not p["accepted"] for p in proposals)
+                            or await patch_syntax_failure(files, candidate, touched)
+                        ):
+                            record = record.model_copy(
+                                update={
+                                    "outcome": "rejected",
+                                    "reason": "invalid_patch",
+                                }
+                            )
+                        else:
+                            candidate = self.security.safety.value(candidate)
+                            checked = await validate_files(
+                                self.engine, ctx.plan, candidate
+                            )
+                            reason = (
+                                "verification_unavailable"
+                                if checked.summary.result == "error"
+                                else "no_improvement"
+                                if checked.summary.failed >= before
+                                else "improved"
+                            )
+                            if reason == "improved":
+                                with scope(
+                                    action="validation_baseline", iteration=index
+                                ):
+                                    baseline = await scan_files(
+                                        self.security.scanner, files, variant
+                                    )
+                                with scope(
+                                    action="validation_candidate", iteration=index
+                                ):
+                                    scanned = await scan_files(
+                                        self.security.scanner, candidate, variant
+                                    )
+                                if fingerprints(scanned) - fingerprints(baseline):
+                                    reason = "new_blocking_findings"
+                            accepted = reason == "improved"
+                            record = record.model_copy(
+                                update={
+                                    "after_failed": checked.summary.failed,
+                                    "outcome": "accepted" if accepted else "rejected",
+                                    "reason": reason,
+                                }
+                            )
+                            if accepted:
+                                files, report = candidate, checked
+                                if workspace is not None:
+                                    workspace.observe(
+                                        list(checked.checks), "repair", candidate
+                                    )
             except TimeoutError:
                 pass
             except ToolFailure:

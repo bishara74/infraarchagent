@@ -11,6 +11,7 @@ import hcl2
 from hcl2.utils import SerializationOptions
 from lark.exceptions import LarkError
 
+from app.core.telemetry import execution_started, invocation, span, timed
 from app.domain.paths import validate_relative_path
 from app.domain.validation import ValidationCheck
 from app.scanners.runner import CommandToolRunner, ToolFailure
@@ -300,6 +301,7 @@ def file_input_guard(root: Path, documents: PackageDocuments) -> list[Validation
     return []
 
 
+@timed("verification")
 async def _validate_module(
     root: Path,
     files: set[str],
@@ -377,6 +379,9 @@ async def _validate_module(
         {"mirror": str(mirror.resolve()), "dependencies": dependencies}
     )
     reused = bool(workspace and workspace.initialized.get(module) == fingerprint)
+    if reused:
+        with span("cache", operation="terraform.init"):
+            pass
     metrics = {
         "module": module,
         "init_reused": reused,
@@ -401,21 +406,23 @@ async def _validate_module(
             )
             init_started = time.monotonic()
             try:
-                init = await runner.run_command(
-                    "terraform",
-                    [
+                with invocation("terraform.init"):
+                    execution_started()
+                    init = await runner.run_command(
                         "terraform",
-                        "init",
-                        "-backend=false",
-                        "-input=false",
-                        f"-plugin-dir={mirror}",
-                        f"-get={'true' if local else 'false'}",
-                        "-no-color",
-                    ],
-                    root,
-                    cwd=tf,
-                    environment_dir=environment,
-                )
+                        [
+                            "terraform",
+                            "init",
+                            "-backend=false",
+                            "-input=false",
+                            f"-plugin-dir={mirror}",
+                            f"-get={'true' if local else 'false'}",
+                            "-no-color",
+                        ],
+                        root,
+                        cwd=tf,
+                        environment_dir=environment,
+                    )
             finally:
                 metrics["init_seconds"] = time.monotonic() - init_started
             metrics["init_outcome"] = (
@@ -441,13 +448,15 @@ async def _validate_module(
             init = None
         validate_started = time.monotonic()
         try:
-            validation = await runner.run_command(
-                "terraform",
-                ["terraform", "validate", "-json", "-no-color"],
-                root,
-                cwd=tf,
-                environment_dir=environment,
-            )
+            with invocation("terraform.validate"):
+                execution_started()
+                validation = await runner.run_command(
+                    "terraform",
+                    ["terraform", "validate", "-json", "-no-color"],
+                    root,
+                    cwd=tf,
+                    environment_dir=environment,
+                )
         finally:
             metrics["validate_seconds"] = time.monotonic() - validate_started
         if validation.exit_code < 0 or (init is not None and init.exit_code < 0):
@@ -559,6 +568,8 @@ async def validate_terraform(
         and key in workspace.terraform_checks
         and workspace.terraform_check_initialization.get(key) == workspace.initialized
     ):
+        with span("cache", operation="terraform.validate"):
+            pass
         workspace.terraform_metrics.append(
             {
                 "module": "terraform",

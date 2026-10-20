@@ -1,14 +1,16 @@
 """Root-handler logging setup with secret redaction."""
 
 import hashlib
+import json
 import logging
 import os
 import re
 import traceback
+from typing import Any
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from app.core.config import Settings
+from app.core.config import ROOT, ConfigurationError, Settings
 
 DYNAMIC_SECRETS: dict[bytes, tuple[bytes, bytes]] = {}
 
@@ -85,6 +87,10 @@ def configure_logging(settings: Settings) -> None:
         logging.getLogger(name).disabled = True
         logging.getLogger(name).addFilter(lambda record: False)
     root = logging.getLogger()
+    for handler in list(root.handlers):
+        if isinstance(handler, LLMFileHandler):
+            root.removeHandler(handler)
+            handler.close()
     root.setLevel(settings.log_level.upper())
     if not root.handlers:
         new_handler = logging.StreamHandler()
@@ -94,8 +100,49 @@ def configure_logging(settings: Settings) -> None:
         root.addHandler(new_handler)
     key = settings.llm_api_key.get_secret_value() if settings.llm_api_key else None
     api_key = settings.api_key.get_secret_value() if settings.api_key else ""
+    if settings.log_file is not None:
+        path = settings.log_file
+        if not path.is_absolute():
+            path = ROOT / path
+        try:
+            fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+            stream = os.fdopen(fd, "a", encoding="utf-8")
+        except OSError:
+            raise ConfigurationError("Cannot open configured LOG_FILE.") from None
+        root.addHandler(LLMFileHandler(stream, RedactingFilter(key, api_key)))
     for handler in root.handlers:
         for old_filter in list(handler.filters):
             if isinstance(old_filter, RedactingFilter):
                 handler.removeFilter(old_filter)
         handler.addFilter(RedactingFilter(key, api_key))
+
+
+class LLMFileHandler(logging.StreamHandler[Any]):
+    """Only typed call diagnostics; never format the arbitrary log message."""
+
+    def __init__(self, stream: Any, redactor: RedactingFilter) -> None:
+        super().__init__(stream)
+        self.redactor = redactor
+
+    def emit(self, record: logging.LogRecord) -> None:
+        from app.core.telemetry import safe_records
+
+        if record.name != "app.llm.base":
+            return
+        raw = getattr(record, "llm_diagnostic", None)
+        if not isinstance(raw, dict) or raw.get("kind") != "llm":
+            return
+        rows = safe_records([raw])
+        try:
+            self.stream.write(self.redactor.redact(json.dumps(rows[0])) + "\n")
+            self.flush()
+        except (OSError, ValueError):
+            # Optional diagnostics must not change completion/acceptance behavior;
+            # logging.handleError would print the arbitrary original message.
+            return
+
+    def close(self) -> None:
+        try:
+            self.stream.close()
+        finally:
+            super().close()
