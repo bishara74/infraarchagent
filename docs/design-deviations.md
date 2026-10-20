@@ -1722,6 +1722,15 @@ replaceability claim follows. NFR-04 clean deployment remains manual/unverified.
 The isolated E2E server uses a larger fixture login allowance to avoid cumulative
 rate-limit timing dependence; production authentication policy is unchanged.
 
+PR-04 attribution uses loopback HTTP full-body timing, not the spec's curl
+client. It is an offline attribution measurement with a synthetic near-10 MB
+archive, ten alternating samples and two warm-ups per condition. Only the quiet
+run is official new evidence; an exploratory overlapped run is excluded. The
+measurement-only session-touch control never changes production authentication.
+The quiet session maximum is 0.721118 s; historical failures remain failures.
+No clear auth bottleneck justifies a runtime fix. PR-03's revised wording is an
+unadopted supervisor-review draft in phase9b-performance-gaps.md.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

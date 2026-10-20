@@ -29,6 +29,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+
+## 2026-10-20 — Phase 9b section 3 — Measure download auth and document gaps
+
+**Summary:** Add offline loopback-HTTP PR-04 attribution against disposable
+PostgreSQL and document PR-03 failures plus an unadopted supervisor-review target.
+No production runtime optimization or authentication change is made.
+
+**Requirements addressed:** PR-03, PR-04, NFR-01.
+
+**Files:** phase9b_download.py and summary regression; phase9b-download-quiet
+measurements; docs/phase9b-performance-gaps.md; D-55 and implementation log.
+
+**Decisions:** Quiet run only is new official evidence. The exploratory run
+preceded an overlapping frontend job and stays uncommitted/excluded. Ten samples
+plus two warm-ups per condition use identical 9,989,906-byte ZIPs. The control
+skips session touch only inside the measurement harness; revocation after
+restoration returns 401. Session median/max 0.700893/0.721118 s; shared-key
+0.698920/0.730615 s; control 0.695996/0.734234 s. No clear session bottleneck:
+no runtime fix. Historical PR-04 failures and official PR-03 thresholds stay.
+The HTTP-client/curl method difference and uncontrolled-host limitations are
+explicit. Settings construction explicitly disables dotenv.
+
+**Tests:** Focused attribution/auth/account/download checks: 28 passed,
+0 failed, 0 skipped. Quiet measurement: 10/10 account-session requests and
+10/10 shared-key requests within two seconds; control 10/10, attribution only.
+All 36 warm-up/measured responses had identical archive SHA-256. No LLM calls.
+
+**Known gaps / follow-ups:** Local samples cannot establish clean-deployment or
+other-host compliance; the revised PR-03 text requires supervisor agreement.
+
 ## 2026-10-20 — Phase 9b section 2 — Link use cases and agent contracts
 
 **Summary:** Link UC-01–UC-07 to existing integration/E2E assertions, extend the
