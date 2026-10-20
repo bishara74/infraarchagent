@@ -1,0 +1,91 @@
+{
+  "version": "broad-v1",
+  "schedule": {
+    "default_runs_per_scenario": 2,
+    "round_order": "alternating_forward_reverse",
+    "default_order": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      10,
+      9,
+      8,
+      7,
+      6,
+      5,
+      4,
+      3,
+      2,
+      1
+    ]
+  },
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "Backup bucket",
+      "complexity": 1,
+      "prompt": "Private S3 bucket for backups with versioning, encryption and lifecycle rules."
+    },
+    {
+      "id": 2,
+      "name": "Static website",
+      "complexity": 2,
+      "prompt": "A static website hosted in a private AWS S3 bucket behind CloudFront with HTTPS, access logging, and Terraform infrastructure."
+    },
+    {
+      "id": 3,
+      "name": "Serverless REST API",
+      "complexity": 2,
+      "prompt": "Serverless REST API with API Gateway, Lambda and DynamoDB."
+    },
+    {
+      "id": 4,
+      "name": "Private EC2 with SSM",
+      "complexity": 3,
+      "prompt": "VPC with public and private subnets, a NAT gateway and an EC2 instance in a private subnet accessed through SSM Session Manager."
+    },
+    {
+      "id": 5,
+      "name": "Private RDS application",
+      "complexity": 3,
+      "prompt": "PostgreSQL on RDS in private subnets with automated backups, used by an EC2 application server."
+    },
+    {
+      "id": 6,
+      "name": "Fargate HTTPS application",
+      "complexity": 4,
+      "prompt": "Containerised web application on ECS Fargate behind an HTTPS Application Load Balancer."
+    },
+    {
+      "id": 7,
+      "name": "Fargate database and cache",
+      "complexity": 4,
+      "prompt": "ECS Fargate application with RDS PostgreSQL and ElastiCache Redis."
+    },
+    {
+      "id": 8,
+      "name": "EKS Helm application",
+      "complexity": 4,
+      "prompt": "EKS cluster running one web application deployed with a Helm chart."
+    },
+    {
+      "id": 9,
+      "name": "ECS application anchor",
+      "complexity": 5,
+      "prompt": "A Node.js REST API with a PostgreSQL database, autoscaling on ECS, a Jenkins CI/CD pipeline, Nginx reverse proxy, and Prometheus + Grafana monitoring stack on AWS."
+    },
+    {
+      "id": 10,
+      "name": "EKS microservices anchor",
+      "complexity": 5,
+      "prompt": "Python microservices on AWS EKS with autoscaling, a PostgreSQL database, a Jenkins CI/CD pipeline, and Prometheus monitoring with Grafana dashboards."
+    }
+  ]
+}

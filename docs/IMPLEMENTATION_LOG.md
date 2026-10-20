@@ -29,6 +29,52 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-21 — Phase 9i — Broad benchmark documentation and verification (section 4)
+
+**Summary:** Complete D-57, exact author commands and verification evidence. Full
+broad stub rehearsal completes 20 sequential runs and 60 packages; real inference
+remains author-run work. Preserve all historical input/report files.
+
+**Requirements addressed:** PR-01/05, NFR-01.
+
+**Files:** README; docs/design-deviations.md (D-57); this log;
+backend/scripts/run_phase9_benchmarks.py; docs/evals/phase9i-broad-preparation/;
+phase9-bench-broad-20261020T225308383413Z/; secret-scan evidence folders
+phase9-secret-scan-20261020T224836482395Z/ and 20261020T230012192768Z/.
+
+**Decisions:** D-57 records pre-registration, alternating rounds, descriptive
+statistics, missing/unstarted/unknown denominators and clustering limits. Server
+LOG_FILE, matching master API_KEY, unchanged model/settings and BUDGET reserve
+semantics are explicit. The existing runner defaults a missing broad argument to
+false, retaining compatibility with legacy programmatic callers. No policy,
+readiness, profile, deadline or blocking-rule changes; no new open question.
+
+**Tests:** make lint passed (Ruff, mypy 164 sources, frontend ESLint/TypeScript).
+make test: 1,851 passed, 0 failed/skipped, 6 performance tests deselected (433.93s).
+make frontend-test: 113 passed / 17 files / 0 failed or skipped.
+make test-e2e: 7 passed / 0 failed or skipped. make secret-scan: 0 findings, 0 scan
+errors, including refreshed broad evidence. Stub rehearsal: 20 settled / 60 package
+records / 0 missing / $0; PR-05 PASS; no PR-01 verdict or PR-03 cohort. JSON/CSV
+order and hashes verified. LOG_FILE captured 80 stub-only calls. Focused post-fix
+compatibility/report tests: 29 passed. Raw logs and machine-readable results are
+in docs/evals/phase9i-broad-preparation/.
+
+The initial database setup lacked the inspection role; the existing bootstrap
+fixed that prerequisite. The first full suite found one missing-argument
+regression (1,850 passed / one failed / six deselected); its failure is preserved.
+Defaulting broad to false fixes it, and the final full suite above passes.
+
+**Known gaps / follow-ups:** No real broad inference, new deployment validation or
+causal gain claim. Final-set individually priced runs cost $0.02594–$0.19225;
+twenty runs at those extrema would be $0.52–$3.85, not a new-scenario cost bound.
+Stub timings overlap some independent checks and establish rehearsal only. The
+tracked-dirty flag discloses finishing docs/compatibility source; the author uses
+committed source on a quiet machine. Disposable PostgreSQL with synthetic
+credentials was removed; app grants and the author's database are unchanged.
+No dotenv reads, real keys/model calls, installs/downloads or pushes. Next: author
+runs real broad-v1, commits its evidence and generates the appended report.
+
+
 ## 2026-10-21 — Phase 9i — Descriptive broad reporting (section 3)
 
 **Summary:** Append committed broad scenario/complexity statistics, chart CSV and

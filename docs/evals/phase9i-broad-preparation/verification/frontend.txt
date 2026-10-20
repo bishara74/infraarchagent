@@ -1,0 +1,47 @@
+cd frontend && npm test
+
+> infraarchagent-frontend@0.1.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/home/bishara/code/infraarchagent/frontend[39m
+
+ [32m✓[39m src/test/tooling.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 4327[2mms[22m[39m
+   [33m[2m✓[22m[39m serves the local shell and preserves API requests through the dev proxy[33m 4288[2mms[22m[39m
+ [32m✓[39m src/components/WindowedRows.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 536[2mms[22m[39m
+   [33m[2m✓[22m[39m large lists render a bounded window and scrolling reveals later rows[33m 534[2mms[22m[39m
+ [32m✓[39m src/lib/runStreamStore.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 558[2mms[22m[39m
+ [32m✓[39m src/App.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 668[2mms[22m[39m
+   [32m✓[39m application shell [2m(2)[22m
+     [33m[2m✓[22m[39m renders the input screen in the main landmark[33m 436[2mms[22m[39m
+ [32m✓[39m src/components/ModelControls.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1185[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 only supported modes can be selected and unsuitable models are disabled[33m 627[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 entering a key automatically probes and loads catalog without persistence[33m 400[2mms[22m[39m
+ [32m✓[39m src/components/review.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 1524[2mms[22m[39m
+   [33m[2m✓[22m[39m retry picker is limited to five existing files and only one request is active[33m 820[2mms[22m[39m
+ [32m✓[39m src/api/sse.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 347[2mms[22m[39m
+ [32m✓[39m src/api/client.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 189[2mms[22m[39m
+ [32m✓[39m src/lib/runReducer.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/lib/presentation.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/lib/fileTree.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/api/contract.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m src/screens/screens.test.tsx [2m([22m[2m19 tests[22m[2m)[22m[33m 4656[2mms[22m[39m
+   [33m[2m✓[22m[39m screen loading and safe errors[33m 404[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 incomplete submissions reach validation and empty config is omitted[33m 338[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-05 validation statuses and file links are accessible[33m 470[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07/FR-P-04 approve resumes closed SSE to recover its label-origin event without a retry latch[33m 899[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07/FR-P-04 reject resumes closed SSE to recover its label-origin event without a retry latch[33m 620[2mms[22m[39m
+ [32m✓[39m src/lib/preferences.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/test/databaseConfig.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/test/perfEvidence.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m src/lib/readinessOrigin.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+[2m      Tests [22m [1m[32m113 passed[39m[22m[90m (113)[39m
+[2m   Start at [22m 00:45:32
+[2m   Duration [22m 13.60s[2m (environment 56%, tests 20%, setup 16%, transform 6%, import 3%, worker 1%)[22m
+
+[2mEnvironment [22m [33mjsdom was created 17 times[39m[2m · 40.16s total, 56% of tracked time[22m
+[2m            [22m [2mcreate it once per worker with [22m[33mpool: 'vmThreads'[39m[2m (keeps per-file isolation) or [22m[33misolate: false[39m[2m (shares it across files)[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-environments[22m
+

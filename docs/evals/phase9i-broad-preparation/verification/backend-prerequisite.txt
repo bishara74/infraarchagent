@@ -1,0 +1,69 @@
+cd backend && .venv/bin/alembic -x database=test upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial schema and least-privilege app grants.
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_original_files, Retain the generated package as the cumulative remediation diff baseline.
+INFO  [alembic.runtime.migration] Running upgrade 0002_original_files -> 0003_review_retry_started_at, Identify interrupted review retries independently of event publication.
+INFO  [alembic.runtime.migration] Running upgrade 0003_review_retry_started_at -> 0004_honest_labels, Preserve legacy labels and review provenance (FR-S-08/10).
+INFO  [alembic.runtime.migration] Phase 9g label migration counts: {'checks_passed': 0, 'engineer_approved': 0, 'rejected': 0, 'pending_review': 0}
+INFO  [alembic.runtime.migration] Running upgrade 0004_honest_labels -> 0005_auth_sessions, Hashed browser sessions (NFR-01).
+INFO  [alembic.runtime.migration] Running upgrade 0005_auth_sessions -> 0006_policy_profile, Record the selected secondary assessment profile (FR-S-04).
+INFO  [alembic.runtime.migration] Running upgrade 0006_policy_profile -> 0007_legacy_label_provenance, Fail closed for legacy success without an automatic transition (FR-S-08/10).
+INFO  [alembic.runtime.migration] Phase 9g legacy provenance reconciliation counts: {'confirmed_checks_passed': 0, 'ambiguous_to_pending_review': 0}
+INFO  [alembic.runtime.migration] Running upgrade 0007_legacy_label_provenance -> 0008_accounts, User accounts and session binding (NFR-01, FR-UI-07).
+INFO  [alembic.runtime.migration] Running upgrade 0008_accounts -> 0009_credentials, Encrypted provider credentials and non-secret LLM settings (NFR-01).
+INFO  [alembic.runtime.migration] Running upgrade 0009_credentials -> 0010_agent_selections, Freeze all five agent selections and credential reference (FR-P-04).
+INFO  [alembic.runtime.migration] Running upgrade 0010_agent_selections -> 0011_user_preferences, Server-authoritative preferences and per-user recent runs (FR-UI-01).
+INFO  [alembic.runtime.migration] Running upgrade 0011_user_preferences -> 0012_inspection_role, SELECT-only inspection grants; role is provisioned by cluster bootstrap.
+Traceback (most recent call last):
+  File "/home/bishara/code/infraarchagent/backend/.venv/bin/alembic", line 8, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/config.py", line 1039, in main
+    CommandLine(prog=prog).main(argv=argv)
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/config.py", line 1029, in main
+    self.run_cmd(cfg, options)
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/config.py", line 963, in run_cmd
+    fn(
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/command.py", line 487, in upgrade
+    script.run_env()
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/script/base.py", line 550, in run_env
+    util.load_python_file(self.dir, "env.py")
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/util/pyfiles.py", line 114, in load_python_file
+    module = load_module_py(module_id, path)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/util/pyfiles.py", line 132, in load_module_py
+    spec.loader.exec_module(module)  # type: ignore
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/bishara/code/infraarchagent/backend/app/db/migrations/env.py", line 54, in <module>
+    asyncio.run(run_migrations_online())
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/app/db/migrations/env.py", line 46, in run_migrations_online
+    await connection.run_sync(do_run_migrations)
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/sqlalchemy/ext/asyncio/engine.py", line 908, in run_sync
+    return await greenlet_spawn(
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/sqlalchemy/util/concurrency.py", line 212, in greenlet_spawn
+    result = context.switch(value)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/app/db/migrations/env.py", line 39, in do_run_migrations
+    context.run_migrations()
+  File "<string>", line 8, in run_migrations
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/runtime/environment.py", line 970, in run_migrations
+    self.get_context().run_migrations(**kw)
+  File "/home/bishara/code/infraarchagent/backend/.venv/lib/python3.12/site-packages/alembic/runtime/migration.py", line 616, in run_migrations
+    step.migration_fn(**kw)
+  File "/home/bishara/code/infraarchagent/backend/app/db/migrations/versions/0012_inspection_role.py", line 18, in upgrade
+    raise RuntimeError(
+RuntimeError: Provision the inspection role with make prepare-db-tools before migrating.
+make: *** [Makefile:25: migrate-test] Error 1

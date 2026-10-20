@@ -1935,6 +1935,56 @@ architectural isolation. Rank 8's main option is CloudFront VPC origins to an
 internal ALB; both mirrored AWS versions expose `aws_cloudfront_vpc_origin`.
 This is future architecture, not a Phase 9i infrastructure change or policy fix.
 
+### D-57 — Broad benchmark method and pre-registration (Phase 9i evaluation)
+
+PR-01/05, NFR-01: broad-v1 is a pre-registered descriptive quality benchmark,
+separate from the specified PR-01 acceptance measurement and PR-03 concurrency
+measurement. Ten fixed prompts span five ordinal complexity levels. Anchors
+2/9/10 retain the final-set static/ECS/EKS texts verbatim. The other prompts copy
+the task descriptions; no generator/prompt-template tuning is introduced.
+Complexity reflects expected resource scale and service integration, not observed
+output or a causal explanatory variable. Supporting resource counts vary.
+
+The registration was committed in 7884c2f before rehearsal. Each invocation
+verifies its JSON bytes against Git HEAD, copies those exact bytes into evidence,
+and records their SHA-256 on every scheduled run (including not_started).
+The registration commit and schedule identity are validated again by reporting.
+Default execution is twenty sequential runs: IDs 1–10, then 10–1. Other positive
+RUNS_PER_SCENARIO values alternate forward/reverse rounds. No concurrency cohort,
+PR-04 seed/download or unrelated scripted verification is included.
+
+The existing account/key credit guard, first-cost affordability advisory,
+usage_limit stop, finite submission cap, per-call telemetry and redaction remain.
+BUDGET is a minimum-credit reserve, not a total-spend cap. Remaining scheduled
+slots are not_started after a stop. PR-01 timing is descriptive with no verdict;
+PR-05 retains the existing per-agent thresholds. Readiness, strict candidate
+guards, experimental profiles, deadlines and blocking criteria are unchanged.
+
+Reports read immutable committed evidence only, append separate broad sections
+and CSVs, and never rewrite historical rows or pool broad and final datasets.
+Stub rehearsals are explicitly separate from real-provider statistics. Package
+rates use generated packages from confirmed settled runs; missing variants are
+reported separately for those runs. Unstarted slots are excluded. Accepted runs
+without confirmed settlement have unknown variant slots, not assumed generation
+failures. Pipeline timing medians use the existing success/partial-success
+eligibility; costs use known settled sequential deltas with sample counts.
+Complete failed runs remain in the run-level comparison denominator.
+
+Scenario/complexity rates use Wilson 95% intervals. Exact-text anchor comparisons
+against each final set and the matched final pool use probability-ordered,
+two-sided Fisher tests at package and run level. A passing run has at least one
+passing package. Missing historical profiles, especially contextual-v2, remain
+unavailable; reporting does not rescan or rewrite them. Top blockers are stored
+strict findings minus stored exceptions for each experimental assessment.
+
+One model family, two runs per scenario by default, shared plans/variants,
+repeated prompts, changed code and provider routing/load limit inference. Actual
+repetitions and model selections are disclosed. Package p-values assume
+unrealistic independence and are optimistic; run sensitivity does not remove all
+clustering. Statistics are descriptive and cannot isolate the causal effect of
+9i, prove general reliability or establish deployment success. The author runs
+real inference later. No new specification ambiguity or open question is added.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

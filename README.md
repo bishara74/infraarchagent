@@ -790,17 +790,120 @@ submission. `bench-smoke` runs one of each example and writes
 `docs/evals/phase9-bench-smoke-*`; a three-sample smoke check does not establish
 full PR-01 acceptance. Budget guard stops can produce fewer than three runs.
 
-### Broad quality schedule
+### Running the broad benchmark
 
-`make bench-broad BASE_URL=http://127.0.0.1:8765 BUDGET=2` runs the committed
-[broad-v1 registration](docs/evals/scenarios/README.md) sequentially, defaulting to
-two runs per scenario (1–10 then 10–1). Override `RUNS_PER_SCENARIO` with a positive
-integer; use `MODE=stub` for a free rehearsal against a stub backend. The runner
-checks the registration against Git HEAD, records its SHA-256 on every scheduled
-row and bounds submissions to the schedule length. PR-01 timing is descriptive;
-PR-05 retains its normal thresholds. No PR-03 or PR-04 runs are launched.
-Evidence is under `docs/evals/phase9-bench-broad-*`. Keep the existing matching
-`API_KEY`, server-side `LOG_FILE`, installed tools and credit-reserve setup above.
+The [broad-v1 registration](docs/evals/scenarios/README.md) is committed before any
+run. Ten scenarios use two repetitions by default, in order **1–10 then 10–1**;
+extra rounds alternate direction. The runner refuses uncommitted scenario edits,
+records the exact JSON SHA-256 on every scheduled row, and writes normal evidence
+to `docs/evals/phase9-bench-broad-<timestamp>/`. PR-01 timing is descriptive with
+no verdict. PR-05 thresholds, readiness and all three assessments are unchanged.
+No PR-03 or PR-04 runs are launched. `MODE=real` is the default; specify
+`MODE=stub` for rehearsal. `RUNS_PER_SCENARIO` must be a positive integer.
+
+Use installed dependencies/tools and the existing local provider mirror. For the
+**author-only real benchmark**, stop other uses of the provider key and use a
+quiet machine. Keep the model family and settings fixed for all twenty runs.
+Export all four database URLs, the matching master `API_KEY` in both terminals,
+the server's persistent `CREDENTIAL_ENCRYPTION_KEY`, and `LLM_API_KEY` from your
+existing credential environment without copying them into commands or reports.
+The master key makes these runs use server selections rather than account
+preferences. Do not switch models or tune prompts after seeing results.
+
+From the repository root, export the same configuration in both terminals.
+These values reproduce the captured final-set generator/fixer configuration;
+uncaptured operator settings should remain fixed and be documented separately.
+The bootstrap disables dotenv before Python starts; database URLs must already
+be explicitly exported. It does not select the provider.
+
+```bash
+export INFRAARCH_TEST_BOOTSTRAP=1
+export PYTHONPATH="$PWD/backend/tests/bootstrap:$PWD/backend"
+export LLM_PROVIDER=openai LLM_BASE_URL=https://openrouter.ai/api/v1
+export LLM_MODEL=openai/gpt-oss-120b:nitro LLM_REASONING_EFFORT=low
+export SECURITY_FIX_PROVIDER=openai
+export SECURITY_FIX_MODEL=openai/gpt-oss-120b:nitro
+export SECURITY_FIX_REASONING_EFFORT=low
+export LLM_STRUCTURED_OUTPUT=json_schema GENERATOR_MAX_OUTPUT_TOKENS=16000
+export GENERATOR_ATTEMPT_TIMEOUT_SECONDS=140 LLM_DEADLINE_SECONDS=150
+export GENERATOR_DEADLINE_SECONDS=150 LLM_MAX_ATTEMPTS=3
+export GENERATOR_MAX_PACKAGE_ATTEMPTS=3 FIX_ATTEMPT_TIMEOUT_SECONDS=45
+export SECURITY_DEADLINE_SECONDS=240 SECURITY_FIX_MAX_RESOURCES=2
+export SECURITY_FIX_MAX_FINDINGS=12 SECURITY_PARTIAL_MAX_GROUPS=6
+
+git diff --exit-code HEAD -- docs/evals/scenarios/broad-v1.json
+sha256sum docs/evals/scenarios/broad-v1.json
+```
+
+Rehearse first. In terminal 1, with matching master `API_KEY` still exported:
+
+```bash
+make migrate
+mkdir -p .cache/broad-benchmark
+LLM_PROVIDER=stub LLM_API_KEY='' LLM_MODEL='' LLM_BASE_URL='' \
+  SECURITY_FIX_PROVIDER=stub SECURITY_FIX_MODEL='' \
+  LOG_FILE=.cache/broad-benchmark/stub-calls.jsonl make run PORT=8765
+```
+
+In terminal 2:
+
+```bash
+make bench-broad MODE=stub BASE_URL=http://127.0.0.1:8765 RUNS_PER_SCENARIO=2
+```
+
+Stop the stub server, then start the real server in terminal 1 using the exported
+configuration and real credentials (the author performs this step):
+
+```bash
+BROAD_TAG=$(date -u +%Y%m%dT%H%M%SZ)
+LOG_FILE=".cache/broad-benchmark/real-${BROAD_TAG}-calls.jsonl" make run PORT=8765
+```
+
+In terminal 2, with the same real-provider environment:
+
+```bash
+make bench-broad MODE=real BASE_URL=http://127.0.0.1:8765 BUDGET=2 RUNS_PER_SCENARIO=2
+```
+
+`LOG_FILE` belongs to the server process; the measurement client makes no model
+calls. Call logs retain the existing allowlist/redaction and stay untracked.
+`BUDGET=2` requires at least a $2 credit reserve; it is **not a total-spend cap**.
+The shared account/key guard checks each launch, stops at the first usage_limit,
+and records remaining slots as not_started. The schedule length is also an
+explicit finite submission cap. Stops return nonzero and retain partial evidence;
+do not silently replace stopped runs. The first measured cost produces an
+informational affordability projection, not authorization for further launches.
+
+Final-set sequential run costs ranged from **$0.02594–$0.19225**, with per-set
+medians near $0.12. Twenty runs at those observed extremes would total about
+**$0.52–$3.85**. These are historical usage deltas, not a quote or bound for new
+scenarios. All broad costs are sequentially attributed; unknown costs stay unknown.
+
+After the real command finishes, commit its printed evidence folder before
+reporting. These author commands accept that exact folder and use a fresh report
+destination; neither existing final evidence nor the final report is overwritten:
+
+```bash
+read -r -p 'Evidence folder printed by bench-broad: ' BROAD_EVIDENCE
+make secret-scan
+git add -- "$BROAD_EVIDENCE"
+git commit -m 'phase9i: record real broad-v1 benchmark evidence'
+BROAD_REPORT_TAG=$(date -u +%Y%m%dT%H%M%SZ)
+make eval-report EVAL_REPORT_ARGS="--revision HEAD --output-dir docs/evals/phase9-broad-report-${BROAD_REPORT_TAG}"
+```
+
+The new section and `broad-groups.csv`, `broad-complexity.csv`,
+`broad-blockers.csv`, `broad-anchors.csv` and `broad-summary.json` separate real
+results from stub rehearsals. Existing historical CSV rows are unchanged.
+The complexity CSV is ready for a chart (select one profile and benchmark).
+Generated-package rates show Wilson 95% intervals; missing variants, unstarted
+slots and unknown variants from incomplete runs remain separate. Timings use
+eligible successful/partially successful runs; known-cost medians include their
+sample counts. Anchor Fisher comparisons include package and complete-run views;
+complete failed runs remain in the run denominator. Historical contextual-v2 is
+unavailable. This is one model family and two runs per scenario by default:
+statistics are descriptive, variants share plans, and code/provider differences
+prevent causal attribution to 9i. See D-57.
 
 ### Runtime attribution and offline replay
 

@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-21",
+  "commands": {
+    "make lint": {
+      "result": "passed"
+    },
+    "make test": {
+      "result": "passed",
+      "passed": 1851,
+      "failed": 0,
+      "skipped": 0,
+      "deselected": 6
+    },
+    "make frontend-test": {
+      "result": "passed",
+      "files": 17,
+      "passed": 113,
+      "failed": 0,
+      "skipped": 0
+    },
+    "make test-e2e": {
+      "result": "passed",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "make secret-scan": {
+      "result": "passed",
+      "findings": 0,
+      "scan_errors": 0,
+      "evidence": "docs/evals/phase9-secret-scan-20261020T230012192768Z"
+    },
+    "make bench-broad MODE=stub BASE_URL=http://127.0.0.1:8765 RUNS_PER_SCENARIO=2": {
+      "result": "completed",
+      "settled_runs": 20,
+      "package_records": 60,
+      "missing_variants": 0,
+      "cost_usd": 0,
+      "pr05": "PASS"
+    },
+    "focused compatibility/report tests": {
+      "result": "passed",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "isolation": {
+    "dotenv_disabled": true,
+    "provider": "stub; E2E provider HTTP mocked",
+    "postgres": "disposable PostgreSQL 16 container, synthetic credentials, removed",
+    "app_owner_roles": "unchanged; existing inspection bootstrap provisioned readonly role",
+    "installed_tools_only": true,
+    "downloads": 0,
+    "real_llm_calls": 0
+  },
+  "attempts": [
+    "First make test stopped before collection: missing inspection role. Ran existing bootstrap script.",
+    "First complete suite: 1850 passed, 1 failed, 6 deselected. Legacy suite arguments lacked broad.",
+    "Default broad to false for legacy callers; focused tests 29 passed; final full suite 1851 passed."
+  ],
+  "protected_inputs": "docs/spec, final report, both Phase 9i offline evidence collections unchanged",
+  "cost_reference": {
+    "source": "22 individually priced runs from the two final sets",
+    "min_usd": 0.02593815,
+    "max_usd": 0.192251,
+    "new_scenario_costs": "unmeasured"
+  }
+}

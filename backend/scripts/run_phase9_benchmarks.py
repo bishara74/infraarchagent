@@ -90,10 +90,11 @@ async def execute(harness: Harness, *, seeder=None, smoke: bool = False) -> None
 
 
 async def run(args) -> None:
-    registration = registered_scenarios() if args.broad else None
+    broad = getattr(args, "broad", False)
+    registration = registered_scenarios() if broad else None
     directory = evidence_directory(
         "bench-broad"
-        if args.broad
+        if broad
         else "bench-smoke"
         if args.smoke
         else "bench-" + args.mode,
@@ -127,7 +128,7 @@ async def run(args) -> None:
         timeout=httpx.Timeout(60, connect=5), follow_redirects=False
     ) as client:
         harness = await configured_harness(args, directory, client)
-        if args.broad:
+        if broad:
             harness.benchmark_kind = "broad"
 
         async def seed():
@@ -147,7 +148,7 @@ async def run(args) -> None:
         try:
             # Do not submit a rehearsal to a backend lacking its local tool chain.
             if args.mode == "stub":
-                if not args.broad:
+                if not broad:
                     load_seed_settings()
                 response = await client.get(args.base_url.rstrip("/") + "/api/health")
                 health = response.json()
@@ -164,11 +165,11 @@ async def run(args) -> None:
                         "scanners and provider mirror."
                     )
             if not harness.stop_reason:
-                if args.broad:
+                if broad:
                     await execute_broad(harness, slots)
                 else:
                     await execute(harness, seeder=seed, smoke=args.smoke)
-                if args.mode == "stub" and not harness.stop_reason and not args.broad:
+                if args.mode == "stub" and not harness.stop_reason and not broad:
                     from scripts.phase9e_rehearsal import verification_rehearsal
 
                     rehearsal = await verification_rehearsal()
@@ -193,11 +194,11 @@ async def run(args) -> None:
                 "Benchmark prerequisite or fixture preparation failed."
             )
         finally:
-            if args.broad:
+            if broad:
                 # Also persist the entire schedule after prerequisite failures.
                 mark_broad_not_started(harness, slots)
             harness.flush()
-            if not args.broad:
+            if not broad:
                 section_reports(harness, directory)
     print(directory)
     if harness.stop_reason:

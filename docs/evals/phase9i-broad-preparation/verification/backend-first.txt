@@ -1,0 +1,82 @@
+cd backend && .venv/bin/alembic -x database=test upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_initial_schema, Initial schema and least-privilege app grants.
+INFO  [alembic.runtime.migration] Running upgrade 0001_initial_schema -> 0002_original_files, Retain the generated package as the cumulative remediation diff baseline.
+INFO  [alembic.runtime.migration] Running upgrade 0002_original_files -> 0003_review_retry_started_at, Identify interrupted review retries independently of event publication.
+INFO  [alembic.runtime.migration] Running upgrade 0003_review_retry_started_at -> 0004_honest_labels, Preserve legacy labels and review provenance (FR-S-08/10).
+INFO  [alembic.runtime.migration] Phase 9g label migration counts: {'checks_passed': 0, 'engineer_approved': 0, 'rejected': 0, 'pending_review': 0}
+INFO  [alembic.runtime.migration] Running upgrade 0004_honest_labels -> 0005_auth_sessions, Hashed browser sessions (NFR-01).
+INFO  [alembic.runtime.migration] Running upgrade 0005_auth_sessions -> 0006_policy_profile, Record the selected secondary assessment profile (FR-S-04).
+INFO  [alembic.runtime.migration] Running upgrade 0006_policy_profile -> 0007_legacy_label_provenance, Fail closed for legacy success without an automatic transition (FR-S-08/10).
+INFO  [alembic.runtime.migration] Phase 9g legacy provenance reconciliation counts: {'confirmed_checks_passed': 0, 'ambiguous_to_pending_review': 0}
+INFO  [alembic.runtime.migration] Running upgrade 0007_legacy_label_provenance -> 0008_accounts, User accounts and session binding (NFR-01, FR-UI-07).
+INFO  [alembic.runtime.migration] Running upgrade 0008_accounts -> 0009_credentials, Encrypted provider credentials and non-secret LLM settings (NFR-01).
+INFO  [alembic.runtime.migration] Running upgrade 0009_credentials -> 0010_agent_selections, Freeze all five agent selections and credential reference (FR-P-04).
+INFO  [alembic.runtime.migration] Running upgrade 0010_agent_selections -> 0011_user_preferences, Server-authoritative preferences and per-user recent runs (FR-UI-01).
+INFO  [alembic.runtime.migration] Running upgrade 0011_user_preferences -> 0012_inspection_role, SELECT-only inspection grants; role is provisioned by cluster bootstrap.
+cd backend && .venv/bin/python -m scripts.run_verification pytest -q -m "not perf"
+........................................................................ [  3%]
+........................................................................ [  7%]
+........................................................................ [ 11%]
+........................................................................ [ 15%]
+........................................................................ [ 19%]
+........................................................................ [ 23%]
+........................................................................ [ 27%]
+........................................................................ [ 31%]
+........................................................................ [ 35%]
+........................................................................ [ 38%]
+........................................................................ [ 42%]
+........................................................................ [ 46%]
+........................................................................ [ 50%]
+.................................F...................................... [ 54%]
+........................................................................ [ 58%]
+........................................................................ [ 62%]
+........................................................................ [ 66%]
+........................................................................ [ 70%]
+........................................................................ [ 73%]
+........................................................................ [ 77%]
+........................................................................ [ 81%]
+........................................................................ [ 85%]
+........................................................................ [ 89%]
+........................................................................ [ 93%]
+........................................................................ [ 97%]
+...................................................                      [100%]
+=================================== FAILURES ===================================
+____________ test_stub_suite_preflights_seed_before_submitting_runs ____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ccc546bcb90>
+tmp_path = PosixPath('/tmp/pytest-of-bishara/pytest-363/test_stub_suite_preflights_see0')
+
+    @pytest.mark.req("PR-04")
+    async def test_stub_suite_preflights_seed_before_submitting_runs(monkeypatch, tmp_path):
+        from types import SimpleNamespace
+        from unittest.mock import AsyncMock, Mock
+    
+        from scripts import run_phase9_benchmarks as commands
+    
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        harness = SimpleNamespace(stop_reason=None, flush=Mock())
+        execute = AsyncMock()
+        monkeypatch.setattr(commands, "evidence_directory", lambda *a, **kw: tmp_path)
+        monkeypatch.setattr(commands, "configured_harness", AsyncMock(return_value=harness))
+        monkeypatch.setattr(commands, "section_reports", lambda *a: None)
+        monkeypatch.setattr(commands, "execute", execute)
+        with pytest.raises(SystemExit) as error:
+>           await commands.run(SimpleNamespace(mode="stub", smoke=False))
+
+tests/unit/test_phase9f_seed.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = namespace(mode='stub', smoke=False)
+
+    async def run(args) -> None:
+>       registration = registered_scenarios() if args.broad else None
+                                                 ^^^^^^^^^^
+E       AttributeError: 'types.SimpleNamespace' object has no attribute 'broad'
+
+scripts/run_phase9_benchmarks.py:93: AttributeError
+=========================== short test summary info ============================
+FAILED tests/unit/test_phase9f_seed.py::test_stub_suite_preflights_seed_before_submitting_runs
+1 failed, 1850 passed, 6 deselected in 388.23s (0:06:28)
+make: *** [Makefile:35: test] Error 1
