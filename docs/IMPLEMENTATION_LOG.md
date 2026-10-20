@@ -32,6 +32,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 
 
+## 2026-10-20 — Phase 9i — Adjacent assessments in API, archives and UI
+
+**Summary:** Display strict/v1/v2 totals and profile-labelled exceptions, with
+v2 unavailable for older responses. Extend quality projections to preserve v2.
+Correct new generator schema-size telemetry to count schema bytes separately
+from the security checklist (older records used the combined count).
+
+**Requirements addressed:** FR-S-04, FR-UI-05/06, FR-G-02, NFR-01.
+
+**Files:** frontend API types, profile/report/comparison components and tests;
+scripts/phase9d_quality.py; pipeline/orchestrator.py; integration profile tests;
+this log.
+
+**Decisions:** D-56. Run selection remains strict/contextual-v1; no migration.
+Strict labels and review/download controls remain server-authoritative.
+
+**Tests:** Frontend lint passed; frontend suite 113 passed / 0 failed in 17
+files. Profile API/archive and quality tests: 8 passed / 0 failed (12.29 s).
+Full backend run: 1,756 passed / 0 failed / 6 perf deselected (296.06 s).
+Stub Playwright browser suite: 7 passed / 0 failed (2.3m).
+
+**Known gaps / follow-ups:** Final per-change replay, verification refinements
+and thesis evidence remain for the final commit. No real inference was used.
+
+
 ## 2026-10-20 — Phase 9i — Isolated contextual-v2 assessment
 
 **Summary:** Add literal listener normalisation, HTTPS-only ALBs, explicit

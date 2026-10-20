@@ -44,6 +44,7 @@ async def test_contextual_success_cannot_promote_label_and_is_archived(db_engine
         assert item["readiness_label"] == "pending_review"
         assert not item["profile_assessments"]["strict"]["checks_passed"]
         assert item["profile_assessments"]["contextual-v1"]["checks_passed"]
+        assert item["profile_assessments"]["contextual-v2"]["checks_passed"]
         assert not item["downloadable"]
         await c.post(
             review_url(run),
@@ -62,6 +63,7 @@ async def test_contextual_success_cannot_promote_label_and_is_archived(db_engine
         for expected in [
             "# ENGINEER APPROVED",
             "contextual-v1",
+            "contextual-v2",
             "s3-log-target-sse-s3",
             "excepted:",
             "AWS-0132",

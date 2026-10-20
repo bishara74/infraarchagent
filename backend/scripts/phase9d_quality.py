@@ -10,7 +10,7 @@ from app.core.logging import REDACTED, RedactingFilter
 from app.domain.enums import PackageStatus
 from app.domain.paths import validate_relative_path
 from app.domain.review import security_final, security_iterations
-from app.security.profiles import assess
+from app.security.profiles import PROFILE_IDS, assess
 from scripts.phase9_common import ROOT, write_json
 from scripts.phase9_report import statistics_for
 from scripts.phase9c_metrics import number
@@ -293,7 +293,7 @@ def quality_table(
                 ),
                 "packages": total,
             }
-            for name in ("strict", "contextual-v1")
+            for name in PROFILE_IDS
         },
         "review_reason_counts": dict(reasons.most_common()),
         "failed_check_counts": [
@@ -302,6 +302,10 @@ def quality_table(
         ],
         "remaining_finding_counts": dict(findings.most_common()),
     }
+    if not packages or not all(
+        "contextual-v2" in p.get("profile_assessments", {}) for p in packages
+    ):
+        result["profile_rates"]["contextual-v2"]["passed"] = None
     origins = Counter(
         c.get("origin", "unknown") for p in packages for c in p["failed_checks"]
     )
@@ -408,9 +412,13 @@ def quality_table(
         f"Checks-passed rate among generated packages: **{rate}**.",
         f"Legacy labels mapped: {result['legacy_labels_mapped']}. "
         f"Missing variants: {missing}; runs without quality snapshots: {unavailable}.",
-        "Strict / contextual-v1 assessments: "
+        "Strict / contextual-v1 / contextual-v2 assessments: "
         + "; ".join(
-            f"{name}: {view['passed']}/{total}"
+            (
+                f"{name}: unavailable"
+                if view["passed"] is None
+                else f"{name}: {view['passed']}/{total}"
+            )
             for name, view in result["profile_rates"].items()
         )
         + ". Contextual results are experimental and never change package labels.",
@@ -574,7 +582,7 @@ def compact_snapshot(raw: dict, redactor: RedactingFilter) -> dict:
         result["status"] = "checks_passed"
     profiles = raw.get("profile_assessments", {})
     result["profile_assessments"] = {}
-    for name in ("strict", "contextual-v1"):
+    for name in PROFILE_IDS:
         view = profiles.get(name)
         if not isinstance(view, dict):
             continue

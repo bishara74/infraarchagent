@@ -65,3 +65,12 @@ it.each(['approve','reject'] as const)('FR-UI-07/FR-P-04 %s resumes closed SSE t
 it('FR-UI-07 empty decisions focus the missing field without sending a request',async()=>{snapshot();const request=vi.spyOn(api,'review');show(<PackageScreen/>,'/runs/run/packages/security');await userEvent.click(screen.getByRole('button',{name:'Approve'}));expect(request).not.toHaveBeenCalled();expect(screen.getByRole('alert')).toHaveTextContent('Enter a reviewer name and decision reason.');expect(screen.getByLabelText('Reviewer name')).toHaveFocus();await userEvent.type(screen.getByLabelText('Reviewer name'),'Engineer');await userEvent.click(screen.getByRole('button',{name:'Approve'}));expect(screen.getByLabelText('Decision reason')).toHaveFocus();expect(request).not.toHaveBeenCalled();});
 
 it('FR-UI-05 strict and contextual totals are adjacent without promoting the label',()=>{const value=structuredClone(pending) as ResultsResponse;const item=value.packages[2]!;item.profile_assessments={'strict':{checks_passed:false,remaining_blocking:1,excepted:[]},'contextual-v1':{checks_passed:true,remaining_blocking:0,excepted:[]}};snapshot(value);show(<ComparisonScreen/>,'/runs/run/compare');expect(screen.getByText(/Assessment pass counts — strict: 2\/3 · contextual-v1: 3\/3/)).toBeVisible();expect(screen.getAllByText('pending review').length).toBeGreaterThan(0);});
+
+it('FR-UI-05 v2 totals are additive and missing v2 remains unavailable',()=>{
+ const value=structuredClone(pending) as ResultsResponse;
+ for(const item of value.packages){item.profile_assessments!['contextual-v2']={checks_passed:true,remaining_blocking:0,excepted:[]};}
+ snapshot(value);const root=show(<ComparisonScreen/>,'/runs/run/compare');
+ expect(screen.getByText(/contextual-v2: 3\/3/)).toBeVisible();
+ root.unmount();snapshot(pending as ResultsResponse);show(<ComparisonScreen/>,'/runs/run/compare');
+ expect(screen.getAllByText(/contextual-v2: unavailable/).length).toBeGreaterThan(0);
+});

@@ -31,7 +31,7 @@ export interface PackageResult {
   original_files: Record<string, string> | null;
   security_report: Record<string, unknown> | null;
   validation_report: Record<string, unknown> | null;
-  profile_assessments?: Record<'strict'|'contextual-v1',ProfileAssessment>;
+  profile_assessments?: Record<'strict'|'contextual-v1',ProfileAssessment> & Partial<Record<'contextual-v2',ProfileAssessment>>;
   review_decision?: {action:string;reviewer_name:string|null;reason:string|null;decided_at:string|null;identity_basis:string} | null;
   review_feedback: string | null;
   readiness_label: 'checks_passed' | 'engineer_approved' | 'rejected' | 'pending_review' | null;

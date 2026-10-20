@@ -29,3 +29,10 @@ it('FR-S-04 contextual success leaves strict findings and the official pending l
  expect(screen.getByText('unresolved')).toBeVisible();
  expect(screen.getByText('KMS required')).toBeVisible();
 });
+
+it('FR-UI-05 v2 exceptions identify their profile without changing strict review',()=>{
+ const value=item();value.profile_assessments!['contextual-v2']={checks_passed:true,remaining_blocking:0,excepted:[{rule_id:'AWS-0053',resource:'aws_lb.edge',file_path:'terraform/main.tf',entry_id:'public-lb-https-redirect',classification:'excepted',justification:'HTTPS only'}]};
+ render(<ReportPanel item={value} onFile={vi.fn()}/>);
+ expect(screen.getByText('contextual-v2 · public-lb-https-redirect: HTTPS only')).toBeVisible();
+ expect(screen.getByText('Remains blocking under strict policy.')).toBeVisible();
+});
