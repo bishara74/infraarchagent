@@ -4,3 +4,4 @@
 - Traceability: tag UC-01..UC-07 tests, add the NFR-02 check, generate a traceability matrix
 - PR-03: document CPU-bound cause with evidence; draft a revised target for the supervisor (text only)
 - Thesis notes for Chapter 6: findings (Sonnet speed, Haiku prose_before, fixer schema 12/140 -> 47/49, Trivy JSON false positives, AWS log-target vs KMS conflict, Unsupported argument, plan-to-resource mapping)
+- make eval-report: relative --output-dir is resolved under backend/ (because of 'cd backend'); resolve it against the repo root
