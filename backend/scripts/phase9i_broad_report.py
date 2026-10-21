@@ -11,7 +11,7 @@ from scripts.benchmark import eligible
 from scripts.phase9_common import write_json
 from scripts.phase9_report import statistics_for, write_csv
 from scripts.phase9b_stats import fisher, wilson
-from scripts.phase9d_quality import compact_snapshot
+from scripts.phase9d_quality import compact_snapshot, quality_table
 from scripts.phase9i_broad import METADATA_FIELDS, SCENARIO_PATH, broad_schedule
 
 PROFILES = ("strict", "contextual-v1", "contextual-v2")
@@ -434,6 +434,16 @@ def append_broad_report(
                         for r in comparisons
                     ],
                 ),
+                "",
+            ]
+        quality, _ = quality_table(benchmark["packages"], missing=0)
+        if "generator_schema_overflow" in quality:
+            lines += [
+                "Schema-only context sizes: "
+                + str(quality["schema_context_chars"].get("generator_schema_only")),
+                "",
+                "Schema guidance overflow (omitted types by tier): "
+                + str(quality["generator_schema_overflow"]),
                 "",
             ]
         summary = evidence.read("docs/evals/" + folder + "/summary.md").decode()

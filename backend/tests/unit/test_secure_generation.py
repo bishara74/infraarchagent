@@ -82,9 +82,19 @@ def test_complex_guidance_preserves_network_shape_and_explicit_version_differenc
     entries = {e["type"]: e for e in json.loads(context.text[: context.schema_chars])}
     ecs = entries["aws_ecs_service"]
     assert ecs["versions"] == ["5.100.0", "6.68.0"]
+    # Conditional requirements are atomic per type; a crowded plan can omit the
+    # complete conditional group while retaining every unconditional core.
+    assert "aws_ecs_service" in context.omitted_conditional
+    assert ecs["schema"]["blocks"] == {}
+    single = generation_context(plan("ECS"))
+    ecs = next(
+        e
+        for e in json.loads(single.text[: single.schema_chars])
+        if e["type"] == "aws_ecs_service"
+    )
     network = ecs["schema"]["blocks"]["network_configuration"]
     assert network["required"]["subnets"] == ["set", "string"]
-    assert network["optional"]["assign_public_ip"] == "bool"
+    assert network["if_used"] is True
     db = entries["aws_db_instance"]
     assert "region" in db["version_fields"]["6.68.0"]["optional"]
     assert "region" not in db["schema"]["optional"]

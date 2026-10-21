@@ -99,16 +99,21 @@ def test_competing_json_legacy_route_fields_are_untouched():
 
 
 def test_optional_names_types_and_nested_shapes_fit_generation_cap():
-    from app.validation.schema_context import generator_schema_context
+    from app.validation.schema_context import generator_schema_guidance
 
-    raw = generator_schema_context(
+    guidance = generator_schema_guidance(
         4500, resource_types=("aws_db_instance", "aws_lb_listener", "aws_ecs_service")
     )
+    raw = guidance.text
     entries = json.loads(raw)
     assert len(raw) <= 4500
     db = next(e for e in entries if e["type"] == "aws_db_instance")
     assert db["schema"]["optional"]["db_name"] == "string"
     service = next(e for e in entries if e["type"] == "aws_ecs_service")
+    assert "aws_ecs_service" in guidance.omitted_conditional
+    assert service["schema"]["blocks"] == {}
+    single = generator_schema_guidance(4500, resource_types=("aws_ecs_service",))
+    service = json.loads(single.text)[0]
     assert "network_configuration" in service["schema"]["blocks"]
     assert (
         service["schema"]["blocks"]["network_configuration"]["optional"][

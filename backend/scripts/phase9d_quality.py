@@ -30,6 +30,46 @@ def safe_text(value: object, redactor: RedactingFilter, limit: int = 500) -> str
     return " ".join(text.split())[:limit]
 
 
+GENERATION_METRICS = (
+    "generator_schema_only_context_chars",
+    "generator_security_context_chars",
+    "generator_schema_context_overflow",
+    "generator_schema_omitted_resource_types",
+)
+
+
+def generation_metrics(raw: dict) -> dict:
+    """Keep historical absence distinct from a measured zero or no overflow."""
+    result = {}
+    for key in GENERATION_METRICS:
+        if key not in raw:
+            continue
+        value = raw[key]
+        if key.endswith("_chars"):
+            result[key] = value if type(value) is int and value >= 0 else None
+        elif key.endswith("_overflow"):
+            result[key] = value if type(value) is bool else None
+        else:
+            result[key] = (
+                {
+                    tier: [
+                        name
+                        for name in value.get(tier, [])
+                        if isinstance(name, str)
+                        and re.fullmatch(r"aws_[a-z0-9_]+", name)
+                    ]
+                    for tier in ("required", "conditional_required")
+                }
+                if isinstance(value, dict)
+                and all(
+                    isinstance(value.get(tier, []), list)
+                    for tier in ("required", "conditional_required")
+                )
+                else None
+            )
+    return result
+
+
 def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
     """Construct every field explicitly: never copy arbitrary report metadata."""
     status = package.get("status")
@@ -173,6 +213,7 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
         "failed_checks": checks,
         "remaining_findings": dict(sorted(findings.items())),
         "phase9e": {
+            **generation_metrics(remediation),
             "security_context_measurements": proposal_contexts,
             "generator_schema_context_chars": remediation.get(
                 "generator_schema_context_chars"
@@ -382,6 +423,44 @@ def quality_table(
             ]
         ),
     }
+    measured_generation = [
+        p.get("phase9e", {})
+        for p in packages
+        if type(p.get("phase9e", {}).get("generator_schema_only_context_chars")) is int
+    ]
+    if measured_generation:
+        result["schema_context_chars"]["generator_schema_only"] = statistics_for(
+            [
+                n
+                for p in measured_generation
+                if type(n := p.get("generator_schema_only_context_chars")) is int
+            ]
+        )
+        result["generator_schema_overflow"] = {
+            "measured_packages": len(measured_generation),
+            "overflow_packages": sum(
+                p.get("generator_schema_context_overflow") is True
+                for p in measured_generation
+            ),
+            "unknown_packages": len(packages)
+            - sum(
+                type(p.get("phase9e", {}).get("generator_schema_context_overflow"))
+                is bool
+                for p in packages
+            ),
+            "omitted_types": {
+                tier: dict(
+                    Counter(
+                        name
+                        for p in measured_generation
+                        for name in (
+                            p.get("generator_schema_omitted_resource_types") or {}
+                        ).get(tier, [])
+                    )
+                )
+                for tier in ("required", "conditional_required")
+            },
+        }
     result["security_outcomes_by_class"] = [
         {"outcome": k[0], "reason": k[1], "error_class": k[2], "count": n}
         for k, n in sorted(
@@ -453,6 +532,11 @@ def quality_table(
         "Gate outcomes: " + str(result["gate_outcomes"]),
         "Init categories: " + str(result["init_categories"]),
         "Schema context sizes (characters): " + str(result["schema_context_chars"]),
+        *(
+            ["Schema guidance overflow: " + str(result["generator_schema_overflow"])]
+            if "generator_schema_overflow" in result
+            else []
+        ),
         "Security context coverage: " + str(result["security_context_coverage"]),
         "Security iteration outcomes by class: "
         + str(result["security_outcomes_by_class"]),
@@ -514,6 +598,7 @@ def compact_snapshot(raw: dict, redactor: RedactingFilter) -> dict:
             "summary": {"result": raw.get("validation_result")},
             "checks": [{**c, "status": "failed"} for c in raw.get("failed_checks", [])],
             "remediation": {
+                **generation_metrics(extra),
                 "initialization": extra.get("initialization"),
                 "generator_schema_context_chars": extra.get(
                     "generator_schema_context_chars"

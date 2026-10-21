@@ -1756,6 +1756,28 @@ stored results remain frozen. Strict controls repair acceptance, readiness and
 downloads. Run profile selection and persistence are unchanged; no migration.
 No threshold, deadline or dependency changes are authorised.
 
+Schema/provider follow-up (FR-G-02, FR-V-03/04, NFR-01): guidance uses three
+global tiers: unconditional required arguments/blocks recursively, conditional
+requirements under optional ancestors, then optional attributes and optional
+blocks. Conditional shells carry `if_used: true`; common recursive structure is
+shared across provider versions without losing version-specific requirements.
+Caps remain 4,500 schema / 1,500 checklist / 6,000 combined characters.
+
+Author clarification: when a required tier exceeds its cap, include only complete
+per-resource-type groups, prioritising types mapped directly from structured plan
+services/storage in encounter order before inferred support types. Skip a group
+that does not fit and continue considering subsequent types. Tier 2 never
+displaces tier 1: omitted conditional groups retain their unconditional cores.
+Generation continues. Events, quality exports and benchmark reports carry an
+explicit overflow flag and separate omitted-type lists for the two tiers.
+Unavailable schema indexes retain the existing degraded-guidance behavior.
+
+The additive `generator_schema_only_context_chars` measures schema characters
+before checklist concatenation. Historical `generator_schema_context_chars`
+sometimes measured the combined context; preserve it and all historical values
+without deriving or backfilling an allegedly exact schema-only measurement.
+Absent new metadata remains unknown.
+
 
 Kubernetes follow-up (FR-S-04/09, FR-V-01, FR-UI-06): a missing-only,
 source-preserving pod catalogue supports Deployment/StatefulSet/DaemonSet/Job,

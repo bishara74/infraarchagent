@@ -3,10 +3,11 @@
 import json
 import re
 from dataclasses import dataclass
+from typing import Any
 
 from app.domain.plan import DeploymentPlan, StorageKind
 from app.security.catalogue import guidance
-from app.validation.schema_context import generator_schema_context
+from app.validation.schema_context import generator_schema_guidance
 
 SERVICE_TYPES = {
     "ec2": {"aws_instance"},
@@ -94,6 +95,28 @@ def supporting_guidance(types: set[str]) -> list[str]:
     return lines
 
 
+def priority_resource_types(plan: DeploymentPlan) -> tuple[str, ...]:
+    """Explicit plan services/storage precede inferred supporting infrastructure."""
+    named: list[str] = []
+    for aws_service in [s.aws_service for s in plan.services] + [
+        s.aws_service for s in plan.storage
+    ]:
+        tokens = set(re.findall(r"[a-z0-9]+", aws_service.lower()))
+        for token, selected in SERVICE_TYPES.items():
+            if token in tokens:
+                named.extend(sorted(selected))
+        if {"load", "balancer"} <= tokens:
+            named.extend(("aws_lb", "aws_lb_listener"))
+    storage_types = {
+        StorageKind.OBJECT_STORAGE: "aws_s3_bucket",
+        StorageKind.RELATIONAL_DB: "aws_db_instance",
+        StorageKind.BLOCK_VOLUME: "aws_ebs_volume",
+    }
+    named.extend(storage_types[s.kind] for s in plan.storage if s.kind in storage_types)
+    types = plan_resource_types(plan)
+    return tuple(dict.fromkeys([*(n for n in named if n in types), *sorted(types)]))
+
+
 @dataclass(frozen=True)
 class GenerationContext:
     text: str
@@ -101,11 +124,29 @@ class GenerationContext:
     checklist_chars: int
     truncated: bool
     resource_types: tuple[str, ...]
+    omitted_required: tuple[str, ...] = ()
+    omitted_conditional: tuple[str, ...] = ()
+
+    def metrics(self) -> dict[str, Any]:
+        return {
+            "generator_schema_only_context_chars": self.schema_chars,
+            "generator_security_context_chars": self.checklist_chars,
+            "generator_context_truncated": self.truncated,
+            "generator_schema_context_overflow": bool(
+                self.omitted_required or self.omitted_conditional
+            ),
+            "generator_schema_omitted_resource_types": {
+                "required": list(self.omitted_required),
+                "conditional_required": list(self.omitted_conditional),
+            },
+        }
 
 
 def generation_context(plan: DeploymentPlan) -> GenerationContext:
     types = plan_resource_types(plan)
-    schema = generator_schema_context(4500, resource_types=tuple(sorted(types)))
+    priority = priority_resource_types(plan)
+    budgeted = generator_schema_guidance(4500, resource_types=priority)
+    schema = budgeted.text
     header = "\nSecurity checklist:\n"
     lines = [
         "Syntax: close quoted strings; use one block argument per line, no semicolons. "
@@ -125,5 +166,11 @@ def generation_context(plan: DeploymentPlan) -> GenerationContext:
         or len(header + supporting + "\n" + all_controls) > 1500
     )
     return GenerationContext(
-        schema + checklist, len(schema), len(checklist), truncated, tuple(sorted(types))
+        schema + checklist,
+        len(schema),
+        len(checklist),
+        truncated,
+        priority,
+        budgeted.omitted_required,
+        budgeted.omitted_conditional,
     )

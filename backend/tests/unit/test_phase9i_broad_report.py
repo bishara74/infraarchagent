@@ -21,6 +21,42 @@ pytestmark = pytest.mark.req("PR-01", "PR-05", "NFR-01")
 FOLDER = "phase9-bench-broad-fixture"
 
 
+def test_broad_report_includes_measured_schema_overflow(
+    committed_broad, tmp_path, monkeypatch
+):
+    from scripts import phase9i_broad_report
+
+    evidence, _ = committed_broad
+    benchmark = load_broad(evidence, FOLDER)
+    for package in benchmark["packages"]:
+        package.setdefault("phase9e", {}).update(
+            {
+                "generator_schema_only_context_chars": 4400,
+                "generator_schema_context_overflow": True,
+                "generator_schema_omitted_resource_types": {
+                    "required": [],
+                    "conditional_required": ["aws_ecs_service"],
+                },
+            }
+        )
+    monkeypatch.setattr(phase9i_broad_report, "load_broad", lambda *args: benchmark)
+    output = tmp_path / "overflow-report"
+    output.mkdir()
+    (output / "report.md").write_text("")
+    phase9i_broad_report.append_broad_report(
+        evidence,
+        [FOLDER],
+        {
+            "final set 1": benchmark,
+            "final set 2": benchmark,
+        },
+        output,
+    )
+    text = (output / "report.md").read_text()
+    assert "Schema-only context sizes" in text
+    assert "conditional_required" in text and "aws_ecs_service" in text
+
+
 def fixture_benchmark(mode="real"):
     raw = (ROOT / SCENARIO_PATH).read_bytes()
     registration = json.loads(raw)
@@ -250,10 +286,17 @@ def test_historical_outputs_unchanged_when_broad_section_is_appended(
 ):
     broad, _ = committed_broad
     historical = Evidence(ROOT)
+    # Real broad runs may already be committed. This fixture compares the
+    # historical final-set prefix against adding exactly one synthetic broad set.
+    historical.paths = {
+        path
+        for path in historical.paths
+        if not path.startswith("docs/evals/phase9-bench-broad-")
+    }
     original_output = tmp_path / "original"
     generate(historical, original_output)
     combined = Evidence(ROOT)
-    combined.paths |= broad.paths
+    combined.paths = historical.paths | broad.paths
     original_read = combined.read
 
     def read(path):

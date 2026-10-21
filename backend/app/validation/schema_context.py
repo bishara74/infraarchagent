@@ -2,6 +2,8 @@
 
 import json
 import re
+from copy import deepcopy
+from dataclasses import dataclass
 from difflib import get_close_matches
 from functools import lru_cache
 from pathlib import Path
@@ -326,183 +328,275 @@ def schema_context(
     return bounded_entries(entries, limit)
 
 
+@dataclass(frozen=True)
+class SchemaGuidance:
+    text: str
+    omitted_required: tuple[str, ...] = ()
+    omitted_conditional: tuple[str, ...] = ()
+
+    @property
+    def overflow(self) -> bool:
+        return bool(self.omitted_required or self.omitted_conditional)
+
+
+def required_shape(shape: dict[str, Any], *, conditional: bool) -> dict[str, Any]:
+    """Minimal recursive requirements; optional ancestors never become mandatory."""
+    result: dict[str, Any] = {"required": shape.get("required", {}), "blocks": {}}
+    for name, block in shape.get("blocks", {}).items():
+        child = required_shape(block, conditional=conditional)
+        mandatory = block.get("min", 0) > 0
+        if mandatory or (conditional and (child["required"] or child["blocks"])):
+            result["blocks"][name] = {
+                **{key: block[key] for key in ("mode", "min", "max") if key in block},
+                **({"if_used": True} if not mandatory else {}),
+                **child,
+            }
+    return result
+
+
+def _version_entry(name: str, profiles: dict[str, dict[str, Any]]) -> dict[str, Any]:
+    def shared(shapes: list[dict[str, Any]]) -> dict[str, Any]:
+        common = {}
+        for key, value in shapes[0].items():
+            if not all(key in shape for shape in shapes):
+                continue
+            values = [shape[key] for shape in shapes]
+            if all(isinstance(v, dict) for v in values):
+                common[key] = shared(values)
+            elif all(v == value for v in values):
+                common[key] = value
+        return common
+
+    def difference(shape: dict[str, Any], common: dict[str, Any]) -> dict[str, Any]:
+        result = {}
+        for key, value in shape.items():
+            if key not in common:
+                result[key] = value
+            elif isinstance(value, dict):
+                extra = difference(value, common[key])
+                if extra:
+                    result[key] = extra
+        return result
+
+    common = shared(list(profiles.values()))
+    differences = {
+        version: difference(shape, common) for version, shape in profiles.items()
+    }
+    entry: dict[str, Any] = {"type": name, "versions": list(profiles), "schema": common}
+    if any(values for diff in differences.values() for values in diff.values()):
+        entry["version_schema"] = {
+            version: {section: values for section, values in diff.items() if values}
+            for version, diff in differences.items()
+            if any(diff.values())
+        }
+    return entry
+
+
+def generator_schema_guidance(
+    limit: int = 6000,
+    directory: Path = DEFAULT_INDEX,
+    *,
+    resource_types: tuple[str, ...] | None = None,
+) -> SchemaGuidance:
+    names = (
+        resource_types
+        if resource_types is not None
+        else (
+            "aws_vpc",
+            "aws_subnet",
+            "aws_security_group",
+            "aws_instance",
+            "aws_s3_bucket",
+            "aws_db_instance",
+            "aws_lb",
+            "aws_ecs_service",
+        )
+    )
+    profiles_by_type: dict[str, dict[str, dict[str, Any]]] = {}
+    for name in dict.fromkeys(names):
+        profiles = {}
+        for version in ("5.100.0", "6.68.0"):
+            schema = index_for("aws", version, directory).resource_schema(name)
+            if schema:
+                profiles[version] = generation_shape(schema)
+        if profiles:
+            profiles_by_type[name] = profiles
+    retained: list[dict[str, Any]] = []
+    omitted_required, omitted_conditional = [], []
+
+    def encoded() -> str:
+        return json.dumps(retained, separators=(",", ":")) if retained else ""
+
+    # A resource's required core is atomic, including every provider version.
+    for name, profiles in profiles_by_type.items():
+        core = _version_entry(
+            name,
+            {
+                version: required_shape(shape, conditional=False)
+                for version, shape in profiles.items()
+            },
+        )
+        core["truncated"] = False
+        retained.append(core)
+        if len(encoded()) > limit:
+            retained.pop()
+            omitted_required.append(name)
+    for index, entry in enumerate(retained):
+        profiles = profiles_by_type[entry["type"]]
+        candidate = _version_entry(
+            entry["type"],
+            {
+                version: required_shape(shape, conditional=True)
+                for version, shape in profiles.items()
+            },
+        )
+        candidate["truncated"] = False
+        retained[index] = candidate
+        if len(encoded()) > limit:
+            retained[index] = entry
+            omitted_conditional.append(entry["type"])
+
+    # Optional content is incremental and round-robin across types. Conditional
+    # cores remain atomic; their optional ancestor labels survive enrichment.
+    full_entries = {
+        name: _version_entry(name, profiles)
+        for name, profiles in profiles_by_type.items()
+    }
+    for entry in retained:
+        fields = {
+            version: {
+                section: sorted(values)
+                for section, values in diff.items()
+                if section == "optional" and values
+            }
+            for version, diff in full_entries[entry["type"]]
+            .get("version_schema", {})
+            .items()
+            if diff.get("optional")
+        }
+        if fields:
+            entry["version_fields"] = fields
+            if len(encoded()) > limit:
+                del entry["version_fields"]
+
+    def additions(
+        full: dict[str, Any],
+        present: dict[str, Any],
+        section: str,
+        path: tuple[str, ...] = (),
+    ) -> list[tuple[tuple[str, ...], Any]]:
+        result = []
+        if section == "optional":
+            for name, value in full.get("optional", {}).items():
+                if name not in present.get("optional", {}):
+                    result.append(((*path, "optional", name), value))
+        for name, block in full.get("blocks", {}).items():
+            existing = present.get("blocks", {}).get(name)
+            if existing is not None:
+                result.extend(
+                    additions(block, existing, section, (*path, "blocks", name))
+                )
+            elif (
+                section == "blocks"
+                and not required_shape(block, conditional=True)["required"]
+                and not required_shape(block, conditional=True)["blocks"]
+            ):
+                result.append(((*path, "blocks", name), block))
+        return result
+
+    def put(entry: dict[str, Any], path: tuple[str, ...], value: Any) -> None:
+        target = entry
+        for key in path[:-1]:
+            target = target.setdefault(key, {})
+        target[path[-1]] = deepcopy(value)
+
+    for section in ("optional", "blocks"):
+        queues = []
+        for entry in retained:
+            # Project full profiles using the *retained* required-core partition.
+            # This avoids losing common optional fields in version-specific blocks.
+            profiles = profiles_by_type[entry["type"]]
+            queue = []
+            for version, shape in profiles.items():
+                merged = deepcopy(entry["schema"])
+                _merge(merged, entry.get("version_schema", {}).get(version, {}))
+                for path, value in additions(shape, merged, section):
+                    common = all(_at(p, path) == value for p in profiles.values())
+                    prefix = (
+                        ("schema",)
+                        if common and _at(entry["schema"], path[:-2]) is not None
+                        else ("version_schema", version)
+                    )
+                    queue.append(((*prefix, *path), value))
+            queue.sort(
+                key=lambda item: (
+                    GUIDANCE_PRIORITY.index(item[0][-1])
+                    if item[0][-1] in GUIDANCE_PRIORITY
+                    else len(GUIDANCE_PRIORITY),
+                    item[0],
+                )
+            )
+            queues.append(
+                (entry, list(dict((path, value) for path, value in queue).items()))
+            )
+        while any(queue for _, queue in queues):
+            for entry, queue in queues:
+                if not queue:
+                    continue
+                path, value = queue.pop(0)
+                before = deepcopy(entry)
+                put(entry, path, value)
+                if len(encoded()) > limit:
+                    entry.clear()
+                    entry.update(before)
+    for entry in retained:
+        complete = True
+        for version, shape in profiles_by_type[entry["type"]].items():
+            merged = deepcopy(entry["schema"])
+            _merge(merged, entry.get("version_schema", {}).get(version, {}))
+            complete &= _contains(merged, shape)
+        entry["truncated"] = not complete
+    return SchemaGuidance(
+        encoded(), tuple(omitted_required), tuple(omitted_conditional)
+    )
+
+
+def _at(shape: dict[str, Any], path: tuple[str, ...]) -> Any:
+    value: Any = shape
+    for key in path:
+        if not isinstance(value, dict) or key not in value:
+            return None
+        value = value[key]
+    return value
+
+
+def _merge(target: dict[str, Any], extra: dict[str, Any]) -> None:
+    for key, value in extra.items():
+        if isinstance(value, dict):
+            _merge(target.setdefault(key, {}), value)
+        else:
+            target[key] = deepcopy(value)
+
+
+def _contains(actual: Any, wanted: Any) -> bool:
+    if isinstance(wanted, dict):
+        return isinstance(actual, dict) and all(
+            (isinstance(value, dict) and not value)
+            or (key in actual and _contains(actual[key], value))
+            for key, value in wanted.items()
+        )
+    return bool(actual == wanted)
+
+
 def generator_schema_context(
     limit: int = 6000,
     directory: Path = DEFAULT_INDEX,
     *,
     resource_types: tuple[str, ...] | None = None,
 ) -> str:
-    entries: list[dict[str, Any]] = []
-    names = (
-        "aws_vpc",
-        "aws_subnet",
-        "aws_security_group",
-        "aws_instance",
-        "aws_s3_bucket",
-        "aws_db_instance",
-        "aws_lb",
-        "aws_ecs_service",
-    )
-    for name in resource_types if resource_types is not None else names:
-        profiles: dict[str, dict[str, Any]] = {}
-        for version in ("5.100.0", "6.68.0"):
-            index = index_for("aws", version, directory)
-            schema = index.resource_schema(name)
-            if schema:
-                profiles[version] = generation_shape(schema)
-        if not profiles:
-            continue
-        first = next(iter(profiles.values()))
-        common = {
-            section: {
-                key: shape
-                for key, shape in values.items()
-                if all(
-                    key in p[section] and p[section][key] == shape
-                    for p in profiles.values()
-                )
-            }
-            for section, values in first.items()
-        }
-        differences = {
-            version: {
-                section: {
-                    key: shape
-                    for key, shape in values.items()
-                    if key not in common[section]
-                }
-                for section, values in shape.items()
-            }
-            for version, shape in profiles.items()
-        }
-        entry: dict[str, Any] = {
-            "type": name,
-            "versions": list(profiles),
-            "schema": common,
-        }
-        if any(values for diff in differences.values() for values in diff.values()):
-            entry["version_fields"] = {
-                version: {
-                    section: sorted(values)
-                    for section, values in diff.items()
-                    if values
-                }
-                for version, diff in differences.items()
-                if any(diff.values())
-            }
-            entry["version_schema"] = differences
-        entries.append(entry)
-    # Keep a version-labelled skeleton for every selected type before spending
-    # the remaining cap on optional fields. Never let one large RDS schema
-    # displace every subsequent network/compute resource.
-    retained: list[dict[str, Any]] = []
-    pending: list[
-        tuple[dict[str, Any], list[tuple[str, Any]], list[tuple[str, Any]]]
-    ] = []
-    for entry in entries:
-        schema = entry["schema"]
-        skeleton: dict[str, Any] = {
-            **entry,
-            "schema": {"required": schema["required"], "optional": {}, "blocks": {}},
-            "truncated": False,
-        }
-        if "version_schema" in entry:
-            skeleton["version_schema"] = {
-                version: {"required": shape["required"]}
-                for version, shape in entry["version_schema"].items()
-                if shape["required"]
-            }
-            if not skeleton["version_schema"]:
-                del skeleton["version_schema"]
-        if len(json.dumps([*retained, skeleton], separators=(",", ":"))) <= limit:
-            retained.append(skeleton)
-            pending.append(
-                (
-                    skeleton,
-                    list(schema["optional"].items()),
-                    list(schema["blocks"].items()),
-                )
-            )
-            for version, shape in entry.get("version_schema", {}).items():
-                pending.append(
-                    (
-                        {
-                            "schema": skeleton.get("version_schema", {}).get(
-                                version, {}
-                            ),
-                            "owner": skeleton,
-                            "version": version,
-                        },
-                        list(shape["optional"].items()),
-                        list(shape["blocks"].items()),
-                    )
-                )
-    for section, part in (
-        ("optional", "priority"),
-        ("blocks", "all"),
-        ("optional", "versions"),
-        ("optional", "rest"),
-        ("blocks", "versions"),
-    ):
-        queues: list[tuple[dict[str, Any], list[tuple[str, Any]]]] = []
-        for entry, optional, nested_blocks in pending:
-            if ("owner" in entry) != (part == "versions"):
-                queues.append((entry, []))
-                continue
-            ordered = sorted(
-                optional,
-                key=lambda item: (
-                    GUIDANCE_PRIORITY.index(item[0])
-                    if item[0] in GUIDANCE_PRIORITY
-                    else len(GUIDANCE_PRIORITY),
-                    item[0],
-                ),
-            )
-            nested_blocks = sorted(
-                nested_blocks,
-                key=lambda item: (
-                    GUIDANCE_PRIORITY.index(item[0])
-                    if item[0] in GUIDANCE_PRIORITY
-                    else len(GUIDANCE_PRIORITY),
-                    item[0],
-                ),
-            )
-            queue = (
-                nested_blocks
-                if section == "blocks"
-                else ordered[:2]
-                if part == "priority"
-                else ordered
-                if part == "versions"
-                else ordered[2:]
-            )
-            queues.append((entry, list(queue)))
-        while any(queue for _, queue in queues):
-            for entry, queue in queues:
-                if not queue:
-                    continue
-                name, shape = queue.pop(0)
-                entry["schema"].setdefault(section, {})[name] = shape
-                if "owner" in entry:
-                    entry["owner"].setdefault("version_schema", {})[
-                        entry["version"]
-                    ] = entry["schema"]
-                if len(json.dumps(retained, separators=(",", ":"))) > limit:
-                    del entry["schema"][section][name]
-                    if "owner" in entry and not entry["schema"][section]:
-                        del entry["schema"][section]
-                    if "owner" in entry and not entry["schema"]:
-                        del entry["owner"]["version_schema"][entry["version"]]
-                        if not entry["owner"]["version_schema"]:
-                            del entry["owner"]["version_schema"]
-    for entry in retained:
-        entry["truncated"] = False
-    for entry, optional, nested_blocks in pending:
-        owner = entry.get("owner", entry)
-        owner["truncated"] |= len(entry["schema"].get("optional", {})) != len(
-            optional
-        ) or len(entry["schema"].get("blocks", {})) != len(nested_blocks)
-    return json.dumps(retained, separators=(",", ":")) if retained else ""
+    return generator_schema_guidance(
+        limit, directory, resource_types=resource_types
+    ).text
 
 
 GUIDANCE_PRIORITY = (
@@ -560,6 +654,5 @@ def generation_shape(schema: dict[str, Any], depth: int = 0) -> dict[str, Any]:
             for n, b in sorted(
                 schema.get("block_types", {}).items(), key=lambda item: order(item[0])
             )
-            if depth < 2
         },
     }

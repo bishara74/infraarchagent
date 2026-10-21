@@ -178,8 +178,7 @@ class PipelineOrchestrator:
         context = generation_context(plan)
         metadata = RemediationReport(
             generator_schema_context_chars=context.schema_chars,
-            generator_security_context_chars=context.checklist_chars,
-            generator_context_truncated=context.truncated,
+            **context.metrics(),
             deterministic_repairs=[
                 DeterministicRepair.model_validate(r) for r in [*records, *idioms]
             ],
@@ -411,12 +410,18 @@ class PipelineOrchestrator:
             if isinstance(generator, GeneratorAgent)
             else None
         )
+        context_metrics = (
+            generation_context(plan).metrics()
+            if isinstance(plan, DeploymentPlan)
+            else {}
+        )
         await self.writer.agent_state(
             self.run_id,
             name,
             AgentState.RUNNING,
             message="generator started",
             variant=variant,
+            metrics=context_metrics,
         )
         try:
             if isinstance(generator, GeneratorAgent) and isinstance(

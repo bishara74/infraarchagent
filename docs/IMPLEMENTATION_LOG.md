@@ -27,7 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-21 — Phase 9i — Prioritise recursive schema guidance and measure it separately
 
+**Summary:** Reserve required guidance across planned types before optional
+attributes/blocks, with explicit per-type overflow. Add schema-only character
+measurements while preserving historical combined measurements.
+
+**Requirements addressed:** FR-G-02, FR-V-03/04, NFR-01.
+
+**Files:** backend/app/validation/schema_context.py; backend/app/security/generation.py;
+backend/app/domain/validation.py; backend/app/pipeline/orchestrator.py;
+backend/scripts/{benchmark,phase9d_quality,phase9i_broad_report}.py;
+backend/tests/unit/{test_phase9i_guidance_provider_followup,test_secure_generation,
+test_phase9i_equivalents,test_phase9i_broad_report}.py; D-56; this log.
+
+**Decisions:** D-56 records unconditional, conditional and optional tiers,
+recursive version-specific requirements, atomic per-type groups and unchanged
+4,500/1,500/6,000 character caps. Overflow is exported before inference and does
+not stop generation. New metrics remain unknown in historical records.
+
+**Tests:** Final-tree verification: make lint passed; make test 1,882 passed,
+0 failed/skipped, 6 performance tests deselected. Focused schema/report checks:
+63 passed. Full logs accompany the offline evidence commit. No policy changes.
+
+**Known gaps / follow-ups:** Existing service selection omits Lambda/API Gateway/
+DynamoDB. Broad scenario 3, rounds 1 and 2, receives zero schema characters before
+and after this change despite available indexed schemas; this is a pre-existing
+mapping bug, not overflow. Reported to the author before committing; mapping
+expansion is deferred. Offline replay evidence follows in a separate commit.
 
 ## 2026-10-21 — Phase 9i — Broad benchmark documentation and verification (section 4)
 

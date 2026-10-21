@@ -186,6 +186,9 @@ class RemediationReport(BaseModel):
     final_origins: list[dict[str, Any]] = Field(default_factory=list)
     initialization: dict[str, Any] | None = None
     generator_schema_context_chars: int | None = Field(default=None, ge=0)
+    generator_schema_only_context_chars: int | None = Field(default=None, ge=0)
+    generator_schema_context_overflow: bool | None = None
+    generator_schema_omitted_resource_types: dict[str, list[str]] | None = None
     generator_security_context_chars: int | None = Field(default=None, ge=0)
     generator_context_truncated: bool | None = None
     generation_syntax: dict[str, Any] | None = None

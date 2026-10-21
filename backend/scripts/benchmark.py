@@ -40,7 +40,12 @@ from scripts.phase9c_metrics import (
     generator_evidence,
     number,
 )
-from scripts.phase9d_quality import quality_snapshot, quality_table, recompute_quality
+from scripts.phase9d_quality import (
+    generation_metrics,
+    quality_snapshot,
+    quality_table,
+    recompute_quality,
+)
 from scripts.phase9e_metrics import measurement as safe_measurement
 from scripts.phase9e_metrics import measurement_summary
 from scripts.phase9f_workloads import pr05_workloads
@@ -180,6 +185,7 @@ def normalized_event(item: dict) -> dict:
         if name
         in {"llm_attempts", "input_tokens", "output_tokens", "cached_input_tokens"}
     }
+    safe_metrics.update(generation_metrics(metrics))
     for name in ("elapsed_seconds", "overrun_seconds"):
         if name in metrics:
             safe_metrics[name] = number(metrics[name])
