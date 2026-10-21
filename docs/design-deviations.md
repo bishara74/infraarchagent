@@ -1799,6 +1799,28 @@ no overflow occurred. Required-coverage claims apply to selected types, not ever
 service in a plan. This gap was reported before committing and is deferred from
 the schema-budget/provider-merge scope; see the evidence zero-schema-contexts.json.
 
+Service-mapping follow-up (FR-G-02, FR-V-03, NFR-01): resolve the above gap
+before the next real benchmark. The Architect's service field was an open string,
+not a finite enum. It now advertises 33 supported labels as schema examples,
+retaining free-form validation compatibility; its schema-derived prompt version
+advances from 2 to 3. Coverage tests independently enumerate that vocabulary and
+all saved broad/final-set service labels against both pinned AWS indexes, listing
+unmapped services or non-indexed types on failure. Aliases are matched only in
+structured aws_service fields. Named storage services precede generic kind
+fallbacks; NoSQL/cache kinds now have fallbacks. Explicit plan types retain their
+priority over inferred network support types; budgets and tiers are unchanged.
+
+Author clarification: plain Prometheus/Grafana inherit explicitly planned
+EC2/ECS/EKS hosting resources. Only explicitly managed labels map to AWS workspace
+types. Monitoring without an explicit host remains unresolved; arbitrary strings
+outside the advertised vocabulary remain possible and cannot be exhaustively
+covered. Neither case invents infrastructure. All 48 saved plans are covered;
+the two zero-schema contexts now measure 4,471 characters each. Before/after
+per-service coverage and context sizes are recorded separately in
+`docs/evals/phase9i-service-mapping-offline/`. Historical evidence is unchanged;
+no inferred validity/security gain, readiness, blocking or threshold change,
+new dependency or open question.
+
 Kubernetes follow-up (FR-S-04/09, FR-V-01, FR-UI-06): a missing-only,
 source-preserving pod catalogue supports Deployment/StatefulSet/DaemonSet/Job,
 regular and init containers. Real offline Helm output establishes resource

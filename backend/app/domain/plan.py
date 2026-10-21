@@ -9,6 +9,47 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 SLUG = r"^[a-z][a-z0-9-]{0,39}$"
 MAX_PLAN_BYTES = 32 * 1024
 
+# Advertised labels, not a validation allowlist: existing free-form plans remain
+# valid. Schema guidance coverage must track additions to this vocabulary.
+ARCHITECT_AWS_SERVICES = (
+    "ec2",
+    "eks",
+    "ecs",
+    "fargate",
+    "rds",
+    "aurora",
+    "s3",
+    "cloudfront",
+    "alb",
+    "elb",
+    "nlb",
+    "cloudwatch",
+    "lambda",
+    "apigateway",
+    "apigateway_rest",
+    "apigatewayv2",
+    "dynamodb",
+    "elasticache",
+    "redis",
+    "acm",
+    "natgateway",
+    "vpc",
+    "prometheus",
+    "grafana",
+    "amp",
+    "amg",
+    "ebs",
+    "route53",
+    "sqs",
+    "sns",
+    "msk",
+    "autoscaling",
+    "redshift",
+)
+AWSService = Annotated[
+    str, Field(min_length=1, max_length=64, examples=list(ARCHITECT_AWS_SERVICES))
+]
+
 
 class _PlanModel(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -37,7 +78,7 @@ class FileType(StrEnum):
 
 class Service(_PlanModel):
     name: str = Field(pattern=SLUG)
-    aws_service: str = Field(min_length=1, max_length=64)
+    aws_service: AWSService
     purpose: str = Field(max_length=300)
 
 
@@ -57,7 +98,7 @@ class Network(_PlanModel):
 class Storage(_PlanModel):
     name: str = Field(pattern=SLUG)
     kind: StorageKind
-    aws_service: str = Field(min_length=1, max_length=64)
+    aws_service: AWSService
     attached_to: list[str]
 
 

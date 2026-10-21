@@ -6,7 +6,7 @@ from app.agents.prompts.architect import (
 
 
 def test_schema_and_version_are_in_system_prompt() -> None:
-    assert ARCHITECT_PROMPT_VERSION == "2"
+    assert ARCHITECT_PROMPT_VERSION == "3"
     assert f"prompt version {ARCHITECT_PROMPT_VERSION}" in ARCHITECT_SYSTEM_PROMPT
     for field in (
         "cloud_provider",

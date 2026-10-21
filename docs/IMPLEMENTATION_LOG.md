@@ -27,6 +27,60 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-21 — Phase 9i — Complete service mapping before the next real benchmark
+
+**Summary:** Map the Architect's advertised AWS service vocabulary and every
+saved broad/final-set service spelling to indexed Terraform guidance. Eliminate
+both zero-schema serverless contexts without increasing budgets or changing tiers.
+
+**Requirements addressed:** FR-G-02, FR-V-03, PR-05, NFR-01.
+
+**Files:** backend/app/domain/plan.py; backend/app/agents/prompts/architect.py;
+backend/app/security/generation.py; backend/scripts/phase9i_service_mapping_report.py;
+backend/tests/unit/{test_phase9i_service_mapping,test_architect_prompt}.py;
+docs/evals/phase9i-service-mapping-offline/; README.md; D-56; this log.
+
+**Decisions:** D-56 records the open-string schema limitation and 33 advertised
+labels. Schema examples establish a finite coverage contract without rejecting
+existing free-form plans; the schema-derived Architect prompt advances to version
+3. Match structured aws_service fields only. Include Lambda function/permission/
+role, REST and HTTP API Gateway families, DynamoDB, ACM, ElastiCache, long-form
+ELB labels, VPC/NAT, EBS, Route 53, SQS/SNS, MSK, Auto Scaling, Redshift and Aurora.
+Named storage services precede generic kind fallbacks, including NoSQL/cache.
+The author's clarification maps plain Prometheus/Grafana to explicitly planned
+EC2/ECS/EKS hosting, reserving workspaces for managed labels. No new dependency,
+policy, readiness, blocking rule or threshold; no new open question.
+
+**Tests:** make lint passed (Ruff, mypy 165 sources, frontend ESLint/TypeScript).
+make test: 1,903 passed, 0 failed/skipped, 6 performance tests deselected, 346.92s.
+Focused mapping/guidance/schema checks: 61 passed, 0 failed/skipped.
+Repository/history secret scan: 0 findings/errors. Logs are in the offline
+evidence verification folder. Coverage enumerates schema examples and all
+saved labels against AWS 5.100.0/6.68.0, checks every selected type, and proves a
+missing Lambda entry fails with its service name. Tests cover REST/HTTP aliases,
+monitoring host semantics, storage precedence/fallbacks, fixed caps and safe
+unknown labels. Verification uses the dotenv-disabled bootstrap, stub inference
+and disposable UTF-8 PostgreSQL 16 with synthetic credentials.
+
+**Offline evidence:** All 48 source/plan hashes match the frozen 9031c64 baseline.
+Previously unmapped labels: broad ACM, API Gateway, DynamoDB, ElastiCache, ELB's
+two long-form labels, Lambda, NAT Gateway and VPC; final set 1 ACM, Prometheus and
+Grafana; final set 2 elasticloadbalancing, Prometheus and Grafana. Per-plan and
+service/storage occurrence counts are in the report. New schema ranges:
+broad 4,097–4,496; final set 1 4,478–4,493; final set 2 4,474–4,495 characters.
+The two serverless contexts rise from 0 to 4,471 each. All unconditional cores fit;
+conditional overflow affects 10/20 broad and 12/14 plans in each final set, with
+explicit omitted-type lists. Checklist caps remain 1,500, schema 4,500, combined
+6,000; observed combined maximum is 5,788. Recursive tier implementation is
+unchanged. No IaC bytes, historical evidence or validity/security results change.
+
+**Known gaps / follow-ups:** An open string can name unadvertised services;
+coverage cannot exhaust arbitrary strings. Plain monitoring with no explicitly
+named host remains unresolved rather than inventing infrastructure. All saved
+plans are covered. Real model quality/deployment is not established by offline
+context measurements. No real LLM calls, dotenv reads or pushes. Next: run the
+author-controlled real benchmark using Architect prompt version 3.
+
 ## 2026-10-21 — Phase 9i — Record offline guidance/provider replay and zero-context attribution
 
 **Summary:** Commit the offline replay script and reproducible, hash-bound evidence

@@ -5,7 +5,7 @@ from typing import Any
 
 from app.domain.plan import DeploymentPlan, FileType
 
-ARCHITECT_PROMPT_VERSION = "2"
+ARCHITECT_PROMPT_VERSION = "3"
 _SCHEMA = json.dumps(
     DeploymentPlan.model_json_schema(), ensure_ascii=False, sort_keys=True
 )

@@ -1,0 +1,342 @@
+{
+  "cohorts": {
+    "broad": {
+      "conditional_overflow_plans": 10,
+      "plans": 20,
+      "previously_unmapped_services": {
+        "acm": 2,
+        "apigateway": 2,
+        "dynamodb": 2,
+        "elasticache": 4,
+        "elasticloadbalancing": 1,
+        "elasticloadbalancingv2": 2,
+        "lambda": 3,
+        "natgateway": 1,
+        "vpc": 1
+      },
+      "required_overflow_plans": 0,
+      "schema_after_range": [
+        4097,
+        4496
+      ],
+      "schema_before_range": [
+        0,
+        4493
+      ]
+    },
+    "final-1": {
+      "conditional_overflow_plans": 12,
+      "plans": 14,
+      "previously_unmapped_services": {
+        "acm": 1,
+        "grafana": 1,
+        "prometheus": 1
+      },
+      "required_overflow_plans": 0,
+      "schema_after_range": [
+        4478,
+        4493
+      ],
+      "schema_before_range": [
+        4478,
+        4491
+      ]
+    },
+    "final-2": {
+      "conditional_overflow_plans": 12,
+      "plans": 14,
+      "previously_unmapped_services": {
+        "elasticloadbalancing": 1,
+        "grafana": 2,
+        "prometheus": 2
+      },
+      "required_overflow_plans": 0,
+      "schema_after_range": [
+        4474,
+        4495
+      ],
+      "schema_before_range": [
+        4474,
+        4495
+      ]
+    }
+  },
+  "llm_calls": 0,
+  "vocabulary": [
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_instance"
+      ],
+      "service": "ec2"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_eks_cluster"
+      ],
+      "service": "eks"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_ecs_service",
+        "aws_ecs_task_definition"
+      ],
+      "service": "ecs"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_ecs_service",
+        "aws_ecs_task_definition"
+      ],
+      "service": "fargate"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_db_instance"
+      ],
+      "service": "rds"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_rds_cluster",
+        "aws_rds_cluster_instance"
+      ],
+      "service": "aurora"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_s3_bucket"
+      ],
+      "service": "s3"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_cloudfront_distribution",
+        "aws_cloudfront_origin_access_control"
+      ],
+      "service": "cloudfront"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_lb",
+        "aws_lb_listener"
+      ],
+      "service": "alb"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_lb",
+        "aws_lb_listener"
+      ],
+      "service": "elb"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_lb",
+        "aws_lb_listener"
+      ],
+      "service": "nlb"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_cloudwatch_log_group"
+      ],
+      "service": "cloudwatch"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_iam_role",
+        "aws_lambda_function",
+        "aws_lambda_permission"
+      ],
+      "service": "lambda"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_api_gateway_deployment",
+        "aws_api_gateway_integration",
+        "aws_api_gateway_method",
+        "aws_api_gateway_resource",
+        "aws_api_gateway_rest_api",
+        "aws_api_gateway_stage",
+        "aws_apigatewayv2_api",
+        "aws_apigatewayv2_deployment",
+        "aws_apigatewayv2_integration",
+        "aws_apigatewayv2_route",
+        "aws_apigatewayv2_stage"
+      ],
+      "service": "apigateway"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_api_gateway_deployment",
+        "aws_api_gateway_integration",
+        "aws_api_gateway_method",
+        "aws_api_gateway_resource",
+        "aws_api_gateway_rest_api",
+        "aws_api_gateway_stage"
+      ],
+      "service": "apigateway_rest"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_apigatewayv2_api",
+        "aws_apigatewayv2_deployment",
+        "aws_apigatewayv2_integration",
+        "aws_apigatewayv2_route",
+        "aws_apigatewayv2_stage"
+      ],
+      "service": "apigatewayv2"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_dynamodb_table"
+      ],
+      "service": "dynamodb"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_elasticache_cluster",
+        "aws_elasticache_replication_group",
+        "aws_elasticache_subnet_group"
+      ],
+      "service": "elasticache"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_elasticache_replication_group",
+        "aws_elasticache_subnet_group"
+      ],
+      "service": "redis"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_acm_certificate",
+        "aws_acm_certificate_validation"
+      ],
+      "service": "acm"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_eip",
+        "aws_nat_gateway"
+      ],
+      "service": "natgateway"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_internet_gateway",
+        "aws_route_table",
+        "aws_route_table_association",
+        "aws_security_group",
+        "aws_subnet",
+        "aws_vpc"
+      ],
+      "service": "vpc"
+    },
+    {
+      "hosting_context": "eks",
+      "resource_types": [
+        "aws_eks_cluster"
+      ],
+      "service": "prometheus"
+    },
+    {
+      "hosting_context": "eks",
+      "resource_types": [
+        "aws_eks_cluster"
+      ],
+      "service": "grafana"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_prometheus_workspace"
+      ],
+      "service": "amp"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_grafana_workspace",
+        "aws_iam_role"
+      ],
+      "service": "amg"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_ebs_volume"
+      ],
+      "service": "ebs"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_route53_record",
+        "aws_route53_zone"
+      ],
+      "service": "route53"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_sqs_queue"
+      ],
+      "service": "sqs"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_sns_topic",
+        "aws_sns_topic_subscription"
+      ],
+      "service": "sns"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_msk_cluster"
+      ],
+      "service": "msk"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_autoscaling_group",
+        "aws_launch_template"
+      ],
+      "service": "autoscaling"
+    },
+    {
+      "hosting_context": null,
+      "resource_types": [
+        "aws_redshift_cluster",
+        "aws_redshift_subnet_group"
+      ],
+      "service": "redshift"
+    }
+  ],
+  "zero_schema_plans": 0
+}

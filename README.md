@@ -1518,9 +1518,24 @@ ancestors, before optional attributes and blocks. Overflow omits whole per-type
 groups in plan priority order and is reported in events and quality evidence;
 generation continues. `generator_schema_only_context_chars` measures the schema
 alone; the legacy field and historical measurements remain unchanged.
-Both rounds of broad scenario 3 (Serverless REST API) have zero schema characters
-because of a pre-existing Lambda/API Gateway/DynamoDB mapping gap, despite indexed
-schemas being available; see the [zero-context attribution](docs/evals/phase9i-guidance-provider-offline/zero-schema-contexts.json).
+In the pre-mapping replay, both rounds of broad scenario 3 (Serverless REST API)
+had zero schema characters because of a Lambda/API Gateway/DynamoDB mapping gap,
+despite indexed schemas being available; see the [zero-context attribution](docs/evals/phase9i-guidance-provider-offline/zero-schema-contexts.json).
+
+The [service-mapping follow-up](docs/evals/phase9i-service-mapping-offline/README.md)
+resolves the saved-plan coverage gaps before the next benchmark: both serverless
+plans now receive 4,471 schema characters. All 48 plans are measured offline.
+The Architect schema advertises 33 supported labels (prompt version 3), with
+coverage against both pinned AWS indexes and free-form compatibility retained.
+Plain Prometheus/Grafana inherit planned hosting; managed workspaces require
+explicit managed labels. Reproduce the measurements with dotenv loading disabled:
+
+```bash
+cd backend
+INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH="$PWD/tests/bootstrap:$PWD" \
+  .venv/bin/python -m scripts.phase9i_service_mapping_report \
+  --output /tmp/phase9i-service-mapping-new
+```
 
 Provider consolidation is a module-scoped proposal checked by the existing
 validity/security guard. Conflicting sources or constraints that cannot be proven
