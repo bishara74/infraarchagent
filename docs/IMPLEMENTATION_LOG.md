@@ -27,6 +27,77 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-21 — Phase 9i — Record offline guidance/provider replay and zero-context attribution
+
+**Summary:** Commit the offline replay script and reproducible, hash-bound evidence
+for 60 broad and 81 final-set packages. Attribute both zero-schema broad plans to
+a pre-existing service-mapping bug and preserve the separately committed fixes.
+
+**Requirements addressed:** FR-G-02, FR-V-03/04, FR-S-09, PR-01/05, NFR-01.
+
+**Files:** backend/scripts/phase9i_guidance_provider_replay.py;
+docs/evals/phase9i-guidance-provider-offline/ (including per-package deltas,
+context coverage, frozen baseline, manifests and verification logs);
+README.md; docs/design-deviations.md (D-56); this log.
+
+**Decisions:** D-56 records the author's three tiers: unconditional requirements,
+conditional requirements under optional ancestor shells, then optional attributes
+and blocks. Caps remain 4,500/1,500/6,000 characters. Per-type groups are atomic;
+conditional overflow cannot displace unconditional guidance. Explicit structured
+plan types precede inferred support types; overflow continues generation and lists
+omitted types in events, quality exports and reports. The new
+generator_schema_only_context_chars is separate from checklist measurements;
+legacy values are preserved. Source-compatible provider declarations retain a
+provably satisfiable numeric constraint conjunction; unknown/conflicting syntax
+remains for LLM repair. No new dependency, migration, policy, deadline, threshold
+or readiness change; no new open question.
+
+**Tests:** make lint passed (Ruff, mypy 165 sources, frontend ESLint/TypeScript).
+make test: 1,882 passed, 0 failed/skipped, 6 performance tests deselected (838.74s).
+Final focused schema/report checks: 63 passed. Real offline Terraform consolidation
+plus broad-report checks: 12 passed. Final evidence secret scan: 0 findings/errors.
+Verification uses dotenv-disabled Python and
+disposable UTF-8 PostgreSQL 16 with synthetic credentials; Docker integration was
+unavailable. Initial full verification had 1,866 passed / 14 failed / 6 deselected:
+13 temporary SQL_ASCII database failures and one fixture assumption about committed
+broad evidence. The corrected prerequisites pass above; attempts are documented.
+
+Commit preparation reran make lint (passed) and make test: **1,882 passed,
+0 failed/skipped, 6 deselected**, 307.45s. The staged guidance-only subset passed
+6 checks. The same synthetic UTF-8 database was stopped after verification;
+logs are commit-backend.txt and commit-lint.txt in the evidence verification
+folder. All 55 evaluator and 51 original input hashes still match.
+Commit-time repository/history secret scan: 0 findings and 0 errors; targeted
+source/evidence scan: 176 files, 0 findings/errors (commit-audit.json).
+
+**Offline evidence:** Before guidance is frozen from baseline `cefd733`
+and checked against 48 unchanged saved plans. All selected unconditional cores
+fit. Conditional groups overflow for 8/20 broad plans and 12/14 plans in each
+final set; omissions are explicit. New schema sizes: broad 0–4,493; final set 1
+4,478–4,491; final set 2 4,474–4,495 characters. Checklists remain unchanged;
+combined maxima are 5,680. Required-item omissions before/after are recorded by
+type/version, including CloudFront origin/cookies and EKS vpc_config paths.
+Provider consolidation exposes other existing errors: one candidate has no
+failed-check improvement and one regresses the Terraform failure count. Both are
+rejected. Broad validity stays 35/60 and strict/v1/v2 passes 24/60; final validity
+stays 23/81 and all three profile passes 15/81. Retained blocker deltas are zero.
+Guidance alone receives no attributed package gain. Original inputs and historical
+reports are unchanged; three missing final-set variants remain separate.
+
+**Known gaps / follow-ups:** Offline validation does not establish deployment,
+future LLM quality or live deadline success. Broad retains two validation-error
+packages; scanners have no unknown observations. Conditional requirements may be
+omitted only as reported whole per-type groups under the fixed cap. Unsupported
+provider constraints remain for LLM repair. Resource-type selection retains the
+existing mapping. Broad scenario 3 (Serverless REST API), rounds 1 and 2,
+selects no schema types both before and after this follow-up. Lambda/API Gateway
+service mapping and NoSQL/DynamoDB storage mapping are absent despite both pinned
+indexes containing their schemas. This pre-existing mapping bug was reported to
+the author before committing; no overflow is involved. Attribution and hashes are
+recorded in zero-schema-contexts.json. Mapping expansion is deferred. No real LLM
+calls, dotenv reads or pushes. Next: address the service-mapping coverage gap in
+a separate scoped follow-up.
+
 ## 2026-10-21 — Phase 9i — Consolidate compatible module provider declarations
 
 **Summary:** Add a logged, idempotent proposal to merge duplicate Terraform

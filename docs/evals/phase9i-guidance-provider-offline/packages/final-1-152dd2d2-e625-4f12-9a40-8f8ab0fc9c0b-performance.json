@@ -1,0 +1,196 @@
+{
+  "before": {
+    "blockers": [
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-api",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 11,
+        "message": "ansible-lint optional lint failed"
+      },
+      {
+        "check_id": "document.parse",
+        "file_path": "k8s/workloads.yaml",
+        "line_start": 19,
+        "message": "Document could not be parsed"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 7,
+        "message": "Dashboard requires panels"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "before_sha256": "fc06a2bdca2b2506b356764acbfc3ab295f7b8ea49400874e300fafd9d40022c",
+  "candidate": {
+    "blockers": [
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-api",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 11,
+        "message": "ansible-lint optional lint failed"
+      },
+      {
+        "check_id": "document.parse",
+        "file_path": "k8s/workloads.yaml",
+        "line_start": 19,
+        "message": "Document could not be parsed"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 7,
+        "message": "Dashboard requires panels"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "candidate_sha256": "fc06a2bdca2b2506b356764acbfc3ab295f7b8ea49400874e300fafd9d40022c",
+  "cohort": "final-1",
+  "evaluator_sha256": "85c042f1c1013931cd21e4d139979300257fec2be8463bafe37465240f56f2fe",
+  "introduced_candidate_findings": [],
+  "key": "final-1/152dd2d2-e625-4f12-9a40-8f8ab0fc9c0b/performance",
+  "reason": "unchanged",
+  "records": [],
+  "removed_candidate_findings": [],
+  "retained": {
+    "blockers": [
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "Deployment.default.release-name-api",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "helm/api-service/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 11,
+        "message": "ansible-lint optional lint failed"
+      },
+      {
+        "check_id": "document.parse",
+        "file_path": "k8s/workloads.yaml",
+        "line_start": 19,
+        "message": "Document could not be parsed"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 7,
+        "message": "Dashboard requires panels"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 3
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "retained_sha256": "fc06a2bdca2b2506b356764acbfc3ab295f7b8ea49400874e300fafd9d40022c",
+  "scenario_id": null
+}

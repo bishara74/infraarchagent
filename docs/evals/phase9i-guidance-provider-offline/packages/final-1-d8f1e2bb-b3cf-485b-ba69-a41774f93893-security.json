@@ -1,0 +1,122 @@
+{
+  "before": {
+    "blockers": [],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/security_support.tf",
+        "line_start": 3,
+        "message": "Duplicate required providers configuration"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      }
+    },
+    "scan_outcome": "clean",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "before_sha256": "4655146af2b1523e73bc6cef7bda9f703f6e3eccaf56ac085d78d3d4a14c7123",
+  "candidate": {
+    "blockers": [],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 72,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      }
+    },
+    "scan_outcome": "clean",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "candidate_sha256": "a6f615ac6afbc0fbeca936640c491b77f7617caa973eb0cc27e47a57c5986593",
+  "cohort": "final-1",
+  "evaluator_sha256": "85c042f1c1013931cd21e4d139979300257fec2be8463bafe37465240f56f2fe",
+  "introduced_candidate_findings": [],
+  "key": "final-1/d8f1e2bb-b3cf-485b-ba69-a41774f93893/security",
+  "reason": "no_improvement",
+  "records": [
+    {
+      "after_hash": "c45f25872047a1cbeb9e1533a07b1cf632a4faefc9eb02b6b7e44f81be06c52d",
+      "before_hash": "f4e1da00c24f291c7b54006aeea12b5b20a3db858ca24c8f4ecc1fb6bf041bc4",
+      "file": "terraform/main.tf",
+      "kind": "required_providers_merge",
+      "name": "terraform",
+      "outcome": "rejected",
+      "reason": "no_improvement"
+    }
+  ],
+  "removed_candidate_findings": [],
+  "retained": {
+    "blockers": [],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/security_support.tf",
+        "line_start": 3,
+        "message": "Duplicate required providers configuration"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 0
+      }
+    },
+    "scan_outcome": "clean",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "retained_sha256": "4655146af2b1523e73bc6cef7bda9f703f6e3eccaf56ac085d78d3d4a14c7123",
+  "scenario_id": null
+}

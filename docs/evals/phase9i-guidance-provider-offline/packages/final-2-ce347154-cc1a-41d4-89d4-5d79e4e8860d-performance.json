@@ -1,0 +1,526 @@
+{
+  "before": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.ingress_http",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_40"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_40"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0104"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_rds_cluster.postgres",
+        "rule_id": "AWS-0079"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/nodejs-api/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 120,
+        "message": "Unsupported argument"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 18
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "AWS-0164"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "AWS-0164"
+          }
+        ],
+        "remaining_blocking": 13
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 18
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "before_sha256": "191875f7b13e381771d144e18c2e4b2d82ab4ab0deffc67194e3b9b4634cb092",
+  "candidate": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.ingress_http",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_40"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_40"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0104"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_rds_cluster.postgres",
+        "rule_id": "AWS-0079"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/nodejs-api/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 120,
+        "message": "Unsupported argument"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 18
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "AWS-0164"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "AWS-0164"
+          }
+        ],
+        "remaining_blocking": 13
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 18
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "candidate_sha256": "191875f7b13e381771d144e18c2e4b2d82ab4ab0deffc67194e3b9b4634cb092",
+  "cohort": "final-2",
+  "evaluator_sha256": "85c042f1c1013931cd21e4d139979300257fec2be8463bafe37465240f56f2fe",
+  "introduced_candidate_findings": [],
+  "key": "final-2/ce347154-cc1a-41d4-89d4-5d79e4e8860d/performance",
+  "reason": "unchanged",
+  "records": [],
+  "removed_candidate_findings": [],
+  "retained": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.ingress_http",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.prometheus",
+        "rule_id": "CKV_K8S_40"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "Deployment.monitoring.grafana",
+        "rule_id": "CKV_K8S_40"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0104"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_rds_cluster.postgres",
+        "rule_id": "AWS-0079"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/nodejs-api/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 120,
+        "message": "Unsupported argument"
+      }
+    ],
+    "profiles": {
+      "contextual-v1": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 18
+      },
+      "contextual-v2": {
+        "approval": "experimental; supervisor approval required",
+        "checks_passed": false,
+        "excepted": [
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "CKV_AWS_130"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-lb-https-redirect",
+            "file_path": "terraform/main.tf",
+            "justification": "Public ALB listeners use HTTPS with optional redirect-only HTTP; public NLB listeners use only explicit TLS 1.2+ policies.",
+            "resource": "aws_lb.app_lb",
+            "rule_id": "AWS-0053"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[0]",
+            "rule_id": "AWS-0164"
+          },
+          {
+            "classification": "excepted",
+            "entry_id": "public-subnet-addressing",
+            "file_path": "terraform/main.tf",
+            "justification": "Bounded literal/local subnet instances have a unique default IGW route in the same resolved VPC.",
+            "resource": "aws_subnet.public[1]",
+            "rule_id": "AWS-0164"
+          }
+        ],
+        "remaining_blocking": 13
+      },
+      "strict": {
+        "checks_passed": false,
+        "excepted": [],
+        "remaining_blocking": 18
+      }
+    },
+    "scan_outcome": "exhausted",
+    "terraform_unknown": false,
+    "validation": "invalid"
+  },
+  "retained_sha256": "191875f7b13e381771d144e18c2e4b2d82ab4ab0deffc67194e3b9b4634cb092",
+  "scenario_id": null
+}

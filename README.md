@@ -1511,6 +1511,34 @@ download is needed. A new destination is required; existing evidence is immutabl
 
 ### Phase 9i offline replay
 
+The [schema/provider follow-up](docs/evals/phase9i-guidance-provider-offline/README.md)
+compares all 60 broad and 81 final-set packages without inference. Guidance now
+reserves unconditional requirements, then conditional requirements beneath optional
+ancestors, before optional attributes and blocks. Overflow omits whole per-type
+groups in plan priority order and is reported in events and quality evidence;
+generation continues. `generator_schema_only_context_chars` measures the schema
+alone; the legacy field and historical measurements remain unchanged.
+Both rounds of broad scenario 3 (Serverless REST API) have zero schema characters
+because of a pre-existing Lambda/API Gateway/DynamoDB mapping gap, despite indexed
+schemas being available; see the [zero-context attribution](docs/evals/phase9i-guidance-provider-offline/zero-schema-contexts.json).
+
+Provider consolidation is a module-scoped proposal checked by the existing
+validity/security guard. Conflicting sources or constraints that cannot be proven
+compatible remain for LLM repair. No readiness or blocking policy changes.
+
+With the original cached snapshots and local validator/scanner/provider mirrors
+present, reproduce the follow-up into a new output directory (Linux user/network
+namespaces required; dotenv loading is disabled):
+
+```bash
+cd backend
+INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH="$PWD/tests/bootstrap:$PWD" \
+  unshare --user --map-root-user --net \
+  .venv/bin/python -m scripts.phase9i_guidance_provider_replay \
+  --before ../docs/evals/phase9i-guidance-provider-offline/before-guidance.json \
+  --output /tmp/phase9i-guidance-provider-replay --workers 2
+```
+
 [Results and limitations](docs/evals/phase9i-offline/README.md) distinguish
 historical results, the immutable pre-change baseline and final isolated replay.
 The 81 original packages, 28 plans and three missing variants are hashed;

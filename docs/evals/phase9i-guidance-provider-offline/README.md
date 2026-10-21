@@ -1,0 +1,115 @@
+# phase9i: schema guidance and provider consolidation offline replay
+
+141 packages; 3 missing variants remain separate. Zero LLM calls. Original packages and historical reports are unchanged.
+
+| Cohort | Packages | Valid before → retained | Strict passes | v1 passes | v2 passes | Strict/v1/v2 blocker deltas |
+|---|---:|---|---|---|---|---|
+| broad | 60 | 35 → 35 | 24 → 24 | 24 → 24 | 24 → 24 | 0 / 0 / 0 |
+| final-1 | 40 | 9 → 9 | 7 → 7 | 7 → 7 | 7 → 7 | 0 / 0 / 0 |
+| final-2 | 41 | 14 → 14 | 8 → 8 | 8 → 8 | 8 → 8 | 0 / 0 / 0 |
+| final-combined | 81 | 23 → 23 | 15 → 15 | 15 → 15 | 15 → 15 | 0 / 0 / 0 |
+| all | 141 | 58 → 58 | 39 → 39 | 39 → 39 | 39 → 39 | 0 / 0 / 0 |
+
+Guidance alone changes no package bytes and receives zero attributed validity/security improvement. Deltas compare fresh observations of original bytes against guarded provider-merge proposals only; they do not include previous offline repair experiments.
+Context-before measurements apply the frozen pre-follow-up budgeter to saved plans; they are separate from historical inference metadata.
+
+| Cohort | Schema before → after | Checklist before → after | Total before → after | Required / conditional overflow plans |
+|---|---|---|---|---|
+| broad | 0–4490 → 0–4493 | 210–1190 → 210–1190 | 210–5680 → 210–5680 | 0 / 8 |
+| final-1 | 4478–4489 → 4478–4491 | 404–1190 → 404–1190 | 4889–5668 → 4895–5680 | 0 / 12 |
+| final-2 | 4478–4489 → 4474–4495 | 404–1190 → 404–1190 | 4889–5668 → 4895–5680 | 0 / 12 |
+
+The zero-schema cases are **broad scenario 3, Serverless REST API, rounds 1 and 2**
+(runs `c81ea7ea-2559-4e20-8173-47f699e12546` and
+`f5fd82a1-8048-4d3e-a78b-f4d2e4ecbd5c`; all three variants per run).
+This is a **pre-existing plan-to-resource-type mapping bug**, not budget overflow
+or unavailable indexed schemas: Lambda/API Gateway service names and NoSQL
+DynamoDB storage select no types. Both pinned AWS indexes contain
+`aws_lambda_function`, `aws_api_gateway_rest_api` and `aws_dynamodb_table`.
+The selection code is unchanged from `cefd733`; before and after are both zero,
+with no overflow. Required-coverage claims apply to selected types. The gap was
+reported to the author before committing; service mapping is deferred from this
+follow-up. [Attribution and hashes](zero-schema-contexts.json) record both plans
+and index availability.
+
+Previously omitted required items by resource type (union across plans and provider versions; complete per-plan/version coverage is in context-sizes-and-coverage.json):
+
+| Cohort | Resource type | Unconditional previously omitted | Conditional previously omitted |
+|---|---|---|---|
+| broad | aws_cloudfront_distribution | origin, origin.domain_name, origin.origin_id, viewer_certificate | cache_tag_config.header_name, connection_function_association.id, default_cache_behavior.forwarded_values.cookies, default_cache_behavior.forwarded_values.cookies.forward, logging_config.bucket, ordered_cache_behavior.forwarded_values.cookies, ordered_cache_behavior.forwarded_values.cookies.forward, origin.custom_header.name, origin.custom_header.value, origin.custom_origin_config.http_port, origin.custom_origin_config.https_port, origin.custom_origin_config.origin_mtls_config.client_certificate_arn, origin.custom_origin_config.origin_protocol_policy, origin.custom_origin_config.origin_ssl_protocols, origin.origin_shield.enabled, origin.s3_origin_config.origin_access_identity, origin.vpc_origin_config.vpc_origin_id, viewer_mtls_config.trust_store_config.trust_store_id |
+| broad | aws_db_instance | none | s3_import.bucket_name, s3_import.ingestion_role, s3_import.source_engine, s3_import.source_engine_version |
+| broad | aws_ecs_service | none | capacity_provider_strategy.capacity_provider, deployment_circuit_breaker.enable, deployment_circuit_breaker.rollback, deployment_configuration.lifecycle_hook.lifecycle_stages, load_balancer.advanced_configuration.alternate_target_group_arn, load_balancer.advanced_configuration.production_listener_rule, load_balancer.advanced_configuration.role_arn, load_balancer.container_name, load_balancer.container_port, ordered_placement_strategy.type, placement_constraints.type, service_connect_configuration.access_log_configuration.format, service_connect_configuration.enabled, service_connect_configuration.log_configuration.log_driver, service_connect_configuration.log_configuration.secret_option.name, service_connect_configuration.log_configuration.secret_option.value_from, service_connect_configuration.service.client_alias.port, service_connect_configuration.service.client_alias.test_traffic_rules.header.name, service_connect_configuration.service.client_alias.test_traffic_rules.header.value, service_connect_configuration.service.client_alias.test_traffic_rules.header.value.exact, service_connect_configuration.service.port_name, service_connect_configuration.service.tls.issuer_cert_authority, service_connect_configuration.service.tls.issuer_cert_authority.aws_pca_authority_arn, service_registries.registry_arn, volume_configuration.managed_ebs_volume, volume_configuration.managed_ebs_volume.role_arn, volume_configuration.managed_ebs_volume.tag_specifications.resource_type, volume_configuration.name, vpc_lattice_configurations.port_name, vpc_lattice_configurations.role_arn, vpc_lattice_configurations.target_group_arn |
+| broad | aws_ecs_task_definition | none | inference_accelerator.device_name, inference_accelerator.device_type, placement_constraints.type, proxy_configuration.container_name, volume.efs_volume_configuration.file_system_id, volume.fsx_windows_file_server_volume_configuration.authorization_config, volume.fsx_windows_file_server_volume_configuration.authorization_config.credentials_parameter, volume.fsx_windows_file_server_volume_configuration.authorization_config.domain, volume.fsx_windows_file_server_volume_configuration.file_system_id, volume.fsx_windows_file_server_volume_configuration.root_directory, volume.name, volume.s3files_volume_configuration.file_system_arn |
+| broad | aws_eks_cluster | vpc_config, vpc_config.subnet_ids | outpost_config.control_plane_instance_type, outpost_config.control_plane_placement.group_name, outpost_config.outpost_arns, remote_network_config.remote_node_networks |
+| broad | aws_instance | none | ebs_block_device.device_name, ephemeral_block_device.device_name, network_interface.device_index, network_interface.network_interface_id, primary_network_interface.network_interface_id, secondary_network_interface.network_card_index, secondary_network_interface.secondary_subnet_id |
+| broad | aws_s3_bucket | none | lifecycle_rule.enabled, lifecycle_rule.noncurrent_version_transition.storage_class, lifecycle_rule.transition.storage_class, object_lock_configuration.rule.default_retention, object_lock_configuration.rule.default_retention.mode, replication_configuration.role, replication_configuration.rules, replication_configuration.rules.destination, replication_configuration.rules.destination.access_control_translation.owner, replication_configuration.rules.destination.bucket, replication_configuration.rules.source_selection_criteria.sse_kms_encrypted_objects.enabled, replication_configuration.rules.status, server_side_encryption_configuration.rule, server_side_encryption_configuration.rule.apply_server_side_encryption_by_default, server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm |
+| final-1 | aws_cloudfront_distribution | origin, origin.domain_name, origin.origin_id, viewer_certificate | cache_tag_config.header_name, connection_function_association.id, default_cache_behavior.forwarded_values.cookies, default_cache_behavior.forwarded_values.cookies.forward, logging_config.bucket, ordered_cache_behavior.forwarded_values.cookies, ordered_cache_behavior.forwarded_values.cookies.forward, origin.custom_header.name, origin.custom_header.value, origin.custom_origin_config.http_port, origin.custom_origin_config.https_port, origin.custom_origin_config.origin_mtls_config.client_certificate_arn, origin.custom_origin_config.origin_protocol_policy, origin.custom_origin_config.origin_ssl_protocols, origin.origin_shield.enabled, origin.s3_origin_config.origin_access_identity, origin.vpc_origin_config.vpc_origin_id, viewer_mtls_config.trust_store_config.trust_store_id |
+| final-1 | aws_db_instance | none | s3_import.bucket_name, s3_import.ingestion_role, s3_import.source_engine, s3_import.source_engine_version |
+| final-1 | aws_ecs_service | none | capacity_provider_strategy.capacity_provider, deployment_circuit_breaker.enable, deployment_circuit_breaker.rollback, deployment_configuration.lifecycle_hook.lifecycle_stages, load_balancer.advanced_configuration.alternate_target_group_arn, load_balancer.advanced_configuration.production_listener_rule, load_balancer.advanced_configuration.role_arn, load_balancer.container_name, load_balancer.container_port, ordered_placement_strategy.type, placement_constraints.type, service_connect_configuration.access_log_configuration.format, service_connect_configuration.enabled, service_connect_configuration.log_configuration.log_driver, service_connect_configuration.log_configuration.secret_option.name, service_connect_configuration.log_configuration.secret_option.value_from, service_connect_configuration.service.client_alias.port, service_connect_configuration.service.client_alias.test_traffic_rules.header.name, service_connect_configuration.service.client_alias.test_traffic_rules.header.value, service_connect_configuration.service.client_alias.test_traffic_rules.header.value.exact, service_connect_configuration.service.port_name, service_connect_configuration.service.tls.issuer_cert_authority, service_connect_configuration.service.tls.issuer_cert_authority.aws_pca_authority_arn, service_registries.registry_arn, volume_configuration.managed_ebs_volume, volume_configuration.managed_ebs_volume.role_arn, volume_configuration.managed_ebs_volume.tag_specifications.resource_type, volume_configuration.name, vpc_lattice_configurations.port_name, vpc_lattice_configurations.role_arn, vpc_lattice_configurations.target_group_arn |
+| final-1 | aws_ecs_task_definition | none | inference_accelerator.device_name, inference_accelerator.device_type, placement_constraints.type, proxy_configuration.container_name, volume.efs_volume_configuration.file_system_id, volume.fsx_windows_file_server_volume_configuration.authorization_config, volume.fsx_windows_file_server_volume_configuration.authorization_config.credentials_parameter, volume.fsx_windows_file_server_volume_configuration.authorization_config.domain, volume.fsx_windows_file_server_volume_configuration.file_system_id, volume.fsx_windows_file_server_volume_configuration.root_directory, volume.name, volume.s3files_volume_configuration.file_system_arn |
+| final-1 | aws_eks_cluster | vpc_config, vpc_config.subnet_ids | encryption_config.provider, encryption_config.provider.key_arn, encryption_config.resources, outpost_config.control_plane_instance_type, outpost_config.control_plane_placement.group_name, outpost_config.outpost_arns, remote_network_config.remote_node_networks |
+| final-1 | aws_instance | none | ebs_block_device.device_name, ephemeral_block_device.device_name, network_interface.device_index, network_interface.network_interface_id, primary_network_interface.network_interface_id, secondary_network_interface.network_card_index, secondary_network_interface.secondary_subnet_id |
+| final-1 | aws_s3_bucket | none | lifecycle_rule.enabled, lifecycle_rule.noncurrent_version_transition.storage_class, lifecycle_rule.transition.storage_class, object_lock_configuration.rule.default_retention, object_lock_configuration.rule.default_retention.mode, replication_configuration.role, replication_configuration.rules, replication_configuration.rules.destination, replication_configuration.rules.destination.access_control_translation.owner, replication_configuration.rules.destination.bucket, replication_configuration.rules.source_selection_criteria.sse_kms_encrypted_objects.enabled, replication_configuration.rules.status, server_side_encryption_configuration.rule, server_side_encryption_configuration.rule.apply_server_side_encryption_by_default, server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm |
+| final-2 | aws_cloudfront_distribution | origin, origin.domain_name, origin.origin_id, viewer_certificate | cache_tag_config.header_name, connection_function_association.id, default_cache_behavior.forwarded_values.cookies, default_cache_behavior.forwarded_values.cookies.forward, logging_config.bucket, ordered_cache_behavior.forwarded_values.cookies, ordered_cache_behavior.forwarded_values.cookies.forward, origin.custom_header.name, origin.custom_header.value, origin.custom_origin_config.http_port, origin.custom_origin_config.https_port, origin.custom_origin_config.origin_mtls_config.client_certificate_arn, origin.custom_origin_config.origin_protocol_policy, origin.custom_origin_config.origin_ssl_protocols, origin.origin_shield.enabled, origin.s3_origin_config.origin_access_identity, origin.vpc_origin_config.vpc_origin_id, viewer_mtls_config.trust_store_config.trust_store_id |
+| final-2 | aws_db_instance | none | s3_import.bucket_name, s3_import.ingestion_role, s3_import.source_engine, s3_import.source_engine_version |
+| final-2 | aws_ecs_service | none | capacity_provider_strategy.capacity_provider, deployment_circuit_breaker.enable, deployment_circuit_breaker.rollback, deployment_configuration.lifecycle_hook.lifecycle_stages, load_balancer.advanced_configuration.alternate_target_group_arn, load_balancer.advanced_configuration.production_listener_rule, load_balancer.advanced_configuration.role_arn, load_balancer.container_name, load_balancer.container_port, ordered_placement_strategy.type, placement_constraints.type, service_connect_configuration.access_log_configuration.format, service_connect_configuration.enabled, service_connect_configuration.log_configuration.log_driver, service_connect_configuration.log_configuration.secret_option.name, service_connect_configuration.log_configuration.secret_option.value_from, service_connect_configuration.service.client_alias.port, service_connect_configuration.service.client_alias.test_traffic_rules.header.name, service_connect_configuration.service.client_alias.test_traffic_rules.header.value, service_connect_configuration.service.client_alias.test_traffic_rules.header.value.exact, service_connect_configuration.service.port_name, service_connect_configuration.service.tls.issuer_cert_authority, service_connect_configuration.service.tls.issuer_cert_authority.aws_pca_authority_arn, service_registries.registry_arn, volume_configuration.managed_ebs_volume, volume_configuration.managed_ebs_volume.role_arn, volume_configuration.managed_ebs_volume.tag_specifications.resource_type, volume_configuration.name, vpc_lattice_configurations.port_name, vpc_lattice_configurations.role_arn, vpc_lattice_configurations.target_group_arn |
+| final-2 | aws_ecs_task_definition | none | inference_accelerator.device_name, inference_accelerator.device_type, placement_constraints.type, proxy_configuration.container_name, volume.efs_volume_configuration.file_system_id, volume.fsx_windows_file_server_volume_configuration.authorization_config, volume.fsx_windows_file_server_volume_configuration.authorization_config.credentials_parameter, volume.fsx_windows_file_server_volume_configuration.authorization_config.domain, volume.fsx_windows_file_server_volume_configuration.file_system_id, volume.fsx_windows_file_server_volume_configuration.root_directory, volume.name, volume.s3files_volume_configuration.file_system_arn |
+| final-2 | aws_eks_cluster | vpc_config, vpc_config.subnet_ids | encryption_config.provider, encryption_config.provider.key_arn, encryption_config.resources, outpost_config.control_plane_instance_type, outpost_config.control_plane_placement.group_name, outpost_config.outpost_arns, remote_network_config.remote_node_networks |
+| final-2 | aws_instance | none | ebs_block_device.device_name, ephemeral_block_device.device_name, network_interface.device_index, network_interface.network_interface_id, primary_network_interface.network_interface_id, secondary_network_interface.network_card_index, secondary_network_interface.secondary_subnet_id |
+| final-2 | aws_s3_bucket | none | lifecycle_rule.enabled, lifecycle_rule.noncurrent_version_transition.storage_class, lifecycle_rule.transition.storage_class, object_lock_configuration.rule.default_retention, object_lock_configuration.rule.default_retention.mode, replication_configuration.role, replication_configuration.rules, replication_configuration.rules.destination, replication_configuration.rules.destination.access_control_translation.owner, replication_configuration.rules.destination.bucket, replication_configuration.rules.source_selection_criteria.sse_kms_encrypted_objects.enabled, replication_configuration.rules.status, server_side_encryption_configuration.rule, server_side_encryption_configuration.rule.apply_server_side_encryption_by_default, server_side_encryption_configuration.rule.apply_server_side_encryption_by_default.sse_algorithm |
+
+Overflow omissions by plan (conditional omissions retain the complete unconditional core):
+
+- final-1/eb3fca7b-e12c-4ef2-b91b-82a4ba9de4d7: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-1/fc77f4a8-0d04-4eb3-aba6-756eab6dbc80: {"conditional_required": ["aws_cloudfront_distribution"], "required": []}
+- final-1/d8f1e2bb-b3cf-485b-ba69-a41774f93893: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-1/6e2ac28e-d152-453c-bbbb-28b72a3da099: {"conditional_required": ["aws_ecs_service"], "required": []}
+- final-1/9cfb1b01-0754-4796-9443-d88594066dde: {"conditional_required": ["aws_cloudfront_distribution"], "required": []}
+- final-1/8c99c09e-e450-4b34-876c-960a9010b71c: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-1/d2512668-53d6-475a-88ae-c5c00f4ddcd1: {"conditional_required": ["aws_cloudfront_distribution"], "required": []}
+- final-1/a6aad9b7-0d19-4826-bb09-6cd9ce2f7eab: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-1/33dd1a0c-d03b-433d-a165-9ac11af50a10: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-1/e007d01c-35b1-4939-ab43-52e1fb086001: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-1/b0f4701c-ffff-420f-bebd-64df235c1187: {"conditional_required": ["aws_ecs_service"], "required": []}
+- final-1/83e65ace-224c-4c93-8ea6-7e69d817d2a5: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-2/e9cc34d4-6eb1-4829-8622-3b0570f24e2a: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-2/0ce03b0b-e05d-476b-a08d-42de4692f6a8: {"conditional_required": ["aws_s3_bucket"], "required": []}
+- final-2/3bf51f6f-9559-4c4a-851a-2f1551ac4b7b: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- final-2/b510f683-95e9-4cb0-8482-482e93409ad0: {"conditional_required": ["aws_cloudfront_distribution"], "required": []}
+- final-2/94cf6e79-169f-4929-8bcf-fef1ac7e4ddc: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- final-2/6460bfee-6f30-4185-9b60-e114da0d82d5: {"conditional_required": ["aws_ecs_service"], "required": []}
+- final-2/c0d5bbc8-36b6-4641-9a2f-5faeb3b96ba7: {"conditional_required": ["aws_s3_bucket"], "required": []}
+- final-2/673d533b-6b84-47de-930d-078426b356d0: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-2/7cd84341-9393-4947-aa26-f14da8cd17d1: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- final-2/b937844d-9536-4725-8830-ef89af3a3da5: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-2/ce347154-cc1a-41d4-89d4-5d79e4e8860d: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- final-2/40c96191-31a0-4f9b-b7bb-b6d19b7d9934: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- broad/73e03ef0-86b8-45bc-91b1-2148e8a12e65: {"conditional_required": ["aws_cloudfront_distribution"], "required": []}
+- broad/7e050439-3155-40f7-a612-823e7244ff06: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- broad/bf044f12-fcbf-4155-ae14-17d7921b6288: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- broad/2917b836-744c-443e-8a7a-10d97ad8f659: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- broad/a4ce7d9a-54e9-4a64-b158-c0e0896c519f: {"conditional_required": ["aws_ecs_task_definition", "aws_instance"], "required": []}
+- broad/bf327ada-0041-4c90-bea9-de01039fd1b0: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- broad/73bb48ca-8599-48a7-854e-79482225406e: {"conditional_required": ["aws_ecs_task_definition"], "required": []}
+- broad/113c0c5b-49cc-468b-a712-74c7c2d1adf1: {"conditional_required": ["aws_cloudfront_distribution"], "required": []}
+
+| Cohort | Outcomes | Unknown scans before / retained |
+|---|---|---|
+| broad | {'unchanged': 59, 'terraform_regression': 1} | 0 / 0 |
+| final-1 | {'unchanged': 39, 'no_improvement': 1} | 0 / 0 |
+| final-2 | {'unchanged': 41} | 0 / 0 |
+| final-combined | {'unchanged': 80, 'no_improvement': 1} | 0 / 0 |
+| all | {'unchanged': 139, 'no_improvement': 1, 'terraform_regression': 1} | 0 / 0 |
+
+Provider-merge proposals (all other packages are unchanged):
+
+| Package | Guard reason | Failed checks before → candidate | Candidate diagnostics |
+|---|---|---|---|
+| final-1/d8f1e2bb-b3cf-485b-ba69-a41774f93893/security | no_improvement | 1 → 1 | Terraform configuration diagnostic |
+| broad/73e03ef0-86b8-45bc-91b1-2148e8a12e65/performance | terraform_regression | 1 → 3 | Terraform configuration diagnostic, Unsupported block type |
+
+Consolidation replaces duplicate-declaration diagnostics with other existing configuration errors. The unchanged guard requires a failed-check improvement and rejects a Terraform failure-count regression; neither proposal qualifies. Broad retains two validation-error packages; there are no unknown scanner outcomes.
+
+All proposals are idempotent and use the existing checked_one validity/security guard. Candidate observations, retained hashes, removed/introduced findings and audit records are preserved per package. Unknown verification is not a pass. Tool/provider/evaluator hashes and source hashes bind the replay. Runtime deployment, live pipeline deadlines and future LLM output quality are unverified.
+
+The legacy generator_schema_context_chars field is preserved; older final-set values sometimes include the checklist. generator_schema_only_context_chars is measured directly from the schema portion. Historical absence is unknown; no historical value is rewritten.

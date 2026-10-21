@@ -1,0 +1,81 @@
+{
+  "classification": "pre-existing plan-to-resource-type mapping bug",
+  "cause": "SERVICE_TYPES has no Lambda or API Gateway mapping; the storage selector has no NoSQL/DynamoDB mapping. Both structured plans select an empty resource-type set before the schema index is queried.",
+  "overflow": false,
+  "missing_index": false,
+  "selection_unchanged_from_baseline": "cefd733",
+  "comparison": "AST equality for SERVICE_TYPES and plan_resource_types",
+  "scope": "Recorded before committing; service-mapping expansion is deferred from this guidance/provider follow-up.",
+  "results_path": "docs/evals/phase9-bench-broad-20261020T234203035108Z/results.json",
+  "results_sha256": "056486f74e4a248de424f74b4e67e1d0834d9827a5ec1f4cc14f92a27cbd335c",
+  "plans": [
+    {
+      "scenario_id": 3,
+      "prompt": "Serverless REST API with API Gateway, Lambda and DynamoDB.",
+      "round": 1,
+      "run_id": "c81ea7ea-2559-4e20-8173-47f699e12546",
+      "plan_sha256": "bc324900e2f2e2d45463acbcdd2eab4694f48331c2d2656d16f6d5c4f4d7945c",
+      "before_schema_chars": 0,
+      "after_schema_chars": 0,
+      "overflow": false,
+      "selected_resource_types": [],
+      "planned_services": [
+        "apigateway",
+        "lambda"
+      ],
+      "planned_storage": [
+        {
+          "kind": "nosql_db",
+          "aws_service": "dynamodb"
+        }
+      ],
+      "snapshot_path": ".cache/broad-1-results/c81ea7ea-2559-4e20-8173-47f699e12546.json",
+      "snapshot_sha256": "34d7a54d4e0dadc425caf57b9ecf41f7441eaa9eef480db486653ff9f2288213"
+    },
+    {
+      "scenario_id": 3,
+      "prompt": "Serverless REST API with API Gateway, Lambda and DynamoDB.",
+      "round": 2,
+      "run_id": "f5fd82a1-8048-4d3e-a78b-f4d2e4ecbd5c",
+      "plan_sha256": "2e9daf1557b0a2554a7ab155b587a0200197aa1d74b72287bbe5198be844e6b3",
+      "before_schema_chars": 0,
+      "after_schema_chars": 0,
+      "overflow": false,
+      "selected_resource_types": [],
+      "planned_services": [
+        "apigateway",
+        "lambda"
+      ],
+      "planned_storage": [
+        {
+          "kind": "nosql_db",
+          "aws_service": "dynamodb"
+        }
+      ],
+      "snapshot_path": ".cache/broad-1-results/f5fd82a1-8048-4d3e-a78b-f4d2e4ecbd5c.json",
+      "snapshot_sha256": "ce4f395e0d6ba6d65b2656cd0369b2c9200fe8c016de9b85b533de52104366f5"
+    }
+  ],
+  "indexes": [
+    {
+      "version": "5.100.0",
+      "path": ".cache/terraform-provider-schemas/aws-5.100.0.json",
+      "sha256": "f5e0b8a67b06af31f839df63d747cd22daafd04700ec1e89ac25b88cc69ad63b",
+      "present_resource_types": [
+        "aws_lambda_function",
+        "aws_api_gateway_rest_api",
+        "aws_dynamodb_table"
+      ]
+    },
+    {
+      "version": "6.68.0",
+      "path": ".cache/terraform-provider-schemas/aws-6.68.0.json",
+      "sha256": "09c353ef916b91c57d77948eba989aaf3ea7cfc58a17b4188dc00328c86eef70",
+      "present_resource_types": [
+        "aws_lambda_function",
+        "aws_api_gateway_rest_api",
+        "aws_dynamodb_table"
+      ]
+    }
+  ]
+}

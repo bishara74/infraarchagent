@@ -1791,6 +1791,14 @@ no new validity threshold. Evidence is separate in
 attributed package improvement. No new dependency, migration or open question.
 
 
+Offline attribution found a pre-existing service-selection bug: broad scenario 3
+(Serverless REST API), both rounds, selects no resource types because Lambda/API
+Gateway and NoSQL/DynamoDB mappings are absent. Both pinned AWS indexes contain
+the corresponding schemas. Both pre-change and current schema contexts are zero;
+no overflow occurred. Required-coverage claims apply to selected types, not every
+service in a plan. This gap was reported before committing and is deferred from
+the schema-budget/provider-merge scope; see the evidence zero-schema-contexts.json.
+
 Kubernetes follow-up (FR-S-04/09, FR-V-01, FR-UI-06): a missing-only,
 source-preserving pod catalogue supports Deployment/StatefulSet/DaemonSet/Job,
 regular and init containers. Real offline Helm output establishes resource
