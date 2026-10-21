@@ -219,3 +219,21 @@ def test_empty_nested_controls_fill_missing_leaves_and_privileged_conflicts_skip
         if security.get("privileged"):
             assert "allowPrivilegeEscalation" not in current
             assert "seccompProfile" not in current
+
+
+def test_historical_equivalents_do_not_invoke_new_live_migrations(monkeypatch):
+    from app.validation import equivalents
+    from scripts.phase9i_kubernetes_replay import pinned_equivalents
+
+    def unexpected(_):
+        pytest.fail("Historical reconstruction invoked the new live migration hook")
+
+    monkeypatch.setattr(equivalents, "repair_v6_equivalents", unexpected)
+    files = {
+        "terraform/main.tf": 'resource "aws_eip" "nat" { vpc = true }\n'
+        'resource "aws_db_instance" "db" { name = var.database }\n'
+    }
+    candidate, records = pinned_equivalents()(files)
+    assert "vpc = true" in candidate["terraform/main.tf"]
+    assert "db_name = var.database" in candidate["terraform/main.tf"]
+    assert [r["kind"] for r in records] == ["db_name"]

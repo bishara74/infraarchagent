@@ -27,6 +27,82 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9i — Guard documented v6 migrations and measure major-version drift
+
+**Summary:** Add three narrowly bound documented AWS v6 equivalent proposals and
+subnet/SSM guidance mappings. Replay 201 stored packages across both broad cohorts
+and both final sets, reporting validity and strict/v1/v2 deltas per scenario.
+Record provider-major drift as a thesis discussion finding without a new real run.
+
+**Requirements addressed:** FR-G-02, FR-V-03, FR-S-09, PR-01, NFR-01.
+
+**Files:** backend/app/validation/{v6_equivalents,equivalents}.py;
+backend/app/domain/{plan,validation}.py; backend/app/security/generation.py;
+backend/app/agents/prompts/architect.py; backend/scripts/{phase9i_v6_replay,
+phase9i_kubernetes_replay}.py; backend/tests/unit/{test_phase9i_v6_equivalents,
+test_phase9i_v6_replay,test_phase9i_service_mapping,test_architect_prompt,
+test_kubernetes_integration}.py; backend/tests/integration/test_phase9i_v6_native.py;
+docs/evals/phase9i-v6-migrations-offline/; docs/thesis-notes/chapter6-evaluation.md;
+README; D-56; this log.
+
+**Decisions:** D-56 cites the pinned official v6 guide. For modules selecting AWS
+6.x, migrate literal EIP vpc=true to domain="vpc"; one SSM instance_id expression
+to an InstanceIds target; and a flow log's uniquely bound CloudWatch group name
+to that same group's ARN destination. Existing target/destination conflicts,
+dynamic/false EIP values, unbound names, custom sources, unavailable schemas and
+ambiguous/malformed modules skip. Preserve constraints, bindings, expressions and
+unrelated bytes. The existing checked_one/CandidateGuard and strict failed-check
+improvement decide retention. Add subnet/SSM to the schema vocabulary (35 labels;
+Architect prompt 4), retaining free-form compatibility, budgets and recursive
+tiers. No new policy, readiness, blocking, threshold, dependency or open question.
+
+**Tests:** make lint passed (Ruff, mypy 166 sources, frontend ESLint/TypeScript).
+make test: 1,932 passed, 0 failed/skipped, 6 performance tests deselected, 374.38s.
+Repository/history secret scan: 0 findings/errors.
+Focused migration/report/guidance checks: 59 passed; native offline Terraform:
+1 passed (three errors become zero); historical reconstruction/guard checks: 19 passed, including all 81 pinned final packages.
+The historical helper now executes its original trusted Git-pinned equivalents
+and keeps other legacy transforms byte-guarded plus every candidate/retained hash
+assertion. Live new migrations cannot alter historical reconstruction. Initial
+full collection exposed duplicate unit/integration basenames, corrected by a
+unique integration filename. The next full suite had 1,929 passed, 1 failed,
+6 deselected: the historical whole-file pin caught the authorised live change.
+The pinned-transform correction preserves old evidence and is covered explicitly.
+Verification uses dotenv-disabled Python, stub inference and disposable UTF-8
+PostgreSQL 16 with synthetic credentials. Logs accompany the evidence.
+
+**Offline evidence:** 201 immutable packages / 68 plans / 72 source hashes; three
+missing final variants remain separate. All five eligible final packages are in
+broad cohort 2; paired native validation/scans accept all five proposals. Broad
+scenario 4 improves from 2/6 to 5/6 valid and passing under strict/v1/v2. Its SSM
+cost package and scenario-10 performance package each lose one error but remain
+invalid. All other scenarios have zero validity/profile pass delta. Cohort-2
+validity is 37→40/60; strict/v1/v2 passes are each 19→22/60. Broad cohort 1 remains
+35/60 valid and 24/60 passing; final sets remain 23/81 valid and 15/81 passing.
+All blocker-count deltas are zero; no guidance-only package gain is attributed.
+Five changed packages use fresh paired native observations; 141 identity cases
+reuse the previous native replay, and 55 reuse frozen round-2 observations.
+Tool/provider versions match and 52 observational source hashes are unchanged;
+methods are explicit per row. Original package bytes and historical reports stay
+unchanged. Baseline broad cohort 1 retains two validation errors; scans have no
+unknown results.
+
+**Migration audit:** Stored round-2 final bytes contain four EIP.vpc occurrences
+and one SSM.instance_id occurrence under v6. Original generator bytes contain six
+EIP.vpc, one SSM.instance_id and one flow-log.log_group_name occurrence. The flow
+log had already been repaired historically, so it adds no replay gain. No other
+removed configured resource/data arguments or nested blocks were found among
+inspectable modules. One original module has a parse failure; all retained
+round-2 modules are parseable. Computed-only references and removed resource types
+are outside this argument audit.
+
+**Known gaps / follow-ups:** SSM commands list-to-string coercion is not a v5-only
+equivalent and remains untouched; deployment/runtime compatibility and future
+model quality are unverified. The cohorts do not isolate prompt-v3/guidance
+causation. Unknown free-form labels can still occur beyond the covered vocabulary.
+No real LLM calls, dotenv reads or pushes. Next: review the per-scenario offline
+results and the provider-major drift discussion before considering a real run.
+
 ## 2026-10-21 — Phase 9i — Complete service mapping before the next real benchmark
 
 **Summary:** Map the Architect's advertised AWS service vocabulary and every

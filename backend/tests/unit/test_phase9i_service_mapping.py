@@ -49,6 +49,13 @@ def test_every_saved_broad_and_final_plan_service_is_covered():
     indexes = [ProviderSchemaIndex("aws", v) for v in PINS["aws"]]
     missing = []
     assert len(baseline["plans"]) == 48
+    extra = json.loads(
+        (
+            ROOT / "docs/evals/phase9i-v6-migrations-offline/service-labels.json"
+        ).read_text()
+    )
+    assert len(extra["plans"]) == 20
+    baseline["plans"].extend(extra["plans"])
     for item in baseline["plans"]:
         labels = item["selection"]["services"]
         value = plan(*labels)
@@ -83,6 +90,11 @@ def test_every_saved_broad_and_final_plan_service_is_covered():
         ("Amazon API Gateway HTTP API", HTTP_API_TYPES),
         ("apigatewayv2", HTTP_API_TYPES),
         ("DynamoDB", {"aws_dynamodb_table"}),
+        ("subnet", {"aws_subnet", "aws_route_table_association"}),
+        (
+            "ssm",
+            {"aws_ssm_association", "aws_ssm_document", "aws_iam_instance_profile"},
+        ),
         ("elasticloadbalancingv2", {"aws_lb", "aws_lb_listener"}),
         ("Amazon Route 53", {"aws_route53_zone", "aws_route53_record"}),
         ("Amazon RDS Aurora", {"aws_rds_cluster", "aws_rds_cluster_instance"}),

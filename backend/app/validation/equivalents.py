@@ -10,13 +10,15 @@ from lark import Tree
 
 from app.security.terraform import TerraformPackage
 from app.validation.idioms import json_spans
+from app.validation.v6_equivalents import repair_v6_equivalents
 
 
 def repair_equivalents(
     files: dict[str, str],
 ) -> tuple[dict[str, str], list[dict[str, Any]]]:
+    files, records = repair_v6_equivalents(files)
     package = TerraformPackage(files)
-    result, records = dict(files), []
+    result = dict(files)
     for path, doc in package.documents.documents.items():
         if doc.parse_error or not package.module_safe(str(PurePosixPath(path).parent)):
             continue

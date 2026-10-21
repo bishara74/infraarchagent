@@ -1525,8 +1525,9 @@ despite indexed schemas being available; see the [zero-context attribution](docs
 The [service-mapping follow-up](docs/evals/phase9i-service-mapping-offline/README.md)
 resolves the saved-plan coverage gaps before the next benchmark: both serverless
 plans now receive 4,471 schema characters. All 48 plans are measured offline.
-The Architect schema advertises 33 supported labels (prompt version 3), with
-coverage against both pinned AWS indexes and free-form compatibility retained.
+At that revision, the Architect schema advertised 33 supported labels (prompt
+version 3), with coverage against both pinned AWS indexes and free-form
+compatibility retained.
 Plain Prometheus/Grafana inherit planned hosting; managed workspaces require
 explicit managed labels. Reproduce the measurements with dotenv loading disabled:
 
@@ -1536,6 +1537,25 @@ INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH="$PWD/tests/bootstrap:$PWD" \
   .venv/bin/python -m scripts.phase9i_service_mapping_report \
   --output /tmp/phase9i-service-mapping-new
 ```
+
+The [AWS v6 migration replay](docs/evals/phase9i-v6-migrations-offline/README.md)
+covers both broad cohorts and both final sets, with validity and strict/v1/v2
+deltas by scenario. Documented EIP, SSM-target and bound flow-log equivalents
+preserve the selected provider major and pass through the existing guard.
+Subnet/SSM mappings extend the advertised vocabulary to 35 labels (Architect
+prompt version 4); all 68 saved plans are covered. Reproduce offline with the
+original snapshots, prior replay evidence and local tool/provider mirrors:
+
+```bash
+cd backend
+INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH="$PWD/tests/bootstrap:$PWD" \
+  unshare --user --map-root-user --net \
+  .venv/bin/python -m scripts.phase9i_v6_replay \
+  --output /tmp/phase9i-v6-replay --workers 2
+```
+
+Every changed proposal receives fresh paired native observations; unchanged
+packages reuse explicitly labelled immutable baselines. No model calls occur.
 
 Provider consolidation is a module-scoped proposal checked by the existing
 validity/security guard. Conflicting sources or constraints that cannot be proven

@@ -7,6 +7,7 @@ import json
 import socket
 import subprocess
 from collections import Counter
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -47,10 +48,19 @@ def write(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
 
 
+@lru_cache(maxsize=1)
+def pinned_equivalents():
+    """Trusted repository source preserves the historical rule set as it evolves."""
+    path = "backend/app/validation/equivalents.py"
+    source = subprocess.check_output(["git", "show", PINNED + ":" + path], cwd=ROOT)
+    namespace: dict[str, Any] = {"__name__": "_phase9i_pinned_equivalents"}
+    exec(compile(source, PINNED + ":" + path, "exec"), namespace)
+    return namespace["repair_equivalents"]
+
+
 def historical_retained(item: dict[str, Any]) -> dict[str, str]:
-    """Current legacy transforms must exactly equal the pinned implementation."""
+    """Reconstruct pinned equivalents; other transforms remain byte-guarded."""
     paths = (
-        "validation/equivalents.py",
         "validation/formats.py",
         "security/addressing.py",
         "security/defaults.py",
@@ -64,7 +74,11 @@ def historical_retained(item: dict[str, Any]) -> dict[str, str]:
     for name in ("equivalents", "addressing", "formats", "defaults"):
         row = json.loads((OLD_EVIDENCE / ("cumulative_" + name) / filename).read_text())
         assert digest(current) == row["before_sha256"]
-        candidate, _ = proposal(name, current, row["before"])
+        candidate, _ = (
+            pinned_equivalents()(current)
+            if name == "equivalents"
+            else proposal(name, current, row["before"])
+        )
         assert digest(candidate) == row["candidate_sha256"]
         current = candidate if row["reason"] == "accepted" else current
         assert digest(current) == row["retained_sha256"]

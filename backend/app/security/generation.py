@@ -62,6 +62,8 @@ SERVICE_TYPES = {
     "acm": {"aws_acm_certificate", "aws_acm_certificate_validation"},
     "natgateway": {"aws_nat_gateway", "aws_eip"},
     "vpc": NETWORK_TYPES,
+    "subnet": {"aws_subnet", "aws_route_table_association"},
+    "ssm": {"aws_ssm_association", "aws_ssm_document", "aws_iam_instance_profile"},
     "amp": {"aws_prometheus_workspace"},
     "amg": {"aws_grafana_workspace", "aws_iam_role"},
     "ebs": {"aws_ebs_volume"},

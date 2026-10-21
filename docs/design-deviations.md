@@ -1821,6 +1821,42 @@ per-service coverage and context sizes are recorded separately in
 no inferred validity/security gain, readiness, blocking or threshold change,
 new dependency or open question.
 
+AWS major-version drift follow-up (2026-10-22; FR-G-02, FR-V-03, NFR-01):
+paired offline replay covers both broad cohorts and both final sets. Add only
+version-bound documented migrations when the module selects the mirrored AWS
+6.x schema: literal aws_eip.vpc=true becomes domain="vpc"; a scalar SSM association
+instance_id becomes one InstanceIds target with the original expression; a flow
+log's uniquely bound CloudWatch group name reference becomes log_destination
+using that same group's ARN. Existing destination/targets, dynamic or false EIP
+values, unbound literal log names, malformed/ambiguous modules, custom sources and
+unknown schemas skip edits. Provider constraints and resolved majors are preserved.
+Native validation plus the unchanged CandidateGuard/failed-check improvement
+rule decide retention; records include hashes and outcomes. Parameters.commands
+list-to-string rewriting is not a v5-only migration and is outside this change.
+
+The [pinned provider migration guide](https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/guides/version-6-upgrade.html.markdown)
+documents the three removed fields. The round-2 audit finds retained EIP and SSM
+cases; the flow-log occurrence is confined to original generator output and had
+already been repaired historically. Original and retained observations are kept
+separate, so that prior repair is not counted as a new gain. No additional
+v5-only configured resource/data fields or nested blocks were found in the
+inspectable round-2 modules selecting 6.x. One original module has a parse failure,
+so its audit is incomplete; all retained round-2 modules are parseable. Computed-only
+references and removed resource types are outside that configured-argument audit.
+
+Advertise and map subnet to aws_subnet/aws_route_table_association and ssm to
+aws_ssm_association/aws_ssm_document/aws_iam_instance_profile. Coverage now spans
+35 advertised labels and all 68 saved plans from the four cohorts. The embedded
+Architect schema changes prompt version 4; there is no new inference run. Existing
+guidance caps/tiers, strict policy, readiness, blocking and thresholds are unchanged.
+Evidence is separate in docs/evals/phase9i-v6-migrations-offline/. Fresh paired
+native observations cover every changed proposal. Byte-identical packages retain
+explicitly labelled frozen baselines with matched tool/provider versions and
+unchanged observational validator/scanner/policy sources. Historical inputs and
+reports remain frozen. Provider major drift is a discussion finding, not evidence
+that Architect prompt v3 or guidance tiers caused the model's provider choice;
+see docs/thesis-notes/chapter6-evaluation.md. No dependency or new open question.
+
 Kubernetes follow-up (FR-S-04/09, FR-V-01, FR-UI-06): a missing-only,
 source-preserving pod catalogue supports Deployment/StatefulSet/DaemonSet/Job,
 regular and init containers. Real offline Helm output establishes resource

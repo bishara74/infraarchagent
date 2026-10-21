@@ -34,6 +34,8 @@ ARCHITECT_AWS_SERVICES = (
     "acm",
     "natgateway",
     "vpc",
+    "subnet",
+    "ssm",
     "prometheus",
     "grafana",
     "amp",

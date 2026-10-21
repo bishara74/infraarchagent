@@ -203,6 +203,38 @@ comparisons. Exact observed totals and unknown counts are in costs.csv.
    exceptions without resource-address mapping. Current exact parsed exceptions
    reduce blockers but do not add passing packages (D-48).
 
+8. **Provider major-version drift:** broad scenario 4 had 6/6 validation-valid
+   packages in the first broad cohort, with AWS constraints selecting 5.100.0.
+   The second cohort had 2/6 valid packages: generators selected or permitted
+   6.68.0 while emitting removed v5 fields. Three retained packages used
+   aws_eip.vpc=true; a fourth retained aws_ssm_association.instance_id and a
+   separately mistyped commands parameter. These defects are present in saved
+   generator output, rather than being introduced by retained repairs. The
+   newer EIP guidance already labelled vpc as v5-only, illustrating that correct
+   version-labelled context does not ensure internally consistent model output.
+   The new plans also emitted previously unmapped subnet/ssm labels. The source
+   model, actual serving backend, plan structure, Architect schema and guidance
+   all form potential covariates; these cohorts do not isolate their causal
+   effects. Terraform/scanner versions and configured generation budgets match.
+
+   The [offline migration replay](../evals/phase9i-v6-migrations-offline/README.md)
+   measures narrow documented equivalents on the saved final package bytes.
+   It preserves selected provider majors and the existing validity/security
+   guard. Every changed proposal receives paired native offline checks/scans;
+   identity cases reuse explicitly labelled frozen observations with matched
+   versions and unchanged observational code. Original-only legacy fields are
+   audited separately and cannot create replay gains. The remaining SSM commands
+   list is invalid under both majors and is intentionally not treated as a
+   version migration. Guidance changes alone receive no package-quality gain.
+   Report per-scenario candidate and retained validity/strict/v1/v2 deltas;
+   In broad cohort 2, scenario 4 rises from 2/6 to 5/6 valid and passing under
+   each profile; every other scenario has zero validity/profile pass delta.
+   Scenario 10 and the remaining scenario-4 cost package each lose one native
+   error while staying invalid. All five proposals pass the existing guard;
+   blocker-count deltas are zero. Other cohorts remain unchanged. These are
+   offline effects on saved bytes: static acceptance is not deployment evidence
+   or a newly measured real benchmark. See D-56 and the provider's [v6 migration guide](https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/guides/version-6-upgrade.html.markdown).
+
 Evidence for the discussion findings: [initial Sonnet](../evals/phase9-bench-real-20261014T101701420278Z/summary.md),
 [Sonnet smoke](../evals/phase9-bench-smoke-20261014T122810075341Z/summary.md),
 [partial Haiku excerpt](../evals/phase9-bench-real-20261018T231027886459Z/fixer-log-excerpt.txt),

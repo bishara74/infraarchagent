@@ -1,0 +1,1030 @@
+{
+  "counts": {
+    "files:aws_eip.vpc": 4,
+    "files:aws_ssm_association.instance_id": 1,
+    "original_files:aws_eip.vpc": 6,
+    "original_files:aws_flow_log.log_group_name": 1,
+    "original_files:aws_ssm_association.instance_id": 1
+  },
+  "documented_equivalents": [
+    {
+      "field": "aws_eip.vpc",
+      "guide": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/guides/version-6-upgrade.html.markdown#resource-aws_eip",
+      "replacement": "domain = \"vpc\" only for literal true"
+    },
+    {
+      "example": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/r/ssm_association.html.markdown",
+      "field": "aws_ssm_association.instance_id",
+      "guide": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/guides/version-6-upgrade.html.markdown#resource-aws_ssm_association",
+      "replacement": "targets with key InstanceIds and one preserved expression; existing targets/dynamic skip"
+    },
+    {
+      "field": "aws_flow_log.log_group_name",
+      "guide": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/guides/version-6-upgrade.html.markdown#resource-aws_flow_log",
+      "replacement": "log_destination using the same uniquely bound CloudWatch group ARN; unbound names skip",
+      "semantics": "https://registry.terraform.io/providers/hashicorp/aws/5.0.1/docs/resources/flow_log#argument-reference"
+    }
+  ],
+  "modules": [
+    {
+      "key": "broad-2/7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/da8bc90b-31d5-44d6-bf01-e149ee3b362c/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/da8bc90b-31d5-44d6-bf01-e149ee3b362c/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/da8bc90b-31d5-44d6-bf01-e149ee3b362c/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/da8bc90b-31d5-44d6-bf01-e149ee3b362c/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/da8bc90b-31d5-44d6-bf01-e149ee3b362c/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/da8bc90b-31d5-44d6-bf01-e149ee3b362c/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/1c410860-15e7-495e-8567-50debdd8d438/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/1c410860-15e7-495e-8567-50debdd8d438/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/1c410860-15e7-495e-8567-50debdd8d438/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/1c410860-15e7-495e-8567-50debdd8d438/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/1c410860-15e7-495e-8567-50debdd8d438/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/1c410860-15e7-495e-8567-50debdd8d438/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/3f908f47-88ef-41a9-82e5-11a9c2301141/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/3f908f47-88ef-41a9-82e5-11a9c2301141/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/3f908f47-88ef-41a9-82e5-11a9c2301141/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/3f908f47-88ef-41a9-82e5-11a9c2301141/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/3f908f47-88ef-41a9-82e5-11a9c2301141/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/3f908f47-88ef-41a9-82e5-11a9c2301141/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/eeaba55a-cb17-46a9-89b4-8d015263e414/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/eeaba55a-cb17-46a9-89b4-8d015263e414/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/eeaba55a-cb17-46a9-89b4-8d015263e414/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/eeaba55a-cb17-46a9-89b4-8d015263e414/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/eeaba55a-cb17-46a9-89b4-8d015263e414/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/eeaba55a-cb17-46a9-89b4-8d015263e414/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/d3a112fe-ff76-4c33-812f-9d997b210f74/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/d3a112fe-ff76-4c33-812f-9d997b210f74/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/d3a112fe-ff76-4c33-812f-9d997b210f74/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/d3a112fe-ff76-4c33-812f-9d997b210f74/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/d3a112fe-ff76-4c33-812f-9d997b210f74/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/d3a112fe-ff76-4c33-812f-9d997b210f74/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/cda319c1-6b38-4534-96aa-ca36b37795de/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/cda319c1-6b38-4534-96aa-ca36b37795de/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/cda319c1-6b38-4534-96aa-ca36b37795de/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/cda319c1-6b38-4534-96aa-ca36b37795de/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/cda319c1-6b38-4534-96aa-ca36b37795de/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/cda319c1-6b38-4534-96aa-ca36b37795de/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/93c30ed8-db20-44ba-b701-054f8f6e15b4/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/93c30ed8-db20-44ba-b701-054f8f6e15b4/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/93c30ed8-db20-44ba-b701-054f8f6e15b4/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/93c30ed8-db20-44ba-b701-054f8f6e15b4/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/93c30ed8-db20-44ba-b701-054f8f6e15b4/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/93c30ed8-db20-44ba-b701-054f8f6e15b4/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/8d9ef032-7f22-426b-9b73-fbe63647c663/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/8d9ef032-7f22-426b-9b73-fbe63647c663/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/8d9ef032-7f22-426b-9b73-fbe63647c663/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/8d9ef032-7f22-426b-9b73-fbe63647c663/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/8d9ef032-7f22-426b-9b73-fbe63647c663/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/8d9ef032-7f22-426b-9b73-fbe63647c663/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/d08be9f7-dc06-4d8a-a7dc-649fd495b96f/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/d08be9f7-dc06-4d8a-a7dc-649fd495b96f/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/d08be9f7-dc06-4d8a-a7dc-649fd495b96f/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/d08be9f7-dc06-4d8a-a7dc-649fd495b96f/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": false,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/d08be9f7-dc06-4d8a-a7dc-649fd495b96f/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/d08be9f7-dc06-4d8a-a7dc-649fd495b96f/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/e9c9567c-b94a-4281-9107-410c9650348a/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/e9c9567c-b94a-4281-9107-410c9650348a/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/e9c9567c-b94a-4281-9107-410c9650348a/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/e9c9567c-b94a-4281-9107-410c9650348a/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/e9c9567c-b94a-4281-9107-410c9650348a/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/e9c9567c-b94a-4281-9107-410c9650348a/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/c1fa2eef-8460-440e-8742-3fc06d34b519/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/c1fa2eef-8460-440e-8742-3fc06d34b519/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/c1fa2eef-8460-440e-8742-3fc06d34b519/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/c1fa2eef-8460-440e-8742-3fc06d34b519/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/c1fa2eef-8460-440e-8742-3fc06d34b519/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/c1fa2eef-8460-440e-8742-3fc06d34b519/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/69217b2c-061b-4c15-a364-37d1c2bb220b/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/69217b2c-061b-4c15-a364-37d1c2bb220b/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/69217b2c-061b-4c15-a364-37d1c2bb220b/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/69217b2c-061b-4c15-a364-37d1c2bb220b/performance",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/69217b2c-061b-4c15-a364-37d1c2bb220b/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/69217b2c-061b-4c15-a364-37d1c2bb220b/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/a62094cd-8a5a-42c5-9970-c583a56c1129/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/a62094cd-8a5a-42c5-9970-c583a56c1129/cost",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/a62094cd-8a5a-42c5-9970-c583a56c1129/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/a62094cd-8a5a-42c5-9970-c583a56c1129/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/a62094cd-8a5a-42c5-9970-c583a56c1129/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/a62094cd-8a5a-42c5-9970-c583a56c1129/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/f46d7016-5b7d-4e38-bee2-3ca0bfe8df07/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/f46d7016-5b7d-4e38-bee2-3ca0bfe8df07/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/f46d7016-5b7d-4e38-bee2-3ca0bfe8df07/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/f46d7016-5b7d-4e38-bee2-3ca0bfe8df07/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/f46d7016-5b7d-4e38-bee2-3ca0bfe8df07/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/f46d7016-5b7d-4e38-bee2-3ca0bfe8df07/security",
+      "module": "terraform",
+      "resolved_aws": "5.100.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/c566276f-6530-4b68-9c10-ddf0e2ea11bc/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/c566276f-6530-4b68-9c10-ddf0e2ea11bc/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/c566276f-6530-4b68-9c10-ddf0e2ea11bc/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/c566276f-6530-4b68-9c10-ddf0e2ea11bc/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/c566276f-6530-4b68-9c10-ddf0e2ea11bc/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/c566276f-6530-4b68-9c10-ddf0e2ea11bc/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/8e7ace81-03e9-4fcf-9258-a326211fb0d9/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/8e7ace81-03e9-4fcf-9258-a326211fb0d9/cost",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/8e7ace81-03e9-4fcf-9258-a326211fb0d9/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/8e7ace81-03e9-4fcf-9258-a326211fb0d9/performance",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    },
+    {
+      "key": "broad-2/8e7ace81-03e9-4fcf-9258-a326211fb0d9/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "files"
+    },
+    {
+      "key": "broad-2/8e7ace81-03e9-4fcf-9258-a326211fb0d9/security",
+      "module": "terraform",
+      "resolved_aws": "6.68.0",
+      "safe": true,
+      "stage": "original_files"
+    }
+  ],
+  "occurrences": [
+    {
+      "field": "instance_id",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/cost",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "ssm",
+      "scenario_id": 4,
+      "stage": "files",
+      "type": "aws_ssm_association"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/cost",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat_eip",
+      "scenario_id": 4,
+      "stage": "original_files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "instance_id",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/cost",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "ssm",
+      "scenario_id": 4,
+      "stage": "original_files",
+      "type": "aws_ssm_association"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/performance",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat_eip",
+      "scenario_id": 4,
+      "stage": "files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/performance",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat_eip",
+      "scenario_id": 4,
+      "stage": "original_files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/security",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat_eip",
+      "scenario_id": 4,
+      "stage": "files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/67345bcd-26be-493f-89fa-abfeed909159/security",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat_eip",
+      "scenario_id": 4,
+      "stage": "original_files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/performance",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "eip",
+      "scenario_id": 10,
+      "stage": "files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/9a277d2d-e667-4a06-9f21-f369f64786d4/performance",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "eip",
+      "scenario_id": 10,
+      "stage": "original_files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "log_group_name",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/8d9ef032-7f22-426b-9b73-fbe63647c663/security",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "vpc",
+      "scenario_id": 10,
+      "stage": "original_files",
+      "type": "aws_flow_log"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/cost",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat_eip",
+      "scenario_id": 4,
+      "stage": "files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/cost",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat_eip",
+      "scenario_id": 4,
+      "stage": "original_files",
+      "type": "aws_eip"
+    },
+    {
+      "field": "vpc",
+      "field_kind": "argument",
+      "file": "terraform/main.tf",
+      "key": "broad-2/0452eefa-601d-4cd3-8934-d23d13c5b5cb/performance",
+      "kind": "resource",
+      "resolved_aws": "6.68.0",
+      "resource": "nat",
+      "scenario_id": 4,
+      "stage": "original_files",
+      "type": "aws_eip"
+    }
+  ],
+  "scope": "All parsed resource/data configuration arguments and nested blocks; original and retained round-2 bytes. Computed-only references and removed resource types are not argument migrations.",
+  "uninspectable": []
+}
