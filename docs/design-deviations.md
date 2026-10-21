@@ -1778,6 +1778,18 @@ sometimes measured the combined context; preserve it and all historical values
 without deriving or backfilling an allegedly exact schema-only measurement.
 Absent new metadata remains unknown.
 
+Duplicate `terraform.required_providers` declarations are consolidated atomically
+within one module when provider sources agree and numeric Terraform version
+constraints have a provably nonempty intersection. Distinct providers and
+compatible aliases are unioned; constraints remain a conjunction, independent of
+mirrored pins. Unsupported syntax, ambiguous declarations, source conflicts and
+empty intersections remain for LLM repair. Unrelated source/settings survive.
+The existing CandidateGuard and failed-check improvement rule decide retention;
+proposals, hashes and accepted/rejected/skipped reasons are recorded. This adds
+no new validity threshold. Evidence is separate in
+`docs/evals/phase9i-guidance-provider-offline/`; guidance alone receives no
+attributed package improvement. No new dependency, migration or open question.
+
 
 Kubernetes follow-up (FR-S-04/09, FR-V-01, FR-UI-06): a missing-only,
 source-preserving pod catalogue supports Deployment/StatefulSet/DaemonSet/Job,

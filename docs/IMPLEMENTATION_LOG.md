@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-21 — Phase 9i — Consolidate compatible module provider declarations
+
+**Summary:** Add a logged, idempotent proposal to merge duplicate Terraform
+required_providers declarations within each module, checked by the existing
+validity and security guard before retention.
+
+**Requirements addressed:** FR-V-03, FR-S-09, NFR-01.
+
+**Files:** backend/app/validation/provider_repairs.py;
+backend/app/agents/deterministic.py; backend/app/domain/validation.py;
+backend/tests/unit/test_phase9i_guidance_provider_followup.py;
+backend/tests/integration/test_phase9i_provider_merge.py; D-56; this log.
+
+**Decisions:** Match sources and prove numeric version-constraint intersection,
+retaining the conjunction independently of provider mirror pins. Merge distinct
+providers and aliases across HCL, tf.json and mixed declarations; preserve
+unrelated source and module boundaries. Unknown syntax, malformed/ambiguous
+inputs, incompatible sources or constraints remain for LLM repair. Record hashes
+and outcomes; keep CandidateGuard and failed-check improvement rules unchanged.
+
+**Tests:** Final-tree make lint passed; make test 1,882 passed, 0 failed/skipped,
+6 performance tests deselected. Tests cover compatibility/conflicts, mixed formats,
+module isolation, idempotence, safe skips, guard rejection and real offline
+Terraform duplicate removal. Provider/report focused checks: 12 passed.
+
+**Known gaps / follow-ups:** Only provable numeric constraints are handled.
+Offline replay proposes two merges but retains neither because existing guards
+reject them; full evidence follows separately. No new dependencies, thresholds,
+readiness changes or open questions; no real LLM calls or dotenv reads.
+
 ## 2026-10-21 — Phase 9i — Prioritise recursive schema guidance and measure it separately
 
 **Summary:** Reserve required guidance across planned types before optional

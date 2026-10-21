@@ -1,19 +1,29 @@
-"""FR-G-02/FR-V-03: required-first guidance and schema-only measurements."""
+"""FR-G-02/FR-V-03: required-first guidance and guarded provider consolidation."""
 
 import json
+from copy import deepcopy
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
+
+from app.agents.budget import AgentBudget
+from app.agents.deterministic import checked_one
 from app.core.logging import RedactingFilter
 from app.domain.enums import Variant
 from app.domain.validation import RemediationReport
 from app.pipeline.orchestrator import PipelineOrchestrator
 from app.security.generation import generation_context
+from app.validation.documents import PackageDocuments
+from app.validation.provider_repairs import (
+    intersect_constraints,
+    repair_required_providers,
+)
 from app.validation.schema_context import generator_schema_guidance
 from scripts.benchmark import normalized_event
 from scripts.phase9d_quality import compact_snapshot, quality_snapshot, quality_table
+from tests.unit.test_phase9i_deterministic import Engine, Scanner, Verifier, report
 from tests.unit.test_secure_generation import plan
 
 pytestmark = pytest.mark.req("FR-G-02", "FR-V-03", "FR-V-04", "NFR-01")
@@ -191,6 +201,125 @@ async def test_oversized_plan_continues_and_exports_same_overflow_signal(monkeyp
     assert "CANARY" not in json.dumps(event)
 
 
+@pytest.mark.parametrize(
+    "constraints,expected",
+    [
+        ([">= 5, < 7", "~> 6.2"], True),
+        (["> 9, != 9.0.1", "< 10"], True),
+        (["~> 5.1.0", ">= 5.2"], False),
+        ([">= 6, <= 6", "!= 6"], False),
+        (["> 6", "<= 6"], False),
+        (["= 5.1", "5.1.0"], True),
+        (["< 0"], False),
+        ([""], True),
+        (["1.0.0-beta"], False),
+        (["~> 5", ">= 6"], False),
+        (["> 5.0.0, < 5.0.2, != 5.0.1"], False),
+    ],
+)
+def test_constraint_intersection_uses_bounds_not_mirror(constraints, expected):
+    assert (intersect_constraints(constraints) is not None) is expected
+
+
+def declarations(a=">= 5", b="< 7", source="hashicorp/aws"):
+    return {
+        "terraform/a.tf": 'terraform {\n required_version = ">= 1.0"\n'
+        ' required_providers {\n aws = { source = "hashicorp/aws", version = "'
+        + a
+        + '" }\n }\n}\n# retain me\n',
+        "terraform/b.tf": 'terraform {\n required_providers {\n aws = { source = "'
+        + source
+        + '", version = "'
+        + b
+        + '" }\n random = { source = "hashicorp/random", version = "3.9.1" }\n }\n}\n',
+    }
+
+
+@pytest.mark.parametrize("style", ["hcl", "json", "mixed"])
+def test_merge_union_source_preservation_module_isolation_and_idempotence(style):
+    files = declarations()
+    if style != "hcl":
+        files["terraform/b.tf.json"] = json.dumps(
+            {
+                "terraform": {
+                    "required_version": ">= 1",
+                    "required_providers": {
+                        "aws": {"source": "hashicorp/aws", "version": "< 7"},
+                        "random": {"source": "hashicorp/random", "version": "3.9.1"},
+                    },
+                },
+                "output": {"x": {"value": "KEEP"}},
+            }
+        )
+        del files["terraform/b.tf"]
+    if style == "json":
+        files["terraform/a.tf.json"] = (
+            '{"terraform":{"required_providers":{"aws":'
+            '{"source":"hashicorp/aws","version":">= 5"}},'
+            '"required_version":">= 1"}}'
+        )
+        del files["terraform/a.tf"]
+    files["terraform/child/main.tf"] = (
+        'terraform { required_providers { aws = { source = "other/aws" } } }'
+    )
+    original = deepcopy(files)
+    result, records = repair_required_providers(files)
+    assert files == original and len(records) == 1
+    assert result["terraform/child/main.tf"] == original["terraform/child/main.tf"]
+    assert not any(
+        doc.parse_error for doc in PackageDocuments.parse(result).documents.values()
+    )
+    assert repair_required_providers(result) == (result, [])
+    assert ">= 5, < 7" in "".join(result.values())
+    assert records[0]["before_hash"] != records[0]["after_hash"]
+    if style != "json":
+        assert "# retain me" in result["terraform/a.tf"]
+        assert 'required_version = ">= 1.0"' in result["terraform/a.tf"]
+    if style != "hcl":
+        assert '"value": "KEEP"' in result["terraform/b.tf.json"]
+
+
+@pytest.mark.parametrize(
+    "a,b,source",
+    [
+        ("< 5", ">= 6", "hashicorp/aws"),
+        (">= 5", "< 7", "other/aws"),
+        ("1.0.0-beta", "< 7", "hashicorp/aws"),
+    ],
+)
+def test_conflicts_leave_entire_module_for_llm(a, b, source):
+    files = declarations(a, b, source)
+    result, records = repair_required_providers(files)
+    assert result == files and records[0]["outcome"] == "skipped"
+
+
+@pytest.mark.parametrize(
+    "mode,failed,accepted",
+    [
+        ("clean", False, True),
+        ("clean", True, False),
+        ("new_blocker", False, False),
+        ("unavailable", False, False),
+    ],
+)
+async def test_provider_proposal_uses_existing_validity_and_security_guards(
+    mode, failed, accepted
+):
+    files = declarations()
+    result, _, records = await checked_one(
+        files,
+        plan("S3"),
+        Variant.COST,
+        report(True),
+        Engine(failed),
+        SimpleNamespace(scanner=Scanner(mode), terraform_verifier=Verifier()),
+        AgentBudget(30),
+        repair_required_providers,
+    )
+    assert (result != files) is accepted
+    assert records[0]["outcome"] == ("accepted" if accepted else "rejected")
+
+
 def test_historical_metric_absence_remains_unknown():
     snapshot = quality_snapshot(
         {
@@ -218,3 +347,37 @@ def test_cloudfront_conditional_requirements_have_no_depth_cutoff():
     forwarded = entry["blocks"]["default_cache_behavior"]["blocks"]["forwarded_values"]
     assert forwarded["if_used"] is True
     assert forwarded["blocks"]["cookies"]["required"] == {"forward": "string"}
+
+
+def test_aliases_union_and_unknown_properties_or_ambiguous_json_skip():
+    files = declarations()
+    files["terraform/a.tf"] = files["terraform/a.tf"].replace(
+        'version = ">= 5"', 'version = ">= 5", configuration_aliases = [aws.first]'
+    )
+    files["terraform/b.tf"] = files["terraform/b.tf"].replace(
+        'version = "< 7"',
+        'version = "< 7", configuration_aliases = [aws.second, aws.first]',
+    )
+    result, records = repair_required_providers(files)
+    assert (
+        records
+        and "configuration_aliases = [aws.first, aws.second]"
+        in result["terraform/a.tf"]
+    )
+    assert repair_required_providers(result) == (result, [])
+    files["terraform/b.tf"] = files["terraform/b.tf"].replace(
+        'source = "hashicorp/aws"', 'source = "hashicorp/aws", unexpected = "PRESERVE"'
+    )
+    assert repair_required_providers(files)[0] == files
+    files = declarations()
+    files["terraform/c.tf.json"] = '{"terraform":{},"terraform":{}}'
+    assert repair_required_providers(files)[0] == files
+
+
+def test_multiple_blocks_in_one_file_and_malformed_modules_are_safe():
+    original = declarations()
+    files = {"terraform/main.tf": "\n".join(original.values())}
+    result, records = repair_required_providers(files)
+    assert len(records) == 1 and repair_required_providers(result) == (result, [])
+    files["terraform/broken.tf"] = "terraform {"
+    assert repair_required_providers(files) == (files, [])

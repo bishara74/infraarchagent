@@ -15,6 +15,7 @@ from app.scanners.runner import ToolFailure
 from app.security.acceptance import CandidateGuard
 from app.security.kubernetes_render import repair_formats_and_pods
 from app.validation.equivalents import repair_equivalents
+from app.validation.provider_repairs import repair_required_providers
 
 
 async def checked_one(
@@ -105,7 +106,11 @@ async def checked_repairs(
     budget: AgentBudget,
 ) -> tuple[dict[str, str], ValidationReport, list[dict[str, Any]]]:
     records = []
-    for transform in (repair_equivalents, repair_formats_and_pods):
+    for transform in (
+        repair_required_providers,
+        repair_equivalents,
+        repair_formats_and_pods,
+    ):
         files, report, changes = await checked_one(
             files, plan, variant, report, engine, security, budget, transform
         )

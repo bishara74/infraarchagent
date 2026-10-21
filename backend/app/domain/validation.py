@@ -125,6 +125,7 @@ class DeterministicRepair(BaseModel):
     kind: Literal[
         "missing_variable",
         "duplicate_variable",
+        "required_providers_merge",
         "missing_data_source",
         "empty_default_security_group_rule",
         "flow_log_placeholders",
