@@ -107,7 +107,15 @@ class AuthService:
             "setup_required": setup,
             "mode": "local" if local else "account" if not setup else "shared_key",
             "message": "No authentication (local mode)" if local else None,
-            "user": {"id": str(user.id), "username": user.username, "role": user.role}
+            "user": {
+                "id": str(user.id),
+                "username": user.username,
+                "role": user.role,
+                "created_at": user.created_at.isoformat(),
+                "last_login_at": user.last_login_at.isoformat()
+                if user.last_login_at
+                else None,
+            }
             if user
             else None,
         }

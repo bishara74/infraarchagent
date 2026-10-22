@@ -2163,6 +2163,15 @@ from variant names, arbitrary generated text or product names. Existing server
 readiness/download flags control comparison actions and static checks remain
 explicitly distinct from deployment. No new open question.
 
+Section G: add existing UTC created_at/last_login_at metadata to administrator
+user listings and each account's own session projection. Explicit projections
+exclude hashes/credentials. POST /api/auth/users/{id}/enable is administrator-only,
+reviewer-only and clears disabled_at without modifying any session revocation.
+Old sessions remain unusable; fresh login is required. No migration/privilege or
+authentication-policy changes. UI provides confirmation/password rules, account
+metadata, provider no-credit save warning and Revoke confirmation. Capability
+declarations are restricted in the UI to custom OpenAI-compatible providers.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

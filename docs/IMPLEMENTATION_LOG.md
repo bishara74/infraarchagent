@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section G — Polish Settings and enable reviewer accounts
+
+**Summary:** Add icon-backed Settings navigation, no-credit provider saving with
+warning, key visibility and Revoke confirmation. Reuse model comboboxes and
+explain precedence/custom declarations. Add account metadata/preferences cards,
+a Users table, reviewer creation and confirmed password reset dialog. Add the
+minimal public account metadata and administrator-only reviewer Enable endpoint.
+
+**Requirements addressed:** FR-UI-01, FR-UI-07, NFR-01.
+
+**Files:** SettingsScreen, extracted UsersSettings/AccountSettings and tests,
+accountTime, session types, StatusBadge/styles; backend auth API/service,
+UserRepository, test_phase9j_accounts.py; D-58; log.
+
+**Decisions:** Explicit public projections expose only existing metadata. Enable
+never touches revoked sessions and rejects administrator targets. New login is
+required after re-enabling a disabled reviewer. All management stays admin-only;
+no database migration or extra privilege. Dialog focus returns after busy ends.
+
+**Tests:** `make lint` passes Ruff/format, mypy (167 app sources), frontend
+ESLint/TypeScript. Final frontend suite: 145 passed, 0 failed/skipped, 26 files.
+Focused account/metadata/existing account API suite: 12 passed, 0 failed/skipped
+against isolated PostgreSQL 16 with dotenv disabled. Tests cover every new API
+field/action, anonymous/reviewer denial, no hash/secret response, disabled login,
+revoked-session rejection after Enable, fresh login, reset confirmation/focus,
+reviewer creation, provider no-credit/Revoke and capability declaration visibility.
+
+**Known gaps / follow-ups:** H performs full verification, browser flows,
+1280×800 review and screenshot publication. No dotenv reads/real inference/push.
+
 ## 2026-10-22 — Phase 9j section F — Polish security diff and fix cards
 
 **Summary:** Keep the existing unified diff, line numbers, hunk headers and

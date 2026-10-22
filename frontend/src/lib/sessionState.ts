@@ -1,4 +1,4 @@
-export interface SessionStatus {auth_required:boolean;authenticated:boolean;mode:'local'|'shared_key'|'account';setup_required?:boolean;user?:{id:string;username:string;role:'admin'|'reviewer'}|null;message?:string|null}
+export interface SessionStatus {auth_required:boolean;authenticated:boolean;mode:'local'|'shared_key'|'account';setup_required?:boolean;user?:{id:string;username:string;role:'admin'|'reviewer';created_at?:string;last_login_at?:string|null}|null;message?:string|null}
 let auth:SessionStatus|null=null;
 export const getSessionStatus=()=>auth;
 export function setSessionStatus(value:SessionStatus|null){auth=value;listeners.forEach(listener=>listener());}

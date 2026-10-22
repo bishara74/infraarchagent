@@ -71,3 +71,11 @@ class UserRepository:
             .values(revoked_at=datetime.now(UTC))
         )
         return True
+
+    async def enable(self, user_id: UUID) -> bool:
+        row = await self.get(user_id, lock=True)
+        if row is None or row.role != "reviewer":
+            return False
+        # Disabling revoked all sessions; enabling never changes those records.
+        row.disabled_at = None
+        return True

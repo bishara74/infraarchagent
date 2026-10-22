@@ -36,5 +36,5 @@ it('FR-UI-01 obsolete probe responses cannot replace the current catalog', async
  expect(screen.getByRole('status')).toHaveTextContent('2 models loaded');
  // The mock deliberately ignores abort: the UI must discard its stale result.
  await act(async()=>first.resolve({status:'invalid',models:[]}));
- expect(screen.getByRole('status')).toHaveTextContent('Provider test: ok. 2 models loaded');
+ expect(screen.getByRole('status')).toHaveTextContent('Provider test: ok — valid. 2 models loaded');
 });

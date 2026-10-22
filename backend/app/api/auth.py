@@ -186,6 +186,10 @@ async def users(request: Request) -> list[dict[str, object]]:
                 "username": u.username,
                 "role": u.role,
                 "disabled": u.disabled_at is not None,
+                "created_at": u.created_at.isoformat(),
+                "last_login_at": u.last_login_at.isoformat()
+                if u.last_login_at
+                else None,
             }
             for u in await UserRepository(session).list()
         ]
@@ -222,6 +226,13 @@ async def create_user(request: Request) -> JSONResponse:
 async def disable(user_id: UUID, request: Request) -> JSONResponse:
     async with request.app.state.session_factory() as session, session.begin():
         done = await UserRepository(session).modify(user_id, disable=True)
+    return JSONResponse({"updated": done})
+
+
+@router.post("/users/{user_id}/enable", dependencies=[Depends(require_admin)])
+async def enable(user_id: UUID, request: Request) -> JSONResponse:
+    async with request.app.state.session_factory() as session, session.begin():
+        done = await UserRepository(session).enable(user_id)
     return JSONResponse({"updated": done})
 
 
