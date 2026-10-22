@@ -27,6 +27,26 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section F — Polish security diff and fix cards
+
+**Summary:** Keep the existing unified diff, line numbers, hunk headers and
+markers; add consistent content spacing, labelled fix-card border tones and
+icon-backed links to comparison. Existing severity/readiness/review rules remain.
+
+**Requirements addressed:** FR-UI-04, FR-UI-05, FR-UI-07.
+
+**Files:** DiffView/test, ReportPanel, PackageScreen, global.css; log.
+
+**Decisions:** Reuse the tested jsdiff renderer and original security evidence.
+Resolved/unresolved cards retain their text badges as well as semantic colours.
+
+**Tests:** frontend ESLint/TypeScript passes; frontend suite: 138 passed,
+0 failed/skipped across 25 files. New multi-hunk component test verifies two hunk
+headers, line numbers and both markers. Existing severity, escaped content,
+report navigation and review-action tests pass.
+
+**Known gaps / follow-ups:** G–H complete Settings and browser evidence.
+
 ## 2026-10-22 — Phase 9j section E — Clarify variant comparison
 
 **Summary:** Add variant/file icons, exact selected borders, API-gated comparison
