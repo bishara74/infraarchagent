@@ -27,6 +27,25 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section D — Polish stage cards and live log
+
+**Summary:** Use semantic status icons and expandable generator rows, preserving
+stage interval timing/event sequence hooks. Add live-log terminal icon, derived
+INFO/ERROR tags and a text-flow block cursor while a run is active.
+
+**Requirements addressed:** FR-UI-02, FR-P-04, PR-02.
+
+**Files:** StageCard, LiveLog, ProgressScreen, global.css, progress.test.tsx; log.
+
+**Decisions:** Reuse existing virtualised rows and timestamp-union calculations.
+Generator rows start expanded. Status/cursor motion respects reduced motion.
+
+**Tests:** frontend ESLint/TypeScript passes; frontend suite: 134 passed,
+0 failed/skipped across 22 files. Tests cover stage elapsed/sequence data,
+expansion, escaped logs/cursor lifetime and deterministic pause/resume auto-follow.
+
+**Known gaps / follow-ups:** E–H complete result/settings presentation and evidence.
+
 ## 2026-10-22 — Phase 9j section C — Search models and compact request configuration
 
 **Summary:** Add shared searchable comboboxes, honest default/thinking labels,

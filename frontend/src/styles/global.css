@@ -214,3 +214,14 @@ dialog::backdrop { background:var(--bg);opacity:.8; }.auth {max-width:560px;marg
 .model-options small { font-size: var(--font-size-xs); color: var(--text-muted); }
 .model-options li[aria-disabled=true] small:last-child { color: var(--warn); }
 @media(max-width:800px) { .model-grid,.variant-intro { grid-template-columns:minmax(0,1fr); }.config-summary { display:block;margin:var(--space-1) 0; } }
+
+.stage-variants { display: block; }
+.stage-variants summary { color: var(--text-muted); font-size: var(--font-size-xs); }
+.generator-variants { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--space-3); margin-top: var(--space-2); }
+.stage-icon .icon { font-size: 20px; }
+.stage-icon.state-running .icon { color: var(--running); }
+.icon-spin { animation: icon-turn 1.2s linear infinite; }
+.log-cursor { margin-left: var(--space-1); color: var(--accent); animation: cursor-blink 1.2s steps(2,start) infinite; }
+@keyframes icon-turn { to { transform: rotate(360deg); } }
+@keyframes cursor-blink { to { opacity: 0; } }
+@media(prefers-reduced-motion:reduce) { .icon-spin,.log-cursor { animation: none; } }
