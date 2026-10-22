@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section E — Clarify variant comparison
+
+**Summary:** Add variant/file icons, exact selected borders, API-gated comparison
+downloads and the static-checks disclaimer. Separate experimental contextual
+counts and show only structured, explicitly planned architectural properties.
+
+**Requirements addressed:** FR-UI-03, FR-UI-06, NFR-01.
+
+**Files:** ComparisonScreen, FileTree, ProfileAssessments, DownloadButton/test,
+ReviewPanel download icon, architectureSummary/helper test, screen tests/styles;
+D-58; log.
+
+**Decisions:** The current plan is shared across variants and contains no proven
+per-variant availability/capacity metadata. Subtitles describe existing network/
+storage plan facts with “planned”; absent facts produce no invented subtitle.
+Downloads use existing server flags/client Blob flow; errors remain actionable.
+
+**Tests:** frontend ESLint/TypeScript passes; frontend suite: 137 passed,
+0 failed/skipped across 24 files. Tests cover factual/missing subtitles, download
+permission rendering and safe retryable download errors; existing selection,
+file-tree, readiness and contextual-assessment tests remain passing.
+
+**Known gaps / follow-ups:** F–H complete diff/settings styling and visual evidence.
+
 ## 2026-10-22 — Phase 9j section D — Polish stage cards and live log
 
 **Summary:** Use semantic status icons and expandable generator rows, preserving

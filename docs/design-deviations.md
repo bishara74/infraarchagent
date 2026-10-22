@@ -2156,6 +2156,13 @@ Architect fallback and explicit SECURITY_FIX_* overrides without guessing. Share
 JSON cases are asserted against both the real backend resolver and the UI helper.
 Existing precedence, validation, request shapes and model execution are unchanged.
 
+Section E: subtitles use available structured network/storage plan facts, marked
+“planned”. The current shared plan cannot prove different AZ/capacity/encryption
+properties for each variant. Missing facts are omitted instead of inferring them
+from variant names, arbitrary generated text or product names. Existing server
+readiness/download flags control comparison actions and static checks remain
+explicitly distinct from deployment. No new open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

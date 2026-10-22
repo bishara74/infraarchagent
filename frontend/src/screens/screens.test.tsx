@@ -83,3 +83,10 @@ it('FR-UI-01 configuration starts collapsed and shows actual server defaults and
  expect(screen.getByPlaceholderText('Server default: 7')).toBeVisible();expect(screen.getByLabelText('Additional assessment (experimental)')).toBeVisible();expect(screen.getByText('Strict checks always decide the readiness label.')).toBeVisible();
  expect(screen.getByRole('button',{name:'Use defaults'}).closest('.input-actions')).not.toBeNull();
 });
+
+it('FR-UI-03 comparison explains static labels and offers downloads only when authorised',()=>{
+ snapshot(repaired as ResultsResponse);show(<ComparisonScreen/>,'/runs/run/compare');
+ expect(screen.getByText('Labels reflect static checks and engineer decisions only, not a deployment.')).toBeVisible();
+ expect(screen.getAllByRole('button',{name:'Download ZIP'})).toHaveLength(repaired.packages.filter(item=>item.downloadable).length);
+ expect(document.querySelectorAll('.file-tree .codicon-file').length).toBeGreaterThan(0);
+});
