@@ -27,6 +27,25 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section A — Bundle wireframe fonts and icons
+
+**Summary:** Apply the requested palette, local typography, shared spacing and
+circuit-board brand. Add a decorative Codicon component and package attribution.
+
+**Requirements addressed:** FR-UI-01–07, NFR-01.
+
+**Files:** frontend package manifests, THIRD_PARTY_NOTICES.md, main.tsx, Icon
+component/test, App.tsx, CSS tokens/styles; .interface-design/system.md; D-58; log.
+
+**Decisions:** D-58 records the three author-approved exact dependencies/licences.
+All assets are bundled locally; existing form/card tokens remain the foundation.
+
+**Tests:** frontend ESLint/TypeScript passes; frontend suite: 120 passed,
+0 failed, 0 skipped across 19 files. Icon test verifies decorative glyphs preserve
+button names. Final visual/build checks follow in H.
+
+**Known gaps / follow-ups:** B–H supply the remaining component/flow polish.
+
 ## 2026-10-22 — Phase 9j section 0 — Fix recent-run preference hydration
 
 **Summary:** Remove the Recent runs mount/load loop, deduplicate account

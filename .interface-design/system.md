@@ -32,13 +32,13 @@ only where it carries meaning (status, diff, the one primary action).
 --surface:         #161b22   /* cards, panels */
 --surface-raised:  #21262d   /* nested blocks, hover */
 --border:          #30363d
---text:            #e6edf3
+--text:            #e6e6e6
 --text-muted:      #8b949e
 --accent:          #ff9900   /* primary action, selected variant, active tab */
 --ok:              #3fb950   --ok-bg:      #0d4a2e
 --running:         #58a6ff   --running-bg: #1a3a5c
 --queued:          #8b949e   --queued-bg:  #21262d
---warn:            #d29922   --warn-bg:    #3d2200   /* MEDIUM, warnings */
+--warn:            #ff9900   --warn-bg:    #3d2200   /* MEDIUM, warnings */
 --danger:          #f85149   --danger-bg:  #4a0d0d   /* HIGH/CRITICAL, failed */
 --diff-add-bg:     #0d2d1a
 --diff-del-bg:     #2d0d0d
@@ -46,11 +46,11 @@ only where it carries meaning (status, diff, the one primary action).
 One accent (orange). Status colours are semantic only, never decoration.
 
 ### Typography
-- UI: system sans stack (`system-ui, -apple-system, "Segoe UI", Roboto,
-  sans-serif`). Code, diffs, file paths, run IDs, rule IDs and the live log:
-  system mono stack (`ui-monospace, SFMono-Regular, Menlo, Consolas,
-  monospace`). **No web fonts**: the app must work offline. This is a
-  deliberate project decision, not a default.
+- UI: locally bundled Space Grotesk (400/500/600/700), with system sans fallback.
+  Code/logs/paths/run IDs: locally bundled JetBrains Mono (400/500), with system
+  mono fallback. Fontsource packages are OFL-1.1; no runtime CDN or network.
+- Icons: Codicons (CC BY 4.0), decorative beside text or accessible control names;
+  attribution is in frontend/THIRD_PARTY_NOTICES.md.
 - Scale (ratio ~1.2, base 14px): 12, 14 (base), 16, 20, 24.
 - Weights: 400, 500, 600. Hierarchy through weight and `--text`/`--text-muted`
   first, size second.
@@ -106,6 +106,6 @@ One accent (orange). Status colours are semantic only, never decoration.
 |---|---|---|
 | Direction fixed by thesis mockups | The UI must match Chapter 4 figures | 2026-10-12 |
 | Borders-only depth | Dense dark engineering tool; shadows add no information | 2026-10-12 |
-| System fonts only | Offline local deployment; no font downloads | 2026-10-12 |
+| Locally bundled fonts and Codicons | Phase 9j author-approved wireframe polish, offline at runtime | 2026-10-22 |
 | Single orange accent | Mockups use orange for the one primary action and selection | 2026-10-12 |
 | Desktop-first (≥1024px) | Single-user local tool; mobile out of scope | 2026-10-12 |

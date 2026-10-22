@@ -2138,6 +2138,14 @@ provider default, never inherited low/off. Role-specific generator settings take
 precedence over a generators-group setting, as in the existing backend resolver.
 No catalogue ordering chooses a default. No new specification open question.
 
+Section A: wireframe text is #e6e6e6; warning uses the orange accent and a faint
+#484f58 token is available for nonessential decoration only. UI fonts are locally
+bundled Space Grotesk 400/500/600/700; mono is JetBrains Mono 400/500. Packages
+@fontsource/space-grotesk 5.3.0 and @fontsource/jetbrains-mono 5.3.0 are OFL-1.1;
+@vscode/codicons 0.0.46-24 is CC-BY-4.0. Exact pins/lockfile and attribution in
+frontend/THIRD_PARTY_NOTICES.md preserve offline runtime operation. These three
+dependencies are explicitly authorised by the author. No UI framework/CDN.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -59,7 +59,7 @@ select {
   transform: translateY(0);
 }
 
-/* Fixed thesis console: 4px rhythm, quiet borders, system type, semantic colour. */
+/* Fixed thesis console: 4px rhythm, quiet borders, local type, semantic colour. */
 a { color: var(--text); text-underline-offset: 3px; }
 a:hover { color: var(--accent); }
 h2 { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); margin: 0 0 var(--space-2); }
@@ -163,4 +163,10 @@ dialog::backdrop { background:var(--bg);opacity:.8; }.auth {max-width:560px;marg
 
 .examples button { background: var(--surface); color: var(--text-muted); border-radius: var(--radius-lg); font-size: var(--font-size-xs); }
 
-.app-header nav,.settings-nav{display:flex;gap:var(--space-4,16px);flex-wrap:wrap}.settings-nav{margin-bottom:24px}.settings-nav [aria-current=page]{color:var(--accent)}.settings-form{display:grid;gap:12px;max-width:800px;margin-block:16px}.settings-form label,.model-choice label{display:grid;gap:4px}.model-choice{min-width:0;padding-block:8px}.model-choice select{width:100%;max-width:100%}.settings-form pre{white-space:pre-wrap;overflow-wrap:anywhere}.credential-list,.recent-runs{display:grid;gap:16px;padding:0;list-style:none}.credential-list li,.recent-runs li{padding:16px;border:1px solid var(--border);border-radius:8px}.recent-runs li{display:grid;gap:8px}.settings-form .checkbox{display:flex;align-items:center;gap:8px}.config-fields .model-choice{grid-column:1/-1}
+.app-header nav,.settings-nav{display:flex;gap:var(--space-4);flex-wrap:wrap}.settings-nav{margin-bottom:var(--space-6)}.settings-nav [aria-current=page]{color:var(--accent)}.settings-form{display:grid;gap:var(--space-3);max-width:800px;margin-block:var(--space-4)}.settings-form label,.model-choice label{display:grid;gap:var(--space-1)}.model-choice{min-width:0;padding-block:var(--space-2)}.model-choice select{width:100%;max-width:100%}.settings-form pre{white-space:pre-wrap;overflow-wrap:anywhere}.credential-list,.recent-runs{display:grid;gap:var(--space-4);padding:0;list-style:none}.credential-list li,.recent-runs li{padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-lg)}.recent-runs li{display:grid;gap:var(--space-2)}.settings-form .checkbox{display:flex;align-items:center;gap:var(--space-2)}.config-fields .model-choice{grid-column:1/-1}
+
+.icon { display: inline-block; flex: none; vertical-align: middle; }
+.brand .icon { font-size: 24px; }
+.icon-label { display: inline-flex; align-items: center; gap: var(--space-2); }
+.form-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+@media (max-width: 800px) { .config-fields { grid-template-columns: minmax(0, 1fr); } }
