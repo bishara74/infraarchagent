@@ -170,3 +170,23 @@ dialog::backdrop { background:var(--bg);opacity:.8; }.auth {max-width:560px;marg
 .icon-label { display: inline-flex; align-items: center; gap: var(--space-2); }
 .form-actions { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
 @media (max-width: 800px) { .config-fields { grid-template-columns: minmax(0, 1fr); } }
+
+.app-header { gap: var(--space-6); height: auto; min-height: 56px; }
+.app-header nav { flex: 1; justify-content: center; }
+.app-header nav a,.settings-nav a { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); text-decoration: none; border-radius: var(--radius-md); }
+.app-header nav a:hover,.settings-nav a:hover { background: var(--surface-raised); }
+.app-header nav [aria-current=page],.settings-nav [aria-current=page] { color: var(--accent); background: var(--warn-bg); }
+.account-menu { position: relative; }
+.account-menu>button { gap: var(--space-2); background: transparent; }
+.account-actions { position: absolute; z-index: 20; right: 0; top: calc(100% + var(--space-2)); min-width: 180px; padding: var(--space-2); display: grid; gap: var(--space-1); }
+.account-actions a,.account-actions button { display: flex; gap: var(--space-2); align-items: center; justify-content: flex-start; padding: var(--space-2); border: 0; text-decoration: none; border-radius: var(--radius-sm); }
+.account-actions a:hover { background: var(--surface-raised); }
+.auth-layout { min-height: calc(100dvh - 120px); display: grid; place-items: center; }
+.auth { width: min(400px,100%); max-width: 400px; margin: 0; display: grid; gap: var(--space-4); padding: var(--space-6); }
+.auth p { margin: 0; }.auth h1 { font-size: var(--font-size-xl); }
+.auth>button { width: 100%; margin: 0; }
+.auth-footer { font-size: var(--font-size-xs); }
+.password-field { display: flex; position: relative; }
+.password-field input { padding-right: 48px; }
+.password-field button { position: absolute; right: 1px; top: 1px; bottom: 1px; min-height: 0; padding: var(--space-2) var(--space-3); border: 0; background: transparent; }
+.warn-text { color: var(--warn); }

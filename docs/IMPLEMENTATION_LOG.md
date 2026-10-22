@@ -27,6 +27,28 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section B — Polish authenticated navigation and login
+
+**Summary:** Gate navigation before login; add active routes and keyboard-operated
+account menu with the sole explicit logout action. Centre login/setup with local
+password visibility, Caps Lock warning, generic credential errors and reset hint.
+
+**Requirements addressed:** FR-UI-01, NFR-01.
+
+**Files:** App, Authentication, AccountMenu, PasswordField, component/App tests,
+global.css; this log.
+
+**Decisions:** Preserve authentication/session transport. Decorative icons retain
+accessible control names. Escape restores account-trigger focus; outside click
+and Tab dismiss the menu. Non-authentication errors retain safe retry guidance.
+
+**Tests:** frontend ESLint/TypeScript passes; frontend suite: 124 passed,
+0 failed, 0 skipped across 20 files. New tests cover unauthenticated navigation,
+password visibility/Caps Lock/error redaction/setup confirmation and menu keyboard,
+focus, outside dismissal and logout. Browser visual verification follows in H.
+
+**Known gaps / follow-ups:** C–H complete configuration, results and Settings polish.
+
 ## 2026-10-22 — Phase 9j section A — Bundle wireframe fonts and icons
 
 **Summary:** Apply the requested palette, local typography, shared spacing and

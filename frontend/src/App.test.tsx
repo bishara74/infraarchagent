@@ -45,3 +45,10 @@ it('FR-UI-01 authenticated Recent runs hydrates once and remains mounted', async
   expect(request.mock.calls.filter(([url])=>url==='/api/me/recent-runs')).toHaveLength(1);
   window.history.replaceState(null,'','/');
 });
+
+it('NFR-01 unauthenticated shell shows the logo without navigation or an account menu',async()=>{
+ const status={auth_required:true,authenticated:false,mode:'account' as const};setSessionStatus(status);vi.mocked(api.session).mockResolvedValue(status);
+ render(<App/>);expect(await screen.findByRole('heading',{name:'Log in'})).toBeVisible();
+ expect(screen.queryByRole('navigation',{name:'Main'})).toBeNull();expect(screen.queryByRole('button',{name:'Log out'})).toBeNull();
+ expect(screen.getByRole('link',{name:'InfraArchAgent'})).toBeVisible();
+});
