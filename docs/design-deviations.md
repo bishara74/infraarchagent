@@ -2146,6 +2146,16 @@ bundled Space Grotesk 400/500/600/700; mono is JetBrains Mono 400/500. Packages
 frontend/THIRD_PARTY_NOTICES.md preserve offline runtime operation. These three
 dependencies are explicitly authorised by the author. No UI framework/CDN.
 
+Section C: one accessible searchable model combobox is shared by request and
+Settings. It filters ID/name, skips disabled unsuitable models on keyboard
+selection and shows capabilities/prices. Null thinking is provider default;
+changing default thinking creates an explicit model choice. The public catalogue
+adds server_default_max_iterations and an allowlisted resolution_context of
+non-secret provider/model/thinking inputs so UI labels can mirror selected-provider
+Architect fallback and explicit SECURITY_FIX_* overrides without guessing. Shared
+JSON cases are asserted against both the real backend resolver and the UI helper.
+Existing precedence, validation, request shapes and model execution are unchanged.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -33,6 +33,16 @@ async def models(request: Request) -> JSONResponse:
 
         legacy = await service(request).resolve(RunConfig(), interactive=False)
         settings = request.app.state.settings
+        catalog["server_default_max_iterations"] = settings.max_remediation_iterations
+        # Only non-secret selection inputs, needed to mirror existing role fallbacks.
+        catalog["resolution_context"] = {
+            "provider": settings.llm_provider,
+            "model": settings.llm_model,
+            "thinking_mode": settings.llm_reasoning_effort,
+            "fixer_provider": settings.security_fix_provider,
+            "fixer_model": settings.security_fix_model,
+            "fixer_thinking_mode": settings.security_fix_reasoning_effort,
+        }
         catalog["output_token_limits"] = {
             "architect": settings.llm_max_output_tokens,
             "generators": settings.generator_max_output_tokens,

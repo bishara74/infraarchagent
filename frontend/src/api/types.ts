@@ -46,7 +46,8 @@ export type ThinkingMode = "off"|"low"|"medium"|"high";
 export interface AgentChoice {model:string;thinking_mode?:ThinkingMode|null}
 export interface AgentSelection extends AgentChoice {provider:Provider;configured_thinking?:ThinkingMode|null;request_style?:string}
 export interface CatalogModel {id:string;name:string;context_length:number|null;pricing:Record<string,string|number>;structured_output:boolean|null;reasoning:boolean|null;thinking_modes:ThinkingMode[];source:string}
-export interface Catalog {output_token_limits?:Record<string,number>;environment_defaults?:Record<string,AgentSelection>;provider:string;credential_id:string|null;models:CatalogModel[];defaults:Record<string,AgentChoice>;status?:string}
+export interface ResolutionContext {provider:Provider;model:string|null;thinking_mode:ThinkingMode|null;fixer_provider:Provider|null;fixer_model:string|null;fixer_thinking_mode:ThinkingMode|null}
+export interface Catalog {server_default_max_iterations?:number;resolution_context?:ResolutionContext;output_token_limits?:Record<string,number>;environment_defaults?:Record<string,AgentSelection>;provider:string;credential_id:string|null;models:CatalogModel[];defaults:Record<string,AgentChoice>;status?:string}
 export interface RunConfig { agent_models?:Record<string,AgentChoice>; policy_profile?:'strict'|'contextual-v1'; provider?: Provider; model?: string; max_iterations?: number }
 export interface SubmitResponse { run_id: string; status: 'created'; stream_url: string }
 export interface ReviewRequest { action: 'approve' | 'retry' | 'reject'; reviewer_name?:string;reason?:string; feedback?: string; target_files?: string[] }

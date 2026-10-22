@@ -17,3 +17,10 @@ it('FR-P-04 generators resolve role overrides before group and environment defau
  expect(defaultLabel('generators',catalog,defaults)).toContain('cost: cost · off');
  expect(choiceLabel(undefined)).toBe('unavailable');
 });
+
+import parity from '../test/fixtures/model-defaults.json';
+it.each(parity)('FR-P-04 shared backend resolution fixture: $name',testCase=>{
+ const settings=testCase.settings;
+ const fixtureCatalog={...catalog,credential_id:testCase.credential_id,resolution_context:{provider:settings.llm_provider,model:settings.llm_model,thinking_mode:settings.llm_reasoning_effort,fixer_provider:null,fixer_model:settings.security_fix_model??null,fixer_thinking_mode:settings.security_fix_reasoning_effort??null}} as Catalog;
+ for(const [role,expected] of Object.entries(testCase.expected))expect(modelDefault(role,fixtureCatalog,{...testCase.saved,...testCase.personal} as never,testCase.config.agent_models as never,testCase.config as never)).toEqual(expected);
+});

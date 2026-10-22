@@ -8,6 +8,8 @@ import { useRunStream } from '../hooks/useRunStream';
 import { getActiveRun, setActiveRun, subscribeSession } from '../lib/sessionState';
 import { isSettled } from '../api/sse';
 import { usePreferences, updatePreferences, rememberRun, recoverDraft, retrySave } from '../lib/preferences';
+import { Icon } from '../components/Icon';
+import { defaultLabel } from '../lib/modelDefaults';
 import { ModelControls } from '../components/ModelControls';
 function ActiveRun({ id }: {
     id: string;
@@ -20,10 +22,12 @@ export function InputScreen() {
     const value = prefs.data.prompt_draft;
     const config = prefs.data.draft_config;
     const [catalog, setCatalog] = useState<Catalog | null>(null);
+    const [catalogError,setCatalogError]=useState<unknown>(null);
+    const [catalogRetry,setCatalogRetry]=useState(0);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<unknown>(null);
     const input = useRef<HTMLTextAreaElement>(null);
-    useEffect(() => { const controller = new AbortController(); void api.request<Catalog>('/api/models', 'GET', undefined, controller.signal).then(setCatalog).catch(() => undefined); return () => controller.abort(); }, []);
+    useEffect(() => { const controller = new AbortController(); void api.request<Catalog>('/api/models', 'GET', undefined, controller.signal).then(setCatalog).catch(cause => {if(!controller.signal.aborted)setCatalogError(cause);}); return () => controller.abort(); }, [catalogRetry]);
     function configure(change: Partial<RunConfig>) { updatePreferences({ draft_config: { ...config, ...change } }); }
     async function submit() { if (busy || active)
         return; setBusy(true); setError(null); try {
@@ -39,14 +43,19 @@ export function InputScreen() {
     finally {
         setBusy(false);
     } }
+    const modelDefaults={...catalog?.defaults,...prefs.data.role_defaults};
+    const summaryChoice=defaultLabel('architect',catalog,modelDefaults,config.agent_models??{},config);
+    const summary=`${Object.keys(config.agent_models??{}).length?'Configuration':'Defaults'}: ${summaryChoice} · ${config.policy_profile??'strict'}`;
     if (!prefs.ready)
         return <p role="status">Loading saved preferences…</p>;
     return <><h1>Generate infrastructure</h1><p className="muted">Describe what you want to deploy in plain English. Compare the generated packages, checks and fixes before downloading.</p>{active && <ActiveRun id={active}/>}<p className="muted" role="status">Preferences: {prefs.status}</p>{prefs.status === 'offline' && <button onClick={() => void retrySave()}>Retry saving</button>}{prefs.conflictDraft && <p className="notice">Saved preferences changed elsewhere. <button onClick={recoverDraft}>Restore my unsaved draft</button></p>}{catalog?.status === 'setup_required' && <p className="notice">No provider key configured. <Link to="/settings/provider">Set up a provider</Link></p>}
- <form className="input-form" noValidate onSubmit={event => { event.preventDefault(); void submit(); }}><label className="sr-only" htmlFor="description">Infrastructure description</label><textarea ref={input} id="description" name="description" rows={6} value={value} onChange={event => updatePreferences({ prompt_draft: event.target.value })} placeholder="Describe your services, database, deployment and monitoring…" aria-describedby="input-count input-error" onKeyDown={event => { if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+ {catalogError?<div className="notice" role="alert"><p>Unable to load model options. {errorMessage(catalogError)}</p><button onClick={()=>{setCatalogError(null);setCatalogRetry(value=>value+1);}}>Retry</button></div>:null}
+ <section className="variant-intro" aria-label="Generated variants"><p><Icon name="credit-card"/><strong>Cost</strong> Favour economical infrastructure.</p><p><Icon name="dashboard"/><strong>Performance</strong> Favour capacity and responsiveness.</p><p><Icon name="shield"/><strong>Security</strong> Favour protective controls.</p></section>
+ <form className="input-form" noValidate onSubmit={event => { event.preventDefault(); void submit(); }}><label className="sr-only" htmlFor="description">Infrastructure description</label><textarea ref={input} id="description" name="description" rows={6} value={value} onChange={event => updatePreferences({ prompt_draft: event.target.value })} placeholder="For example: deploy an AWS web service with a database, private networking, backups and monitoring…" aria-describedby="input-count input-error" onKeyDown={event => { if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
         void submit();
     } }}/><p id="input-count" className="counter muted">{inputLength(value)} / {MAX_INPUT} characters · minimum {MIN_INPUT}</p><p id="input-error" className="form-error" role="alert">{error ? errorMessage(error) : ''}</p>
  <details className="panel config" open={prefs.data.ui.config_open} onToggle={event => { if (event.currentTarget.open !== prefs.data.ui.config_open)
-        updatePreferences({ ui: { ...prefs.data.ui, config_open: event.currentTarget.open } }); }}><summary>Configuration options</summary><div className="config-fields"><label>Secondary assessment<select value={config.policy_profile ?? 'strict'} onChange={event => configure({ policy_profile: event.target.value as 'strict' | 'contextual-v1' })}><option value="strict">Strict (default)</option><option value="contextual-v1">Contextual-v1 (experimental)</option></select></label><ModelControls catalog={catalog} value={config.agent_models ?? {}} defaults={{ ...catalog?.defaults, ...prefs.data.role_defaults }} onChange={agent_models => configure({ agent_models })}/><label>Max remediation iterations<input name="max_iterations" type="number" min={1} inputMode="numeric" value={config.max_iterations ?? ''} onChange={event => configure({ max_iterations: event.target.value ? Number(event.target.value) : undefined })} placeholder="Server default…"/></label></div></details>
- <button className="primary generate" type="submit" disabled={busy || !!active}>Generate{busy ? '…' : ''}</button>{busy && <span role="status" className="spinner">Submitting…</span>}</form><section className="examples"><h2>Example prompts</h2><div className="actions">{examples.map(example => <button key={example.label} onClick={() => { updatePreferences({ prompt_draft: example.text }); input.current?.focus(); }}>{example.label}</button>)}</div></section></>;
+        updatePreferences({ ui: { ...prefs.data.ui, config_open: event.currentTarget.open } }); }}><summary>Configuration options <span className="muted config-summary">{summary}</span></summary><div className="config-fields"><label>Additional assessment (experimental)<select aria-label="Additional assessment (experimental)" value={config.policy_profile ?? 'strict'} onChange={event => configure({ policy_profile: event.target.value as 'strict' | 'contextual-v1' })}><option value="strict">Strict (default)</option><option value="contextual-v1">Contextual-v1 (experimental)</option></select><span className="muted">Strict checks always decide the readiness label.</span></label><ModelControls catalog={catalog} value={config.agent_models ?? {}} defaults={modelDefaults} config={config} showReset={false} onChange={agent_models => configure({ agent_models })}/><label>Max remediation iterations<input name="max_iterations" type="number" min={1} inputMode="numeric" value={config.max_iterations ?? ''} onChange={event => configure({ max_iterations: event.target.value ? Number(event.target.value) : undefined })} placeholder={catalog?.server_default_max_iterations?`Server default: ${catalog.server_default_max_iterations}`:"Server default unavailable"}/></label></div></details>
+ <div className="form-actions input-actions"><button type="button" onClick={()=>configure({agent_models:{}})}>Use defaults</button><button className="primary generate" type="submit" disabled={busy || !!active}>Generate{busy ? '…' : ''}</button>{busy && <span role="status" className="spinner">Submitting…</span>}</div></form><section className="examples"><h2>Example prompts</h2><div className="actions">{examples.map(example => <button key={example.label} onClick={() => { updatePreferences({ prompt_draft: example.text }); input.current?.focus(); }}>{example.label}</button>)}</div></section></>;
 }

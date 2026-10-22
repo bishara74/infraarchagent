@@ -27,6 +27,35 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section C — Search models and compact request configuration
+
+**Summary:** Add shared searchable comboboxes, honest default/thinking labels,
+capability/price details and field-level invalid-model guidance. Compact the
+configuration grid, keep it initially collapsed with a truthful summary, move
+Use defaults to form actions, explain variants/experimental assessments and show
+the configured server remediation limit.
+
+**Requirements addressed:** FR-UI-01, FR-P-04, NFR-01.
+
+**Files:** ModelCombobox/ModelControls and tests, InputScreen/screen tests,
+modelDefaults helper/tests/shared fixture, frontend API types/styles;
+backend api/models.py and test_phase9j_metadata.py; D-58; log.
+
+**Decisions:** D-58 records safe non-secret resolution metadata needed for exact
+existing selected-provider/fixer fallbacks. Shared fixtures cover the author's
+personal/draft/environment evidence and backend role-before-group precedence.
+No model-resolution rule, saved default or run request schema changes.
+
+**Tests:** `make lint` passes Ruff/format, mypy (167 app sources), frontend
+ESLint/TypeScript. Final frontend suite: 131 passed, 0 failed/skipped across
+21 files. Focused API/resolution suite: 4 passed, 0 failed/skipped using isolated
+PostgreSQL 16, synthetic settings and dotenv disabled. Tests cover combobox
+filtering/keyboard/disabled explanations/default thinking and config metadata.
+Earlier UI assertions were updated for multiple genuine model details/alerts.
+
+**Known gaps / follow-ups:** D–H complete progress/results/Settings and browser
+flows. No real inference, dotenv reads or push.
+
 ## 2026-10-22 — Phase 9j section B — Polish authenticated navigation and login
 
 **Summary:** Gate navigation before login; add active routes and keyboard-operated
