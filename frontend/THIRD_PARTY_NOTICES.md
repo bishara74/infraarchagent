@@ -9,7 +9,8 @@ the application does not fetch fonts or icons from a runtime CDN.
 | @fontsource/jetbrains-mono | 5.3.0 | OFL-1.1 |
 | @vscode/codicons | 0.0.46-24 | CC-BY-4.0 |
 
-Space Grotesk: © Florian Karsten. JetBrains Mono: © JetBrains s.r.o.
+Space Grotesk: Copyright 2020 The Space Grotesk Project Authors.
+JetBrains Mono: Copyright 2020 The JetBrains Mono Project Authors.
 Their SIL Open Font License texts ship in the respective packages.
 
 Codicons are by Microsoft Corporation and contributors, from

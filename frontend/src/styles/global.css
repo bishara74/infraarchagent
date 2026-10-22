@@ -255,3 +255,25 @@ dialog::backdrop { background:var(--bg);opacity:.8; }.auth {max-width:560px;marg
 .create-reviewer { max-width: 560px; }
 .account-info { max-width: 800px; }.account-info .counts { max-width: 560px; }
 dialog form { display: grid; gap: var(--space-3); }dialog h2,dialog p { margin: 0; }dialog .actions { margin-top: var(--space-3); }
+
+/* Keep the comparison's primary evidence and actions within the projector view. */
+.variant>.architecture-summary { min-height: 0; margin: var(--space-1) 0 var(--space-3); }
+.profile-assessments p { margin: var(--space-2) 0; }
+.variant .profile-assessments .muted { font-size: var(--font-size-xs); }
+.variant .assessment-help { display: none; }
+.variant-details { margin-top: var(--space-2); }.variant-details summary { color: var(--text-muted); font-size: var(--font-size-xs); }
+.variant h3 { margin: var(--space-3) 0 var(--space-2); }
+
+.model-choice>p { margin: 0; }.model-detail:empty { display: none; }
+.models-form { max-width: 1200px; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.models-form>h3,.models-form>p,.models-form>details { grid-column: 1/-1; }
+.model-popup { position:absolute;top:100%;left:0;z-index:15;width:max(100%,320px);max-width:min(640px,85vw);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md); }
+.model-options { position:static;width:100%;max-width:none;margin:0;border:0;border-radius:0;max-height:280px; }
+.model-options li { height:80px;padding:var(--space-2);overflow:hidden;display:block; }
+.model-options li>span { display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.model-options small { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden; }
+.combobox-help { margin:0!important;padding:var(--space-2);font-size:var(--font-size-xs);color:var(--warn);border-top:1px solid var(--border); }
+@media(max-width:800px) { .models-form { grid-template-columns:minmax(0,1fr); } }
+
+.account-menu>button { max-width: 240px; }.account-name { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0; }
+.account-info h3,dialog h2 { overflow-wrap:anywhere; }

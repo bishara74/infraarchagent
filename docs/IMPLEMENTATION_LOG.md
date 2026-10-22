@@ -27,6 +27,48 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section H — Verify projector layouts and publish screen evidence
+
+**Summary:** Complete the 1280×800 browser review and publish 23 viewport captures,
+a source/screenshot SHA-256 manifest and verification logs. Keep comparison
+secondary details expandable so file trees/actions fit; compact Settings grids,
+virtualise model options, handle invalid inherited choices/server errors and
+restore dialog focus. Replace README screenshot placeholders and document local
+assets and optional isolated E2E ports.
+
+**Requirements addressed:** FR-UI-01–07, FR-P-04, PR-02, NFR-01.
+
+**Files:** frontend shared controls, request/comparison/Settings presentation and
+tests, CSS, E2E flows/config/evidence helper; backend tests/e2e_server.py and
+configured metadata API assertions; docs/evals/phase9j-ui/; README;
+.interface-design/system.md; D-58; frontend attribution; this log.
+
+**Decisions:** D-58 records projector layout disclosures, bounded list rendering,
+explicit model/thinking semantics and test-only port overrides. At most 16 model
+option rows render; keyboard navigation/search reach the whole catalogue.
+Invalid saved defaults are explained beside affected fields; submission opens
+configuration with actionable guidance. No run/readiness/authentication rules
+change. The author's live servers, data, secrets and unrelated files are untouched.
+
+**Tests:** `make lint` passes Ruff/format, mypy on 167 app sources and frontend
+ESLint/TypeScript. `make test`: **1,986 passed, 0 failed, 0 skipped, 6 performance
+tests deselected**, 411.38s. `make frontend-test`: **151 passed, 0 failed/skipped**,
+27 files. Final `make test-e2e`: **8 passed, 0 failed/skipped**, 1.8m. Frontend
+production build passes with local font/icon assets. Extended configured model
+metadata/resolution checks: 4 passed. All 23 screenshot dimensions are verified
+at 1280×800; no page overflow in capture flows. `make secret-scan`: **0 findings, 0 scan errors** across the working tree, all refs and reflogs.
+Earlier browser setup locator ambiguity and its dependent keyboard-flow failure
+(6 passed/2 failed) were corrected; complete later runs pass. One interrupted
+browser run/secret scan (143) is not reported as passing evidence. Unit assertions
+now cover recent error/retry/empty/populated states, large catalogues, invalid
+inherited defaults, configuration recovery and asynchronous dialog focus.
+
+**Known gaps / follow-ups:** Screenshots and inference are synthetic/mock HTTP;
+cloud deployment, real-provider availability and the separate performance criteria
+are not newly verified. Saved personal/draft defaults remain intact. No new open
+question, new migration, extra backend dependency, dotenv read, real inference or
+push. Suggested next step: author review of the gallery and round-2 task list.
+
 ## 2026-10-22 — Phase 9j section G — Polish Settings and enable reviewer accounts
 
 **Summary:** Add icon-backed Settings navigation, no-credit provider saving with

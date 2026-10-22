@@ -33,6 +33,29 @@ async def test_public_model_metadata_is_configured_and_secret_free(db_engines):
             "fixer_model": None,
             "fixer_thinking_mode": None,
         }
+        from app.domain.enums import LLMProvider
+
+        app.state.settings = app.state.settings.model_copy(
+            update={
+                "llm_provider": LLMProvider.OPENAI,
+                "llm_model": "configured-primary",
+                "llm_reasoning_effort": "low",
+                "security_fix_provider": LLMProvider.ANTHROPIC,
+                "security_fix_model": "configured-fixer",
+                "security_fix_reasoning_effort": "high",
+            }
+        )
+        configured = await client.get("/api/models")
+        assert configured.status_code == 200
+        assert configured.json()["resolution_context"] == {
+            "provider": "openai",
+            "model": "configured-primary",
+            "thinking_mode": "low",
+            "fixer_provider": "anthropic",
+            "fixer_model": "configured-fixer",
+            "fixer_thinking_mode": "high",
+        }
+        assert KEY not in configured.text and "api_key" not in configured.text
         assert KEY not in response.text
         assert "api_key" not in response.text and "password" not in response.text
         client.headers.clear()

@@ -5,7 +5,7 @@ import type {ResultsResponse} from '../../src/api/types';
 export const API_KEY='phase8-e2e-only';
 export const USERNAME='committee';export const PASSWORD='phase9h-browser-password';
 export const headers={'X-API-Key':API_KEY};
-export const originHeaders={Origin:'http://127.0.0.1:5173'};
+export const originHeaders={Origin:`http://127.0.0.1:${process.env.INFRAARCH_E2E_FRONTEND_PORT??5173}`};
 export async function submit(page:Page){
  await page.goto('/');const status=await (await page.request.get('/api/auth/session')).json();if(!status.authenticated){await page.getByLabel('Username',{exact:true}).fill(USERNAME);await page.getByLabel('Password',{exact:true}).fill(PASSWORD);if(status.setup_required)await page.getByLabel('Confirm password',{exact:true}).fill(PASSWORD);await page.getByRole('button',{name:status.setup_required?'Create admin account':'Log in',exact:true}).click();}
  await expect(page.getByRole('heading',{name:'Generate infrastructure'})).toBeVisible();

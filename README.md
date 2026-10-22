@@ -1445,8 +1445,8 @@ local-tool invocation, bounds and failure path, with a sequence diagram.
    approvals/rejections; provide a decision reason. Settings → Users creates,
    disables or resets reviewers; Account changes your own password/preferences.
 
-<!-- Screenshot placeholder: first-admin setup form at 1280x800. -->
-<!-- Screenshot placeholder: model/thinking controls and context/pricing. -->
+![First administrator setup at 1280×800](docs/evals/phase9j-ui/setup.png)
+![Model settings with reasoning and pricing at 1280×800](docs/evals/phase9j-ui/settings-models-reasoning.png)
 
 [Mocked provider setup screenshot](docs/evals/phase9h-verification-20261019/provider-mocked.png) ·
 [Authenticated review screenshot](docs/evals/phase9h-verification-20261019/account-review-mocked.png).
@@ -1655,3 +1655,25 @@ default-SG repairs require proven dependencies. All other invalid arguments use
 schema-grounded model repair. Strict alone governs acceptance and readiness;
 contextual-v1 is preserved, and experimental contextual-v2 appears alongside it
 in API, archive and UI reports. Existing responses without v2 show unavailable.
+
+
+### Phase 9j UI polish
+
+The [1280×800 screen gallery and verification record](docs/evals/phase9j-ui/README.md)
+covers login/setup, request configuration/model search, recent history, progress,
+comparison, security diff/review and all Settings pages. Screenshots use synthetic
+local fixtures, mocked provider HTTP and offline scanners; they are not evidence
+of cloud deployment. The two investigated issues and UI decisions are in D-58.
+
+UI fonts (Space Grotesk and JetBrains Mono) and Codicons are bundled locally;
+see [visual asset attribution](frontend/THIRD_PARTY_NOTICES.md). No CDN is needed.
+User management remains administrator-only. Enabling a reviewer requires fresh
+login and never restores revoked sessions. Account responses expose only public
+metadata, never password hashes or provider credentials.
+
+For isolated browser verification alongside a running author instance, set
+`INFRAARCH_E2E_FRONTEND_PORT` and `INFRAARCH_E2E_BACKEND_PORT` to unused loopback
+ports before `make test-e2e` (defaults remain 5173 and 8000). Explicit test database
+URLs are still required and must point to `infraarch_test`; the app/owner role
+checks and refusal to reuse an existing server remain in force. Verification
+must disable dotenv before settings instantiate, as described in the test setup.

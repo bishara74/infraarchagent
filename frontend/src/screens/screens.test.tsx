@@ -76,7 +76,7 @@ it('FR-UI-05 v2 totals are additive and missing v2 remains unavailable',()=>{
 });
 
 it('FR-UI-01 configuration starts collapsed and shows actual server defaults and experimental guidance',async()=>{
- snapshot();vi.spyOn(api,'request').mockResolvedValue({provider:'stub',credential_id:null,models:[],defaults:{},server_default_max_iterations:7,environment_defaults:{architect:{model:'stub',thinking_mode:null},generator_cost:{model:'stub',thinking_mode:null},generator_performance:{model:'stub',thinking_mode:null},generator_security:{model:'stub',thinking_mode:null}}});
+ snapshot();vi.spyOn(api,'request').mockResolvedValue({provider:'stub',credential_id:null,models:[],defaults:{},server_default_max_iterations:7,environment_defaults:{architect:{model:'stub',thinking_mode:null},generator_cost:{model:'stub',thinking_mode:null},generator_performance:{model:'stub',thinking_mode:null},generator_security:{model:'stub',thinking_mode:null},fixer:{model:'stub',thinking_mode:null}}});
  show(<InputScreen/>,'/');await vi.waitFor(()=>expect(screen.getByText(/Defaults: stub · provider default · strict/)).toBeInTheDocument());
  expect(document.querySelector('details.config')).not.toHaveAttribute('open');
  await userEvent.click(screen.getByText('Configuration options',{exact:false,selector:'summary'}));
@@ -89,4 +89,13 @@ it('FR-UI-03 comparison explains static labels and offers downloads only when au
  expect(screen.getByText('Labels reflect static checks and engineer decisions only, not a deployment.')).toBeVisible();
  expect(screen.getAllByRole('button',{name:'Download ZIP'})).toHaveLength(repaired.packages.filter(item=>item.downloadable).length);
  expect(document.querySelectorAll('.file-tree .codicon-file').length).toBeGreaterThan(0);
+});
+
+it('FR-UI-03 secondary check details remain available in compact comparison cards',async()=>{
+ snapshot();show(<ComparisonScreen/>,'/runs/run/compare');const details=document.querySelectorAll('.variant-details');expect(details).toHaveLength(3);expect(details[0]).not.toHaveAttribute('open');await userEvent.click(screen.getAllByText('Check details')[0]!);expect(details[0]).toHaveAttribute('open');
+});
+
+it('FR-UI-01 model validation errors open configuration with actionable guidance',async()=>{
+ snapshot();vi.spyOn(api,'submitRun').mockRejectedValue(new ApiError(400,'invalid_model','Choose a structured-output model for Generators and Fixer.'));
+ show(<InputScreen/>,'/');await userEvent.click(screen.getByRole('button',{name:'Generate'}));expect(await screen.findByText(/Check the model and thinking fields in Configuration options/)).toBeVisible();expect(document.querySelector('details.config')).toHaveAttribute('open');
 });

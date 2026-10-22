@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 
 import httpx
 import httpx2
@@ -130,7 +131,11 @@ def main() -> None:
     from app.main import app
 
     app.state.provider_http = httpx.AsyncClient(transport=httpx.MockTransport(catalog))
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(
+        app,
+        host="127.0.0.1",
+        port=int(os.environ.get("INFRAARCH_E2E_BACKEND_PORT", "8000")),
+    )
 
 
 if __name__ == "__main__":

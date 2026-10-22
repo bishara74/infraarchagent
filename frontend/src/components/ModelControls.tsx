@@ -1,5 +1,5 @@
 import type {AgentChoice,Catalog,RunConfig,ThinkingMode} from '../api/types';
-import {choiceLabel,defaultLabel,modelDefault} from '../lib/modelDefaults';
+import {choiceLabel,defaultLabel,generatorRoles,modelDefault} from '../lib/modelDefaults';
 import {ModelCombobox,type ModelOption} from './ModelCombobox';
 export const structuredExplanation="This model can't return the structured JSON the Generators and Fixer need. Pick a model marked 'structured output', or select Use default.";
 const roles=[['architect','Architect'],['generators','Generators'],['fixer','Fixer']] as const;
@@ -10,11 +10,22 @@ export function ModelControls({catalog,value,onChange,defaults={},config={},show
   const fallback=defaultLabel(role,catalog,defaults,without,config);
   const effective=role==='generators'?modelDefault('generator_cost',catalog,defaults,value,config):modelDefault(role,catalog,defaults,value,config);
   const choice=value[role];const model=catalog?.models.find(item=>item.id===(choice?.model??effective?.model));
-  const options:ModelOption[]=[{value:'',label:`Use default — ${fallback}`,detail:'Inherits personal, administrator, then environment settings.'},...(catalog?.models.map(item=>({value:item.id,label:`${item.name} (${item.id})`,detail:`${item.structured_output===true?'structured output':'structured output unknown or unsupported'} · ${item.reasoning===true?'reasoning':item.reasoning===false?'no reasoning':'reasoning unknown'} · ${Object.keys(item.pricing).length?Object.entries(item.pricing).map(([kind,rate])=>`${kind}: $${(Number(rate)*1e6).toLocaleString()} / million tokens`).join(' · '):'Pricing unavailable'}`,disabled:role!=='architect'&&item.structured_output!==true,explanation:structuredExplanation}))??[])];
+  function invalidSelections(overrides:Record<string,AgentChoice>) {
+   const merged={...defaults,...overrides};
+   return (role==='generators'?generatorRoles:[role]).filter(key=>{
+    if(!catalog||!(merged[key]??(key.startsWith('generator_')?merged.generators:undefined))&&!catalog?.credential_id)return false;
+    const resolved=modelDefault(key,catalog,defaults,overrides,config);const metadata=catalog.models.find(item=>item.id===resolved?.model);
+    return !metadata||(key!=='architect'&&metadata.structured_output!==true);
+   });
+  }
+  const invalidRoles=invalidSelections(value);
+  const invalidDefault=invalidSelections(without).length>0;
+  const fieldError=invalidRoles.length?(role==='architect'?'This saved model is unavailable. Choose a listed model or update its default.':structuredExplanation):undefined;
+  const options:ModelOption[]=[{value:'',label:`Use default — ${fallback}`,detail:'Inherits personal, administrator, then environment settings.',disabled:invalidDefault,explanation:role==='architect'?'This inherited model is unavailable. Choose a listed model or update the saved default.':`${structuredExplanation} The inherited default needs to be updated, or choose a listed structured-output model.`},...(catalog?.models.map(item=>({value:item.id,label:`${item.name} (${item.id})`,detail:`${item.structured_output===true?'structured output':'structured output unknown or unsupported'} · ${item.reasoning===true?'reasoning':item.reasoning===false?'no reasoning':'reasoning unknown'} · ${Object.keys(item.pricing).length?Object.entries(item.pricing).map(([kind,rate])=>`${kind}: $${(Number(rate)*1e6).toLocaleString()} / million tokens`).join(' · '):'Pricing unavailable'}`,disabled:role!=='architect'&&item.structured_output!==true,explanation:structuredExplanation}))??[])];
   if(choice&&!catalog?.models.some(item=>item.id===choice.model))options.push({value:choice.model,label:`Unavailable model — ${choice.model}`,detail:'Refresh the catalogue or choose another model.',disabled:true,explanation:'This saved model is unavailable. Select Use default or another available model.'});
   const limit=catalog?.output_token_limits?.[role.startsWith('generator')?'generators':role];const price=Number(model?.pricing.prompt),completion=Number(model?.pricing.completion);
   const estimate=limit&&Number.isFinite(price)&&Number.isFinite(completion)?`Illustrative initial call: $${(1000*price+limit*.25*completion).toFixed(4)}–$${(4000*price+limit*completion).toFixed(4)} (1k–4k input tokens, 25–100% of a ${limit.toLocaleString()}-token output allowance; retries extra).`:'';
-  return <div className="model-choice" key={role}><ModelCombobox label={`${label} model`} value={choice?.model??''} options={options} onChange={selected=>{const next={...value};if(selected)next[role]={model:selected};else delete next[role];onChange(next);}}/>
+  return <div className="model-choice" key={role}><ModelCombobox error={fieldError} label={`${label} model`} value={choice?.model??''} options={options} onChange={selected=>{const next={...value};if(selected)next[role]={model:selected};else delete next[role];onChange(next);}}/>
    {model?.reasoning!==false&&<label>{label} thinking<select aria-label={`${label} thinking`} value={choice?.thinking_mode??(choice? '':effective?.thinking_mode??'')} disabled={!model||!effective||(role==='generators'&&fallback.includes(';'))} onChange={event=>{if(effective)onChange({...value,[role]:{model:choice?.model??effective.model,thinking_mode:(event.target.value||null) as ThinkingMode|null}});}}><option value="">Provider default</option>{model?.thinking_modes.map(mode=><option key={mode} value={mode}>{mode}</option>)}</select></label>}
    {model?.reasoning===false&&<p className="muted">No thinking control: this model has no reasoning support.</p>}
    {!model&&<p className="muted">Model capabilities unavailable. Refresh the catalogue or choose a model.</p>}

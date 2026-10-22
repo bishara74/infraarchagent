@@ -41,7 +41,7 @@ it('FR-UI-01 provider permits saving no-credit keys and confirms revocation',asy
  const request=vi.spyOn(api,'request').mockImplementation(async(url,method)=>(url.endsWith('/probe')?{status:'no_credit',models:[]}:method==='POST'?{id:'saved'}:saved) as never);
  render(<MemoryRouter><ProviderPage/></MemoryRouter>);await screen.findByText('Demo key');
  const revoke=screen.getByRole('button',{name:'Revoke'});await userEvent.click(revoke);expect(request.mock.calls.some(([url])=>url.endsWith('/revoke'))).toBe(false);await userEvent.click(screen.getByRole('button',{name:'Cancel'}));expect(revoke).toHaveFocus();
- await userEvent.click(revoke);await userEvent.click(screen.getByRole('button',{name:'Confirm revoke'}));await waitFor(()=>expect(request).toHaveBeenCalledWith('/api/providers/saved/revoke','POST'));
+ await userEvent.click(revoke);await userEvent.click(screen.getByRole('button',{name:'Confirm revoke'}));await waitFor(()=>expect(request).toHaveBeenCalledWith('/api/providers/saved/revoke','POST'));await waitFor(()=>expect(revoke).toHaveFocus());
  fireEvent.paste(screen.getByLabelText('Provider API key'));fireEvent.change(screen.getByLabelText('Provider API key'),{target:{value:'synthetic-no-credit-key'}});
  await screen.findByText(/This key can be saved without credit/);expect(screen.getByRole('button',{name:'Save and use provider'})).toBeEnabled();await userEvent.click(screen.getByRole('button',{name:'Save and use provider'}));await waitFor(()=>expect(request.mock.calls.some(([url,method])=>url==='/api/providers'&&method==='POST')).toBe(true));
 });

@@ -34,6 +34,7 @@ only where it carries meaning (status, diff, the one primary action).
 --border:          #30363d
 --text:            #e6e6e6
 --text-muted:      #8b949e
+--text-faint:      #484f58   /* nonessential decoration only */
 --accent:          #ff9900   /* primary action, selected variant, active tab */
 --ok:              #3fb950   --ok-bg:      #0d4a2e
 --running:         #58a6ff   --running-bg: #1a3a5c
@@ -86,7 +87,8 @@ One accent (orange). Status colours are semantic only, never decoration.
 ### Variant column (screen 3)
 - `--surface`, 1px `--border`; selected: 2px `--accent` border.
 - Header: variant name, readiness label badge, security summary; body: file
-  tree in mono.
+  tree in mono. Secondary check details collapse by default so file/actions fit
+  the 1280×800 projector view; all original counts remain available.
 
 ### Diff view (screen 4)
 - Pane `--bg-code`, mono 13px, line numbers muted.
@@ -109,3 +111,20 @@ One accent (orange). Status colours are semantic only, never decoration.
 | Locally bundled fonts and Codicons | Phase 9j author-approved wireframe polish, offline at runtime | 2026-10-22 |
 | Single orange accent | Mockups use orange for the one primary action and selection | 2026-10-12 |
 | Desktop-first (≥1024px) | Single-user local tool; mobile out of scope | 2026-10-12 |
+
+## Phase 9j shared controls
+
+- Model controls use a two-column grid on wide screens and a single column below
+  800px. The searchable list virtualises at most 16 rows of 80px, with total/
+  position metadata for assistive technology. Search covers ID and name; invalid
+  options have an explanation and cannot be selected. Defaults show model and
+  effective thinking; provider-default thinking is distinct from low/off.
+- Request configuration starts collapsed; its summary identifies mixed per-role
+  settings rather than implying every role uses Architect's model. Use defaults
+  stays in the form action row and retains the standard 36px button height.
+- Header navigation is available only after authentication or explicit local-mode
+  entry. Account is a keyboard-operated menu; user management remains admin-only.
+  Account names truncate visually while preserving their full accessible name.
+- User/reset/revoke dialogs use native modal behaviour and return focus to their
+  trigger after asynchronous actions complete. Credentials/passwords remain
+  temporary form state and never enter preference storage.

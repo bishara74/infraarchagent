@@ -2172,6 +2172,20 @@ authentication-policy changes. UI provides confirmation/password rules, account
 metadata, provider no-credit save warning and Revoke confirmation. Capability
 declarations are restricted in the UI to custom OpenAI-compatible providers.
 
+Section H: preserve all comparison counts inside an initially collapsed Check
+details disclosure so primary evidence, file trees and actions fit at 1280×800.
+Model lists virtualise a bounded window with ARIA total/position metadata;
+invalid inherited defaults receive field-level explanations, and server model
+validation opens configuration with actionable guidance. Mixed per-role defaults
+are identified honestly in the collapsed summary. Native dialog focus and long
+account names are handled without changing user/account policy.
+
+Browser verification supports optional test-only INFRAARCH_E2E_FRONTEND_PORT and
+INFRAARCH_E2E_BACKEND_PORT, retaining default ports, loopback binds, database-role
+checks, mocked provider HTTP and refusal to reuse an existing server. This allows
+isolated verification alongside the author's running instance. Screenshot/evidence
+files live under docs/evals/phase9j-ui/. No new specification open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

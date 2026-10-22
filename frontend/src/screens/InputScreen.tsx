@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { api, errorMessage } from '../api/client';
+import { api, ApiError, errorMessage } from '../api/client';
 import type { Catalog, RunConfig } from '../api/types';
 import { examples } from '../constants/examples';
 import { inputLength, MIN_INPUT, MAX_INPUT } from '../constants/inputRules';
@@ -9,7 +9,7 @@ import { getActiveRun, setActiveRun, subscribeSession } from '../lib/sessionStat
 import { isSettled } from '../api/sse';
 import { usePreferences, updatePreferences, rememberRun, recoverDraft, retrySave } from '../lib/preferences';
 import { Icon } from '../components/Icon';
-import { defaultLabel } from '../lib/modelDefaults';
+import { defaultLabel, generatorRoles } from '../lib/modelDefaults';
 import { ModelControls } from '../components/ModelControls';
 function ActiveRun({ id }: {
     id: string;
@@ -37,15 +37,19 @@ export function InputScreen() {
         navigate(`/runs/${result.run_id}`);
     }
     catch (cause) {
-        setError(cause);
-        input.current?.focus();
+        if(cause instanceof ApiError&&cause.code==='invalid_model') {
+            setError(new ApiError(cause.status,cause.code,'Check the model and thinking fields in Configuration options. Choose a structured-output model for Generators and Fixer, or select Use defaults.'));
+            updatePreferences({ui:{...prefs.data.ui,config_open:true}});
+            requestAnimationFrame(()=>(document.querySelector<HTMLElement>('.model-choice [aria-invalid="true"]')??document.querySelector<HTMLElement>('.model-choice [role="combobox"]'))?.focus());
+        } else { setError(cause); input.current?.focus(); }
     }
     finally {
         setBusy(false);
     } }
     const modelDefaults={...catalog?.defaults,...prefs.data.role_defaults};
     const summaryChoice=defaultLabel('architect',catalog,modelDefaults,config.agent_models??{},config);
-    const summary=`${Object.keys(config.agent_models??{}).length?'Configuration':'Defaults'}: ${summaryChoice} · ${config.policy_profile??'strict'}`;
+    const roleLabels=['architect',...generatorRoles,'fixer'].map(role=>defaultLabel(role,catalog,modelDefaults,config.agent_models??{},config));
+    const summary=`${Object.keys(config.agent_models??{}).length?'Configuration':'Defaults'}: ${roleLabels.every(label=>label===summaryChoice)?summaryChoice:'per-role models and thinking'} · ${config.policy_profile??'strict'}`;
     if (!prefs.ready)
         return <p role="status">Loading saved preferences…</p>;
     return <><h1>Generate infrastructure</h1><p className="muted">Describe what you want to deploy in plain English. Compare the generated packages, checks and fixes before downloading.</p>{active && <ActiveRun id={active}/>}<p className="muted" role="status">Preferences: {prefs.status}</p>{prefs.status === 'offline' && <button onClick={() => void retrySave()}>Retry saving</button>}{prefs.conflictDraft && <p className="notice">Saved preferences changed elsewhere. <button onClick={recoverDraft}>Restore my unsaved draft</button></p>}{catalog?.status === 'setup_required' && <p className="notice">No provider key configured. <Link to="/settings/provider">Set up a provider</Link></p>}
