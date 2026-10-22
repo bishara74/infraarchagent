@@ -31,3 +31,17 @@ describe('application shell', () => {
     expect(screen.getByRole('main')).toHaveAttribute('tabindex', '-1');
   });
 });
+
+it('FR-UI-01 authenticated Recent runs hydrates once and remains mounted', async () => {
+  window.history.replaceState(null, '', '/recent');
+  const status = {auth_required:true,authenticated:true,mode:'account' as const,user:{id:'recent-regression',username:'reviewer',role:'reviewer' as const}};
+  setSessionStatus(status);vi.mocked(api.session).mockResolvedValue(status);
+  const request=vi.spyOn(api,'request').mockImplementation(async url => (url.endsWith('recent-runs') ? [] : {revision:1,data:{}}) as never);
+  render(<App/>);
+  expect(await screen.findByText('No runs yet — start one from New request')).toBeVisible();
+  await userEvent.click(screen.getByRole('link',{name:'Recent runs'}));
+  expect(screen.getByText('No runs yet — start one from New request')).toBeVisible();
+  expect(request.mock.calls.filter(([url])=>url==='/api/me/preferences')).toHaveLength(1);
+  expect(request.mock.calls.filter(([url])=>url==='/api/me/recent-runs')).toHaveLength(1);
+  window.history.replaceState(null,'','/');
+});

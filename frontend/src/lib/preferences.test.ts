@@ -19,3 +19,19 @@ it('FR-UI-01 conflicting offline edits retain a recoverable draft',async()=>{
  request.mockImplementation(async(_url,method)=>{if(method==='PUT')throw new ApiError(409,'preference_conflict','changed');return {revision:2,data:{prompt_draft:'new server draft'}} as never;});
  await retrySave();expect(getPreferences().data.prompt_draft).toBe('new server draft');expect(getPreferences().conflictDraft?.prompt_draft).toBe('unsaved draft');
 });
+
+it('FR-UI-01 duplicate hydration shares requests and stale accounts cannot replace current data',async()=>{
+ let finish!:(value:unknown)=>void;
+ const request=vi.spyOn(api,'request').mockImplementation(url=> url.endsWith('recent-runs')?Promise.resolve([]) as never:new Promise(resolve=>{finish=resolve;}) as never);
+ const first=hydratePreferences('deduplicated');const again=hydratePreferences('deduplicated');
+ expect(first).toBe(again);expect(request).toHaveBeenCalledTimes(2);
+ await hydratePreferences(null);finish({revision:1,data:{prompt_draft:'previous account'}});await first;
+ expect(getPreferences().data.prompt_draft).toBe('');expect(getPreferences().ready).toBe(true);
+});
+
+it('FR-UI-01 failed hydration exposes retry and preserves populated recent rows',async()=>{
+ const request=vi.spyOn(api,'request').mockRejectedValue(new Error('synthetic offline'));
+ await hydratePreferences('offline-recent');expect(getPreferences().loadError).toBeTruthy();expect(getPreferences().ready).toBe(true);
+ request.mockImplementation(async url=>(url.endsWith('recent-runs')?[{id:'run',title:'Real saved run',time:'2026-10-22T10:00:00Z',status:'success',last_seq:2}]:{revision:1,data:{}}) as never);
+ await hydratePreferences('offline-recent',true);expect(getPreferences().loadError).toBeNull();expect(getPreferences().recent[0]?.title).toBe('Real saved run');
+});

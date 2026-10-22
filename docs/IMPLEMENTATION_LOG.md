@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9j section 0 — Fix recent-run preference hydration
+
+**Summary:** Remove the Recent runs mount/load loop, deduplicate account
+hydration, ignore stale account responses and expose load errors/retry plus a
+clear empty state. Bound finite JSON requests to 15 seconds without changing SSE.
+Establish tested model-default labels including generator groups/null thinking.
+
+**Requirements addressed:** FR-UI-01, FR-P-04, NFR-01.
+
+**Files:** frontend API client, preferences store, RecentRunsScreen, ModelControls,
+InputScreen/SettingsScreen default inputs and associated tests; D-58; this log.
+
+**Decisions:** D-58 records both investigation results. Successful empty browser
+fixtures reproduced seven preference and seven history requests with the old
+loading gate. The author supplied safe API fields proving Gemini is a personal
+default, distinct from the explicit draft and environment settings. Saved choices
+are preserved. Account-boundary hydration owns loading; cache remains optional.
+
+**Tests:** frontend ESLint/TypeScript passes. `make frontend-test`: 119 passed,
+0 failed, 0 skipped across 18 files. Added authenticated recent-route regression,
+duplicate/stale hydration, error recovery, JSON timeout/SSE lifetime and default
+precedence tests. Full backend/E2E/secret checks follow in section H.
+
+**Known gaps / follow-ups:** Visual polish, comboboxes, Settings API additions and
+screenshots follow in A–H. No dotenv reads, real inference or push.
+
 ## 2026-10-22 — Phase 9i — Rebase proven literal package file inputs
 
 **Summary:** Add a guarded, source-preserving `file()` path equivalent and replay

@@ -33,7 +33,14 @@ export function createApiClient(options: {
     return response;
   }
   async function json<T>(url: string, init?: RequestInit): Promise<T> {
-    return await (await checked(url, init)).json() as T;
+    const deadline = new AbortController();
+    const timer = setTimeout(() => deadline.abort(), 15_000);
+    const signal = init?.signal ? AbortSignal.any([init.signal, deadline.signal]) : deadline.signal;
+    try { return await (await checked(url, { ...init, signal })).json() as T; }
+    catch (error) {
+      if (deadline.signal.aborted) throw new ApiError(0, 'request_timeout', 'The request timed out. Please retry.');
+      throw error;
+    } finally { clearTimeout(timer); }
   }
   const base = (id: string) => `/api/pipeline/${encodeURIComponent(id)}`;
   return {

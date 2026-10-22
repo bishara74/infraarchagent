@@ -29,7 +29,9 @@ let generation = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let saving = false;
 let dirty = false;
-let state = { data: defaults(), recent: [] as RecentRun[], revision: 0, ready: true, status: 'saved', conflictDraft: null as PreferenceData | null };
+let hydration: Promise<void> | null = null;
+let hydrationController: AbortController | null = null;
+let state = { data: defaults(), recent: [] as RecentRun[], revision: 0, ready: true, status: 'saved', loadError: null as unknown, conflictDraft: null as PreferenceData | null };
 const listeners = new Set<() => void>();
 function notify() { listeners.forEach(fn => fn()); }
 const secrets = new Set<string>();
@@ -80,32 +82,41 @@ export const getPreferences = () => state;
 export const getPreferenceOwner = () => owner;
 export const subscribePreferences = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
 export function usePreferences() { return useSyncExternalStore(subscribePreferences, getPreferences); }
-export async function hydratePreferences(userId: string | null) {
+export function hydratePreferences(userId: string | null, force = false): Promise<void> {
+    if (userId && owner === userId && !force) {
+        if (hydration) return hydration;
+        if (state.ready) return Promise.resolve();
+    }
     clearTimeout(timer);
+    hydrationController?.abort();
+    const controller = new AbortController();
+    hydrationController = controller;
     owner = userId ?? 'local';
     const active = ++generation;
+    const unsaved = force && dirty ? state.data : null;
     dirty = false;
-    state = { ...state, ...readCache(), revision: 0, ready: !userId, status: userId ? 'loading' : 'local', conflictDraft: null };
+    state = { ...state, ...readCache(), revision: 0, ready: !userId, status: userId ? 'loading' : 'local', loadError: null, conflictDraft: unsaved };
     notify();
-    if (!userId)
-        return;
-    try {
-        const [saved, recent] = await Promise.all([api.request<{
-                revision: number;
-                data: unknown;
-            }>('/api/me/preferences'), api.request<unknown>('/api/me/recent-runs')]);
-        if (active !== generation)
-            return;
-        state = { ...state, data: validated(saved.data), recent: recentValue(recent), revision: saved.revision, status: 'saved', ready: true };
-        cache();
-    }
-    catch {
-        if (active === generation)
-            state = { ...state, ready: true, status: 'offline' };
-    }
-    if (active === generation)
-        notify();
+    if (!userId) { hydration = null; return Promise.resolve(); }
+    hydration = (async () => {
+        try {
+            const [saved, recent] = await Promise.all([
+                api.request<{revision: number; data: unknown}>('/api/me/preferences', 'GET', undefined, controller.signal),
+                api.request<unknown>('/api/me/recent-runs', 'GET', undefined, controller.signal),
+            ]);
+            if (active !== generation) return;
+            state = { ...state, data: validated(saved.data), recent: recentValue(recent), revision: saved.revision, status: 'saved', ready: true };
+            cache();
+        } catch (error) {
+            if (active === generation) state = { ...state, ready: true, status: 'offline', loadError: error };
+        } finally {
+            if (active === generation) { hydration = null; notify(); }
+        }
+    })();
+    return hydration;
 }
+export function retryHydration() { return hydratePreferences(owner === 'local' ? null : owner, true); }
+
 async function save() {
     cache();
     if (owner === 'local' || saving || !dirty)
@@ -167,6 +178,7 @@ export function rememberRun(runId: string, seq = 0, results?: ResultsResponse) {
     const previous = state.recent.find(r => r.id === runId);
     const row: RecentRun = { id: runId, title: results?.run.input_text.slice(0, 120) ?? previous?.title ?? 'Infrastructure request', time: results?.run.start_time ?? previous?.time ?? new Date().toISOString(), status: results?.run.status ?? previous?.status ?? 'created', last_seq: Math.max(seq, previous?.last_seq ?? 0) };
     state = { ...state, recent: [row, ...state.recent.filter(r => r.id !== runId)].slice(0, 100) };
+    notify();
     clearTimeout(cursorTimers.get(runId));
     const active = generation;
     cursorTimers.set(runId, setTimeout(() => { if (active !== generation)

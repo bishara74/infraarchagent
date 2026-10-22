@@ -19,3 +19,13 @@ it.each([false,true])('eventually releases download Blob URLs even when click fa
  await vi.advanceTimersByTimeAsync(999);expect(revoke).not.toHaveBeenCalled();
  await vi.advanceTimersByTimeAsync(1);expect(revoke).toHaveBeenCalledExactlyOnceWith('blob:test');
 });
+
+it('FR-UI-01 finite JSON requests time out after 15 seconds without timing out SSE',async()=>{
+ vi.useFakeTimers();
+ const transport=vi.fn<typeof fetch>((_url,init)=>new Promise((_resolve,reject)=>init?.signal?.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')))));
+ const client=createApiClient({fetch:transport});
+ const pending=client.session();const assertion=expect(pending).rejects.toMatchObject({code:'request_timeout'});
+ await vi.advanceTimersByTimeAsync(15000);await assertion;
+ const controller=new AbortController();const stream=client.openStream('r',controller.signal);const aborted=expect(stream).rejects.toMatchObject({name:'AbortError'});
+ await vi.advanceTimersByTimeAsync(30000);expect(controller.signal.aborted).toBe(false);controller.abort();await aborted;
+});

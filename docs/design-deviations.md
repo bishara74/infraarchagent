@@ -2117,6 +2117,27 @@ clustering. Statistics are descriptive and cannot isolate the causal effect of
 9i, prove general reliability or establish deployment success. The author runs
 real inference later. No new specification ambiguity or open question is added.
 
+### D-58 — UI polish and truthful configuration labels (Phase 9j)
+
+FR-UI-01–07, FR-P-04, PR-02 and NFR-01. The author-approved Phase 9j
+polish follows the existing working UI and the thesis wireframes. Server-side
+readiness, strict assessment, authentication and review rules remain authoritative.
+
+Section 0: Recent runs restarted preference hydration on mount; the application
+access gate unmounted it while loading, causing an endless mount/load cycle even
+with successful empty responses. Hydration now belongs to the app boundary and
+is deduplicated per account. Finite JSON requests have a 15-second deadline;
+streaming requests retain their own lifetime. Failed loads expose retry and
+cached data is identified. Empty recent history provides a New request action.
+
+The author's safe API projection identified a saved personal Architect default
+of google/gemini-3.8-flash:batch with null thinking, no administrator override,
+a separate explicit draft openai/gpt-oss-120b selection, and environment default
+openai/gpt-oss-120b:nitro with low thinking. Preserve these settings. Null means
+provider default, never inherited low/off. Role-specific generator settings take
+precedence over a generators-group setting, as in the existing backend resolver.
+No catalogue ordering chooses a default. No new specification open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
