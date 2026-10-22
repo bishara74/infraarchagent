@@ -1857,6 +1857,38 @@ reports remain frozen. Provider major drift is a discussion finding, not evidenc
 that Architect prompt v3 or guidance tiers caused the model's provider choice;
 see docs/thesis-notes/chapter6-evaluation.md. No dependency or new open question.
 
+Literal file-path follow-up (2026-10-22; FR-G-02, FR-V-03, PR-01, NFR-01):
+propose a source-preserving `file()` path rebase only for a literal canonical
+relative path whose module-relative target is absent and whose exact package-root
+artifact exists. Emit `file("${path.module}/<relative path to that artifact>")`
+after proving the resolved destination remains inside the copied package.
+An existing root-working-directory target is also authoritative in child modules.
+Do not search by basename, create files, read the host filesystem, change artifact
+contents or alter a valid existing read. Dynamic, escaping, dotenv, malformed and
+ambiguous inputs skip. Parsed HCL, interpolated heredocs and Terraform JSON
+expressions preserve unrelated source, comments and string escapes. No prompt
+text is matched. The documented semantics of
+[file()](https://developer.hashicorp.com/terraform/language/functions/file) and
+[path.module](https://developer.hashicorp.com/terraform/language/expressions/references#filesystem-and-workspace-info)
+preserve the expression's string type; native schema validation remains
+authoritative. The additive `terraform_file_path` repair kind records proposal
+hashes and the unchanged validity/security guard's accepted/rejected outcome.
+
+Offline evidence in `docs/evals/phase9i-file-paths-offline/` covers all 201 saved
+packages from both broad cohorts and both final sets. Its baseline is the
+hash-reconstructed retained v6 replay, keeping path effects separate from prior
+migration gains. Every changed proposal receives paired native checks/scans;
+identity cases use explicitly labelled prior observations with matched tools,
+provider indexes and unchanged observational sources. Per-scenario candidate and
+retained validity/strict/v1/v2 deltas distinguish rejected proposals. Historical
+inputs and reports remain immutable. Ten proposals yield seven accepted edits
+and three no-improvement rejections. Only broad cohort 2 scenario 10 gains a
+valid package (2/6 to 3/6); overall validity rises from 98/201 to 99/201. Its two
+existing KSV-0125 blockers remain, so strict/v1/v2 pass deltas are zero in every
+scenario; blocker-count deltas are also zero. All other scenario validity deltas
+are zero. No SSM commands coercion, prompt/guidance,
+readiness, blocking, threshold, dependency or database change; no new open question.
+
 Kubernetes follow-up (FR-S-04/09, FR-V-01, FR-UI-06): a missing-only,
 source-preserving pod catalogue supports Deployment/StatefulSet/DaemonSet/Job,
 regular and init containers. Real offline Helm output establishes resource

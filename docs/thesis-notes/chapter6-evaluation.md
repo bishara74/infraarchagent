@@ -235,6 +235,43 @@ comparisons. Exact observed totals and unknown counts are in costs.csv.
    offline effects on saved bytes: static acceptance is not deployment evidence
    or a newly measured real benchmark. See D-56 and the provider's [v6 migration guide](https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/guides/version-6-upgrade.html.markdown).
 
+9. **Package layout and local file reads:** two packages improved by the v6
+   equivalents remained invalid. Broad cohort 2 scenario 4 cost supplied an SSM
+   commands tuple where both pinned provider schemas require a string-valued
+   parameters map. This cause occurs in one saved package and one scenario, so
+   it fails the author's recurrence criterion and remains untouched. Scenario 10
+   performance used `file("helm/eks-cluster/values.yaml")` inside the Terraform
+   module although the artifact is in a sibling package directory. Both defects
+   exist in original generator bytes and survive repairs; they are not introduced
+   by the v6 equivalents, and neither depends on the provider major.
+
+   The same path cause occurs in ten of 201 saved packages across broad scenarios
+   8/9/10 and final-set EKS: nine Helm values reads and one nginx user-data
+   interpolation. All ten expressions exist in generator snapshots. A narrow
+   deterministic equivalent can select the exact existing package artifact when
+   the module-relative file is absent, then rebase through `path.module` while
+   preserving contents and string type. Dynamic, ambiguous, missing and escaping
+   inputs skip; valid existing reads remain authoritative. The unchanged
+   validity/security guard still decides retention, so a path defect masked by
+   another Terraform error does not automatically justify an accepted edit.
+
+   The [path-only offline replay](../evals/phase9i-file-paths-offline/README.md)
+   uses the prior v6-retained bytes for all 201 packages, with paired native
+   validation/scans for changed proposals and explicit hash-verified prior
+   observations for identity cases. Per-scenario results distinguish native
+   validation gains from strict/v1/v2 security acceptance. Seven of ten proposals
+   are retained; three are rejected for no improvement. Only broad cohort 2
+   scenario 10 gains a valid package (2/6 to 3/6), taking all-cohort validity from
+   98/201 to 99/201. Its two KSV-0125 trusted-registry blockers remain. Strict/v1/v2
+   package-pass deltas and blocker-count deltas are zero for every scenario;
+   every other scenario also has zero validity delta. Ten changed proposals
+   receive paired native observations; 191 unchanged packages reuse the prior
+   observations, with 58 unchanged observational source hashes and an additive
+   repair-kind model proof. This is an offline
+   correction of package layout references, not a new inference benchmark or
+   evidence of Helm deployment or instance startup. See D-56 and Terraform's
+   [file() documentation](https://developer.hashicorp.com/terraform/language/functions/file).
+
 Evidence for the discussion findings: [initial Sonnet](../evals/phase9-bench-real-20261014T101701420278Z/summary.md),
 [Sonnet smoke](../evals/phase9-bench-smoke-20261014T122810075341Z/summary.md),
 [partial Haiku excerpt](../evals/phase9-bench-real-20261018T231027886459Z/fixer-log-excerpt.txt),

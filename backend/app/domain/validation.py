@@ -133,6 +133,7 @@ class DeterministicRepair(BaseModel):
         "eip_v6_domain",
         "ssm_v6_targets",
         "flow_log_v6_destination",
+        "terraform_file_path",
         "db_name",
         "route_cidr",
         "listener_path_pattern",

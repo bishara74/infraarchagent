@@ -1,4 +1,4 @@
-"""D-56: only documented, value-preserving AWS Terraform equivalences."""
+"""D-56: only documented, value-preserving Terraform equivalences."""
 
 import hashlib
 import json
@@ -9,6 +9,7 @@ from typing import Any
 from lark import Tree
 
 from app.security.terraform import TerraformPackage
+from app.validation.file_paths import repair_file_paths
 from app.validation.idioms import json_spans
 from app.validation.v6_equivalents import repair_v6_equivalents
 
@@ -17,6 +18,8 @@ def repair_equivalents(
     files: dict[str, str],
 ) -> tuple[dict[str, str], list[dict[str, Any]]]:
     files, records = repair_v6_equivalents(files)
+    files, path_records = repair_file_paths(files)
+    records.extend(path_records)
     package = TerraformPackage(files)
     result = dict(files)
     for path, doc in package.documents.documents.items():

@@ -27,6 +27,72 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-22 — Phase 9i — Rebase proven literal package file inputs
+
+**Summary:** Add a guarded, source-preserving `file()` path equivalent and replay
+all 201 saved packages over the committed v6-retained baseline. Record the
+per-scenario validity and strict/v1/v2 effects separately from provider migrations.
+
+**Requirements addressed:** FR-G-02, FR-V-03, FR-S-09, PR-01, NFR-01.
+
+**Files:** add `backend/app/validation/file_paths.py`,
+`backend/scripts/phase9i_file_path_replay.py`, unit tests
+`test_phase9i_file_paths.py` / `test_phase9i_file_path_replay.py`, native test
+`test_phase9i_file_path_native.py` and `docs/evals/phase9i-file-paths-offline/`.
+Update `validation/equivalents.py`, the domain repair-kind enum, README, D-56,
+thesis Chapter 6 notes and this log.
+
+**Decisions:** Per D-56, edit only parsed `file()` calls with literal canonical
+relative arguments. The module-relative file must be absent and the exact
+package-root artifact present; prove the replacement remains inside the package.
+Existing root-working-directory inputs are also authoritative for child modules.
+Skip dynamic, ambiguous, malformed, escaping and dotenv inputs. Never search by
+basename, read the host filesystem, create artifacts or change artifact contents.
+Preserve HCL comments, heredoc shell text and unrelated JSON escapes; support
+actual heredoc interpolations as well as quoted HCL/JSON expressions. New records
+use `terraform_file_path` with source hashes and existing guard outcomes.
+CandidateGuard, failed-check improvement, strict policy, prompts, guidance,
+readiness, blocking, deadlines and thresholds remain unchanged. No dependency or
+database migration; no new open question.
+
+**Offline evidence:** all 201 inputs (60/60/40/41 across broad-1/broad-2/final-1/
+final-2) and all 26 scenario groups are accounted for. Ten path proposals receive
+paired native validation/scans. Seven are retained; three fail the unchanged
+no-improvement rule. Only broad-2 scenario 10 gains validity, 2/6 to 3/6. Its two
+KSV-0125 trusted-registry blockers remain, so every scenario's strict/v1/v2 pass
+and blocker-count deltas are zero. Broad-2 validity rises 40/60 to 41/60; other
+cohorts remain 35/60, 9/40 and 14/41. Overall validity rises 98/201 to 99/201;
+profile passes remain 61/201 under each profile. The two historical validation
+error packages remain errors and never count as passes. There are no unknown
+scan observations or introduced candidate blockers.
+
+Identity cases reuse 191 explicitly labelled prior v6-retained observations.
+All original inputs and prior retained hashes match, tool/provider versions
+match, 58 observational source hashes are unchanged, and the domain model AST
+proof permits only the additive repair-kind literal. Input/evaluator manifests
+bind all source bytes. An initial replay's end-of-run source guard rejected a
+script changed during lint cleanup; final measurements are generated only after
+sources stabilize, reusing native observation cache entries bound to identical
+package bytes, observational code and tools. Historical evidence is untouched.
+
+**Tests:** initial focused unit/historical/guard group: 72 passed; final focused
+path/report suite with multiline HCL/JSON and literal-text negatives: 45 passed.
+Native AWS 6.68
+file-path integration: 1 passed (one native error becomes zero). Tests cover
+positive HCL/JSON/heredoc cases, absent and same-basename targets, ambiguous
+declarations/existing module inputs, dynamic arguments, escape attempts, module
+isolation, source preservation, idempotence and guard rejection. `make lint`
+passes Ruff/format, mypy on 167 application sources and frontend ESLint/TypeScript.
+Final `make test`: **1,978 passed, 0 failed, 0 skipped, 6 performance tests
+deselected**, in 441.82 seconds. It uses real disposable PostgreSQL 16 with
+synthetic credentials, normal roles, stub inference and dotenv disabled.
+Repository/all-ref/reflog secret scan: zero findings and zero errors.
+
+**Known gaps / follow-ups:** The one-off SSM commands type mismatch is intentionally
+not repaired; it fails the author's recurrence threshold. Remaining schema/lint
+failures and KSV-0125 findings are unchanged. Offline static validity does not
+prove Helm deployment or instance startup. No real LLM calls, `.env` reads or push.
+
 ## 2026-10-22 — Phase 9i — Guard documented v6 migrations and measure major-version drift
 
 **Summary:** Add three narrowly bound documented AWS v6 equivalent proposals and

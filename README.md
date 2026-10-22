@@ -1557,6 +1557,22 @@ INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH="$PWD/tests/bootstrap:$PWD" \
 Every changed proposal receives fresh paired native observations; unchanged
 packages reuse explicitly labelled immutable baselines. No model calls occur.
 
+The [literal file-path replay](docs/evals/phase9i-file-paths-offline/README.md)
+measures only path rebasing over those v6-retained packages. A literal `file()`
+argument becomes a `path.module` reference only when its module-relative target
+is absent and the exact package-root artifact exists. Dynamic, ambiguous and
+escaping paths are skipped; the existing validity/security guard decides retention.
+Artifact contents and existing valid paths are preserved. Reproduce with the
+same original snapshots, prior evidence and local mirrors:
+
+```bash
+cd backend
+INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH="$PWD/tests/bootstrap:$PWD" \
+  unshare --user --map-root-user --net \
+  .venv/bin/python -m scripts.phase9i_file_path_replay \
+  --output /tmp/phase9i-file-path-replay --workers 2
+```
+
 Provider consolidation is a module-scoped proposal checked by the existing
 validity/security guard. Conflicting sources or constraints that cannot be proven
 compatible remain for LLM repair. No readiness or blocking policy changes.
