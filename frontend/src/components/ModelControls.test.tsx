@@ -38,3 +38,18 @@ it('FR-UI-01 obsolete probe responses cannot replace the current catalog', async
  await act(async()=>first.resolve({status:'invalid',models:[]}));
  expect(screen.getByRole('status')).toHaveTextContent('Provider test: ok — valid. 2 models loaded');
 });
+
+it('FR-UI-01 changing provider during a probe clears loading and ignores its completion', async () => {
+ let finish!:(value:unknown)=>void;
+ vi.spyOn(api,'request').mockImplementation(url=>url.endsWith('/probe')?new Promise(resolve=>{finish=resolve;}) as never:Promise.resolve({storage_enabled:true,credentials:[],default_credential_id:null}) as never);
+ render(<MemoryRouter><ProviderPage/></MemoryRouter>);
+ fireEvent.paste(screen.getByLabelText('Provider API key'));
+ fireEvent.change(screen.getByLabelText('Provider API key'),{target:{value:'synthetic-pending-key'}});
+ await waitFor(()=>expect(screen.getByRole('status')).toHaveTextContent('Testing or saving…'));
+ fireEvent.change(screen.getByRole('combobox'),{target:{value:'openai'}});
+ expect(screen.getByRole('status')).toHaveTextContent('Enter a key to test it');
+ expect(screen.getByRole('button',{name:'Save and use provider'})).toBeDisabled();
+ await act(async()=>finish({status:'ok',models:catalog.models}));
+ expect(screen.getByRole('status')).not.toHaveTextContent('valid');
+ expect(screen.getByLabelText('Provider API key')).toHaveValue('');
+});

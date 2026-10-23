@@ -2186,6 +2186,13 @@ checks, mocked provider HTTP and refusal to reuse an existing server. This allow
 isolated verification alongside the author's running instance. Screenshot/evidence
 files live under docs/evals/phase9j-ui/. No new specification open question.
 
+Round 2 section 0: the approved pre-code sweep and four model-dropdown root
+causes are recorded in docs/evals/phase9j-ui/round2/BUG_SWEEP.md. Cancelling a
+provider probe now clears its activity independently of provider-save actions;
+obsolete results cannot restore stale status. Password forms provide username
+context without storing password values. Existing session/CSRF/readiness behavior
+is unchanged. No new open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

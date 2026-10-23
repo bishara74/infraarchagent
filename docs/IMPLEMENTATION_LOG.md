@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-23 — Phase 9j round 2 section 0 — Record sweep and reset cancelled provider probes
+
+**Summary:** Publish the pre-code sweep/root causes, fix cancelled provider-probe
+loading and supply password-manager username context for reset/change forms.
+
+**Requirements addressed:** FR-UI-01, FR-UI-07, NFR-01.
+
+**Files:** frontend Provider/Account/Users Settings and component tests;
+docs/evals/phase9j-ui/round2/BUG_SWEEP.md and baseline evidence; D-58; this log.
+
+**Decisions:** Separate probe and action activity so cancelling a probe cannot
+strand loading or disturb a save. Ignore obsolete probe responses. Sweep evidence
+separates native browser-chrome focus from background interaction. No auth change.
+
+**Tests:** `make frontend-test`: **152 passed, 0 failed/skipped**, 27 files.
+`make lint`: passes Ruff/format, mypy (167 app sources), ESLint and TypeScript.
+New deterministic deferred-probe test covers cancellation and stale completion;
+Settings assertions verify username context. Pre-change sweep at both desktop
+sizes found no normal-flow console errors/warnings, failed requests or unhandled
+rejections; fault cases and discarded harness runs are recorded in BUG_SWEEP.md.
+
+**Known gaps / follow-ups:** Dropdown fixes and other round-2 sections follow in
+approved order 2, 1, 3, 4, 5; full backend/E2E/build/secret checks at completion.
+
 ## 2026-10-22 — Phase 9j section H — Verify projector layouts and publish screen evidence
 
 **Summary:** Complete the 1280×800 browser review and publish 23 viewport captures,

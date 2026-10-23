@@ -18,6 +18,7 @@ it('NFR-01 users table reset confirmation and enable actions preserve passwords 
  await userEvent.click(screen.getByRole('button',{name:'Enable reviewer'}));await waitFor(()=>expect(request).toHaveBeenCalledWith('/api/auth/users/r/enable','POST'));
  const reset=screen.getByRole('button',{name:'Reset password for reviewer'});await userEvent.click(reset);
  const dialog=screen.getByRole('dialog',{name:'Reset password for reviewer'});expect(within(dialog).getByLabelText('New password',{exact:true})).toHaveFocus();
+ expect(within(dialog).getByLabelText('Username for password reset')).toHaveValue('reviewer');
  fireEvent.change(within(dialog).getByLabelText('New password',{exact:true}),{target:{value:'synthetic-new-password'}});fireEvent.change(within(dialog).getByLabelText('Confirm password',{exact:true}),{target:{value:'different-password'}});
  fireEvent.submit(dialog.querySelector('form')!);expect(within(dialog).getByText('Passwords must match.')).toBeVisible();
  fireEvent.change(within(dialog).getByLabelText('Confirm password',{exact:true}),{target:{value:'synthetic-new-password'}});fireEvent.submit(dialog.querySelector('form')!);
@@ -33,6 +34,7 @@ it('NFR-01 create reviewer requires confirmation before submitting',async()=>{
 it('NFR-01 account metadata preferences and confirmed password change use existing API',async()=>{
  const request=vi.spyOn(api,'request').mockResolvedValue({updated:true});const logout=vi.spyOn(api,'logout').mockResolvedValue(undefined);
  render(<AccountSettings/>);expect(screen.getByRole('heading',{name:'admin'})).toBeVisible();expect(screen.getByText('Never')).toBeVisible();expect(screen.getByRole('checkbox',{name:'Auto-scroll live log'})).toBeChecked();
+ expect(screen.getByLabelText('Account username')).toHaveValue('admin');
  fireEvent.change(screen.getByLabelText('Current password',{exact:true}),{target:{value:'synthetic-current'}});fireEvent.change(screen.getByLabelText('New password',{exact:true}),{target:{value:'synthetic-new-password'}});fireEvent.change(screen.getByLabelText('Confirm password',{exact:true}),{target:{value:'synthetic-new-password'}});
  fireEvent.submit(screen.getByRole('button',{name:'Change password'}).closest('form')!);await waitFor(()=>expect(logout).toHaveBeenCalledOnce());expect(request).toHaveBeenCalledWith('/api/auth/password','POST',{current_password:'synthetic-current',password:'synthetic-new-password'});
 });
