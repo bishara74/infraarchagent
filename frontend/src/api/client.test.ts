@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { api, ApiError, createApiClient, errorMessage, saveDownload } from './client';
+import { api, ApiError, createApiClient, errorMessage, saveDownload,saveAllDownload } from './client';
 import { getSessionStatus, getActiveRun, setSessionStatus, setActiveRun } from '../lib/sessionState';
 afterEach(()=>{sessionStorage.clear();vi.useRealTimers();});
 it('NFR-01 fresh key headers, resume cursor and request bodies',async()=>{
@@ -28,4 +28,11 @@ it('FR-UI-01 finite JSON requests time out after 15 seconds without timing out S
  await vi.advanceTimersByTimeAsync(15000);await assertion;
  const controller=new AbortController();const stream=client.openStream('r',controller.signal);const aborted=expect(stream).rejects.toMatchObject({name:'AbortError'});
  await vi.advanceTimersByTimeAsync(30000);expect(controller.signal.aborted).toBe(false);controller.abort();await aborted;
+});
+it('FR-UI-06 NFR-01 all-three download uses cookie transport and releases its Blob URL',async()=>{
+ const transport=vi.fn<typeof fetch>(async()=>new Response('bundle',{headers:{'Content-Disposition':'attachment; filename="all.zip"'}}));
+ const client=createApiClient({fetch:transport});expect((await client.downloadAll('run')).filename).toBe('all.zip');expect(transport.mock.calls[0]?.[0]).toBe('/api/pipeline/run/download-all');expect(transport.mock.calls[0]?.[1]?.credentials).toBe('same-origin');expect(new Headers(transport.mock.calls[0]?.[1]?.headers).has('X-API-Key')).toBe(false);
+ vi.useFakeTimers();vi.spyOn(api,'downloadAll').mockResolvedValue({blob:new Blob(['bundle']),filename:'all.zip'});
+ Object.defineProperty(URL,'createObjectURL',{value:vi.fn(()=>'blob:all'),configurable:true});const revoke=vi.fn();Object.defineProperty(URL,'revokeObjectURL',{value:revoke,configurable:true});vi.spyOn(HTMLAnchorElement.prototype,'click').mockImplementation(()=>undefined);
+ await saveAllDownload('run');expect(document.querySelector('a[download]')).toBeNull();await vi.advanceTimersByTimeAsync(1000);expect(revoke).toHaveBeenCalledExactlyOnceWith('blob:all');
 });

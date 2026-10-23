@@ -25,6 +25,13 @@ class ResultsRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    async def archive_snapshot(self, run_id: UUID) -> ResultsSnapshot | None:
+        # Establish a repeatable snapshot before package and label-event reads.
+        await self.session.connection(
+            execution_options={"isolation_level": "REPEATABLE READ"}
+        )
+        return await self.snapshot(run_id)
+
     async def review_retry_before(
         self, run_id: UUID, variant: Variant, label_seq: int
     ) -> bool:

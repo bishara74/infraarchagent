@@ -294,3 +294,30 @@ dialog form { display: grid; gap: var(--space-3); }dialog h2,dialog p { margin: 
 .diff-toggle { padding-inline:var(--space-3);font-size:var(--font-size-xs); }
 .diff-count { font-size:var(--font-size-xs); }
 .diff-row.formatting { color:var(--text-muted);background:var(--surface); }
+
+.overview-actions { display:flex;align-items:start;gap:var(--space-4);justify-content:space-between;margin-bottom:var(--space-4); }
+.overview-actions>p { max-width:680px;margin:0; }
+.download-all { max-width:360px;flex-shrink:0; }
+.download-all p { font-size:var(--font-size-xs);margin-block:var(--space-2); }
+.variant-goal { font-size:var(--font-size-xs); }
+.variant .actions { margin-top:auto;padding-top:var(--space-4); }
+.variant>.profile-assessments { margin-block:var(--space-3); }
+.package-tabs { margin-block:var(--space-4); }
+.package-tabs button { font-size:var(--font-size-base); }
+.package-layout.files-layout { grid-template-columns:220px minmax(0,1fr); }
+.findings-layout { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start; }
+@media(max-width:1100px) { .overview-actions { flex-wrap:wrap; }.findings-layout { grid-template-columns:minmax(0,1fr); } }
+
+.comparison-screen>.run-meta { margin:0 0 var(--space-2);font-size:var(--font-size-xs); }
+.comparison-screen .page-heading { margin-bottom:var(--space-3); }
+.comparison-screen>p:not(.run-meta):not(.notice) { font-size:var(--font-size-xs);margin:var(--space-2) 0; }
+.comparison-screen>.notice { margin-block:var(--space-2);padding:var(--space-2) var(--space-3); }
+.comparison-screen .overview-actions { margin-block:var(--space-3);font-size:var(--font-size-xs); }
+.comparison-screen .download-all p { margin-block:var(--space-1); }
+.comparison-screen .variant>.profile-assessments { margin-block:var(--space-2); }
+.comparison-screen .profile-assessments p { margin:var(--space-1) 0;line-height:1.35; }
+.comparison-screen .counts { margin:var(--space-1) 0;font-size:var(--font-size-xs); }
+.comparison-screen .architecture-summary { font-size:var(--font-size-xs);margin:var(--space-1) 0 var(--space-2); }
+.comparison-screen .variant-goal { margin:var(--space-2) 0;line-height:1.4; }
+.comparison-screen .variant>p.muted:last-of-type { margin:var(--space-1) 0 var(--space-2);font-size:var(--font-size-xs); }
+.comparison-screen .variant .actions { padding-top:var(--space-3); }

@@ -1417,6 +1417,17 @@ and formatting-only hunk labels. Toggle the view in the diff or Account UI
 preferences; the choice follows your account and is cached locally. The toggle
 changes presentation only, never package files or ZIP contents.
 
+Results open with three comparison cards. Inspect this variant opens Files,
+Security fixes, Findings (including validation), and Review tabs. Approval and
+rejection affect only the inspected variant and retain the existing reason rules.
+Download this variant uses its existing labelled ZIP. Download all three becomes
+available when every variant is downloadable; GET
+`/api/pipeline/{run_id}/download-all` returns cost/, performance/ and security/
+folders with byte-identical payloads/readiness documents plus README.md and a
+versioned manifest.json. The manifest records readiness labels, the run ID,
+original individual-ZIP SHA-256 values and every payload/README hash; it excludes
+its own hash. No partial bundle bypasses a pending review.
+
 ### Read-only database tools
 
 The author may pull `dpage/pgadmin4:9.8`, then run `make db-tools` and open
@@ -1454,7 +1465,7 @@ local-tool invocation, bounds and failure path, with a sequence diagram.
    Administrator defaults and personal defaults are separate controls.
 4. Return to New request, describe the infrastructure and generate. Optional
    run overrides are collapsed by default. Recent runs reopen saved requests.
-5. Review reports and diffs. Account identity is recorded automatically for
+5. Inspect a variant, read Findings and Security fixes, then open Review. Account identity is recorded automatically for
    approvals/rejections; provide a decision reason. Settings → Users creates,
    disables or resets reviewers; Account changes your own password/preferences.
 
@@ -1671,6 +1682,13 @@ in API, archive and UI reports. Existing responses without v2 show unavailable.
 
 
 ### Phase 9j UI polish
+
+The [round-2 gallery and verification record](docs/evals/phase9j-ui/round2/README.md)
+covers explicit draft recovery, recommended models, comparison-first results,
+per-variant tabs, formatting-aware diffs and verifiable all-three downloads.
+Optional `INFRAARCH_E2E_VITE_CACHE_DIR=/tmp/infraarch-e2e-vite` isolates browser-test
+dependency optimisation from an existing developer server, alongside the existing
+test-only frontend/backend port overrides. No runtime setting is required.
 
 The [1280×800 screen gallery and verification record](docs/evals/phase9j-ui/README.md)
 covers login/setup, request configuration/model search, recent history, progress,

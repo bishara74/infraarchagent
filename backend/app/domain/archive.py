@@ -1,6 +1,7 @@
 """Deterministic labelled IaC ZIPs (FR-UI-06, FR-S-10, PR-04)."""
 
 import hashlib
+import json
 from datetime import datetime
 from io import BytesIO
 from typing import Any
@@ -193,6 +194,12 @@ def package_zip(files: dict[str, str], readiness: str) -> bytes:
             readiness_path = f"_infraarchagent/READINESS-{number}.md"
             number += 1
     entries = {**safe, readiness_path: readiness}
+    return _zip_entries(
+        {path: content.encode("utf-8") for path, content in entries.items()}
+    )
+
+
+def _zip_entries(entries: dict[str, bytes]) -> bytes:
     buffer = BytesIO()
     with ZipFile(buffer, "w", compression=ZIP_DEFLATED, compresslevel=6) as archive:
         for path in sorted(entries):
@@ -202,8 +209,51 @@ def package_zip(files: dict[str, str], readiness: str) -> bytes:
             info.external_attr = 0o100644 << 16
             archive.writestr(
                 info,
-                entries[path].encode("utf-8"),
+                entries[path],
                 compress_type=ZIP_DEFLATED,
                 compresslevel=6,
             )
     return buffer.getvalue()
+
+
+def bundle_zip(run_id: UUID, packages: dict[Variant, tuple[bytes, str, str]]) -> bytes:
+    """Flatten the unchanged individual ZIP payloads, retaining verifiable hashes."""
+    entries: dict[str, bytes] = {}
+    variants = {}
+    table = []
+    for variant in Variant:
+        data, filename, label = packages[variant]
+        digest = hashlib.sha256(data).hexdigest()
+        variants[variant.value] = {
+            "readiness_label": label,
+            "single_variant_zip": {"filename": filename, "sha256": digest},
+        }
+        with ZipFile(BytesIO(data)) as archive:
+            for name in archive.namelist():
+                validate_relative_path(name)
+                entries[f"{variant.value}/{name}"] = archive.read(name)
+        table.append(f"| {variant.value} | {label} | {filename} | {digest} |")
+    entries["README.md"] = (
+        f"# InfraArchAgent — all three variants\n\nRun ID: {run_id}\n\n"
+        "| Variant | Readiness label | Individual ZIP | SHA-256 |\n"
+        "|---|---|---|---|\n" + "\n".join(table) + "\n\n"
+        "Each variant folder contains exactly its individual download's payload, "
+        "including its readiness document. Labels describe static checks and "
+        "engineer decisions, not a deployment.\n\n"
+        "manifest.json lists the SHA-256 of every included file except itself, "
+        "including this README. Compare individual ZIP hashes only for the same "
+        "run and unchanged readiness snapshot. No manifest can hash itself.\n"
+    ).encode("utf-8")
+    manifest = {
+        "schema_version": 1,
+        "run_id": str(run_id),
+        "variants": variants,
+        "files": {
+            path: hashlib.sha256(data).hexdigest()
+            for path, data in sorted(entries.items())
+        },
+    }
+    entries["manifest.json"] = (
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    return _zip_entries(entries)

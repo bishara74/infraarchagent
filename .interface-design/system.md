@@ -86,8 +86,8 @@ One accent (orange). Status colours are semantic only, never decoration.
 
 ### Variant column (screen 3)
 - `--surface`, 1px `--border`; selected: 2px `--accent` border.
-- Header: variant name, readiness label badge, security summary; body: file
-  tree in mono. Secondary check details collapse by default so file/actions fit
+- Header: variant name, readiness label badge, security summary; body: readiness, strict/contextual counts, validation and factual planned
+  properties. Files live in the selected variant inspection tabs. Secondary check details collapse by default so file/actions fit
   the 1280×800 projector view; all original counts remain available.
 
 ### Diff view (screen 4)
@@ -128,3 +128,19 @@ One accent (orange). Status colours are semantic only, never decoration.
 - User/reset/revoke dialogs use native modal behaviour and return focus to their
   trigger after asynchronous actions complete. Credentials/passwords remain
   temporary form state and never enter preference storage.
+
+## Phase 9j round 2 patterns
+
+- Results begin with three compact overview cards; Inspect this variant opens
+  URL-addressable Files, Security fixes, Findings and Review tabs. Reviews remain
+  per variant. No file trees or diff panels compete with the initial comparison.
+- Drafts are explicit recovery hints under an empty new editor; Restore, Discard
+  and Dismiss are text controls, preserving account-scoped persistence.
+- Model catalogues default to versioned, provider-verified recommendations. A
+  shared all-compatible switch never includes unsupported, free or retired models.
+  Options show catalogue input/output price and context; a tested badge denotes
+  recommendation membership, never inferred capability. Virtual 104px rows use
+  internal spacers inside a maximum 280px scroll viewport; short lists fit content.
+- Diff presentation defaults to hiding whitespace-only changes, with neutral
+  formatting labels and explicit meaningful/formatting line counts. Source and
+  archive bytes are unchanged. The setting follows the account.

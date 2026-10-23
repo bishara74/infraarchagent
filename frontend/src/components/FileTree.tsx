@@ -4,8 +4,8 @@ import type { PackageResult } from '../api/types';
 import { fileTree } from '../lib/fileTree';
 import { WindowedRows } from './WindowedRows';
 
-export function FileTree({ item, runId, selected }: {
-  item: PackageResult; runId: string; selected?: string;
+export function FileTree({ item, runId, selected,tab='files' }: {
+  item: PackageResult; runId: string; selected?: string;tab?:'files'|'fixes';
 }) {
   const rows = fileTree(Object.keys(item.files));
   if (!rows.length) return <p className="muted">No files available.</p>;
@@ -14,7 +14,7 @@ export function FileTree({ item, runId, selected }: {
     if (row.directory) return <div className="file-row muted" key={`directory:${row.path}`} style={{ paddingLeft: `calc(${row.depth} * var(--space-3) + var(--space-2))` }}><Icon name="folder"/> {row.label}</div>;
     const changed = item.original_files !== null && item.original_files[row.path] !== item.files[row.path];
     return <div className="file-row" key={row.path} style={{ paddingLeft: `calc(${row.depth} * var(--space-3))` }}>
-      <Link aria-current={selected === row.path ? 'page' : undefined} aria-label={`${row.path}${changed ? ' changed' : ''}`} to={`/runs/${runId}/packages/${item.variant}?file=${encodeURIComponent(row.path)}`} title={row.path}>
+      <Link aria-current={selected === row.path ? 'page' : undefined} aria-label={`${row.path}${changed ? ' changed' : ''}`} to={`/runs/${runId}/packages/${item.variant}?tab=${tab}&file=${encodeURIComponent(row.path)}`} title={row.path}>
         <Icon name="file"/> {row.label}{changed && <span className="changed"> changed</span>}
       </Link>
     </div>;

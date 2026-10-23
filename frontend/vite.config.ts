@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  cacheDir: process.env.INFRAARCH_E2E_VITE_CACHE_DIR,
   plugins: [react()],
   envDir: false,
   server: {

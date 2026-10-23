@@ -8,9 +8,10 @@ from app.api.schemas import MissingVariant, PackageResult, ResultsResponse, RunR
 from app.core.config import Settings
 from app.core.safety import PublicDataSafety
 from app.core.telemetry import safe_records
-from app.db.repositories.results import ResultsRepository
+from app.db.models import AgentEvent, GeneratedPackage
+from app.db.repositories.results import ResultsRepository, ResultsSnapshot
 from app.domain.agent_selection import reported_selections
-from app.domain.archive import package_zip, readiness_document
+from app.domain.archive import bundle_zip, package_zip, readiness_document
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.plan import DeploymentPlan
 from app.domain.review import package_presentation
@@ -52,6 +53,18 @@ class ResultsService:
                 else False
             )
         assert snapshot is not None
+        return self._archive(run_id, variant, snapshot, row, label, retried)
+
+    def _archive(
+        self,
+        run_id: UUID,
+        variant: Variant,
+        snapshot: ResultsSnapshot,
+        row: GeneratedPackage,
+        label: AgentEvent | None,
+        retried: bool,
+    ) -> tuple[bytes, str]:
+        status = PackageStatus(row.status)
         readiness = readiness_document(
             run_id=run_id,
             variant=variant,
@@ -80,6 +93,38 @@ class ResultsService:
             archive,
             f"infraarch-{str(run_id)[:8]}-{variant.value}-{status.value}.zip",
         )
+
+    async def download_all(self, run_id: UUID) -> tuple[bytes, str]:
+        packages = {}
+        async with self.sessions() as session:
+            repository = ResultsRepository(session)
+            snapshot = await repository.archive_snapshot(run_id)
+            if snapshot is None:
+                raise ReviewError(404, "not_found", "Run not found.")
+            rows = {Variant(row.variant): row for row in snapshot.packages}
+            if set(rows) != set(Variant) or any(
+                not is_downloadable(PackageStatus(row.status)) for row in rows.values()
+            ):
+                raise ReviewError(
+                    409,
+                    "not_downloadable",
+                    "All three variants must have readiness labels before downloading.",
+                )
+            for variant in Variant:
+                row = rows[variant]
+                label = await repository.label_event(
+                    run_id, variant, PackageStatus(row.status)
+                )
+                retried = (
+                    await repository.review_retry_before(run_id, variant, label.seq)
+                    if label
+                    else False
+                )
+                archive, filename = self._archive(
+                    run_id, variant, snapshot, row, label, retried
+                )
+                packages[variant] = (archive, filename, row.status)
+        return bundle_zip(run_id, packages), f"infraarch-{str(run_id)[:8]}-all.zip"
 
     async def results(self, run_id: UUID) -> ResultsResponse | None:
         async with self.sessions() as session:

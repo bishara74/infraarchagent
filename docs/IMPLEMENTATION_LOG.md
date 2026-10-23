@@ -27,6 +27,51 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-23 — Phase 9j round 2 section 5 — Compare first, inspect per variant and verify all-three downloads
+
+**Summary:** Lead with compact comparison cards and URL-addressable Files,
+Security fixes, Findings and Review tabs. Add the gated three-folder ZIP with
+readiness documents and a verifiable manifest. Publish final browser evidence.
+
+**Requirements addressed:** FR-UI-01–07, FR-P-04, FR-S-10, NFR-01.
+
+**Files:** comparison/package screens and tests, FileContent/DownloadAllButton,
+FileTree/ReportPanel/download client, shell query-focus handling, model popup
+placement, CSS, E2E flows/sweep/config and mocked catalogue; backend archive,
+results repository/service/API and bundle integration tests; round2 evidence,
+README, .interface-design/system.md, D-58 and this log.
+
+**Decisions:** Review/approval remain per selected variant with existing reason,
+authentication, strict-label and download gates. Shared planned architecture and
+optimisation goals are identified honestly; no cost estimate is invented. Bundle
+reads use a repeatable snapshot, reuse deterministic individual ZIPs and copy
+payload bytes into cost/performance/security folders. README/manifest record run,
+readiness, individual ZIP filenames/hashes and all payload/README hashes, excluding
+the self-referential manifest hash. Single ZIP bytes remain unchanged. Query-only
+navigation preserves tab focus; primary overview actions fit both desktop sizes.
+
+**Tests:** Final `make lint`: complete exit 0, Ruff/format, mypy **167** sources,
+ESLint/TS. `make test`: **1,994 passed, 0 failed/skipped, 6 perf deselected**,
+396.39s. `make frontend-test`: **190 passed**, 35 files. `make test-e2e`:
+**12 passed**, 3.9m; frontend build passes; `make secret-scan`: **0 findings,
+0 scan errors**. Focused bundle/archive tests: **14 passed**, repeated after extending the bundle
+secret-canary/redacted-manifest assertion (application code unchanged); model/golden-wire
+suite: **13 passed**. Three additional previous/current single-ZIP byte comparisons
+pass. Both final sweeps record zero browser console errors/warnings, failed
+requests/unhandled errors and horizontal overflow, with native dialog and CTA
+geometry checks. Evidence includes **46 updated 1280×800** and **26 1920×1080**
+captures, two baseline images and SHA-256 image/source manifests.
+
+**Known gaps / follow-ups:** A contended backend run had 1 failed/1,993 passed
+(existing short-deadline HTTP mock never started); simultaneous frontend checks
+had 10 timeouts/180 passed and the browser reached a scanner error before
+interruption. Final serial suites pass without relaxed limits. Earlier SQL_ASCII
+and relative-bootstrap isolation uncertainties remain documented in section 4 and
+the gallery; final runs use UTF-8 and absolute dotenv-disabled bootstrap paths.
+No real inference/deployment or new performance qualification. No new dependency,
+migration or open question. Suggested next step: author review of the round2
+screenshot gallery and interactive flow. No push or history rewrite.
+
 ## 2026-10-23 — Phase 9j round 2 section 4 — Present formatting changes as counted context
 
 **Summary:** Add the default-on per-account whitespace toggle, formatting-only

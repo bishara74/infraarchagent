@@ -11,7 +11,7 @@ export function ModelCombobox({label,value,options,onChange,error,selectedLabel}
  const start=Math.min(Math.max(0,filtered.length-16),Math.max(0,Math.floor(top/rowHeight)-3));const end=Math.min(filtered.length,start+16);
  useLayoutEffect(()=>{
   if(!open)return;
-  const position=()=>{const bounds=input.current?.getBoundingClientRect();if(!bounds)return;const below=window.innerHeight-bounds.bottom-12;const above=bounds.top-12;const useAbove=below<Math.min(280,filtered.length*rowHeight)&&above>below;setPlacement({above:useAbove,height:Math.max(80,Math.min(280,useAbove?above:below))});};
+  const position=()=>{const bounds=input.current?.closest('.model-combobox')?.getBoundingClientRect();if(!bounds)return;const below=window.innerHeight-bounds.bottom-12;const above=bounds.top-12;const useAbove=below<Math.min(280,filtered.length*rowHeight)&&above>below;setPlacement({above:useAbove,height:Math.max(80,Math.min(280,useAbove?above:below))});};
   position();window.addEventListener('resize',position);window.addEventListener('scroll',position,true);
   return()=>{window.removeEventListener('resize',position);window.removeEventListener('scroll',position,true);};
  },[open,filtered.length]);
@@ -41,6 +41,6 @@ export function ModelCombobox({label,value,options,onChange,error,selectedLabel}
  {start>0&&<li role="presentation" aria-hidden="true" className="model-spacer" style={{height:start*rowHeight}}/>}
  {filtered.slice(start,end).map((option,offset)=>{const index=start+offset;return <li id={`${id}-${index}`} key={option.value} role="option" aria-selected={value===option.value} aria-disabled={option.disabled||undefined} aria-describedby={option.disabled?`${id}-invalid-help`:undefined} aria-setsize={filtered.length} aria-posinset={index+1} title={`${option.label}. ${option.detail}${option.disabled?`. ${option.explanation}`:''}`} className={active===index?'highlighted':''} onMouseDown={event=>event.preventDefault()} onClick={()=>choose(index)}><span>{option.label}{option.tested&&<span className="badge tested">tested</span>}</span><small>{option.detail}</small></li>;})}
  {end<filtered.length&&<li role="presentation" aria-hidden="true" className="model-spacer" style={{height:(filtered.length-end)*rowHeight}}/>}
- {!filtered.length&&<li role="presentation">No matching models. Search by model name or ID.</li>}</ul>{invalidHelp&&<p id={`${id}-invalid-help`} className="combobox-help">{invalidHelp}</p>}</div>}
+ {!filtered.length&&<li role="presentation">No matching models. Search by model name or ID.</li>}</ul>{invalidHelp&&<p id={`${id}-invalid-help`} className="sr-only">{invalidHelp}</p>}</div>}
  </div>;
 }

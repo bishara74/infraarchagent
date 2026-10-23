@@ -52,3 +52,10 @@ it('NFR-01 unauthenticated shell shows the logo without navigation or an account
  expect(screen.queryByRole('navigation',{name:'Main'})).toBeNull();expect(screen.queryByRole('button',{name:'Log out'})).toBeNull();
  expect(screen.getByRole('link',{name:'InfraArchAgent'})).toBeVisible();
 });
+
+it('FR-UI-03 query-only navigation preserves control focus and screen changes focus main',async()=>{
+ window.history.replaceState(null,'','/?tab=fixture');
+ vi.spyOn(api,'request').mockResolvedValue({provider:'stub',credential_id:null,models:[],defaults:{}});
+ render(<App/>);const request=screen.getByRole('link',{name:'New request'});await userEvent.click(request);expect(request).toHaveFocus();
+ await userEvent.click(screen.getByRole('link',{name:'Recent runs'}));expect(screen.getByRole('main')).toHaveFocus();window.history.replaceState(null,'','/');
+});

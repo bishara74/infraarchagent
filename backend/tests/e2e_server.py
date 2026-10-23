@@ -99,7 +99,14 @@ def catalog(request: httpx.Request) -> httpx.Response:
                         "context_length": 32768,
                         "pricing": {"prompt": "0.000001", "completion": "0.000002"},
                         "supported_parameters": ["reasoning", "structured_outputs"],
-                    }
+                    },
+                    {
+                        "id": "openai/gpt-oss-120b:nitro",
+                        "name": "Nitro (mock catalogue)",
+                        "context_length": 32768,
+                        "pricing": {"prompt": "0.000001", "completion": "0.000002"},
+                        "supported_parameters": ["reasoning", "structured_outputs"],
+                    },
                 ]
             },
         )

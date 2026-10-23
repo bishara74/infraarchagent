@@ -63,11 +63,18 @@ export function createApiClient(options: {
       const response = await checked(`${base(id)}/download/${variant}`);
       return { blob: await response.blob(), filename: response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] ?? `infraarch-${variant}.zip` };
     },
+    downloadAll: async (id:string) => {
+      const response=await checked(`${base(id)}/download-all`);
+      return {blob:await response.blob(),filename:response.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1]??'infraarch-all.zip'};
+    },
   };
 }
 export const api = createApiClient();
 export async function saveDownload(id: string, variant: Variant) {
-  const { blob, filename } = await api.download(id, variant);
+  saveBlob(await api.download(id,variant));
+}
+export async function saveAllDownload(id:string) { saveBlob(await api.downloadAll(id)); }
+function saveBlob({blob,filename}:{blob:Blob;filename:string}) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   try {

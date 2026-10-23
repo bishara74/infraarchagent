@@ -2231,6 +2231,24 @@ formatting. Like a whitespace-ignoring diff, this is not a semantic equivalence
 proof. Disabling restores the retained raw unified diff; files, originals and ZIP
 bytes are never rewritten. Existing preference JSON needs no migration.
 
+Round 2 section 5: the author-approved overview replaces always-visible file trees
+with summary cards and Inspect this variant links. Files, Security fixes, Findings
+(including validation) and Review are URL-addressable inspection tabs. Reviews
+retain existing per-variant identity/reason/readiness rules. Architecture is shared
+planned evidence, optimisation trade-offs are explicitly goals/review concerns,
+and infrastructure cost remains unavailable because no estimate exists in the
+API. No measured per-variant properties or costs are invented.
+
+GET /api/pipeline/{run_id}/download-all requires all three existing download gates.
+A repeatable-read snapshot keeps packages and label events consistent. The service
+reuses unchanged deterministic individual ZIP generation and copies its exact
+payload bytes into cost/, performance/ and security/ folders. Top-level README.md
+and version-1 manifest.json record run/readiness, individual ZIP filenames/hashes,
+and every payload/README hash; only the self-referential manifest hash is excluded.
+Individual archives remain unchanged. Missing/unlabelled variants yield no partial
+bundle. Optional test-only Vite cache isolation avoids optimizer collisions with
+an existing developer instance. No migration or new specification open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

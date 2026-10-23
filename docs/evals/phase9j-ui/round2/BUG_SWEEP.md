@@ -37,5 +37,8 @@ afterward. A first Vite launch shared optimizer artifacts with an existing dev
 server and returned outdated-dependency 504s; the clean sweep used its own cache.
 These harness failures are not reported as application defects or passing runs.
 
-Final verification and replacement screenshots are recorded in this directory
-when sections 2, 1, 3, 4 and 5 are complete.
+All listed findings are fixed in the six approved section commits. Final visual
+review additionally compacted the comparison cards so inspection and download
+actions fit the initial projector viewport. The repeated sweeps report zero
+normal-flow browser errors/failures or horizontal overflow at both sizes. See
+[final gallery and exact verification results](README.md).

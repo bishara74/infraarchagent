@@ -1,0 +1,134 @@
+cd frontend && npm test
+
+> infraarchagent-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.2 /home/bishara/code/infraarchagent/frontend
+
+ ❯ src/components/ModelControls.test.tsx (4 tests | 1 failed) 14385ms
+   × FR-UI-01 only supported modes can be selected and incompatible models are absent 9046ms
+ ❯ src/components/review.test.tsx (9 tests | 1 failed) 17126ms
+   × retry picker is limited to five existing files and only one request is active 6700ms
+ ❯ src/components/ModelControls.filter.test.tsx (1 test | 1 failed) 22336ms
+   × FR-UI-01 every role defaults to tested recommendations and toggle reveals only compatible models 22303ms
+ ❯ src/components/ModelCombobox.test.tsx (8 tests | 1 failed) 22427ms
+   × FR-UI-01 combobox filters by ID/name ignoring case and explains disabled choices 5194ms
+ ❯ src/screens/InputScreen.draft.test.tsx (5 tests | 2 failed) 23215ms
+   × FR-UI-01 saved drafts stay out of the editor until Restore is clicked 8470ms
+   × FR-UI-01 Dismiss preserves the server draft and the next mount offers it again 6000ms
+ ❯ src/screens/SettingsScreen.test.tsx (7 tests | 2 failed) 23979ms
+   × NFR-01 users table reset confirmation and enable actions preserve passwords in memory only 6336ms
+   × NFR-01 account metadata preferences and confirmed password change use existing API 5462ms
+ ❯ src/screens/screens.test.tsx (23 tests | 2 failed) 30085ms
+   × screen loading and safe errors 5239ms
+   × FR-UI-01 incomplete submissions reach validation and empty config is omitted 5457ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/ModelCombobox.test.tsx > FR-UI-01 combobox filters by ID/name ignoring case and explains disabled choices
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/ModelCombobox.test.tsx:8:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  src/components/ModelControls.filter.test.tsx > FR-UI-01 every role defaults to tested recommendations and toggle reveals only compatible models
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/ModelControls.filter.test.tsx:6:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  src/components/ModelControls.test.tsx > FR-UI-01 only supported modes can be selected and incompatible models are absent
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/ModelControls.test.tsx:10:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  src/components/review.test.tsx > retry picker is limited to five existing files and only one request is active
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/components/review.test.tsx:10:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  src/screens/InputScreen.draft.test.tsx > FR-UI-01 saved drafts stay out of the editor until Restore is clicked
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/screens/InputScreen.draft.test.tsx:21:1
+     19| });
+     20| function show(){return render(<MemoryRouter><InputScreen/></MemoryRout…
+     21| it('FR-UI-01 saved drafts stay out of the editor until Restore is clic…
+       | ^
+     22|  show();expect(screen.getByLabelText('Infrastructure description')).to…
+     23|  expect(screen.getByText(/You have an unsent draft from/)).toBeVisible…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  src/screens/InputScreen.draft.test.tsx > FR-UI-01 Dismiss preserves the server draft and the next mount offers it again
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/screens/InputScreen.draft.test.tsx:28:1
+     26|  expect(getPreferences().data.draft_config.max_iterations).toBe(3);
+     27| });
+     28| it('FR-UI-01 Dismiss preserves the server draft and the next mount off…
+       | ^
+     29|  const root=show();fireEvent.click(screen.getByRole('button',{name:'Di…
+     30|  expect(screen.queryByText(/You have an unsent draft/)).toBeNull();exp…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+
+ FAIL  src/screens/SettingsScreen.test.tsx > NFR-01 users table reset confirmation and enable actions preserve passwords in memory only
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/screens/SettingsScreen.test.tsx:14:1
+     12|  HTMLDialogElement.prototype.showModal=function(){this.open=true;};HTM…
+     13| });
+     14| it('NFR-01 users table reset confirmation and enable actions preserve …
+       | ^
+     15|  const users=[{id:'r',username:'reviewer',role:'reviewer',disabled:tru…
+     16|  const request=vi.spyOn(api,'request').mockImplementation(async(_url,m…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯
+
+ FAIL  src/screens/SettingsScreen.test.tsx > NFR-01 account metadata preferences and confirmed password change use existing API
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/screens/SettingsScreen.test.tsx:34:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯
+
+ FAIL  src/screens/screens.test.tsx > screen loading and safe errors
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/screens/screens.test.tsx:21:57
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯
+
+ FAIL  src/screens/screens.test.tsx > FR-UI-01 incomplete submissions reach validation and empty config is omitted
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/screens/screens.test.tsx:22:1
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯
+
+
+ Test Files  7 failed | 28 passed (35)
+      Tests  10 failed | 180 passed (190)
+   Start at  20:42:07
+   Duration  102.32s (environment 50%, tests 31%, setup 8%, transform 7%, import 4%)
+
+Environment  jsdom was created 35 times · 324.37s total, 50% of tracked time
+             create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+             learn more: https://vitest.dev/guide/improving-performance#test-environments
+
+make: *** [Makefile:58: frontend-test] Error 1
