@@ -2211,6 +2211,17 @@ including legacy drafts. No historical prompt-edit timestamp is invented. Discar
 waits for in-flight autosaves, preserves configuration and remains retryable on
 failure. No database migration or new specification open question.
 
+Round 2 section 3: frontend/src/config/recommended-models.v1.json (version 1)
+contains only the author-confirmed OpenRouter openai/gpt-oss-120b:nitro entry.
+The UI intersects it with the selected provider's confirmed structured-output
+catalogue; no capabilities, prices or context lengths are invented by membership.
+All-compatible mode adds other confirmed models, sorted by provider/name. Both
+views hide :free, provider-declared deprecated and expired expiration_date
+entries. Unknown lifecycle data is not guessed from names. The built-in stub demo
+is available for offline use, without an additional production-tested claim.
+Filtering affects interactive presentation only; header/benchmark request logic
+and environment defaults retain existing semantics. No new open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

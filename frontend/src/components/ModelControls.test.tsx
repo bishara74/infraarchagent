@@ -7,9 +7,9 @@ import {api} from '../api/client';
 import type {Catalog} from '../api/types';
 afterEach(()=>vi.restoreAllMocks());
 const catalog:Catalog={provider:'custom',credential_id:null,defaults:{},models:[{id:'reasoning',name:'Reasoning model',context_length:8192,pricing:{prompt:'0.000001',completion:'0.000002'},structured_output:true,reasoning:true,thinking_modes:['low'],source:'admin'},{id:'unknown',name:'Unknown model',context_length:null,pricing:{},structured_output:null,reasoning:false,thinking_modes:[],source:'unknown'}]};
-it('FR-UI-01 only supported modes can be selected and unsuitable models are disabled',()=>{
+it('FR-UI-01 only supported modes can be selected and incompatible models are absent',()=>{
  render(<ModelControls catalog={catalog} value={{generators:{model:'reasoning'}}} onChange={vi.fn()}/>);
- const thinking=screen.getByLabelText('Generators thinking');expect(thinking).toHaveTextContent('low');expect(thinking).not.toHaveTextContent('high');fireEvent.click(screen.getByRole('combobox',{name:'Generators model'}));expect(screen.getByRole('option',{name:/Unknown model/})).toHaveAttribute('aria-disabled','true');expect(screen.getAllByText(/8,192/).length).toBeGreaterThan(0);
+ const thinking=screen.getByLabelText('Generators thinking');expect(thinking).toHaveTextContent('low');expect(thinking).not.toHaveTextContent('high');fireEvent.click(screen.getByRole('checkbox',{name:'Show all compatible models'}));fireEvent.click(screen.getByRole('combobox',{name:'Generators model'}));expect(screen.queryByRole('option',{name:/Unknown model/})).toBeNull();expect(screen.getAllByText(/8,192/).length).toBeGreaterThan(0);
 });
 it('NFR-01 entering a key automatically probes and loads catalog without persistence',async()=>{
  const calls=vi.spyOn(api,'request').mockImplementation(async url=>url.endsWith('/probe')?{status:'ok',models:catalog.models}: {storage_enabled:true,default_credential_id:null,credentials:[]} as never);

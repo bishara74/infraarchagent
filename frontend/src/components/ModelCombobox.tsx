@@ -1,7 +1,7 @@
 import {useId,useLayoutEffect,useRef,useState,type KeyboardEvent} from 'react';
 import {Icon} from './Icon';
-export interface ModelOption {value:string;label:string;detail:string;disabled?:boolean;explanation?:string}
-const rowHeight=80;
+export interface ModelOption {value:string;label:string;detail:string;disabled?:boolean;explanation?:string;tested?:boolean}
+const rowHeight=104;
 export function ModelCombobox({label,value,options,onChange,error,selectedLabel}:{label:string;value:string;options:ModelOption[];onChange:(value:string)=>void;error?:string;selectedLabel?:string}) {
  const id=useId();const input=useRef<HTMLInputElement>(null);const list=useRef<HTMLUListElement>(null);
  const [open,setOpen]=useState(false);const [query,setQuery]=useState('');const [active,setActive]=useState(-1);const [top,setTop]=useState(0);
@@ -39,7 +39,7 @@ export function ModelCombobox({label,value,options,onChange,error,selectedLabel}
  {(error||selected?.disabled)&&<p id={`${id}-error`} className="form-error">{error??selected?.explanation}</p>}
  {open&&<div className={`model-popup${placement.above?' above':''}`}><ul ref={list} id={`${id}-list`} role="listbox" aria-label={`${label} options`} className="model-options" style={{maxHeight:placement.height}} onScroll={event=>setTop(event.currentTarget.scrollTop)}>
  {start>0&&<li role="presentation" aria-hidden="true" className="model-spacer" style={{height:start*rowHeight}}/>}
- {filtered.slice(start,end).map((option,offset)=>{const index=start+offset;return <li id={`${id}-${index}`} key={option.value} role="option" aria-selected={value===option.value} aria-disabled={option.disabled||undefined} aria-describedby={option.disabled?`${id}-invalid-help`:undefined} aria-setsize={filtered.length} aria-posinset={index+1} title={`${option.label}. ${option.detail}${option.disabled?`. ${option.explanation}`:''}`} className={active===index?'highlighted':''} onMouseDown={event=>event.preventDefault()} onClick={()=>choose(index)}><span>{option.label}</span><small>{option.detail}</small></li>;})}
+ {filtered.slice(start,end).map((option,offset)=>{const index=start+offset;return <li id={`${id}-${index}`} key={option.value} role="option" aria-selected={value===option.value} aria-disabled={option.disabled||undefined} aria-describedby={option.disabled?`${id}-invalid-help`:undefined} aria-setsize={filtered.length} aria-posinset={index+1} title={`${option.label}. ${option.detail}${option.disabled?`. ${option.explanation}`:''}`} className={active===index?'highlighted':''} onMouseDown={event=>event.preventDefault()} onClick={()=>choose(index)}><span>{option.label}{option.tested&&<span className="badge tested">tested</span>}</span><small>{option.detail}</small></li>;})}
  {end<filtered.length&&<li role="presentation" aria-hidden="true" className="model-spacer" style={{height:(filtered.length-end)*rowHeight}}/>}
  {!filtered.length&&<li role="presentation">No matching models. Search by model name or ID.</li>}</ul>{invalidHelp&&<p id={`${id}-invalid-help`} className="combobox-help">{invalidHelp}</p>}</div>}
  </div>;

@@ -12,6 +12,26 @@ from tests.integration.test_phase9h_credentials import MASTER
 
 
 @pytest.mark.req("FR-UI-01", "NFR-01")
+def test_lifecycle_projection_uses_only_provider_declarations():
+    from app.llm.catalog import normalize
+
+    declared = normalize(
+        {
+            "id": "declared",
+            "supported_parameters": ["structured_outputs"],
+            "deprecated": True,
+            "expiration_date": "2026-01-01",
+        },
+        "openrouter",
+    )
+    assert declared["deprecated"] is True
+    assert declared["expiration_date"] == "2026-01-01"
+    unknown = normalize({"id": "unknown"}, "openrouter")
+    assert unknown["structured_output"] is None
+    assert unknown["deprecated"] is None and unknown["expiration_date"] is None
+
+
+@pytest.mark.req("FR-UI-01", "NFR-01")
 async def test_failed_catalogues_retry_and_refresh_bypasses_success_cache(db_engines):
     app, _ = await authenticated(db_engines[0])
     app.state.settings = app.state.settings.model_copy(

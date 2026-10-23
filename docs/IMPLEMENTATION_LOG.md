@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-23 — Phase 9j round 2 section 3 — Filter interactive models using versioned recommendations
+
+**Summary:** Default all model roles to a provider-verified Recommended list;
+reveal other confirmed compatible models on demand, with price/context metadata.
+
+**Requirements addressed:** FR-UI-01, FR-P-04, NFR-01.
+
+**Files:** frontend versioned recommendation config, modelCatalogue helper/tests,
+ModelControls/filter tests, combobox/styles/default helper/types, request/settings
+copy and onboarding; backend catalogue lifecycle projection/test; README/D-58/log.
+
+**Decisions:** The only production recommendation is OpenRouter
+openai/gpt-oss-120b:nitro. Membership never supplies capability/price/context data.
+The stub provider's built-in demo entry remains usable without a production tested
+badge. Every explicit role list requires structured_output=true; both views hide
+:free, declared deprecated and elapsed expiration_date records. Unknowns stay
+unknown; absent no-credit catalogues do not prove a saved model disappeared.
+
+**Tests:** `make frontend-test`: **173 passed, 0 failed/skipped**, 31 files.
+`make lint`: complete exit 0 (Ruff/format, mypy 167 sources, ESLint/TypeScript).
+Focused model/backend suites: **13 passed**, including golden wires and lifecycle
+source assertions. New tests cover provider-scoped recommendation intersection,
+all-role filtering, toggle/search data, sorting, free/lifecycle/unknown exclusion,
+prices/context and invalid-price fallback. No inference or external services.
+
+**Known gaps / follow-ups:** Sections 4/5 and final full/browser checks remain.
+No new dependency, environment variable, schema migration or open question.
+
 ## 2026-10-23 — Phase 9j round 2 section 1 — Keep new editors empty and recover saved drafts explicitly
 
 **Summary:** Separate prompt editing from persistence; offer dated Restore,

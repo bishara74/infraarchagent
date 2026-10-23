@@ -1407,6 +1407,11 @@ The request editor opens empty. A saved draft appears as a dated hint with
 Restore, Discard and Dismiss; Discard clears the server draft, while Dismiss
 only hides the hint. The date is the last server save of the preference record.
 Model/configuration defaults remain independent of restoring prompt text.
+Model pickers start in Recommended (the versioned, tested OpenRouter Nitro
+entry). Show all compatible models includes only confirmed structured-output
+models; both views hide :free and provider-declared deprecated/expired entries.
+Prices and context come from the provider catalogue. Retry refreshes the server
+catalogue cache without changing saved choices or benchmark requests.
 
 ### Read-only database tools
 

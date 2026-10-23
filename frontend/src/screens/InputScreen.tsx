@@ -44,7 +44,7 @@ export function InputScreen() {
     }
     catch (cause) {
         if(cause instanceof ApiError&&cause.code==='invalid_model') {
-            setError(new ApiError(cause.status,cause.code,'Check the model and thinking fields in Configuration options. Choose a structured-output model for Generators and Fixer, or select Use defaults.'));
+            setError(new ApiError(cause.status,cause.code,'Check the model and thinking fields in Configuration options. Choose a confirmed structured-output model for each role, or select Use defaults.'));
             updatePreferences({ui:{...prefs.data.ui,config_open:true}});
             requestAnimationFrame(()=>(document.querySelector<HTMLElement>('.model-choice [aria-invalid="true"]')??document.querySelector<HTMLElement>('.model-choice [role="combobox"]'))?.focus());
         } else { setError(cause); input.current?.focus(); }

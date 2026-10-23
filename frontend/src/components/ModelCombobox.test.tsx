@@ -61,4 +61,5 @@ it('FR-UI-01 unknown environment capabilities stay distinct from incompatible an
  expect(screen.getByText(/This saved model \(removed-id\) is unavailable/)).toBeVisible();
  root.rerender(<ModelControls catalog={{...catalog,status:'unavailable'}} value={{architect:{model:'removed-id'}}} onChange={vi.fn()}/>);
  expect(screen.queryByText(/This saved model/)).toBeNull();
+ root.rerender(<ModelControls catalog={{...catalog,status:'no_credit'}} value={{architect:{model:'removed-id'}}} onChange={vi.fn()}/>);expect(screen.queryByText(/This saved model/)).toBeNull();
 });

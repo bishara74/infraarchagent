@@ -58,6 +58,12 @@ def normalize(item: dict[str, Any], provider: str) -> dict[str, Any]:
         "structured_output": structured if isinstance(structured, bool) else None,
         "reasoning": reasoning if isinstance(reasoning, bool) else None,
         "thinking_modes": [m for m in modes if m in {"off", "low", "medium", "high"}],
+        "deprecated": item.get("deprecated")
+        if isinstance(item.get("deprecated"), bool)
+        else None,
+        "expiration_date": item.get("expiration_date")
+        if isinstance(item.get("expiration_date"), str)
+        else None,
         "source": "provider"
         if isinstance(supported, list)
         or (provider == "anthropic" and isinstance(declared.get("thinking"), dict))

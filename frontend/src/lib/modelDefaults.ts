@@ -4,15 +4,15 @@ export const generatorRoles = ['generator_cost', 'generator_performance', 'gener
 
 /** Missing metadata is evidence of absence only after a successful catalogue load. */
 export function modelProblem(role:string,catalog:Catalog|null,defaults:Record<string,AgentChoice>,overrides:Record<string,AgentChoice>,config:RunConfig) {
- if(!catalog||['setup_required','invalid','unavailable'].includes(catalog.status??''))return undefined;
+ if(!catalog||['setup_required','invalid','unavailable'].includes(catalog.status??'')||(catalog.status==='no_credit'&&!catalog.models.length))return undefined;
  const merged={...defaults,...overrides};
  for(const key of role==='generators'?generatorRoles:[role]) {
   const saved=merged[key]??(key.startsWith('generator_')?merged.generators:undefined);
   const effective=modelDefault(key,catalog,defaults,overrides,config);
   const metadata=catalog.models.find(item=>item.id===effective?.model);
   if(!metadata&&saved)return `This saved model (${saved.model}) is unavailable. Select Use default or a listed model; update the saved default if inherited.`;
-  if(key!=='architect'&&metadata?.structured_output===false)return `This model (${metadata.id}) can't return the structured JSON the pipeline needs. Choose a structured-output model or update its saved default.`;
-  if(saved&&key!=='architect'&&metadata?.structured_output===null)return `Structured-output support for ${metadata.id} is unknown. Retry the catalogue or choose a confirmed structured-output model.`;
+  if(metadata?.structured_output===false)return `This model (${metadata.id}) can't return the structured JSON the pipeline needs. Choose a structured-output model or update its saved default.`;
+  if(saved&&metadata?.structured_output===null)return `Structured-output support for ${metadata.id} is unknown. Retry the catalogue or choose a confirmed structured-output model.`;
  }
  return undefined;
 }
