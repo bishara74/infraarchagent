@@ -27,6 +27,35 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-23 — Phase 9j round 2 section 2 — Repair catalogue states and model dropdown geometry
+
+**Summary:** Share catalogue loading/retry guidance, distinguish unknown capabilities
+and missing explicit selections, and fix virtual list sizing/keyboard/toggle bugs.
+
+**Requirements addressed:** FR-UI-01, FR-P-04, NFR-01.
+
+**Files:** frontend catalogue hook/notice, model controls/combobox/default helper,
+request/Models Settings and tests/styles/types; backend models API, selection
+service, catalogue probe and test_phase9j_round2_models.py; D-58; this log.
+
+**Decisions:** Retry uses GET /api/models?refresh=true; transient failures are not
+cached. Missing metadata never claims incompatibility. Environment-origin
+interactive fallbacks retain legacy model/thinking semantics when unprobed;
+explicit saved selections still need verification. Existing header paths and
+precedence remain. Virtual spacers live inside the bounded scroll container.
+
+**Tests:** `make frontend-test`: **163 passed, 0 failed/skipped**, 28 files.
+`make lint`: passes Ruff/format, mypy (167 app sources), ESLint/TypeScript.
+Focused model/metadata/backend regressions: **12 passed**, including golden wires,
+refresh/cache authorization, safe network guidance and environment fallback parity.
+Tests cover stale accounts, catalogue statuses, retry recovery, unknown/missing/
+incompatible distinctions, chevron close, active option rendering and spacers.
+An initial assertion expecting the previous error wording was updated; the final
+complete suites above pass.
+
+**Known gaps / follow-ups:** Final browser sizing/evidence checks follow with the
+complete round; sections 1, 3, 4 and 5 remain. No new dependency or open question.
+
 ## 2026-10-23 — Phase 9j round 2 section 0 — Record sweep and reset cancelled provider probes
 
 **Summary:** Publish the pre-code sweep/root causes, fix cancelled provider-probe

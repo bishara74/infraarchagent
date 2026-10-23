@@ -2193,6 +2193,16 @@ obsolete results cannot restore stale status. Password forms provide username
 context without storing password values. Existing session/CSRF/readiness behavior
 is unchanged. No new open question.
 
+Round 2 section 2: catalogue failure statuses are first-class UI states with
+safe guidance and Retry. GET /api/models?refresh=true bypasses probe cache;
+unsuccessful probes are not retained. Screens revalidate on mount/account change,
+ignore obsolete responses and never interpret an unavailable catalogue as proof
+that a saved model disappeared. Capability null/missing is distinct from false.
+Unprobed inherited environment selections retain legacy request semantics;
+explicit choices still require catalogue verification. Header/benchmark paths
+remain unchanged. Virtual spacers are internal to a bounded content-sized list,
+with viewport-aware placement and reachable rendered keyboard targets.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

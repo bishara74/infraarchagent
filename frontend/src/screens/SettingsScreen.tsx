@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { api, errorMessage } from '../api/client';
-import type { AgentChoice, Catalog, CatalogModel } from '../api/types';
+import type { AgentChoice, CatalogModel } from '../api/types';
 import { getSessionStatus } from '../lib/sessionState';
 import { usePreferences, updatePreferences, registerBrowserSecret } from '../lib/preferences';
 import { UsersSettings } from './UsersSettings';
 import { AccountSettings } from './AccountSettings';
 import { PasswordField } from '../components/PasswordField';
 import { Icon, type IconName } from '../components/Icon';
+import {useModelCatalog} from '../hooks/useModelCatalog';
+import {CatalogNotice} from '../components/CatalogNotice';
 import { ModelControls } from '../components/ModelControls';
 interface Credential {
     id: string;
@@ -97,14 +99,12 @@ function ManualModel({ onAdd }: {
 export function ModelsPage() {
     const prefs = usePreferences();
     const admin = getSessionStatus()?.user?.role === 'admin';
-    const [catalog, setCatalog] = useState<Catalog | null>(null);
+    const {catalog,error:catalogError,retry:retryCatalog}=useModelCatalog();
     const [global, setGlobal] = useState<Record<string, AgentChoice>>({});
     const [staticModels, setStatic] = useState<Record<string, unknown>[]>([]);
     const [error, setError] = useState<unknown>(null);
     const [notice, setNotice] = useState('');
     const load = useCallback(async () => { try {
-        const value = await api.request<Catalog>('/api/models');
-        setCatalog(value);
         if (admin) {
             const settings = await api.request<{
                 defaults: Record<string, AgentChoice>;
@@ -123,11 +123,12 @@ export function ModelsPage() {
         await api.request('/api/models/defaults', 'PUT', { defaults: global, static_models: items });
         setNotice('Global model settings saved.');
         await load();
+        retryCatalog();
     }
     catch (cause) {
         setError(cause);
     } }
-    return <><h2>Models and thinking</h2>{!catalog&&!error&&<p role="status">Loading model settings…</p>}<p>Explicit request choices override personal defaults. Personal defaults override administrator defaults; environment settings supply the remaining roles. Per-generator choices take precedence over the Generators group. A null thinking mode uses the provider default.</p>{!catalog?.models.length && <p>No models available. <Link to="/settings/provider">Set up a provider</Link> or ask an administrator to configure an offline catalog.</p>}<section className="panel settings-form models-form"><h3>My defaults</h3><ModelControls catalog={catalog} defaults={{ ...catalog?.defaults }} value={prefs.data.role_defaults} onChange={role_defaults => updatePreferences({ role_defaults })}/><p role="status">Preferences: {prefs.status}</p></section>{admin && <section className="panel settings-form models-form"><h3>Administrator defaults</h3><ModelControls catalog={catalog} value={global} defaults={{}} onChange={setGlobal}/><button onClick={() => void saveGlobal()}>Save administrator defaults</button>{catalog?.provider==='custom'&&<details><summary>Declare model capabilities</summary><ManualModel onAdd={item => { const next = [...staticModels.filter(m => !(m.id === item.id && m.credential_id === catalog?.credential_id)), { ...item, credential_id: catalog?.credential_id ?? null }]; setStatic(next); void saveGlobal(next); }}/></details>}{staticModels.length > 0 && <button onClick={() => { setStatic([]); void saveGlobal([]); }}>Use live catalog</button>}</section>}{notice && <p role="status">{notice}</p>}{error && <div role="alert"><p>{errorMessage(error)}</p><button onClick={()=>{setError(null);void load();}}>Retry</button></div>}<p>Cost ranges describe illustrative initial calls; retries and remediation add cost. Unknown prices remain unavailable.</p></>;
+    return <><h2>Models and thinking</h2><CatalogNotice catalog={catalog} error={catalogError} retry={retryCatalog}/><p>Explicit request choices override personal defaults. Personal defaults override administrator defaults; environment settings supply the remaining roles. Per-generator choices take precedence over the Generators group. A null thinking mode uses the provider default.</p><section className="panel settings-form models-form"><h3>My defaults</h3><ModelControls catalog={catalog} defaults={{ ...catalog?.defaults }} value={prefs.data.role_defaults} onChange={role_defaults => updatePreferences({ role_defaults })}/><p role="status">Preferences: {prefs.status}</p></section>{admin && <section className="panel settings-form models-form"><h3>Administrator defaults</h3><ModelControls catalog={catalog} value={global} defaults={{}} onChange={setGlobal}/><button onClick={() => void saveGlobal()}>Save administrator defaults</button>{catalog?.provider==='custom'&&<details><summary>Declare model capabilities</summary><ManualModel onAdd={item => { const next = [...staticModels.filter(m => !(m.id === item.id && m.credential_id === catalog?.credential_id)), { ...item, credential_id: catalog?.credential_id ?? null }]; setStatic(next); void saveGlobal(next); }}/></details>}{staticModels.length > 0 && <button onClick={() => { setStatic([]); void saveGlobal([]); }}>Use live catalog</button>}</section>}{notice && <p role="status">{notice}</p>}{error && <div role="alert"><p>{errorMessage(error)}</p><button onClick={()=>{setError(null);void load();}}>Retry</button></div>}<p>Cost ranges describe illustrative initial calls; retries and remediation add cost. Unknown prices remain unavailable.</p></>;
 }
 const settingsIcons:Record<string,IconName>={provider:'key',models:'gear',users:'person',account:'account'};
 export function SettingsScreen() { const { section } = useParams(); const admin = getSessionStatus()?.user?.role === 'admin'; const permitted = section === 'account' || section === 'models' || admin; return <><h1>Settings</h1><nav className="settings-nav" aria-label="Settings">{[['provider', 'Provider'], ['models', 'Models'], ['users', 'Users'], ['account', 'Account']].filter(([id]) => admin || id === 'models' || id === 'account').map(([id, label]) => <Link aria-current={section === id ? 'page' : undefined} key={id} to={`/settings/${id}`}><Icon name={settingsIcons[id!]!}/>{label}</Link>)}</nav>{!permitted ? <p>Ask an administrator to manage this setting.</p> : section === 'provider' ? <ProviderPage /> : section === 'models' ? <ModelsPage /> : section === 'users' ? <UsersSettings /> : section === 'account' ? <AccountSettings /> : <p>Select a setting above.</p>}</>; }

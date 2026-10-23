@@ -26,9 +26,9 @@ def service(request: Request) -> ModelSelectionService:
 
 
 @router.get("")
-async def models(request: Request) -> JSONResponse:
+async def models(request: Request, refresh: bool = False) -> JSONResponse:
     try:
-        catalog = await service(request).catalog()
+        catalog = await service(request).catalog(refresh=refresh)
         from app.domain.run_config import RunConfig
 
         legacy = await service(request).resolve(RunConfig(), interactive=False)

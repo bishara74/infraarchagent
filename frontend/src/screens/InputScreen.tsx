@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { api, ApiError, errorMessage } from '../api/client';
-import type { Catalog, RunConfig } from '../api/types';
+import type { RunConfig } from '../api/types';
 import { examples } from '../constants/examples';
 import { inputLength, MIN_INPUT, MAX_INPUT } from '../constants/inputRules';
 import { useRunStream } from '../hooks/useRunStream';
@@ -10,6 +10,8 @@ import { isSettled } from '../api/sse';
 import { usePreferences, updatePreferences, rememberRun, recoverDraft, retrySave } from '../lib/preferences';
 import { Icon } from '../components/Icon';
 import { defaultLabel, generatorRoles } from '../lib/modelDefaults';
+import {useModelCatalog} from '../hooks/useModelCatalog';
+import {CatalogNotice} from '../components/CatalogNotice';
 import { ModelControls } from '../components/ModelControls';
 function ActiveRun({ id }: {
     id: string;
@@ -21,13 +23,10 @@ export function InputScreen() {
     const prefs = usePreferences();
     const value = prefs.data.prompt_draft;
     const config = prefs.data.draft_config;
-    const [catalog, setCatalog] = useState<Catalog | null>(null);
-    const [catalogError,setCatalogError]=useState<unknown>(null);
-    const [catalogRetry,setCatalogRetry]=useState(0);
+    const {catalog,error:catalogError,retry:retryCatalog}=useModelCatalog();
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<unknown>(null);
     const input = useRef<HTMLTextAreaElement>(null);
-    useEffect(() => { const controller = new AbortController(); void api.request<Catalog>('/api/models', 'GET', undefined, controller.signal).then(setCatalog).catch(cause => {if(!controller.signal.aborted)setCatalogError(cause);}); return () => controller.abort(); }, [catalogRetry]);
     function configure(change: Partial<RunConfig>) { updatePreferences({ draft_config: { ...config, ...change } }); }
     async function submit() { if (busy || active)
         return; setBusy(true); setError(null); try {
@@ -52,8 +51,7 @@ export function InputScreen() {
     const summary=`${Object.keys(config.agent_models??{}).length?'Configuration':'Defaults'}: ${roleLabels.every(label=>label===summaryChoice)?summaryChoice:'per-role models and thinking'} · ${config.policy_profile??'strict'}`;
     if (!prefs.ready)
         return <p role="status">Loading saved preferences…</p>;
-    return <><h1>Generate infrastructure</h1><p className="muted">Describe what you want to deploy in plain English. Compare the generated packages, checks and fixes before downloading.</p>{active && <ActiveRun id={active}/>}<p className="muted" role="status">Preferences: {prefs.status}</p>{prefs.status === 'offline' && <button onClick={() => void retrySave()}>Retry saving</button>}{prefs.conflictDraft && <p className="notice">Saved preferences changed elsewhere. <button onClick={recoverDraft}>Restore my unsaved draft</button></p>}{catalog?.status === 'setup_required' && <p className="notice">No provider key configured. <Link to="/settings/provider">Set up a provider</Link></p>}
- {catalogError?<div className="notice" role="alert"><p>Unable to load model options. {errorMessage(catalogError)}</p><button onClick={()=>{setCatalogError(null);setCatalogRetry(value=>value+1);}}>Retry</button></div>:null}
+    return <><h1>Generate infrastructure</h1><p className="muted">Describe what you want to deploy in plain English. Compare the generated packages, checks and fixes before downloading.</p>{active && <ActiveRun id={active}/>}<p className="muted" role="status">Preferences: {prefs.status}</p>{prefs.status === 'offline' && <button onClick={() => void retrySave()}>Retry saving</button>}{prefs.conflictDraft && <p className="notice">Saved preferences changed elsewhere. <button onClick={recoverDraft}>Restore my unsaved draft</button></p>}<CatalogNotice catalog={catalog} error={catalogError} retry={retryCatalog}/>
  <section className="variant-intro" aria-label="Generated variants"><p><Icon name="credit-card"/><strong>Cost</strong> Favour economical infrastructure.</p><p><Icon name="dashboard"/><strong>Performance</strong> Favour capacity and responsiveness.</p><p><Icon name="shield"/><strong>Security</strong> Favour protective controls.</p></section>
  <form className="input-form" noValidate onSubmit={event => { event.preventDefault(); void submit(); }}><label className="sr-only" htmlFor="description">Infrastructure description</label><textarea ref={input} id="description" name="description" rows={6} value={value} onChange={event => updatePreferences({ prompt_draft: event.target.value })} placeholder="For example: deploy an AWS web service with a database, private networking, backups and monitoring…" aria-describedby="input-count input-error" onKeyDown={event => { if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();

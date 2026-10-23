@@ -125,8 +125,14 @@ async def probe(
                 ):
                     state = "no_credit"
         return {"status": state, "models": models}
-    except (httpx.HTTPError, ValueError, TypeError, AttributeError):
-        return {"status": "unavailable", "models": []}
+    except httpx.HTTPError:
+        return {"status": "unavailable", "models": [], "error_code": "network_error"}
+    except (ValueError, TypeError, AttributeError):
+        return {
+            "status": "unavailable",
+            "models": [],
+            "error_code": "invalid_catalogue",
+        }
     finally:
         if owned:
             await transport.aclose()

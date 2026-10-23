@@ -34,7 +34,7 @@ class ModelSelectionService:
             client,
         )
 
-    async def catalog(self) -> dict[str, Any]:
+    async def catalog(self, *, refresh: bool = False) -> dict[str, Any]:
         async with self.sessions() as session, session.begin():
             repository = ProviderRepository(session)
             saved = await repository.settings()
@@ -93,7 +93,7 @@ class ModelSelectionService:
             )
         key = str(identity or "environment") + ":" + str(static)
         cached = self.cache.get(key)
-        if cached and cached[0] > time.monotonic():
+        if not refresh and cached and cached[0] > time.monotonic():
             result = cached[1]
         elif static:
             result = {
@@ -102,7 +102,10 @@ class ModelSelectionService:
             }
         else:
             result = await probe(material, self.client)
-            self.cache[key] = (time.monotonic() + 300, result)
+            if result["status"] == "ok":
+                self.cache[key] = (time.monotonic() + 300, result)
+            else:
+                self.cache.pop(key, None)
         return {
             **result,
             "provider": material.provider,
@@ -160,6 +163,7 @@ class ModelSelectionService:
                 role,
                 choices.get("generators") if role.startswith("generator_") else None,
             )
+            inherited = chosen is None
             if not chosen and catalog and catalog.get("credential_id"):
                 chosen = {"model": model or resolved.model, "thinking_mode": effort}
             if chosen:
@@ -171,6 +175,22 @@ class ModelSelectionService:
                     if catalog
                     else None
                 )
+                if (
+                    interactive
+                    and inherited
+                    and (item is None or item["structured_output"] is None)
+                ):
+                    # An unprobed environment fallback is the known-good legacy
+                    # configuration, not a user claim of model capabilities.
+                    selections[role] = AgentSelection(
+                        model=choice.model,
+                        provider=provider,
+                        thinking_mode=effort
+                        if provider != LLMProvider.ANTHROPIC
+                        else None,
+                        configured_thinking=effort,
+                    )
+                    continue
                 if item is None or (
                     (role.startswith("generator_") or role == "fixer")
                     and item["structured_output"] is not True

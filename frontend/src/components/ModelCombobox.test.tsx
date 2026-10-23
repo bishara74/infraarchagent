@@ -34,5 +34,31 @@ it('FR-UI-01 large catalogues stay bounded while keyboard End and ID search reac
 it('FR-UI-01 invalid inherited structured-output defaults explain the affected fields',()=>{
  const catalog:Catalog={provider:'custom',credential_id:null,defaults:{generators:{model:'bad'},fixer:{model:'bad'}},models:[{id:'bad',name:'Unsupported',context_length:null,pricing:{},structured_output:false,reasoning:false,thinking_modes:[],source:'admin'}]};
  render(<ModelControls catalog={catalog} defaults={catalog.defaults} value={{}} onChange={vi.fn()}/>);
- expect(screen.getByRole('combobox',{name:'Generators model'})).toHaveAttribute('aria-invalid','true');expect(screen.getByRole('combobox',{name:'Fixer model'})).toHaveAttribute('aria-invalid','true');expect(screen.getAllByText(/This model can't return the structured JSON/).length).toBeGreaterThanOrEqual(2);fireEvent.click(screen.getByRole('combobox',{name:'Generators model'}));expect(screen.getByRole('option',{name:/Use default/})).toHaveAttribute('aria-disabled','true');
+ expect(screen.getByRole('combobox',{name:'Generators model'})).toHaveAttribute('aria-invalid','true');expect(screen.getByRole('combobox',{name:'Fixer model'})).toHaveAttribute('aria-invalid','true');expect(screen.getAllByText(/can't return the structured JSON/).length).toBeGreaterThanOrEqual(2);fireEvent.click(screen.getByRole('combobox',{name:'Generators model'}));expect(screen.getByRole('option',{name:/Use default/})).toHaveAttribute('aria-disabled','true');
+});
+
+it('FR-UI-01 chevron closes an open popup without reopening on refocus',async()=>{
+ render(<ModelCombobox label="Model" value="" options={options} onChange={vi.fn()}/>);
+ const input=screen.getByRole('combobox');await userEvent.click(input);
+ await userEvent.click(screen.getByRole('button',{name:'Show model options'}));expect(input).toHaveAttribute('aria-expanded','false');expect(input).toHaveFocus();
+});
+
+it('FR-UI-01 list spacers stay inside the scroll viewport and shrink after search',()=>{
+ const many=Array.from({length:300},(_,i)=>({value:`id/${i}`,label:`Model ${i}`,detail:'supported'}));
+ const {container}=render(<ModelCombobox label="Model" value="id/0" options={many} onChange={vi.fn()}/>);
+ const input=screen.getByRole('combobox');fireEvent.focus(input);const list=screen.getByRole('listbox');expect(list.style.paddingBottom).toBe('');expect(container.querySelector('.model-spacer')).not.toBeNull();
+ fireEvent.keyDown(input,{key:'End'});expect(document.getElementById(input.getAttribute('aria-activedescendant')!)).toBeInTheDocument();
+ fireEvent.change(input,{target:{value:'id/299'}});expect(screen.getAllByRole('option')).toHaveLength(1);expect(container.querySelector('.model-spacer')).toBeNull();
+});
+
+it('FR-UI-01 unknown environment capabilities stay distinct from incompatible and missing saved models',()=>{
+ const catalog:Catalog={provider:'openrouter',credential_id:'c',defaults:{},models:[],environment_defaults:Object.fromEntries(['architect','generator_cost','generator_performance','generator_security','fixer'].map(role=>[role,{model:'environment',provider:'openai',thinking_mode:'low'}]))};
+ const root=render(<ModelControls catalog={catalog} defaults={{}} value={{}} onChange={vi.fn()}/>);
+ expect(document.querySelector('[aria-invalid=true]')).toBeNull();expect(screen.queryByText(/This saved model/)).toBeNull();
+ root.rerender(<ModelControls catalog={{...catalog,models:[{id:'environment',name:'Environment',structured_output:null,reasoning:null,thinking_modes:[],pricing:{},context_length:null,source:'unknown'}]}} value={{}} onChange={vi.fn()}/>);
+ expect(document.querySelector('[aria-invalid=true]')).toBeNull();
+ root.rerender(<ModelControls catalog={catalog} value={{architect:{model:'removed-id'}}} onChange={vi.fn()}/>);
+ expect(screen.getByText(/This saved model \(removed-id\) is unavailable/)).toBeVisible();
+ root.rerender(<ModelControls catalog={{...catalog,status:'unavailable'}} value={{architect:{model:'removed-id'}}} onChange={vi.fn()}/>);
+ expect(screen.queryByText(/This saved model/)).toBeNull();
 });
