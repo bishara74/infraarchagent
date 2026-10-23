@@ -27,6 +27,39 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-23 — Phase 9j round 2 section 4 — Present formatting changes as counted context
+
+**Summary:** Add the default-on per-account whitespace toggle, formatting-only
+hunk labels and line counts while preserving raw diffs and package bytes.
+
+**Requirements addressed:** FR-UI-04, FR-UI-05, FR-UI-06, NFR-01.
+
+**Files:** diff helper/tests, DiffView/tests, preferences API/store and integration
+tests, Account Settings/test, WindowedRows/test, CSS, README/D-58/log.
+
+**Decisions:** Match line sequences after removing whitespace for presentation;
+retain current text and both original/current line numbers. Formatting-only pairs
+(and blank-line/EOF formatting) count once each; meaningful changed lines count
+added plus removed rows. Toggle-off restores the exact existing unified diff.
+Older preference/cache records default to hiding. Clamp shrinking virtual windows
+so filtering a scrolled diff cannot leave an empty rendered region.
+
+**Tests:** `make frontend-test`: **183 passed, 0 failed/skipped**, 32 files.
+`make lint`: complete exit 0 (Ruff/format, mypy 167 sources, ESLint/TS).
+Preference/archive integration suite: **12 passed**, including repeat-byte ZIPs,
+UTF-8 review documents, missing baselines and retained account toggle. Frontend
+coverage includes mixed/separate hunks, formatting-only rows, CRLF/EOF/blank-line
+changes, raw restoration, cache persistence and unchanged source strings.
+
+**Known gaps / follow-ups:** The initial temporary PostgreSQL database used
+SQL_ASCII, causing four existing Unicode archive/review tests to fail (8 passed).
+It was recreated as UTF-8 and the suite passed. An auxiliary migration rerun used
+relative bootstrap paths across subprocess working directories; dotenv suppression
+for that subprocess could not be established, so it is not trusted as isolated
+evidence. The final 12-pass rerun uses absolute bootstrap paths. Final full
+verification will use absolute paths throughout. Section 5 remains; no new
+runtime dependency, schema migration or specification open question.
+
 ## 2026-10-23 — Phase 9j round 2 section 3 — Filter interactive models using versioned recommendations
 
 **Summary:** Default all model roles to a provider-verified Recommended list;

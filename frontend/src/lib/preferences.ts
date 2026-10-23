@@ -9,6 +9,7 @@ export interface PreferenceData {
         auto_scroll: boolean;
         config_open: boolean;
         report_tab: 'security' | 'validation';
+        hide_whitespace_only_changes: boolean;
     };
 }
 export interface RecentRun {
@@ -24,7 +25,7 @@ interface Stored {
     recent: RecentRun[];
     updatedAt?: string | null;
 }
-const defaults = (): PreferenceData => ({ prompt_draft: '', role_defaults: {}, draft_config: {}, ui: { auto_scroll: true, config_open: false, report_tab: 'security' } });
+const defaults = (): PreferenceData => ({ prompt_draft: '', role_defaults: {}, draft_config: {}, ui: { auto_scroll: true, config_open: false, report_tab: 'security', hide_whitespace_only_changes: true } });
 let owner = 'local';
 let generation = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -65,7 +66,7 @@ function validated(value: unknown): PreferenceData {
             result.draft_config.model = scrub(config.model.slice(0, 128));
     }
     if (input.ui && typeof input.ui === 'object')
-        result.ui = { auto_scroll: input.ui.auto_scroll !== false, config_open: input.ui.config_open === true, report_tab: input.ui.report_tab === 'validation' ? 'validation' : 'security' };
+        result.ui = { auto_scroll: input.ui.auto_scroll !== false, config_open: input.ui.config_open === true, report_tab: input.ui.report_tab === 'validation' ? 'validation' : 'security', hide_whitespace_only_changes: input.ui.hide_whitespace_only_changes !== false };
     return result;
 }
 function timestamp(value:unknown):string|null { return typeof value==='string'&&Number.isFinite(Date.parse(value))?value:null; }

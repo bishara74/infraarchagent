@@ -2222,6 +2222,15 @@ is available for offline use, without an additional production-tested claim.
 Filtering affects interactive presentation only; header/benchmark request logic
 and environment defaults retain existing semantics. No new open question.
 
+Round 2 section 4: ui.hide_whitespace_only_changes defaults true in server
+preferences and the optional account cache. Whitespace-normalised alignment is
+presentation only: equivalent pairs show current text as context with both line
+numbers, and formatting-only hunks receive a neutral label. Counts distinguish
+meaningful added/removed rows from hidden formatting pairs, blank lines and EOF
+formatting. Like a whitespace-ignoring diff, this is not a semantic equivalence
+proof. Disabling restores the retained raw unified diff; files, originals and ZIP
+bytes are never rewritten. Existing preference JSON needs no migration.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

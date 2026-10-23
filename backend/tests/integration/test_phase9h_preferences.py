@@ -97,6 +97,7 @@ async def test_discard_draft_is_durable_and_preserves_configuration(db_engines):
                 "data": {
                     "prompt_draft": "Deploy an AWS web service",
                     "draft_config": {"max_iterations": 3},
+                    "ui": {"hide_whitespace_only_changes": False},
                 },
             },
         )
@@ -111,4 +112,5 @@ async def test_discard_draft_is_durable_and_preserves_configuration(db_engines):
         assert loaded == discarded.json()
         assert loaded["data"]["prompt_draft"] == ""
         assert loaded["data"]["draft_config"] == {"max_iterations": 3}
+        assert loaded["data"]["ui"]["hide_whitespace_only_changes"] is False
         assert loaded["updated_at"] >= document["updated_at"]

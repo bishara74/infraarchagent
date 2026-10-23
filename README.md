@@ -1412,6 +1412,10 @@ entry). Show all compatible models includes only confirmed structured-output
 models; both views hide :free and provider-declared deprecated/expired entries.
 Prices and context come from the provider catalogue. Retry refreshes the server
 catalogue cache without changing saved choices or benchmark requests.
+Security-fix diffs hide whitespace-only changes by default, with explicit counts
+and formatting-only hunk labels. Toggle the view in the diff or Account UI
+preferences; the choice follows your account and is cached locally. The toggle
+changes presentation only, never package files or ZIP contents.
 
 ### Read-only database tools
 

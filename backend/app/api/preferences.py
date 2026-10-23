@@ -23,6 +23,7 @@ class UIChoices(BaseModel):
     auto_scroll: bool = True
     config_open: bool = False
     report_tab: Literal["security", "validation"] = "security"
+    hide_whitespace_only_changes: bool = True
 
 
 class PreferenceData(BaseModel):

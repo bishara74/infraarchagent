@@ -35,6 +35,7 @@ it('NFR-01 account metadata preferences and confirmed password change use existi
  const request=vi.spyOn(api,'request').mockResolvedValue({updated:true});const logout=vi.spyOn(api,'logout').mockResolvedValue(undefined);
  render(<AccountSettings/>);expect(screen.getByRole('heading',{name:'admin'})).toBeVisible();expect(screen.getByText('Never')).toBeVisible();expect(screen.getByRole('checkbox',{name:'Auto-scroll live log'})).toBeChecked();
  expect(screen.getByLabelText('Account username')).toHaveValue('admin');
+ expect(screen.getByRole('checkbox',{name:'Hide whitespace-only changes'})).toBeChecked();
  fireEvent.change(screen.getByLabelText('Current password',{exact:true}),{target:{value:'synthetic-current'}});fireEvent.change(screen.getByLabelText('New password',{exact:true}),{target:{value:'synthetic-new-password'}});fireEvent.change(screen.getByLabelText('Confirm password',{exact:true}),{target:{value:'synthetic-new-password'}});
  fireEvent.submit(screen.getByRole('button',{name:'Change password'}).closest('form')!);await waitFor(()=>expect(logout).toHaveBeenCalledOnce());expect(request).toHaveBeenCalledWith('/api/auth/password','POST',{current_password:'synthetic-current',password:'synthetic-new-password'});
 });
