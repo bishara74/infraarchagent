@@ -2203,6 +2203,14 @@ explicit choices still require catalogue verification. Header/benchmark paths
 remain unchanged. Virtual spacers are internal to a bounded content-sized list,
 with viewport-aware placement and reachable rendered keyboard targets.
 
+Round 2 section 1: new request editors start empty, with explicit Restore,
+Discard and session-only hint dismissal. Prompt text is independent of saved
+configuration. Existing preference-row UTC updated_at is projected on saved
+GET/PUT responses and cached account-wise; it dates the last saved snapshot,
+including legacy drafts. No historical prompt-edit timestamp is invented. Discard
+waits for in-flight autosaves, preserves configuration and remains retryable on
+failure. No database migration or new specification open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

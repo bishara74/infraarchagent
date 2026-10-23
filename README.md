@@ -1403,6 +1403,10 @@ versioned, user-scoped cache/offline fallback only; it never holds passwords,
 provider keys or session tokens. A save conflict reloads the server copy and
 keeps the unsaved draft available for explicit recovery. Recent-run cursors
 hydrate prior event history before SSE resumes, avoiding skipped stage/log data.
+The request editor opens empty. A saved draft appears as a dated hint with
+Restore, Discard and Dismiss; Discard clears the server draft, while Dismiss
+only hides the hint. The date is the last server save of the preference record.
+Model/configuration defaults remain independent of restoring prompt text.
 
 ### Read-only database tools
 

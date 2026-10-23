@@ -22,16 +22,18 @@ interface Stored {
     version: 1;
     data: PreferenceData;
     recent: RecentRun[];
+    updatedAt?: string | null;
 }
 const defaults = (): PreferenceData => ({ prompt_draft: '', role_defaults: {}, draft_config: {}, ui: { auto_scroll: true, config_open: false, report_tab: 'security' } });
 let owner = 'local';
 let generation = 0;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let saving = false;
+let inFlight: Promise<void> | null = null;
 let dirty = false;
 let hydration: Promise<void> | null = null;
 let hydrationController: AbortController | null = null;
-let state = { data: defaults(), recent: [] as RecentRun[], revision: 0, ready: true, status: 'saved', loadError: null as unknown, conflictDraft: null as PreferenceData | null };
+let state = { updatedAt: null as string | null, data: defaults(), recent: [] as RecentRun[], revision: 0, ready: true, status: 'saved', loadError: null as unknown, conflictDraft: null as PreferenceData | null };
 const listeners = new Set<() => void>();
 function notify() { listeners.forEach(fn => fn()); }
 const secrets = new Set<string>();
@@ -66,18 +68,19 @@ function validated(value: unknown): PreferenceData {
         result.ui = { auto_scroll: input.ui.auto_scroll !== false, config_open: input.ui.config_open === true, report_tab: input.ui.report_tab === 'validation' ? 'validation' : 'security' };
     return result;
 }
+function timestamp(value:unknown):string|null { return typeof value==='string'&&Number.isFinite(Date.parse(value))?value:null; }
 function recentValue(value: unknown): RecentRun[] { return Array.isArray(value) ? value.filter((v): v is RecentRun => !!v && typeof v.id === 'string' && typeof v.title === 'string' && typeof v.time === 'string' && typeof v.status === 'string' && Number.isSafeInteger(v.last_seq) && v.last_seq >= 0).slice(0, 100).map(v => ({ id: v.id, title: scrub(v.title.slice(0, 120)), time: v.time, status: v.status, last_seq: v.last_seq })) : []; }
 function cache() { try {
-    const value: Stored = { version: 1, data: validated(state.data), recent: recentValue(state.recent) };
+    const value: Stored = { version: 1, data: validated(state.data), recent: recentValue(state.recent), updatedAt: state.updatedAt };
     localStorage.setItem(`infraarch.preferences.v1.${owner}`, JSON.stringify(value));
 }
 catch { /* Cache is optional. */ } }
 function readCache() { try {
     const value = JSON.parse(localStorage.getItem(`infraarch.preferences.v1.${owner}`) ?? 'null') as Stored | null;
     if (value?.version === 1)
-        return { data: validated(value.data), recent: recentValue(value.recent) };
+        return { data: validated(value.data), recent: recentValue(value.recent), updatedAt: timestamp(value.updatedAt) };
 }
-catch { /* Invalid or blocked storage. */ } return { data: defaults(), recent: [] }; }
+catch { /* Invalid or blocked storage. */ } return { data: defaults(), recent: [], updatedAt: null }; }
 export const getPreferences = () => state;
 export const getPreferenceOwner = () => owner;
 export const subscribePreferences = (fn: () => void) => { listeners.add(fn); return () => { listeners.delete(fn); }; };
@@ -101,11 +104,11 @@ export function hydratePreferences(userId: string | null, force = false): Promis
     hydration = (async () => {
         try {
             const [saved, recent] = await Promise.all([
-                api.request<{revision: number; data: unknown}>('/api/me/preferences', 'GET', undefined, controller.signal),
+                api.request<{revision: number; data: unknown; updated_at?: string}>('/api/me/preferences', 'GET', undefined, controller.signal),
                 api.request<unknown>('/api/me/recent-runs', 'GET', undefined, controller.signal),
             ]);
             if (active !== generation) return;
-            state = { ...state, data: validated(saved.data), recent: recentValue(recent), revision: saved.revision, status: 'saved', ready: true };
+            state = { ...state, data: validated(saved.data), recent: recentValue(recent), revision: saved.revision, updatedAt: timestamp(saved.updated_at), status: 'saved', ready: true };
             cache();
         } catch (error) {
             if (active === generation) state = { ...state, ready: true, status: 'offline', loadError: error };
@@ -117,7 +120,13 @@ export function hydratePreferences(userId: string | null, force = false): Promis
 }
 export function retryHydration() { return hydratePreferences(owner === 'local' ? null : owner, true); }
 
-async function save() {
+function save():Promise<void> {
+    if(inFlight)return inFlight.then(()=>dirty&&state.status!=='offline'&&state.status!=='conflict'?save():undefined);
+    const work=saveOnce().finally(()=>{if(inFlight===work)inFlight=null;});
+    inFlight=work;
+    return work;
+}
+async function saveOnce() {
     cache();
     if (owner === 'local' || saving || !dirty)
         return;
@@ -130,26 +139,30 @@ async function save() {
     try {
         const value = await api.request<{
             revision: number;
+            updated_at?: string;
             data: PreferenceData;
         }>('/api/me/preferences', 'PUT', { revision: state.revision, data });
         if (active !== generation)
             return;
-        state = { ...state, revision: value.revision, status: 'saved', ...(dirty ? {} : { data: validated(value.data) }) };
+        state = { ...state, revision: value.revision, updatedAt: timestamp(value.updated_at), status: 'saved', ...(dirty ? {} : { data: validated(value.data) }) };
         cache();
     }
     catch (error) {
         if (active !== generation)
             return;
         if (error instanceof ApiError && error.code === 'preference_conflict') {
+            try {
             const saved = await api.request<{
                 revision: number;
+                updated_at?: string;
                 data: PreferenceData;
             }>('/api/me/preferences');
             if (active !== generation)
                 return;
-            state = { ...state, data: validated(saved.data), revision: saved.revision, status: 'conflict', conflictDraft: data };
+            state = { ...state, data: validated(saved.data), revision: saved.revision, updatedAt: timestamp(saved.updated_at), status: 'conflict', conflictDraft: data };
             cache();
             dirty = false;
+            } catch { state={...state,status:'offline',conflictDraft:data}; dirty=true; }
         }
         else {
             state = { ...state, status: 'offline' };
@@ -172,6 +185,12 @@ export function recoverDraft() { if (state.conflictDraft) {
     updatePreferences(data);
 } }
 export async function retrySave() { await save(); }
+export async function discardPromptDraft() {
+    const active=generation;
+    updatePreferences({prompt_draft:''});clearTimeout(timer);
+    await save();
+    if(active!==generation||state.status==='offline'||state.status==='conflict'||state.data.prompt_draft!=='')throw new ApiError(0,'draft_not_discarded','The saved draft could not be discarded. Retry when connected.');
+}
 export function cursorFor(runId: string) { return state.recent.find(r => r.id === runId)?.last_seq; }
 const cursorTimers = new Map<string, ReturnType<typeof setTimeout>>();
 export function rememberRun(runId: string, seq = 0, results?: ResultsResponse) {

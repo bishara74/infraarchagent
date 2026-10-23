@@ -1,6 +1,6 @@
 import {afterEach,expect,it,vi} from 'vitest';
 import {api,ApiError} from '../api/client';
-import {getPreferences,hydratePreferences,updatePreferences,retrySave} from './preferences';
+import {getPreferences,hydratePreferences,updatePreferences,retrySave,discardPromptDraft} from './preferences';
 afterEach(()=>{vi.restoreAllMocks();localStorage.clear();});
 it('FR-UI-01 server preferences supersede browser cache across accounts',async()=>{
  vi.spyOn(api,'request').mockImplementation(async url=>url.endsWith('recent-runs')?[]:{revision:3,data:{prompt_draft:'server draft'}} as never);
@@ -34,4 +34,14 @@ it('FR-UI-01 failed hydration exposes retry and preserves populated recent rows'
  await hydratePreferences('offline-recent');expect(getPreferences().loadError).toBeTruthy();expect(getPreferences().ready).toBe(true);
  request.mockImplementation(async url=>(url.endsWith('recent-runs')?[{id:'run',title:'Real saved run',time:'2026-10-22T10:00:00Z',status:'success',last_seq:2}]:{revision:1,data:{}}) as never);
  await hydratePreferences('offline-recent',true);expect(getPreferences().loadError).toBeNull();expect(getPreferences().recent[0]?.title).toBe('Real saved run');
+});
+
+it('FR-UI-01 Discard waits for an in-flight autosave and persists the newer empty draft',async()=>{
+ const request=vi.spyOn(api,'request').mockImplementation(async url=>(url.endsWith('recent-runs')?[]:{revision:1,data:{prompt_draft:'initial'},updated_at:'2026-10-23T10:00:00Z'}) as never);
+ await hydratePreferences('queued-discard');let finish!:(value:unknown)=>void;let writes=0;
+ request.mockImplementation((_url,_method,body)=>{writes++;if(writes===1)return new Promise(resolve=>{finish=resolve;}) as never;return Promise.resolve({revision:3,data:(body as {data:unknown}).data,updated_at:'2026-10-23T11:00:00Z'}) as never;});
+ updatePreferences({prompt_draft:'pending autosave'});const pending=retrySave();const discard=discardPromptDraft();
+ finish({revision:2,data:{prompt_draft:'pending autosave'},updated_at:'2026-10-23T10:30:00Z'});await pending;await discard;
+ expect(writes).toBe(2);expect(getPreferences().data.prompt_draft).toBe('');expect(getPreferences().updatedAt).toBe('2026-10-23T11:00:00Z');
+ expect(JSON.parse(localStorage.getItem('infraarch.preferences.v1.queued-discard')!).updatedAt).toBe('2026-10-23T11:00:00Z');
 });

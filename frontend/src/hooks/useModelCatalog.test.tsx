@@ -17,7 +17,7 @@ it.each([
 ])('FR-UI-01 catalogue %s explains recovery and retries past the cache',async(status,error_code,message)=>{
  const request=vi.spyOn(api,'request').mockResolvedValue({status,error_code,models:[],provider:'custom',defaults:{},credential_id:'c'});
  render(<View/>);expect(screen.getByText('Loading model catalogue…')).toBeVisible();
- await screen.findByText(new RegExp(message));fireEvent.click(screen.getByRole('button',{name:'Retry',exact:true}));
+ await screen.findByText(new RegExp(message));fireEvent.click(screen.getByRole('button',{name:'Retry'}));
  await waitFor(()=>expect(request.mock.calls.some(([url])=>url==='/api/models?refresh=true')).toBe(true));
 });
 it('FR-UI-01 obsolete account results are ignored',async()=>{
@@ -35,6 +35,6 @@ it('FR-UI-01 rejected catalogue requests expose a safe retry and recover',async(
  render(<View/>);await screen.findByText(/Unable to load model catalogue/);
  expect(screen.queryByText(/not-public-provider-details/)).toBeNull();
  request.mockResolvedValue({provider:'stub',models:[{id:'stub'}],defaults:{},credential_id:null});
- fireEvent.click(screen.getByRole('button',{name:'Retry',exact:true}));await screen.findByText('stub');
- expect(screen.queryByRole('button',{name:'Retry',exact:true})).toBeNull();
+ fireEvent.click(screen.getByRole('button',{name:'Retry'}));await screen.findByText('stub');
+ expect(screen.queryByRole('button',{name:'Retry'})).toBeNull();
 });

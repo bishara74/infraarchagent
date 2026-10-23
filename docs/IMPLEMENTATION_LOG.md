@@ -27,6 +27,37 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-23 — Phase 9j round 2 section 1 — Keep new editors empty and recover saved drafts explicitly
+
+**Summary:** Separate prompt editing from persistence; offer dated Restore,
+Discard and Dismiss without changing model/configuration defaults. Serialize
+Discard after pending autosaves and retain recovery actions when saving fails.
+
+**Requirements addressed:** FR-UI-01, NFR-01.
+
+**Files:** InputScreen, preferences store/tests, new draft component tests,
+preference API/repository/integration tests, onboarding E2E assertion, CSS,
+catalogue hook test query corrections, README, D-58 and this log.
+
+**Decisions:** Expose the existing UTC preference-row updated_at on saved GET/PUT
+responses; the hint dates the saved preference snapshot, not an invented original
+prompt edit time. Old cache records remain compatible. Discard updates only prompt
+text. Preference conflict reload failures retain the unsaved data for safe retry.
+
+**Tests:** `make frontend-test`: **169 passed, 0 failed/skipped**, 29 files.
+`make lint`: completed with exit 0, Ruff/format, mypy (167 sources), ESLint/TS.
+Preference integration tests: **2 passed**, covering durable Discard, account
+isolation, revision conflicts, timestamp and unchanged configuration. Unit tests
+cover empty editor, explicit restore/example, dismiss/remount, failed discard
+retry, and discard waiting for an in-flight autosave. Onboarding expectations now
+require explicit Restore in a second browser; full E2E runs follow in section 5.
+
+**Known gaps / follow-ups:** Correction to section 2: its lint success was reported
+before the final TypeScript process completed. Unsupported `exact` options in
+new Testing Library queries caused failure; these are corrected here, and the
+complete lint command now passes. No schema migration, new dependency or open
+question. Sections 3, 4 and 5 remain.
+
 ## 2026-10-23 — Phase 9j round 2 section 2 — Repair catalogue states and model dropdown geometry
 
 **Summary:** Share catalogue loading/retry guidance, distinguish unknown capabilities

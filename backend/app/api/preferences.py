@@ -67,9 +67,11 @@ async def save_preferences(request: Request) -> JSONResponse:
             body.data.model_dump(mode="json")
         )
         async with request.app.state.session_factory() as session, session.begin():
-            saved = await PreferenceRepository(session).save(
-                request.state.user.id, body.revision, data
-            )
+            repository = PreferenceRepository(session)
+            saved = await repository.save(request.state.user.id, body.revision, data)
+            if saved:
+                await session.flush()
+                result = await repository.get(request.state.user.id)
         if not saved:
             return failure(
                 409,
@@ -77,7 +79,7 @@ async def save_preferences(request: Request) -> JSONResponse:
                 "Preferences changed elsewhere. Reload saved preferences; "
                 "your unsaved draft is retained.",
             )
-        return JSONResponse({"revision": body.revision + 1, "data": data})
+        return JSONResponse(result, headers={"Cache-Control": "no-store"})
     except (ValueError, ValidationError, ClientDisconnect):
         return failure(
             400,

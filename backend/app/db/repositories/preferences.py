@@ -17,7 +17,11 @@ class PreferenceRepository:
     async def get(self, user_id: UUID) -> dict[str, Any]:
         row = await self.session.get(UserPreferences, user_id)
         return (
-            {"revision": row.revision, "data": row.data}
+            {
+                "revision": row.revision,
+                "data": row.data,
+                "updated_at": row.updated_at.isoformat(),
+            }
             if row
             else {"revision": 0, "data": {}}
         )
