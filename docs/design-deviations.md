@@ -2322,6 +2322,21 @@ Architect json_schema wire was incorrect; adding one would confound the
 experiment. Generator/Fixer HTTP bytes remain unchanged for Architect-only
 selection changes. No prompts, deadlines, profiles or readiness rules change.
 
+Section 2 (FR-P-04, PR-01, NFR-01): optional per-role provider preferences
+become OpenRouter provider.order plus allow_fallbacks=true, merged with existing
+strict-schema require_parameters. A preference never propagates between roles.
+The shared resolver validates configured model/provider pairs against the local
+snapshot; header overrides now consume that snapshot rather than authenticated
+provider catalogue probes. POST /api/benchmark/preflight accepts only the existing
+master X-API-Key header and projects model/thinking/order and snapshot provenance.
+It submits nothing, accesses no saved credential repository and writes no rows.
+Public metadata/status GETs use fresh anonymous clients, trust_env=false, no
+redirects or credential/settings imports. Unknown/degraded status requires
+confirmation or --force; incompatibility and missing snapshots cannot be forced.
+Per-run provider statistics deduplicate calls, exclude unknown serving providers
+from fallback-share denominators and retain unknown counts. No readiness or retry
+policy change. The snapshot producer follows in section 3.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

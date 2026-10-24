@@ -71,6 +71,7 @@ class AgentFactory:
         adapter.request_style = selection.request_style
         adapter.reasoning_capable = selection.reasoning_capable
         adapter.thinking_types = selection.thinking_types
+        adapter.provider_order = selection.provider_order
         if selection.request_style == "anthropic":
             adapter.supports_structured_output = True
         if config.credential_id:

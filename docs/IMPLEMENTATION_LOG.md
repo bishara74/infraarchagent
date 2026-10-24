@@ -27,6 +27,21 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-24 — Phase 9k section 2 — Add per-role routing and anonymous preflight
+
+**Summary:** Add optional OpenRouter provider order with fallbacks, snapshot validation, public provider-status confirmation and a read-only header-only benchmark preflight endpoint.
+
+**Requirements addressed:** FR-A-01, FR-P-04, PR-01, NFR-01.
+
+**Files:** domain RunConfig/AgentSelection; settings/model_selection; api/benchmark; agents/factory; llm/base/openai and new public_catalogue; scripts/benchmark, run_phase9_benchmarks and new phase9k_routing; Makefile; synthetic test fixtures and new routing/preflight tests; section-1 isolation test; README, D-59 and this log.
+
+**Decisions:** Snapshot-based environment metadata shares the existing resolver. Provider preferences default to three Generators/Fixer only; independently opt in Architect. Merge order/allow_fallbacks with strict-schema require_parameters. Fresh public HTTP clients do not use keys, settings, cookies, redirects or environment authentication. Master-header preflight returns an explicit allowlist and creates no state; browser repositories are forbidden in tests. Unknown status requires confirmation/force, without bypassing invalid configuration. Fallback denominators retain unknowns separately. See D-59.
+
+**Tests:** Focused backend suite including golden wires, all role defaults, provider adapters and new public HTTP/preflight tests: **310 passed, 0 failed/skipped** (11.00s). Ruff passes; mypy **173** sources passes. Real disposable PostgreSQL, dotenv disabled and synthetic keys only. An intermediate run had **241 passed / 1 failed** because a new test omitted RetryPolicy constructor arguments; corrected before the passing run.
+
+**Known gaps / follow-ups:** Sections 3–5 remain, including the author-run snapshot producer, estimation and report integration. No real provider HTTP/inference, installs, dotenv reads, migration or policy changes.
+
+
 ## 2026-10-24 — Phase 9k section 1 — Isolate explicit benchmark Architect selection
 
 **Summary:** Add optional broad-benchmark Architect model/thinking inputs through the existing resolver; keep shared-key runs on environment credentials and independent role defaults.

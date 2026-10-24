@@ -76,6 +76,7 @@ class OpenAIAdapter(LLMAdapter):
                 self.request_style,
                 self.reasoning_capable,
             )
+            delegate.provider_order = self.provider_order
             (
                 delegate.structured_output,
                 delegate.output_schema,
@@ -146,6 +147,12 @@ class OpenAIAdapter(LLMAdapter):
             structured_output is None and self.response_format == "json_object"
         ):
             params["response_format"] = {"type": "json_object"}
+        if self.provider_order:
+            if urlparse(str(self.client.base_url)).hostname != "openrouter.ai":
+                raise LLMPermanentError("provider_error")
+            params.setdefault("extra_body", {}).setdefault("provider", {}).update(
+                order=list(self.provider_order), allow_fallbacks=True
+            )
         failure: LLMError | None = None
         http_status: int | None = None
         try:

@@ -803,6 +803,17 @@ Generator/Fixer defaults, regardless of saved browser settings. The Architect
 continues to request a JSON object and validate its plan locally. The author must
 select the model explicitly; recommendations never select it automatically.
 
+`PROVIDER_PREFERENCE=<provider>` applies only to Generators/Fixer;
+`ARCHITECT_PROVIDER_PREFERENCE=<provider>` independently applies to Architect.
+Preferences require a local OpenRouter catalogue snapshot and a provider that
+serves each role's model. Requests allow fallbacks. Before submission, the runner
+checks anonymous public endpoint status; unavailable/degraded/unknown status
+requires confirmation or `FORCE=1`. Force never bypasses incompatibility or a
+missing snapshot. `OPENROUTER_CATALOGUE_SNAPSHOT` selects the server's snapshot
+path (default `.cache/openrouter/catalogue.json`). Preflight uses only the master
+`X-API-Key` header and returns model/thinking/order plus snapshot provenance.
+Metadata/status calls send no API key and never load dotenv.
+
 ### Running the broad benchmark
 
 The [broad-v1 registration](docs/evals/scenarios/README.md) is committed before any

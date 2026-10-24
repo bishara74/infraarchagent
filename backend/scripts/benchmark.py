@@ -920,11 +920,22 @@ class Harness:
                     "request_style",
                     "reasoning_capable",
                     "reasoning_capability_source",
+                    "provider_order",
                 ):
                     if key not in selection:
                         continue
                     value = selection[key]
-                    if key == "model":
+                    if key == "provider_order":
+                        safe[key] = (
+                            [
+                                self.redactor.redact(v)[:128]
+                                for v in value
+                                if isinstance(v, str)
+                            ]
+                            if isinstance(value, list)
+                            else []
+                        )
+                    elif key == "model":
                         safe[key] = (
                             self.redactor.redact(value)[:128]
                             if isinstance(value, str)
@@ -971,6 +982,11 @@ class Harness:
                     )
                 safe_selections[role] = safe
         self.resolved_agent_selections[row["run_id"]] = safe_selections
+        from scripts.phase9k_routing import routing_statistics
+
+        row["provider_routing"] = routing_statistics(
+            observations, safe_selections or {}
+        )
         if self.output and (self.output / "environment.json").exists():
             path = self.output / "environment.json"
             metadata = json.loads(path.read_text())

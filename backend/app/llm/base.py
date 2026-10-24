@@ -141,6 +141,7 @@ class LLMAdapter(ABC):
         self.structured_output: StructuredOutput | None = None
         self.output_schema: dict[str, Any] | None = None
         self.output_schema_name = "generator_package"
+        self.provider_order: tuple[str, ...] = ()
         self._structured_request: ContextVar[bool] = ContextVar(
             "structured_request", default=False
         )

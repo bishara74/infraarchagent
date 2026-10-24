@@ -42,6 +42,7 @@ class Settings(BaseSettings):
     auth_cookie_secure: bool = False
     auth_login_attempts_per_minute: int = Field(default=5, ge=1)
     llm_base_url: str | None = None
+    openrouter_catalogue_snapshot: Path = ROOT / ".cache/openrouter/catalogue.json"
     llm_reasoning_effort: ReasoningEffort | None = None
     llm_response_format: ResponseFormat | None = None
     llm_structured_output: StructuredOutput = "json_schema"

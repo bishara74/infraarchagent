@@ -39,6 +39,7 @@ class RunConfig(BaseModel):
     max_iterations: int | None = Field(default=None, ge=1)
 
     agent_models: dict[str, AgentChoice] = Field(default_factory=dict)
+    provider_preferences: dict[str, str] = Field(default_factory=dict)
     resolved_agents: dict[str, AgentSelection] = Field(default_factory=dict)
     credential_id: UUID | None = None
 

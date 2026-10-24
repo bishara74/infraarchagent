@@ -13,6 +13,7 @@ from app.db.repositories.providers import ProviderRepository
 from app.domain.agent_selection import ROLES
 from app.domain.enums import LLMProvider, Variant
 from tests.integration.test_phase9g_auth import KEY, authenticated
+from tests.phase9k_fixtures import fake_snapshot
 
 pytestmark = pytest.mark.req("FR-A-01", "FR-P-04", "NFR-01")
 MODEL = "test-only/architect-2099"
@@ -20,11 +21,14 @@ MODEL = "test-only/architect-2099"
 
 @pytest.mark.parametrize("thinking", [None, "medium"])
 async def test_header_architect_override_preserves_sibling_http_bytes(
-    db_engines, monkeypatch, thinking
+    db_engines, monkeypatch, thinking, tmp_path
 ):
     app, _ = await authenticated(db_engines[0])
+    snapshot_path = tmp_path / "catalogue.json"
+    fake_snapshot(snapshot_path)
     settings = app.state.settings.model_copy(
         update={
+            "openrouter_catalogue_snapshot": snapshot_path,
             "llm_provider": LLMProvider.OPENAI,
             "llm_model": "test-only/baseline:nitro",
             "llm_api_key": SecretStr("synthetic-environment-canary"),

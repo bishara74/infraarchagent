@@ -111,6 +111,9 @@ bench-broad: export PHASE9_BUDGET = $(BUDGET)
 bench-broad: export PHASE9_RUNS_PER_SCENARIO = $(RUNS_PER_SCENARIO)
 bench-broad: export PHASE9_ARCHITECT_MODEL = $(ARCHITECT_MODEL)
 bench-broad: export PHASE9_ARCHITECT_THINKING = $(ARCHITECT_THINKING)
+bench-broad: export PHASE9_PROVIDER_PREFERENCE = $(PROVIDER_PREFERENCE)
+bench-broad: export PHASE9_ARCHITECT_PROVIDER_PREFERENCE = $(ARCHITECT_PROVIDER_PREFERENCE)
+bench-broad: export PHASE9_FORCE = $(FORCE)
 bench-broad:
 	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks $(MODE) --broad
 

@@ -2,6 +2,7 @@
 
 import time
 from typing import Any
+from urllib.parse import urlparse
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -14,6 +15,7 @@ from app.domain.enums import LLMProvider
 from app.domain.model_catalogue import catalogue_id
 from app.domain.run_config import RunConfig
 from app.llm.catalog import normalize, probe
+from app.llm.public_catalogue import CatalogueError, load_snapshot, provider_order
 
 
 class ModelSelectionError(ValueError):
@@ -39,6 +41,24 @@ class ModelSelectionService:
         self, *, refresh: bool = False, environment_only: bool = False
     ) -> dict[str, Any]:
         defaults, identity, material, static = {}, None, None, []
+        if (
+            environment_only
+            and self.settings.llm_provider == LLMProvider.OPENAI
+            and urlparse(self.settings.llm_base_url or "").hostname == "openrouter.ai"
+        ):
+            try:
+                snapshot = load_snapshot(self.settings.openrouter_catalogue_snapshot)
+            except CatalogueError as error:
+                raise ModelSelectionError(str(error)) from None
+            return {
+                "provider": "openrouter",
+                "credential_id": None,
+                "defaults": {},
+                "models": [
+                    normalize(item, "openrouter")
+                    for item in snapshot["payload"]["models"]
+                ],
+            }
         if not environment_only:
             async with self.sessions() as session, session.begin():
                 repository = ProviderRepository(session)
@@ -135,6 +155,8 @@ class ModelSelectionService:
         )
         if set(config.agent_models) - {*ROLES, "generators"}:
             raise ModelSelectionError("Unknown agent role.")
+        if set(config.provider_preferences) - set(ROLES):
+            raise ModelSelectionError("Unknown provider-preference role.")
         # Specific roles beat the generator group *within* each tier only.
         tiers = (
             {k: v.model_dump() for k, v in config.agent_models.items()},
@@ -261,6 +283,29 @@ class ModelSelectionService:
                     thinking_mode=effort if provider != LLMProvider.ANTHROPIC else None,
                     configured_thinking=effort,
                 )
+        if config.provider_preferences:
+            if (
+                base_provider != LLMProvider.OPENAI
+                or "openrouter.ai"
+                != urlparse(self.settings.llm_base_url or "").hostname
+                or selected_credential
+            ):
+                raise ModelSelectionError(
+                    "Provider preferences require environment OpenRouter transport."
+                )
+            try:
+                snapshot = load_snapshot(self.settings.openrouter_catalogue_snapshot)
+                for role, preference in config.provider_preferences.items():
+                    if selections[role].provider != LLMProvider.OPENAI:
+                        raise CatalogueError(
+                            "Preferred-provider role requires OpenRouter transport."
+                        )
+                    order = provider_order(snapshot, selections[role].model, preference)
+                    selections[role] = selections[role].model_copy(
+                        update={"provider_order": order}
+                    )
+            except CatalogueError as error:
+                raise ModelSelectionError(str(error)) from None
         return config.model_copy(
             update={
                 # Retain the legacy representative model, only after resolving

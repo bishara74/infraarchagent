@@ -28,6 +28,7 @@ class AgentSelection(AgentChoice):
     request_style: Literal["legacy", "openrouter", "openai", "anthropic"] = "legacy"
     reasoning_capable: bool = False
     thinking_types: dict[str, object] = {}
+    provider_order: tuple[str, ...] = ()
 
 
 def reported_selections(raw: dict[str, Any] | None) -> dict[str, Any] | None:

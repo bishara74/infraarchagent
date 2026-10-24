@@ -10,6 +10,7 @@ from pathlib import Path
 
 import httpx
 
+from app.llm.public_catalogue import CatalogueError
 from scripts.benchmark import Harness, configured_harness
 from scripts.phase9_common import evidence_directory, safe_main, write_json
 from scripts.phase9_report import summary
@@ -20,6 +21,7 @@ from scripts.phase9i_broad import (
     registered_scenarios,
     scenario_digest,
 )
+from scripts.phase9k_routing import preferences, status_preflight
 from scripts.seed_benchmark_package import SeedConfigurationError, load_seed_settings
 
 
@@ -139,6 +141,9 @@ async def run(args) -> None:
     ) as client:
         harness = await configured_harness(args, directory, client)
         harness.run_config = architect_override(args)
+        routing = preferences(args)
+        if routing:
+            harness.run_config["provider_preferences"] = routing
         if broad:
             harness.benchmark_kind = "broad"
 
@@ -157,6 +162,28 @@ async def run(args) -> None:
                 await engine.dispose()
 
         try:
+            if harness.run_config:
+                response = await client.post(
+                    args.base_url.rstrip("/") + "/api/benchmark/preflight",
+                    json=harness.run_config,
+                    headers=harness.headers,
+                )
+                if response.status_code != 200:
+                    raise CatalogueError(
+                        "Preflight failed; run make catalogue-snapshot and check roles."
+                    )
+                preflight = response.json()
+                health_checks = await status_preflight(
+                    preflight["selections"], force=getattr(args, "force", False)
+                )
+                metadata_path = directory / "environment.json"
+                metadata = json.loads(metadata_path.read_text())
+                metadata.update(
+                    benchmark_preflight=preflight,
+                    provider_status=health_checks,
+                    provider_status_force=getattr(args, "force", False),
+                )
+                write_json(metadata_path, metadata)
             # Do not submit a rehearsal to a backend lacking its local tool chain.
             if args.mode == "stub":
                 if not broad:
@@ -200,6 +227,8 @@ async def run(args) -> None:
                         )
         except SeedConfigurationError as error:
             harness.stop_reason = str(error)
+        except CatalogueError as error:
+            harness.stop_reason = str(error)
         except (OSError, ValueError, RuntimeError, httpx.HTTPError):
             harness.stop_reason = (
                 "Benchmark prerequisite or fixture preparation failed."
@@ -232,6 +261,21 @@ def main() -> None:
     parser.add_argument("--timeout", type=float, default=1800)
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--broad", action="store_true")
+    parser.add_argument(
+        "--provider-preference",
+        default=os.environ.get("PHASE9_PROVIDER_PREFERENCE")
+        or os.environ.get("PROVIDER_PREFERENCE")
+        or None,
+    )
+    parser.add_argument(
+        "--architect-provider-preference",
+        default=os.environ.get("PHASE9_ARCHITECT_PROVIDER_PREFERENCE")
+        or os.environ.get("ARCHITECT_PROVIDER_PREFERENCE")
+        or None,
+    )
+    parser.add_argument(
+        "--force", action="store_true", default=os.environ.get("PHASE9_FORCE") == "1"
+    )
     parser.add_argument(
         "--architect-model",
         default=os.environ.get("PHASE9_ARCHITECT_MODEL")
