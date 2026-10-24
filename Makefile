@@ -114,6 +114,8 @@ bench-broad: export PHASE9_ARCHITECT_THINKING = $(ARCHITECT_THINKING)
 bench-broad: export PHASE9_PROVIDER_PREFERENCE = $(PROVIDER_PREFERENCE)
 bench-broad: export PHASE9_ARCHITECT_PROVIDER_PREFERENCE = $(ARCHITECT_PROVIDER_PREFERENCE)
 bench-broad: export PHASE9_FORCE = $(FORCE)
+bench-broad: export PHASE9_BROAD_SMOKE = $(SMOKE)
+bench-broad: export PHASE9_MAX_RUNS = $(MAX_RUNS)
 bench-broad:
 	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks $(MODE) --broad
 

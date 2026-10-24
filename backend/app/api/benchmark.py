@@ -1,5 +1,7 @@
 """Strictly authenticated, numeric-only generator configuration evidence."""
 
+from urllib.parse import urlparse
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, ValidationError
@@ -12,6 +14,7 @@ from app.core.model_selection import ModelSelectionError
 from app.core.public_catalogue import CatalogueError, load_snapshot, provenance
 from app.core.safety import PublicDataSafety
 from app.domain.agent_selection import AgentChoice, Thinking
+from app.domain.enums import LLMProvider
 from app.domain.run_config import RunConfig
 
 router = APIRouter(
@@ -55,6 +58,12 @@ async def preflight(request: Request) -> PreflightResponse | JSONResponse:
     """Resolve only: no submission, writes, provider calls or credential lookup."""
     try:
         body = PreflightRequest.model_validate(await request.json())
+        settings = request.app.state.settings
+        if (
+            settings.llm_provider != LLMProvider.OPENAI
+            or urlparse(settings.llm_base_url or "").hostname != "openrouter.ai"
+        ):
+            raise ValueError("Benchmark preflight requires environment OpenRouter")
         snapshot = load_snapshot(
             request.app.state.settings.openrouter_catalogue_snapshot
         )

@@ -2387,6 +2387,25 @@ results. Unknown historical finish reasons remain unknown. Reports disclose
 historical revisions/prompt evolution and provider routing as confounders; they do
 not claim causal isolation or deployment success.
 
+Section 5 (PR-01/05, NFR-01): SMOKE=1 selects registered IDs 6/9/10 once each,
+with its own explicit smoke manifest flag and a finite cap of three. Registration
+bytes and the full twenty-run alternating schedule remain unchanged. Broad
+reporting labels smoke separately and refuses pooling it as a full experiment.
+Anonymous metadata-only tools and the master-header read-only API remain separate.
+Preflight refuses non-OpenRouter environments rather than invoking an unrelated
+authenticated catalogue probe. Advisory candidate listing tolerates unserved
+models, while execution still refuses missing endpoint/pricing evidence. A real
+local stub tool-chain rehearsal and a separate fake-metadata client rehearsal
+exercise the schedule and experiment plumbing without real inference.
+
+Closing verification: snapshot loading rejects direct or symlinked dotenv paths
+before any file read. Rejected experiment preflight preserves redacted requested
+model/thinking/provider inputs and every unstarted schedule slot. The final
+backend suite passes 2,297 tests (six perf deselected), frontend 413, browser 18;
+the real local stub smoke completes three runs/nine packages. No real catalogue
+snapshot or inference was used, so real model metadata and dollar projections
+remain author-run outputs rather than invented evidence. No new open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

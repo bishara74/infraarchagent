@@ -82,6 +82,14 @@ def scenario_digest(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
+def smoke_schedule(data: dict, digest: str) -> list[dict]:
+    """Author-selected ingress/platform checks; registration bytes never change."""
+    selected = [
+        s for s in broad_schedule(data, 1, digest) if s["scenario_id"] in {6, 9, 10}
+    ]
+    return [{**slot, "sequence": index + 1} for index, slot in enumerate(selected)]
+
+
 async def execute_broad(harness, slots: list[dict]) -> None:
     """Use the shared sequential guard and retain each unsubmitted slot."""
     harness.benchmark_kind = "broad"

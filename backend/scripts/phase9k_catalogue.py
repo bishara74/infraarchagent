@@ -70,7 +70,10 @@ def candidates(snapshot: dict) -> list[dict]:
     for item in snapshot["payload"]["models"]:
         if not pinned_sonnet(item):
             continue
-        endpoints = endpoints_for(snapshot, item["id"])
+        try:
+            endpoints = endpoints_for(snapshot, item["id"])
+        except CatalogueError:
+            endpoints = []
         rows.append(
             {
                 "id": item["id"],
@@ -83,7 +86,10 @@ def candidates(snapshot: dict) -> list[dict]:
                 "reasoning_declared": any(
                     capability(e, "reasoning") for e in endpoints
                 ),
-                "eligible": bool(eligible_endpoints(snapshot, item["id"])),
+                "eligible": any(
+                    capability(e, "structured_outputs") and capability(e, "reasoning")
+                    for e in endpoints
+                ),
                 "providers": [
                     {
                         k: e.get(k)

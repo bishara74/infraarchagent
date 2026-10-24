@@ -136,3 +136,30 @@ async def test_preflight_missing_snapshot_is_fixed_guidance(db_engines, tmp_path
         assert response.status_code == 400
         assert "make catalogue-snapshot" in response.text
         assert str(tmp_path) not in response.text
+
+
+async def test_preflight_refuses_native_transport_without_credential_probe(
+    db_engines, tmp_path, monkeypatch
+):
+    app = await setup(db_engines, tmp_path)
+    app.state.settings = app.state.settings.model_copy(
+        update={
+            "llm_provider": LLMProvider.ANTHROPIC,
+            "llm_base_url": "https://native.invalid",
+        }
+    )
+    from app.core import model_selection
+
+    probe = AsyncMock(side_effect=AssertionError("Authenticated catalogue probe"))
+    monkeypatch.setattr(model_selection, "probe", probe)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://127.0.0.1",
+        headers={"X-API-Key": KEY},
+    ) as client:
+        response = await client.post(
+            "/api/benchmark/preflight",
+            json={"agent_models": {"architect": {"model": ARCHITECT}}},
+        )
+        assert response.status_code == 400
+    probe.assert_not_awaited()

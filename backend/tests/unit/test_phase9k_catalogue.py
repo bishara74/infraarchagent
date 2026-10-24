@@ -207,3 +207,28 @@ assert 'app.core.config' not in sys.modules
     )
     assert result.returncode == 0, result.stderr
     assert '"recommendation_advisory": true' in result.stdout
+
+
+def test_advisory_listing_handles_unserved_candidate_without_selecting_it(tmp_path):
+    snapshot = with_candidate(fake_snapshot(tmp_path / "snapshot.json"))
+    snapshot["payload"]["endpoints"][FAKE_SONNET] = []
+    assert candidates(snapshot)[0]["eligible"] is False
+    assert recommendation(snapshot) is None
+    with pytest.raises(CatalogueError, match="endpoint"):
+        estimate(snapshot, FAKE_SONNET, usage=usage())
+
+
+@pytest.mark.parametrize("symlink", [False, True])
+def test_snapshot_loader_refuses_dotenv_before_any_read(tmp_path, monkeypatch, symlink):
+    from pathlib import Path
+
+    path = tmp_path / ".env"
+    if symlink:
+        link = tmp_path / "snapshot.json"
+        link.symlink_to(path)
+        path = link
+    monkeypatch.setattr(
+        Path, "read_text", lambda *a, **k: pytest.fail("Dotenv read attempted")
+    )
+    with pytest.raises(CatalogueError, match="make catalogue-snapshot"):
+        load_snapshot(path)

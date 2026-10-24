@@ -104,6 +104,10 @@ async def public_endpoints(
 
 def load_snapshot(path: Path = SNAPSHOT_PATH) -> dict[str, Any]:
     try:
+        if any(
+            part.startswith(".env") for part in (*path.parts, *path.resolve().parts)
+        ):
+            raise ValueError
         snapshot = json.loads(path.read_text())
         payload = snapshot["payload"]
         captured = datetime.fromisoformat(snapshot["captured_at"])

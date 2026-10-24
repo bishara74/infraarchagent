@@ -858,6 +858,83 @@ unknown; absent LBs are not private designs. The independent baseline audit is i
 `docs/evals/phase9k-baseline-audit/`; historical folders are unchanged. Code/prompt
 history and routing remain disclosed confounders, so this is descriptive evidence.
 
+### Architect experiment: author commands
+
+Use the existing broad-benchmark environment below in both terminals, including
+explicit database URLs and matching master API key supplied by the author.
+Keep baseline Generator/Fixer configuration fixed:
+
+```bash
+export INFRAARCH_TEST_BOOTSTRAP=1
+export PYTHONPATH="$PWD/backend/tests/bootstrap:$PWD/backend"
+export LLM_PROVIDER=openai LLM_BASE_URL=https://openrouter.ai/api/v1
+export LLM_MODEL=openai/gpt-oss-120b:nitro LLM_REASONING_EFFORT=low
+export LLM_RESPONSE_FORMAT=json_object LLM_STRUCTURED_OUTPUT=json_schema
+export SECURITY_FIX_PROVIDER=openai
+export SECURITY_FIX_MODEL=openai/gpt-oss-120b:nitro
+export SECURITY_FIX_REASONING_EFFORT=low
+make catalogue-snapshot
+make catalogue-inspect
+read -r -p 'Explicit pinned Architect model ID from the snapshot: ' ARCHITECT_MODEL
+export ARCHITECT_MODEL
+export ARCHITECT_THINKING=medium
+export PROVIDER_PREFERENCE=Cerebras
+make experiment-estimate ARCHITECT_MODEL="$ARCHITECT_MODEL"
+```
+
+The snapshot and provider-status requests are anonymous, do not read API keys or
+`.env`, and perform no inference. Inspection recommends a candidate but does not
+select it. The estimate refuses missing snapshots, model entries, endpoint
+capabilities or prices. No real Sonnet ID, price or context length is hardcoded.
+Architect reasoning uses the existing `reasoning.effort` field. Its configured
+JSON-object output and local plan validation remain; strict-schema compatibility
+is separately reported as declared metadata.
+
+Start the server in terminal 1 using the existing broad configuration and author
+credential environment (the author performs all real-provider execution):
+
+```bash
+make run PORT=8765
+```
+
+In terminal 2, run one smoke followed by one full round without tuning prompts or
+changing the selected model after inspecting results:
+
+```bash
+make bench-broad MODE=real BASE_URL=http://127.0.0.1:8765 BUDGET=2 SMOKE=1 \
+  ARCHITECT_MODEL="$ARCHITECT_MODEL" ARCHITECT_THINKING=medium \
+  PROVIDER_PREFERENCE=Cerebras
+make bench-broad MODE=real BASE_URL=http://127.0.0.1:8765 BUDGET=2 RUNS_PER_SCENARIO=2 \
+  ARCHITECT_MODEL="$ARCHITECT_MODEL" ARCHITECT_THINKING=medium \
+  PROVIDER_PREFERENCE=Cerebras
+```
+
+Smoke runs scenarios **6, 9, 10**, once each; the full round retains **1–10 then
+10–1**. Smoke evidence is explicitly marked and excluded from full comparisons.
+Cerebras preference is sent only for compatible Generator/Fixer models; Architect
+routing stays unchanged. An optional `ARCHITECT_PROVIDER_PREFERENCE` must serve
+the explicit Architect model. Refresh the snapshot if endpoint availability
+changes. Unavailable/degraded/unknown public status requires confirmation; use
+`FORCE=1` for an intentional noninteractive override. It cannot bypass a missing
+snapshot or model/provider incompatibility. `BUDGET` remains a minimum reserve,
+and the estimated cost seeds its first-run guard. The manifest records explicit
+and recommended model IDs, thinking, role routing, provenance, estimates and
+status decisions; observed provider fallback is reported per run.
+
+For a local tool-chain rehearsal, start the stub server as described below and
+run the following with experiment options explicitly cleared:
+
+```bash
+make bench-broad MODE=stub SMOKE=1 BASE_URL=http://127.0.0.1:8765 \
+  ARCHITECT_MODEL= ARCHITECT_THINKING= \
+  PROVIDER_PREFERENCE= ARCHITECT_PROVIDER_PREFERENCE=
+```
+
+This tests the three-scenario schedule with real local
+scanners/validators. The Phase 9k scripted HTTP client test separately rehearses
+the experiment-only selection/status/cost/fallback path using fake metadata.
+Neither rehearsal measures real model quality, cost or latency.
+
 ### Running the broad benchmark
 
 The [broad-v1 registration](docs/evals/scenarios/README.md) is committed before any

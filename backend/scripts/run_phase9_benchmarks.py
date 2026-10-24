@@ -25,6 +25,7 @@ from scripts.phase9i_broad import (
     mark_broad_not_started,
     registered_scenarios,
     scenario_digest,
+    smoke_schedule,
 )
 from scripts.phase9k_catalogue import estimate, recommendation
 from scripts.phase9k_routing import preferences, status_preflight
@@ -111,7 +112,9 @@ async def run(args) -> None:
     broad = getattr(args, "broad", False)
     registration = registered_scenarios() if broad else None
     directory = evidence_directory(
-        "bench-broad"
+        "bench-broad-smoke"
+        if getattr(args, "broad_smoke", False)
+        else "bench-broad"
         if broad
         else "bench-smoke"
         if args.smoke
@@ -124,7 +127,11 @@ async def run(args) -> None:
     if registration:
         data, raw, revision = registration
         digest = scenario_digest(raw)
-        slots = broad_schedule(data, args.runs_per_scenario, digest)
+        slots = (
+            smoke_schedule(data, digest)
+            if getattr(args, "broad_smoke", False)
+            else broad_schedule(data, args.runs_per_scenario, digest)
+        )
         (directory / "broad-v1.json").write_bytes(raw)
         metadata_path = directory / "environment.json"
         metadata = json.loads(metadata_path.read_text())
@@ -134,6 +141,7 @@ async def run(args) -> None:
             registration_commit=revision,
             runs_per_scenario=args.runs_per_scenario,
             planned_runs=len(slots),
+            broad_smoke=getattr(args, "broad_smoke", False),
         )
         write_json(metadata_path, metadata)
     summary(
@@ -150,6 +158,22 @@ async def run(args) -> None:
         routing = preferences(args)
         if routing:
             harness.run_config["provider_preferences"] = routing
+        if harness.run_config:
+            metadata_path = directory / "environment.json"
+            metadata = json.loads(metadata_path.read_text())
+            metadata.update(
+                explicit_architect_model=harness.redactor.redact(
+                    getattr(args, "architect_model", None) or ""
+                )
+                or None,
+                architect_thinking=getattr(args, "architect_thinking", None),
+                provider_preferences={
+                    role: harness.redactor.redact(value)
+                    for role, value in routing.items()
+                },
+                provider_status_force=getattr(args, "force", False),
+            )
+            write_json(metadata_path, metadata)
         if broad:
             harness.benchmark_kind = "broad"
 
@@ -305,6 +329,11 @@ def main() -> None:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--broad", action="store_true")
     parser.add_argument(
+        "--broad-smoke",
+        action="store_true",
+        default=os.environ.get("PHASE9_BROAD_SMOKE") == "1",
+    )
+    parser.add_argument(
         "--catalogue-snapshot",
         type=Path,
         default=Path(os.environ.get("OPENROUTER_CATALOGUE_SNAPSHOT") or SNAPSHOT_PATH),
@@ -343,6 +372,8 @@ def main() -> None:
         default=os.environ.get("PHASE9_RUNS_PER_SCENARIO") or 2,
     )
     args = parser.parse_args()
+    if args.broad_smoke and not args.broad:
+        parser.error("Broad smoke requires --broad")
     if (args.architect_model or args.architect_thinking) and not args.broad:
         parser.error("Architect experiment overrides require --broad")
     try:
@@ -352,7 +383,9 @@ def main() -> None:
     if args.broad:
         if args.smoke or args.runs_per_scenario < 1:
             parser.error("Broad requires positive RUNS_PER_SCENARIO and no --smoke")
-        planned = 10 * args.runs_per_scenario
+        if args.broad_smoke:
+            args.runs_per_scenario = 1
+        planned = 3 if args.broad_smoke else 10 * args.runs_per_scenario
         args.max_runs = (
             min(args.max_runs, planned) if args.max_runs is not None else planned
         )

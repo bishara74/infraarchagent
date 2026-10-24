@@ -12,7 +12,12 @@ from scripts.phase9_common import write_json
 from scripts.phase9_report import statistics_for, write_csv
 from scripts.phase9b_stats import fisher, wilson
 from scripts.phase9d_quality import compact_snapshot, quality_table
-from scripts.phase9i_broad import METADATA_FIELDS, SCENARIO_PATH, broad_schedule
+from scripts.phase9i_broad import (
+    METADATA_FIELDS,
+    SCENARIO_PATH,
+    broad_schedule,
+    smoke_schedule,
+)
 
 PROFILES = ("strict", "contextual-v1", "contextual-v2")
 
@@ -31,7 +36,12 @@ def load_broad(evidence, folder: str) -> dict:
         "merge-base", "--is-ancestor", env["registration_commit"], env["git_commit"]
     )
     registration = json.loads(raw)
-    slots = broad_schedule(registration, env["runs_per_scenario"], digest)
+    if env.get("broad_smoke"):
+        if env["runs_per_scenario"] != 1:
+            raise ValueError("Smoke repetition metadata is inconsistent")
+        slots = smoke_schedule(registration, digest)
+    else:
+        slots = broad_schedule(registration, env["runs_per_scenario"], digest)
     data = evidence.json(base + "/results.json")
     rows = data["runs"]
     if (
@@ -274,8 +284,9 @@ def append_broad_report(
         all_blockers.extend(blockers)
         all_comparisons.extend(comparisons)
         env = benchmark["environment"]
+        smoke_label = "; three-scenario smoke" if env.get("broad_smoke") else ""
         lines += [
-            f"### {folder} ({env['mode']})",
+            f"### {folder} ({env['mode']}{smoke_label})",
             "",
             f"Runs per scenario: {env['runs_per_scenario']}; "
             f"registration SHA-256: `{env['scenario_sha256']}`; "

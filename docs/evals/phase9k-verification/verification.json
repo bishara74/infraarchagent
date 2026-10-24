@@ -1,0 +1,125 @@
+{
+  "recorded_at": "2026-10-24T21:43:56.514003+00:00",
+  "mode": "offline-verification",
+  "backend": {
+    "command": "make test",
+    "passed": 2297,
+    "failed": 0,
+    "skipped": 0,
+    "perf_deselected": 6,
+    "duration": "357.72s (0:05:57)"
+  },
+  "lint": {
+    "command": "make lint",
+    "exit_code": 0,
+    "mypy_sources": 173
+  },
+  "frontend": {
+    "command": "make frontend-test",
+    "passed": 413,
+    "failed": 0,
+    "skipped": 0,
+    "files": 38
+  },
+  "e2e": {
+    "command": "make test-e2e",
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0,
+    "duration": "4.1m"
+  },
+  "secret_scan": {
+    "command": "make secret-scan",
+    "findings": 0,
+    "errors": 0,
+    "evidence": "docs/evals/phase9-secret-scan-20261024T214436234056Z"
+  },
+  "local_stub_smoke": {
+    "command": "make bench-broad MODE=stub SMOKE=1 BASE_URL=http://127.0.0.1:18765",
+    "evidence": "docs/evals/phase9-bench-broad-smoke-20261024T213302284037Z",
+    "runs": 3,
+    "completed": 3,
+    "scenario_ids": [
+      6,
+      9,
+      10
+    ],
+    "quality_packages": 9,
+    "validation": {
+      "valid": 6,
+      "invalid": 3
+    },
+    "status": {
+      "checks_passed": 6,
+      "pending_review": 3
+    }
+  },
+  "scripted_client_rehearsal": {
+    "test": "tests/unit/test_phase9k_smoke.py::test_scripted_experiment_client_rehearsal_is_offline_and_auditable",
+    "cases": [
+      "three completed runs with fake catalogue and observed fallback",
+      "missing snapshot stops before submission",
+      "incompatible preference stops before submission"
+    ],
+    "scope": "Mocked HTTP client plumbing, not scanner/model quality or deployment."
+  },
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "cost": {
+    "status": "unavailable_without_author_snapshot",
+    "baseline_runs": 40,
+    "mean_architect_input_tokens": 1621.775,
+    "mean_architect_output_tokens": 789.55,
+    "formula_per_run": "1621.775 * snapshot_prompt_price_per_token + 789.55 * snapshot_completion_price_per_token + 1.075 * declared_request_price_per_call",
+    "smoke_token_projection": {
+      "input": 4924,
+      "output": 2946.75
+    },
+    "round_20_token_projection": {
+      "input": 32435.5,
+      "output": 15791
+    },
+    "mean_architect_calls": 1.075
+  },
+  "source_hashes": {
+    ".gitignore": "58573d6c324a3a20388a4fa8ea5d14ddf4b6e00c021d95cb0af3446772ef6ad5",
+    "Makefile": "cb8988921557cb0462277c100cfa9d4e4883ade20e88602fe6fda49b6608b8b2",
+    "backend/app/agents/factory.py": "1d006ed10e88c220b922a733458e35256eebdc7c9525ebcbe99dc68e167ee99a",
+    "backend/app/api/benchmark.py": "89b375992f9c79ab9d4f4a927f849e1b00ee8421d8d2cf1af2120d69f50db749",
+    "backend/app/core/config.py": "ad561f3013efde866824ea51c7e372bcf20b59e39db35d62e3225afc7091fb47",
+    "backend/app/core/model_selection.py": "cf8dc5a95832ff39d62306fff8baf7704330c49207326a1d6e8039850f76c702",
+    "backend/app/core/public_catalogue.py": "c753691b841563722087226d01255344a2683d913a2564039cebe172d14ba71f",
+    "backend/app/core/telemetry.py": "d08b2531bab8078fb0b2de4b0f922b2f0381db33fd8fb4db86727f1041440482",
+    "backend/app/domain/agent_selection.py": "e998ee48f594dcb9270f9b7527353afd5330e7520405c4aebacc442b00f32cd2",
+    "backend/app/domain/run_config.py": "0d231fa500bba0f4571112a9673d6f7e7b1ea5a083189aee75a8ccd9ad944689",
+    "backend/app/llm/base.py": "53c240bbf994947a14a0056d50ad19b40fb361edaf90a85de53f3d13d9b1a5f7",
+    "backend/app/llm/openai.py": "361cfbe799aa20b97b8c81ea8a9bd7784f92360387f8f614d49b514417542928",
+    "backend/scripts/benchmark.py": "9b400584a1f630eb15befe9f2000949dda083c2a268098bf2fe4d683206c10ab",
+    "backend/scripts/phase9_budget.py": "4f6c6dbb38cada7c62169a2e4a0be884cca4630ff389665ee93b8607c4cf3e99",
+    "backend/scripts/phase9b_report.py": "8b705625e9ab19871a00d2a003a691847658c7613d561afd5b92beb3b0e762a4",
+    "backend/scripts/phase9i_broad.py": "d1705d7c2282ea19f0a6f6e6b8e3deb5d0e4590ce44ab706a4f4dd84635a424c",
+    "backend/scripts/phase9i_broad_report.py": "cba0d6dcb7a4ce16d5d6b24a69d1804f0d6ebc93a68181def8b59dea08e18dc1",
+    "backend/scripts/phase9k_audit.py": "167598203fae5f1b17827c11b819eb37e7918dfc06edce0c46110beb9ca1c327",
+    "backend/scripts/phase9k_catalogue.py": "7a3c4e43b3317d4c26011c8d6d5903c482b77fed7b76f6186badfa1504132131",
+    "backend/scripts/phase9k_report.py": "c17b30d8f1d1a40a492ad4b6a8002e2b68f04c764ba43ca777b563da70b40be8",
+    "backend/scripts/phase9k_routing.py": "677dc5872be3b6c2796eb1affbd9678fed49083fd9cdeb9d19b77ac6671cf47a",
+    "backend/scripts/run_phase9_benchmarks.py": "65937efe60b1c944a28dfc3fe2ba300ab508f9ec6dfdc47ae64c9f375ec55cde",
+    "backend/tests/integration/test_phase9k_architect.py": "5150713b03e892c1f938120f092b687c04263ee7d2e10095c776cdeaaf1c0d0a",
+    "backend/tests/integration/test_phase9k_preflight.py": "3c776173091658f72d97542d43544cf75d97022d3425f2303c867b4b7a3bfb2a",
+    "backend/tests/phase9k_fixtures.py": "9822169db9f13684cd4a57661463091930f6d7dc26069c4d2a6b6e36dde27727",
+    "backend/tests/unit/test_phase9k_benchmark.py": "97e606bcf12ffaff2f76e2e842fa3435b032d981f92f811848fe95cd520e5f25",
+    "backend/tests/unit/test_phase9k_catalogue.py": "5ef744eb970779b406610d04ebf279f2f487c10f76d1dbfceb4a40c681b76aa3",
+    "backend/tests/unit/test_phase9k_report.py": "59190c700d1f4bc65629f3f02a6d16d8a1a2ae19fc34a1507b44e0f5c99889ba",
+    "backend/tests/unit/test_phase9k_routing.py": "7583debe72360ea4758cb7b5af37f4e31ed4190fcf70e9999ba85c330ae8f63c",
+    "backend/tests/unit/test_phase9k_smoke.py": "bef9f94b6f8a05272d88f6ab2b7c15e6d4ce43e18edef55436a2c69c24805a34"
+  },
+  "constraints": {
+    "real_inference_calls": 0,
+    "real_catalogue_fetches": 0,
+    "project_dotenv_reads": 0,
+    "installs": 0,
+    "pushes": 0,
+    "schema_migrations_added": 0,
+    "historical_evidence_changed": false,
+    "spec_or_prompt_edits": false
+  }
+}
