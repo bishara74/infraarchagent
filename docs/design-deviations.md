@@ -2119,6 +2119,12 @@ real inference later. No new specification ambiguity or open question is added.
 
 ### D-58 — UI polish and truthful configuration labels (Phase 9j)
 
+Round 3 section 1: authentication has an explicit /login route. Only a recognised
+signed-out deep link creates transient router return state; login consumes it by
+replacement. Root/login entry and explicit logout lead to New request. No last
+route is read from preferences or persistent storage. Authentication and local
+mode policy are unchanged. No new open question.
+
 FR-UI-01–07, FR-P-04, PR-02 and NFR-01. The author-approved Phase 9j
 polish follows the existing working UI and the thesis wireframes. Server-side
 readiness, strict assessment, authentication and review rules remain authoritative.

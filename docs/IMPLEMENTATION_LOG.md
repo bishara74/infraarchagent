@@ -27,6 +27,20 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-24 — Phase 9j round 3 section 1 — Consume login deep links and reset logout
+
+**Summary:** Normal login lands on New request; signed-out deep links use one-use router state. Explicit logout replaces the route with /login and clears the target.
+
+**Requirements addressed:** FR-UI-01, NFR-01.
+
+**Files:** App, AccountMenu, LoginGate and tests; round3-login.spec.ts; round3 login screenshots; D-58; this log.
+
+**Decisions:** No persistent remembered route. Recognised internal routes retain query/fragment for one navigation. Existing authentication/local-mode gates remain.
+
+**Tests:** `make frontend-test`: 197 passed, 0 failed/skipped (36 files). `make lint`: exit 0, Ruff/format, mypy 167 sources, ESLint/TypeScript. Focused Playwright onboarding + login: 2 passed, 0 failed (37.3s), using isolated UTF-8 PostgreSQL, absolute dotenv-disabled bootstrap and mocked provider HTTP. Two 1280×800 screenshots captured.
+
+**Known gaps / follow-ups:** Sections 2–3 and final full verification remain. Initial browser launch could not connect because the tool process sandbox ended the separate database process; rerun starts PostgreSQL and verification in one process tree. No migration, dependency or open question.
+
 ## 2026-10-23 — Phase 9j round 2 section 5 — Compare first, inspect per variant and verify all-three downloads
 
 **Summary:** Lead with compact comparison cards and URL-addressable Files,
