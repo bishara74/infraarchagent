@@ -51,7 +51,8 @@ async def status_preflight(
     return list(checks.values())
 
 
-def routing_statistics(telemetry: list[dict], selections: dict) -> dict:
+def routing_statistics(telemetry: list[dict], selections: dict, aliases=None) -> dict:
+    aliases = aliases or {}
     seen, counts, providers = set(), Counter(), Counter()
     for index, call in enumerate(telemetry):
         if call.get("kind") != "llm":
@@ -70,7 +71,8 @@ def routing_statistics(telemetry: list[dict], selections: dict) -> dict:
             "unknown"
             if not served
             else "preferred"
-            if provider_key(served) == provider_key(order[0])
+            if aliases.get(provider_key(served), provider_key(served))
+            == aliases.get(provider_key(order[0]), provider_key(order[0]))
             else "fallback"
         )
         counts[category] += 1

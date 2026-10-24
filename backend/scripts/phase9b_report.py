@@ -321,7 +321,9 @@ def assert_comparable(left: dict, right: dict) -> None:
         raise ValueError("Final prompt schedules are not comparable")
 
 
-def generate(evidence: Evidence, output: Path) -> None:
+def generate(
+    evidence: Evidence, output: Path, *, experiment_folder: str | None = None
+) -> None:
     if output.exists():
         raise ValueError("Report destination already exists; use a fresh --output-dir")
     historical_folders = {
@@ -1059,6 +1061,10 @@ def generate(evidence: Evidence, output: Path) -> None:
     from scripts.phase9i_broad_report import append_broad_report
 
     append_broad_report(evidence, broad_folders, datasets, output)
+    if experiment_folder:
+        from scripts.phase9k_report import append_experiment_report
+
+        append_experiment_report(evidence, experiment_folder, output)
     write_json(
         output / "input-manifest.json",
         {
@@ -1078,11 +1084,16 @@ def generate(evidence: Evidence, output: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--revision", default="HEAD")
+    parser.add_argument("--experiment-folder")
     parser.add_argument(
         "--output-dir", type=Path, default=ROOT / "docs/evals/phase9-final-report"
     )
     args = parser.parse_args()
-    generate(Evidence(ROOT, args.revision), args.output_dir)
+    generate(
+        Evidence(ROOT, args.revision),
+        args.output_dir,
+        experiment_folder=args.experiment_folder,
+    )
 
 
 if __name__ == "__main__":

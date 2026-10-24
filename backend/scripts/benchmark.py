@@ -411,6 +411,7 @@ class Harness:
         self.resolved_agent_selections = {}
         self.benchmark_kind = None
         self.run_config = {}
+        self.provider_aliases = {}
 
     async def credit(self) -> CreditSnapshot:
         return (
@@ -985,7 +986,7 @@ class Harness:
         from scripts.phase9k_routing import routing_statistics
 
         row["provider_routing"] = routing_statistics(
-            observations, safe_selections or {}
+            observations, safe_selections or {}, self.provider_aliases
         )
         if self.output and (self.output / "environment.json").exists():
             path = self.output / "environment.json"
@@ -997,6 +998,32 @@ class Harness:
             for p in snapshot.get("packages", [])
             if p.get("variant") in VARIANTS
         }
+        if self.benchmark_kind == "broad" and self.output:
+            from app.core.public_catalogue import digest
+            from scripts.phase9i_broad import METADATA_FIELDS
+            from scripts.phase9k_audit import package_audit, plan_exposure
+
+            audit_directory = self.output / "architecture" / row["run_id"]
+            audit_directory.mkdir(parents=True, exist_ok=True)
+            write_json(
+                audit_directory / "plan.json",
+                {
+                    "run_id": row["run_id"],
+                    **{k: row.get(k) for k in METADATA_FIELDS},
+                    "plan_sha256": digest(snapshot.get("plan")),
+                    **plan_exposure(snapshot.get("plan")),
+                },
+            )
+            for package in snapshot.get("packages", []):
+                if package.get("variant") in VARIANTS:
+                    write_json(
+                        audit_directory / (package["variant"] + ".json"),
+                        {
+                            "run_id": row["run_id"],
+                            **{k: row.get(k) for k in METADATA_FIELDS},
+                            **package_audit(snapshot.get("plan"), package),
+                        },
+                    )
         run = snapshot["run"]
         provider = run.get("provider")
         if (

@@ -841,6 +841,23 @@ before the first submission. Different model/thinking choices can change token
 usage, latency and cost; estimates are not quotes or spending limits. A missing
 snapshot or price stops the experiment. No real Sonnet price is supplied here.
 
+After the author commits a full experiment evidence folder, extend the existing
+immutable broad report with its exact folder name:
+
+```bash
+make eval-report EVAL_REPORT_ARGS="--revision HEAD --experiment-folder <experiment-folder-name> --output-dir docs/evals/<fresh-report-folder>"
+```
+
+The comparison pools only the two recorded real gpt-oss broad rounds and checks
+that Generator/Fixer models and thinking match. Smoke/stub results cannot enter
+this comparison. Scenario/complexity tables include validity, strict/v1/v2 passes,
+AWS-0053/CKV_AWS_91 package and finding counts, LB scheme counts and provider
+fallback statistics. New JSON/CSV files retain per-run Architect diagnostics and
+per-package plan/original/retained Terraform audit evidence. Unknowns remain
+unknown; absent LBs are not private designs. The independent baseline audit is in
+`docs/evals/phase9k-baseline-audit/`; historical folders are unchanged. Code/prompt
+history and routing remain disclosed confounders, so this is descriptive evidence.
+
 ### Running the broad benchmark
 
 The [broad-v1 registration](docs/evals/scenarios/README.md) is committed before any

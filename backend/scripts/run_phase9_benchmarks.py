@@ -10,7 +10,12 @@ from pathlib import Path
 
 import httpx
 
-from app.core.public_catalogue import SNAPSHOT_PATH, CatalogueError, load_snapshot
+from app.core.public_catalogue import (
+    SNAPSHOT_PATH,
+    CatalogueError,
+    load_snapshot,
+    provider_aliases,
+)
 from scripts.benchmark import Harness, configured_harness
 from scripts.phase9_common import evidence_directory, safe_main, write_json
 from scripts.phase9_report import summary
@@ -188,6 +193,7 @@ async def run(args) -> None:
                     raise CatalogueError(
                         "Client/server snapshot mismatch; no submission."
                     )
+                harness.provider_aliases = provider_aliases(snapshot)
                 experiment_cost = None
                 if getattr(args, "architect_model", None):
                     experiment_cost = estimate(
@@ -218,6 +224,7 @@ async def run(args) -> None:
                     explicit_architect_model=getattr(args, "architect_model", None),
                     recommended_architect_model=recommendation(snapshot),
                     recommendation_advisory=True,
+                    provider_aliases=harness.provider_aliases,
                 )
                 write_json(metadata_path, metadata)
             # Do not submit a rehearsal to a backend lacking its local tool chain.

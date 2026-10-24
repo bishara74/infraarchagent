@@ -2361,6 +2361,32 @@ cost, without treating it as a measurement or changing reserve semantics.
 Missing snapshots/pricing/capability evidence stop the experiment. Raw snapshots
 remain uncommitted; manifests retain provenance, price basis and source hashes.
 
+Section 4 (FR-A-01, FR-P-04, PR-01, NFR-01): the broad report accepts an
+explicit experiment folder and compares it with the two pooled real broad rounds,
+only after checking the registration and Generator/Fixer model/thinking identity.
+Stub and smoke cannot enter the full-round comparison. Per-scenario/complexity
+outputs retain validity, strict/v1/v2 passes and specific AWS-0053/CKV_AWS_91
+package/finding counts. Fallback shares retain known/unknown denominators and
+resolve display-name/routing-tag aliases only from snapshot metadata.
+
+LB audits classify explicit structured plan services independently from original
+and retained Terraform; bounded instance resolution reuses the existing parser.
+Missing, dynamic, unparseable and external-module evidence remains unknown.
+Absent LB declarations never imply private ingress. Omitted aws_lb/aws_alb.internal
+uses the documented HashiCorp AWS default false; classic ELB omission and custom
+providers remain unknown. These observational rules do not alter scanner policy,
+CandidateGuard or readiness. Resource/file locations and hashes are source-free
+projections; configured scheme does not establish actual reachability. The new
+baseline audit checks 120 packages/40 cached snapshots against committed quality
+and records source/code hashes without rewriting historical evidence. Run-level
+plan records also preserve plans when generation yields no packages.
+
+LLM attempt telemetry adds allowlisted raw finish reasons, retaining reasoning,
+latency and truncation/timeout/deadline diagnostics separately from plan-quality
+results. Unknown historical finish reasons remain unknown. Reports disclose
+historical revisions/prompt evolution and provider routing as confounders; they do
+not claim causal isolation or deployment success.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

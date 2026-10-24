@@ -234,6 +234,7 @@ class OpenAIAdapter(LLMAdapter):
                 if choice.finish_reason == "length"
                 else choice.finish_reason
             ),
+            finish_reason=choice.finish_reason,
             served_by=served_by,
             reasoning_tokens=reasoning_tokens,
             cached_input_tokens=cached,

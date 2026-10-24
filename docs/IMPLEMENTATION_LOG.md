@@ -27,6 +27,21 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-24 — Phase 9k section 4 — Compare architecture and diagnose Architect failures
+
+**Summary:** Add explicit experiment-vs-pooled-broad reports, deterministic plan/original/retained LB exposure audits and per-run Architect finish/reasoning/latency diagnostics. Publish an independent 120-package/40-run baseline audit.
+
+**Requirements addressed:** FR-A-01, FR-P-04, PR-01, NFR-01.
+
+**Files:** new scripts/phase9k_audit.py, phase9k_report.py and tests/unit/test_phase9k_report.py; phase9b_report, benchmark, run_phase9_benchmarks and phase9k_routing; llm/base/openai, core/telemetry/public_catalogue; docs/evals/phase9k-baseline-audit/; README, D-59 and this log.
+
+**Decisions:** Historical evidence is immutable; source snapshots and observational parser/classifier code are hashed. Plan unit is run, Terraform unit is package. Static scheme classification distinguishes absent/unknown/mixed and original/retained disagreement; documented AWS lb/alb default false is observational only. Reuse bounded Instances; custom providers/unknown modules remain unknown. Verify unchanged sibling model/thinking before describing an Architect-only selection comparison. Deduplicate provider calls and use snapshot-derived tag/name aliases. Extend only telemetry with allowlisted raw finish reason, retaining truncation/deadline diagnostics separately from quality. See D-59.
+
+**Tests:** Focused backend/report/adapter/golden suite: **149 passed, 0 failed/skipped** (14.92s). After final source-location/custom-provider and plan-audit refinements, reporting/broad regressions: **49 passed, 0 failed/skipped** (7.20s). Ruff passes; mypy **173** sources passes. Tests cover complete report artifact generation, historical output preservation, registration/hash/sibling/mode mismatch rejection, exposure classifiers and actual adapter truncation diagnostics. Real cached-source audit: **120 packages / 40 snapshots**, retained schemes **37 public / 7 internal / 73 absent / 3 unknown**. No historical rows, profiles or IaC changed.
+
+**Known gaps / follow-ups:** Section 5 remains: smoke option, final commands/rehearsal and complete verification. No real experiment folder exists yet; real comparison requires the author's later committed evidence. Runtime/deployment behavior and real-dollar costs remain unverified. No real inference, installs, dotenv reads, migration or policy changes.
+
+
 ## 2026-10-24 — Phase 9k section 3 — Capture anonymous catalogue evidence and estimate costs
 
 **Summary:** Add author-only anonymous snapshot/inspection/estimate commands and price the explicit Architect selection from recorded broad token usage. Seed the existing credit guard with a conservative projection before submission.

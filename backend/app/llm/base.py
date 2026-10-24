@@ -15,7 +15,7 @@ from uuid import uuid4
 
 from app.core.config import ReasoningEffort, ResponseFormat, Settings, StructuredOutput
 from app.core.credentials import CredentialMaterial
-from app.core.telemetry import observe, tags
+from app.core.telemetry import observe, safe_finish_reason, tags
 from app.llm.errors import (
     LLMDeadlineExceeded,
     LLMPermanentError,
@@ -61,6 +61,7 @@ class LLMResponse:
     served_by: str | None = None
     reasoning_tokens: int | None = None
     cached_input_tokens: int | None = None
+    finish_reason: str | None = None
 
     def stats(self) -> ResponseStats:
         return ResponseStats(
@@ -111,6 +112,7 @@ class LLMAttempt:
     provider: str | None = None
     model: str | None = None
     cached_input_tokens: int | None = None
+    finish_reason: str | None = None
 
 
 class LLMAdapter(ABC):
@@ -376,6 +378,11 @@ class LLMAdapter(ABC):
                     provider=self.provider,
                     model=self.model,
                     cached_input_tokens=cached_tokens(response.cached_input_tokens)
+                    if response
+                    else None,
+                    finish_reason=safe_finish_reason(
+                        response.finish_reason or response.stop_reason
+                    )
                     if response
                     else None,
                 )

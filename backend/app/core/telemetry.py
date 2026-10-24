@@ -34,6 +34,7 @@ TEXT_FIELDS = {
     "response_format",
     "requested_effort",
     "call_kind",
+    "finish_reason",
 }
 NUMBER_FIELDS = {
     "elapsed_seconds",
@@ -54,6 +55,22 @@ INTEGER_FIELDS = {
 ID_FIELDS = {"id", "call_id", "run_id", "parent_id"}
 TIME_FIELDS = {"started_at", "finished_at", "execution_started_at"}
 BOOL_FIELDS = {"executed", "completed", "deadline_exceeded"}
+FINISH_REASONS = {
+    "stop",
+    "length",
+    "tool_calls",
+    "content_filter",
+    "function_call",
+    "max_tokens",
+    "end_turn",
+    "stop_sequence",
+    "pause_turn",
+    "refusal",
+}
+
+
+def safe_finish_reason(value: object) -> str | None:
+    return value if isinstance(value, str) and value in FINISH_REASONS else None
 
 
 def safe_records(raw: object) -> list[dict[str, Any]]:
@@ -78,6 +95,8 @@ def safe_records(raw: object) -> list[dict[str, Any]]:
                 TEXT_FIELDS | NUMBER_FIELDS | INTEGER_FIELDS | ID_FIELDS | TIME_FIELDS
             ):
                 clean[key] = None
+            elif key == "finish_reason":
+                clean[key] = safe_finish_reason(value)
             elif key in TEXT_FIELDS and isinstance(value, str):
                 clean[key] = redact(value)[:128]
             elif key in NUMBER_FIELDS and type(value) in {int, float}:

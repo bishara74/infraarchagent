@@ -209,3 +209,13 @@ async def provider_health(
             "endpoints": [],
             "checked_at": datetime.now(UTC).isoformat(),
         }
+
+
+def provider_aliases(snapshot: dict[str, Any]) -> dict[str, str]:
+    """Compare serving display names with routing tags using captured evidence."""
+    return {
+        provider_key(e["tag"]): provider_key(e["provider_name"])
+        for endpoints in snapshot["payload"]["endpoints"].values()
+        for e in endpoints
+        if isinstance(e.get("tag"), str) and isinstance(e.get("provider_name"), str)
+    }
