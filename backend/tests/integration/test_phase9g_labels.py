@@ -16,7 +16,12 @@ async def test_decision_provenance_and_failed_checks_everywhere(db_engines, acti
         for name, reason in [("", "reason"), ("Engineer", "  ")]:
             response = await client.post(
                 review_url(run_id),
-                json={"action": action, "reviewer_name": name, "reason": reason},
+                json={
+                    "action": action,
+                    "reviewer_name": name,
+                    "category": "other",
+                    "reason": reason,
+                },
             )
             assert response.status_code == 400
         response = await client.post(
@@ -24,6 +29,7 @@ async def test_decision_provenance_and_failed_checks_everywhere(db_engines, acti
             json={
                 "action": action,
                 "reviewer_name": " Ada ",
+                "category": "other",
                 "reason": " Explicitly accept remaining risks ",
             },
         )

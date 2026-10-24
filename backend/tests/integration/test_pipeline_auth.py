@@ -43,6 +43,7 @@ async def test_every_pipeline_route_requires_header_but_health_is_open(db_engine
             review_url(run_id),
             {
                 "reviewer_name": "Test engineer",
+                "category": "other",
                 "reason": "Reviewed outstanding checks",
                 "action": "approve",
             },
@@ -70,6 +71,7 @@ async def test_every_pipeline_route_requires_header_but_health_is_open(db_engine
                 review_url(run_id),
                 json={
                     "reviewer_name": "Test engineer",
+                    "category": "other",
                     "reason": "Reviewed outstanding checks",
                     "action": "approve",
                 },

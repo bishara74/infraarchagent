@@ -74,7 +74,13 @@ class ReviewService:
                             "run_in_progress",
                             "Wait until the automated pipeline finishes.",
                         )
-                    if PackageStatus(row.status) != PackageStatus.PENDING_REVIEW:
+                    if not (
+                        PackageStatus(row.status) == PackageStatus.PENDING_REVIEW
+                        or (
+                            PackageStatus(row.status) == PackageStatus.CHECKS_PASSED
+                            and body.action == "reject"
+                        )
+                    ):
                         raise ReviewError(
                             409, "not_pending_review", "Package is not pending review."
                         )
@@ -131,6 +137,7 @@ class ReviewService:
                                 else body.reviewer_name,
                                 "user_id": str(user.id) if user else None,
                                 "reason": body.reason,
+                                "category": body.category,
                                 "decided_at": datetime.now(UTC).isoformat(),
                                 "identity_basis": "authenticated account"
                                 if user

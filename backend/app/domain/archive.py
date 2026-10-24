@@ -141,6 +141,11 @@ def readiness_document(
             f"Reviewer: {(decision or {}).get('reviewer_name') or 'unavailable'} — "
             f"{(decision or {}).get('identity_basis', 'unavailable')}",
             f"Decision time: {(decision or {}).get('decided_at') or 'unavailable'}",
+            *(
+                [f"Category: {decision.get('category') or 'not recorded'}"]
+                if decision
+                else []
+            ),
             f"Reason: {(decision or {}).get('reason') or 'unavailable'}",
             "",
             "## Review feedback",

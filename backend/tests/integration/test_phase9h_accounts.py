@@ -75,7 +75,12 @@ async def test_bootstrap_accounts_roles_and_revocation(db_engines):
         assert (await client.get("/api/auth/users")).status_code == 403
         response = await client.post(
             f"/api/pipeline/{run}/packages/cost/review",
-            json={"action": "approve", "reason": "Reviewed", "reviewer_name": "forged"},
+            json={
+                "action": "approve",
+                "category": "other",
+                "reason": "Reviewed",
+                "reviewer_name": "forged",
+            },
             headers=ORIGIN,
         )
         assert response.status_code == 200

@@ -66,6 +66,7 @@ async def all_labelled(engine, *, approve_cost=True):
             json={
                 "action": "reject",
                 "reviewer_name": "Engineer",
+                "category": "other",
                 "reason": "Rejected remaining checks",
             },
         )
@@ -77,6 +78,7 @@ async def all_labelled(engine, *, approve_cost=True):
             json={
                 "action": "approve",
                 "reviewer_name": "Engineer",
+                "category": "other",
                 "reason": "Reviewed",
             },
         )

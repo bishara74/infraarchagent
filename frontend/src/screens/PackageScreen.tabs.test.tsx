@@ -25,6 +25,6 @@ it('FR-UI-06 overview enables the bundle only for all three downloadable package
 it('FR-UI-07 review targets only the selected variant and restores the review deep link',async()=>{
  const value=structuredClone(pending);value.packages[1]={...pending.packages[2]!,variant:'performance'};current.results=value;setSessionStatus({authenticated:true,auth_required:true,mode:'account',user:{id:'reviewer',username:'Reviewer',role:'reviewer'}});
  const request=vi.spyOn(api,'review').mockResolvedValue({run_id:'run',variant:'performance',status:'engineer_approved'});
- show('/runs/run/packages/performance?tab=review');expect(screen.getByRole('tab',{name:'Review'})).toHaveAttribute('aria-selected','true');fireEvent.change(screen.getByLabelText('Decision reason'),{target:{value:'Selected performance only.'}});fireEvent.click(screen.getByRole('button',{name:'Approve'}));
- await waitFor(()=>expect(request).toHaveBeenCalledExactlyOnceWith('run','performance',{action:'approve',reviewer_name:'Reviewer',reason:'Selected performance only.'}));
+ show('/runs/run/packages/performance?tab=review');expect(screen.getByRole('tab',{name:'Review'})).toHaveAttribute('aria-selected','true');fireEvent.change(screen.getByLabelText('Reason category'),{target:{value:'other'}});fireEvent.change(screen.getByLabelText('Decision reason'),{target:{value:'Selected performance only.'}});fireEvent.click(screen.getByRole('button',{name:'Approve'}));
+ await waitFor(()=>expect(request).toHaveBeenCalledExactlyOnceWith('run','performance',{action:'approve',reviewer_name:'Reviewer',category:'other',reason:'Selected performance only.'}));
 });

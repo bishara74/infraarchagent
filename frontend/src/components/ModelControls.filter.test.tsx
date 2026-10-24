@@ -26,7 +26,7 @@ it('FR-UI-01 routing default uses base metadata and effective server effort',()=
  fireEvent.click(screen.getByRole('combobox',{name:'Architect model'}));expect(screen.getByRole('option',{name:/gpt-oss-120b:nitro.*tested/})).toHaveTextContent('65,536');
 });
 it('FR-UI-01 missing details only show after loading and retry is actionable',()=>{
- const retry=vi.fn();const props={catalog:null,value:{},onChange:vi.fn(),retry};
+ const retry=vi.fn();const props={catalog:null,value:{},defaults:{architect:{model:'saved'},generators:{model:'saved'},fixer:{model:'saved'}},onChange:vi.fn(),retry};
  const view=render(<ModelControls {...props} loaded={false}/>);expect(screen.queryByText(/We couldn't load details/)).toBeNull();
  view.rerender(<ModelControls {...props} loaded/>);expect(screen.getAllByText("We couldn't load details for this model. It will still run with the server's settings.")).toHaveLength(6);
  fireEvent.click(screen.getAllByRole('button',{name:'Retry'})[0]!);expect(retry).toHaveBeenCalledOnce();

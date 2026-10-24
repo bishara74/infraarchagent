@@ -162,7 +162,12 @@ class ResultsService:
                                 "security_report": item.security_report,
                                 "validation_report": item.validation_report,
                                 "review_feedback": item.review_feedback,
-                                "review_decision": item.review_decision,
+                                "review_decision": {
+                                    **item.review_decision,
+                                    "category": item.review_decision.get("category"),
+                                }
+                                if item.review_decision
+                                else None,
                                 "profile_assessments": assess(
                                     {
                                         "security_report": item.security_report,

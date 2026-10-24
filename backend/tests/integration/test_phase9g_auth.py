@@ -48,7 +48,12 @@ async def test_cookie_login_sse_download_logout_header_and_canary(db_engines, ca
             row = await session.get(AuthSession, token_hash(raw))
             assert row is not None and row.token_hash != raw
         assert (await c.get(f"/api/pipeline/{run}/stream")).status_code == 200
-        body = {"action": "approve", "reviewer_name": "Ada", "reason": "Reviewed risks"}
+        body = {
+            "action": "approve",
+            "reviewer_name": "Ada",
+            "category": "other",
+            "reason": "Reviewed risks",
+        }
         assert (await c.post(review_url(run), json=body)).status_code == 403
         assert (
             await c.post(

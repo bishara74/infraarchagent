@@ -1530,6 +1530,15 @@ transition cannot establish automatic provenance and return to pending review.
 The data-only downgrade never restores an unverifiable success claim. Events and
 original decision records remain untouched.
 
+Round 3 (author-approved): checks_passed can transition only to rejected for
+engineering judgement; approval and retry remain unavailable there. Check results,
+files and the completed run status/timing remain unchanged. Every new approve or
+reject requires a fixed reason category and free-text reason; identity policy is
+unchanged. Existing JSONB decision/event records hold category, with historical
+missing values projected as null / “not recorded”, without a schema migration or
+historical event rewrite. Readiness documents add only the category information.
+Decision reasons are never remediation feedback or LLM inputs in this phase.
+
 ### D-48 — Versioned secondary exception assessments (Phase 9g appendix)
 
 FR-S-04, FR-UI-05 and NFR-01. Bundled strict/contextual-v1 JSON profiles are
@@ -2264,6 +2273,24 @@ aliases are hidden in Recommended and labelled in all-compatible. Missing-detail
 copy has Retry; inherited effort remains visible even without metadata. Compact
 80px rows share CSS/virtual geometry. Existing null-thinking and header/benchmark
 semantics remain. No new open question.
+
+Round 3 section 3: results add server-derived review_actions while preserving
+review_available. The author-requested administrator-only Review history Settings
+tab lists retained approval/rejection events across runs, with 25-row pages and
+category/decision/inclusive UTC date filters in the URL. Existing require_admin
+semantics (including trusted shared-key scripts) are reused; reviewers are denied.
+Event timestamp and states are retained facts; absent historical details remain
+unknown. Exports cover all filtered matches under a repeatable-read snapshot,
+include filters/count/version/export time metadata, and project only the nine
+specified decision fields. CSV uses four # metadata lines and spreadsheet-formula
+escaping; JSON preserves redacted reason text. No package contents or credential
+fields/hashes are projected. Event history remains after package retention. No
+curated lessons, new dependencies, migration or specification open question.
+Closing verification also restricts missing-model guidance to actual configured
+selections, preserves invalid-field focus after the reject dialog closes, gives
+select controls explicit accessible names and retains the checks_passed badge
+beside Reject/Download. History export requests use the existing 15-second finite
+request deadline.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

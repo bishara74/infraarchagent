@@ -165,6 +165,7 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
             "readiness_label",
             "downloadable",
             "review_available",
+            "review_actions",
             "retry_in_progress",
             "review_reasons",
             "retry_targets",
@@ -179,6 +180,10 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
     assert (
         "retry_in_progress"
         in schema["components"]["schemas"]["PackageResult"]["required"]
+    )
+    assert all(
+        row["review_actions"] == ["approve", "retry", "reject"]
+        for row in data["packages"]
     )
     assert all(row["retry_in_progress"] is False for row in data["packages"])
 

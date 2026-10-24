@@ -53,7 +53,13 @@ def validation_report(result="invalid"):
 
 
 async def pending_app(
-    engine, *, result="invalid", blocking=False, terminal=True, persist_plan=True
+    engine,
+    *,
+    result="invalid",
+    blocking=False,
+    terminal=True,
+    persist_plan=True,
+    checks_passed=False,
 ):
     app = create_app(get_settings(), engine)
     sessions = make_session_factory(engine)
@@ -115,7 +121,10 @@ async def pending_app(
     }[result]
     await writer.package_transition(run_id, Variant.COST, outcome, message="fixture")
     await writer.package_transition(
-        run_id, Variant.COST, PackageStatus.PENDING_REVIEW, message="fixture"
+        run_id,
+        Variant.COST,
+        PackageStatus.CHECKS_PASSED if checks_passed else PackageStatus.PENDING_REVIEW,
+        message="fixture",
     )
     if terminal:
         await writer.run_transition(
@@ -194,6 +203,7 @@ async def test_decision_without_agents_and_frozen_run(
             review_url(run_id),
             json={
                 "reviewer_name": "Test engineer",
+                "category": "other",
                 "reason": "Reviewed outstanding checks",
                 "action": action,
                 "feedback": "  Reviewed  ",
@@ -205,6 +215,7 @@ async def test_decision_without_agents_and_frozen_run(
                 review_url(run_id),
                 json={
                     "reviewer_name": "Test engineer",
+                    "category": "other",
                     "reason": "Reviewed outstanding checks",
                     "action": action,
                 },
@@ -235,6 +246,7 @@ async def test_review_waits_for_run_completion(db_engines, action):
             review_url(run_id),
             json={
                 "reviewer_name": "Test engineer",
+                "category": "other",
                 "reason": "Reviewed outstanding checks",
                 "action": action,
             },
@@ -401,6 +413,7 @@ async def test_concurrent_reviews_one_acceptance(db_engines, monkeypatch, action
                             review_url(run_id),
                             json={
                                 "reviewer_name": "Test engineer",
+                                "category": "other",
                                 "reason": "Reviewed outstanding checks",
                                 "action": action,
                             },
@@ -463,6 +476,7 @@ async def test_retry_failure_returns_to_review(db_engines, monkeypatch, failure)
         {"action": "other"},
         {
             "reviewer_name": "Test engineer",
+            "category": "other",
             "reason": "Reviewed outstanding checks",
             "action": "approve",
             "extra": 1,
@@ -472,6 +486,7 @@ async def test_retry_failure_returns_to_review(db_engines, monkeypatch, failure)
         {"action": "retry", "feedback": "x" * 2001},
         {
             "reviewer_name": "Test engineer",
+            "category": "other",
             "reason": "Reviewed outstanding checks",
             "action": "approve",
             "target_files": [],
@@ -489,6 +504,7 @@ async def test_bad_body_is_400(db_engines, body):
                 review_url("bad"),
                 json={
                     "reviewer_name": "Test engineer",
+                    "category": "other",
                     "reason": "Reviewed outstanding checks",
                     "action": "approve",
                 },
@@ -499,6 +515,7 @@ async def test_bad_body_is_400(db_engines, body):
                 review_url(run_id, "unknown"),
                 json={
                     "reviewer_name": "Test engineer",
+                    "category": "other",
                     "reason": "Reviewed outstanding checks",
                     "action": "approve",
                 },
@@ -509,6 +526,7 @@ async def test_bad_body_is_400(db_engines, body):
                 review_url(uuid4()),
                 json={
                     "reviewer_name": "Test engineer",
+                    "category": "other",
                     "reason": "Reviewed outstanding checks",
                     "action": "approve",
                 },
@@ -529,6 +547,7 @@ async def test_feedback_boundary_is_measured_after_trimming(
             review_url(run_id),
             json={
                 "reviewer_name": "Test engineer",
+                "category": "other",
                 "reason": "Reviewed outstanding checks",
                 "action": "reject",
                 "feedback": feedback,

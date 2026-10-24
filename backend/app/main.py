@@ -18,6 +18,7 @@ from app.api.models import router as models_router
 from app.api.pipeline import router as pipeline_router
 from app.api.preferences import router as preferences_router
 from app.api.providers import router as providers_router
+from app.api.review_history import router as review_history_router
 from app.core.auth import AuthService
 from app.core.bind import check_open_bind
 from app.core.config import Settings, get_settings
@@ -153,6 +154,7 @@ def create_app(
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(providers_router)
+    app.include_router(review_history_router)
     app.include_router(models_router)
     app.include_router(preferences_router)
     app.include_router(benchmark_router)

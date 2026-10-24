@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.plan import DeploymentPlan
+from app.domain.review_categories import ReviewCategory
 
 
 class StrictResponse(BaseModel):
@@ -48,6 +49,7 @@ class PackageResult(StrictResponse):
     )
     downloadable: bool
     review_available: bool
+    review_actions: list[Literal["approve", "retry", "reject"]]
     retry_in_progress: bool
     review_reasons: list[
         Literal[
@@ -78,6 +80,7 @@ class ReviewRequest(BaseModel):
     action: Literal["approve", "retry", "reject"]
     reviewer_name: str | None = Field(default=None, max_length=120)
     reason: str | None = Field(default=None, max_length=2000)
+    category: ReviewCategory | None = None
     feedback: str | None = None
     target_files: list[str] = Field(default_factory=list, max_length=5)
 
@@ -94,7 +97,7 @@ class ReviewRequest(BaseModel):
     @model_validator(mode="after")
     def targets_only_for_retry(self) -> "ReviewRequest":
         if self.action in {"approve", "reject"}:
-            if not self.reason or not self.reason.strip():
+            if not self.category or not self.reason or not self.reason.strip():
                 raise ValueError("reviewer name and reason are required")
             self.reviewer_name = (
                 self.reviewer_name.strip() if self.reviewer_name else None

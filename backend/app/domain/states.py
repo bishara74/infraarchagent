@@ -79,7 +79,7 @@ PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
         }
     ),
     PackageStatus.ENGINEER_APPROVED: frozenset(),
-    PackageStatus.CHECKS_PASSED: frozenset(),
+    PackageStatus.CHECKS_PASSED: frozenset({PackageStatus.REJECTED}),
     PackageStatus.REJECTED: frozenset(),
 }
 

@@ -144,3 +144,13 @@ One accent (orange). Status colours are semantic only, never decoration.
 - Diff presentation defaults to hiding whitespace-only changes, with neutral
   formatting labels and explicit meaningful/formatting line counts. Source and
   archive bytes are unchanged. The setting follows the account.
+
+## Phase 9j round 3 review patterns
+
+- Checks-passed review retains its green readiness badge and download, adds the
+  exact no-review-needed message and offers rejection with a required category
+  and reason. Approve/retry remain unavailable; focus returns to invalid fields.
+- Administrators have a separate Review history Settings tab: a compact table,
+  category/decision/UTC-date filters, 25-row pages and an explicit count/filter
+  summary beside CSV/JSON exports. Status columns do not split label text.
+  Historical missing categories are shown as “not recorded”.

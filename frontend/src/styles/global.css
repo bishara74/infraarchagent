@@ -321,3 +321,11 @@ dialog form { display: grid; gap: var(--space-3); }dialog h2,dialog p { margin: 
 .comparison-screen .variant-goal { margin:var(--space-2) 0;line-height:1.4; }
 .comparison-screen .variant>p.muted:last-of-type { margin:var(--space-1) 0 var(--space-2);font-size:var(--font-size-xs); }
 .comparison-screen .variant .actions { padding-top:var(--space-3); }
+
+.history-filters { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-3);margin-bottom:var(--space-4); }
+.history-export { display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);margin-block:var(--space-3); }
+.history-table { overflow-x:auto;max-width:100%;margin-bottom:var(--space-3); }
+.history-table table { width:100%;font-size:var(--font-size-xs);border-collapse:collapse; }
+.history-table th,.history-table td { padding:var(--space-2);text-align:left;vertical-align:top;border-bottom:1px solid var(--border);overflow-wrap:anywhere;min-width:80px; }
+.history-table td:nth-child(7) { min-width:180px;white-space:pre-wrap; }
+.history-table th:nth-child(3),.history-table th:nth-child(4),.history-table td:nth-child(3),.history-table td:nth-child(4) { white-space:nowrap; }

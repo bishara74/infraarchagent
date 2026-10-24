@@ -32,10 +32,11 @@ export interface PackageResult {
   security_report: Record<string, unknown> | null;
   validation_report: Record<string, unknown> | null;
   profile_assessments?: Record<'strict'|'contextual-v1',ProfileAssessment> & Partial<Record<'contextual-v2',ProfileAssessment>>;
-  review_decision?: {action:string;reviewer_name:string|null;reason:string|null;decided_at:string|null;identity_basis:string} | null;
+  review_decision?: {action:string;reviewer_name:string|null;category?:ReviewCategory|null;reason:string|null;decided_at:string|null;identity_basis:string} | null;
   review_feedback: string | null;
   readiness_label: 'checks_passed' | 'engineer_approved' | 'rejected' | 'pending_review' | null;
-  downloadable: boolean; review_available: boolean; retry_in_progress: boolean;
+  downloadable: boolean; review_available: boolean;
+  review_actions?: Array<'approve'|'retry'|'reject'>; retry_in_progress: boolean;
   review_reasons: ReviewReason[]; retry_targets: string[];
 }
 export interface ResultsResponse {
@@ -50,7 +51,7 @@ export interface ResolutionContext {provider:Provider;model:string|null;thinking
 export interface Catalog {server_default_max_iterations?:number;resolution_context?:ResolutionContext;output_token_limits?:Record<string,number>;environment_defaults?:Record<string,AgentSelection>;provider:string;credential_id:string|null;models:CatalogModel[];defaults:Record<string,AgentChoice>;status?:string;error_code?:string}
 export interface RunConfig { agent_models?:Record<string,AgentChoice>; policy_profile?:'strict'|'contextual-v1'; provider?: Provider; model?: string; max_iterations?: number }
 export interface SubmitResponse { run_id: string; status: 'created'; stream_url: string }
-export interface ReviewRequest { action: 'approve' | 'retry' | 'reject'; reviewer_name?:string;reason?:string; feedback?: string; target_files?: string[] }
+export interface ReviewRequest { action: 'approve' | 'retry' | 'reject'; reviewer_name?:string;reason?:string;category?:ReviewCategory; feedback?: string; target_files?: string[] }
 export interface ReviewResponse { run_id: string; variant: Variant; status: PackageStatus }
 export interface RetryResponse extends ReviewResponse { stream_url: string }
 export interface ErrorResponse { error: string; message: string }
@@ -59,3 +60,5 @@ export interface RunEvent {
   previous_status: string | null; message: string | null; variant: Variant | null;
   timestamp: string; payload: Record<string, unknown>;
 }
+
+export type ReviewCategory='requirements_not_met'|'too_expensive'|'organisational_policy'|'security_concern'|'operability'|'too_complex'|'other';

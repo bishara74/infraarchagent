@@ -51,6 +51,7 @@ async def test_contextual_success_cannot_promote_label_and_is_archived(db_engine
             json={
                 "action": "approve",
                 "reviewer_name": "Ada",
+                "category": "other",
                 "reason": "Reviewed strict blockers",
             },
         )

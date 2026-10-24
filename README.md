@@ -283,10 +283,11 @@ Migration `0003_review_retry_started_at` adds the nullable retry timestamp;
 existing packages stay unchanged with a NULL marker.
 
 Manual approval produces `engineer_approved`, never `checks_passed`. Approval
-and rejection require non-empty `reviewer_name` and `reason`; names are
-self-declared and failed checks remain visible.
+and rejection require a fixed `category` plus non-empty `reviewer_name` and `reason`; names are
+recorded from authenticated accounts, or self-declared in legacy/local mode.
+Failed checks remain visible.
 
-When `API_KEY` is set, browsers log in through `POST /api/auth/login` with
+Before account setup, legacy shared-key clients can log in through `POST /api/auth/login` with
 `{"api_key":"..."}` and use an HttpOnly, SameSite=Strict cookie scoped to `/api`.
 The frontend stores no key. `GET /api/auth/session` reports authentication state;
 `POST /api/auth/logout` revokes the session. Browser mutations require a matching
@@ -324,7 +325,7 @@ export API_KEY="replace-with-local-static-key"
 curl -H "X-API-Key: $API_KEY" "http://localhost:8000/api/pipeline/$RUN_ID/results"
 
 curl -X POST -H "X-API-Key: $API_KEY" -H 'Content-Type: application/json' \
-  -d '{"action":"approve","reviewer_name":"Engineer","reason":"Reviewed remaining findings"}' \
+  -d '{"action":"approve","reviewer_name":"Engineer","category":"other","reason":"Reviewed remaining findings"}' \
   "http://localhost:8000/api/pipeline/$RUN_ID/packages/cost/review"
 
 curl -X POST -H "X-API-Key: $API_KEY" -H 'Content-Type: application/json' \
@@ -341,11 +342,12 @@ A missing persisted plan is `null`. The exact field list is:
 
 ```text
 run: id, status, input_text, start_time, end_time, provider, model,
-     max_iterations, error_message
+     max_iterations, error_message, policy_profile, agent_models
 plan: DeploymentPlan | null
 packages[]: variant, status, iteration_count, error, files, original_files,
             security_report, validation_report, review_feedback,
-            readiness_label, downloadable, review_available, retry_in_progress,
+            review_decision, profile_assessments,
+            readiness_label, downloadable, review_available, review_actions, retry_in_progress,
             review_reasons, retry_targets
 missing_variants[]: variant, error
 ```
@@ -359,7 +361,8 @@ establish whether a retry is active. The marker timestamp is not exposed.
 OpenAPI at `/docs` describes the strict
 schemas. Malformed IDs return 400 and unknown runs return 404.
 
-Reviews require a terminal run and a `pending_review` package. An active run
+Reviews require a terminal run. A `pending_review` package allows approve, retry
+and reject; `checks_passed` allows reject only, for engineering judgement. An active run
 returns 409 `run_in_progress`; other package states return 409
 `not_pending_review`. Approve and reject return 200; approve performs no scan
 or validation, and reject labels the package `rejected`. Feedback
@@ -1466,7 +1469,7 @@ local-tool invocation, bounds and failure path, with a sequence diagram.
 4. Return to New request, describe the infrastructure and generate. Optional
    run overrides are collapsed by default. Recent runs reopen saved requests.
 5. Inspect a variant, read Findings and Security fixes, then open Review. Account identity is recorded automatically for
-   approvals/rejections; provide a decision reason. Settings → Users creates,
+   approvals/rejections; provide a reason category and decision reason. Settings → Users creates,
    disables or resets reviewers; Account changes your own password/preferences.
 
 ![First administrator setup at 1280×800](docs/evals/phase9j-ui/setup.png)
@@ -1708,3 +1711,56 @@ ports before `make test-e2e` (defaults remain 5173 and 8000). Explicit test data
 URLs are still required and must point to `infraarch_test`; the app/owner role
 checks and refusal to reuse an existing server remain in force. Verification
 must disable dotenv before settings instantiate, as described in the test setup.
+
+### Phase 9j round 3: login, model metadata and review history
+
+Opening `/` or `/login`, or logging in after explicit Log out, lands on New
+request. A recognised deep link opened while signed out returns to that exact
+path/query/fragment once. No last-visited route is restored from preferences.
+
+OpenRouter routing suffixes `:nitro`, `:floor`, `:exacto` and deprecated `:online`
+resolve capabilities, context and catalogue prices from the corresponding base
+entry. Catalogue variants and unknown suffixes remain distinct. The exact configured
+ID is sent on inference requests. Catalogue prices are indicative base rates;
+routing can select a differently priced service tier. Recommended synthesises
+only the versioned tested ID from actual catalogue evidence. All compatible
+reveals moving aliases, labelled “alias — changes over time”; free variants stay
+hidden. Inherited thinking displays the effective effort; explicit null remains
+provider default. Model rows are 80px with the existing keyboard controls.
+
+`POST /api/pipeline/{run_id}/packages/{variant}/review` now requires `category`
+for approve/reject: `requirements_not_met`, `too_expensive`,
+`organisational_policy`, `security_concern`, `operability`, `too_complex`, or
+`other`. Retry is unchanged. Category uses existing decision/event JSONB, so no
+migration is needed. Historical missing categories are null / “not recorded”.
+Results add server-derived `review_actions`; `review_available` retains its
+pending-review meaning. Rejecting `checks_passed` preserves automatic check
+reports and generated files; the readiness document records the decision and
+category. Decision reasons are never supplied to an LLM.
+
+Administrators have **Settings → Review history** at `/settings/review-history`:
+25 rows per page across all runs, newest first, with category, decision and UTC
+inclusive date filters. History reads retained review events independently of
+package retention; absent historical identity/category/reason stays unknown.
+The timestamp is the application UTC review-event timestamp. Existing administrator
+rules apply, including trusted shared-key script access; reviewers are denied.
+
+- `GET /api/reviews/history?page=1&category=too_expensive&decision=reject`
+  returns `items`, `total`, `page`, `page_size`, and active `filters`.
+- Optional `date_from=YYYY-MM-DD` / `date_to=YYYY-MM-DD` filter UTC calendar dates;
+  `category=not_recorded` selects decisions without a recorded category.
+- `GET /api/reviews/history/export?format=csv|json` accepts the same filters and
+  exports every match across pages. The page displays the matching count and
+  active filters beside both export buttons.
+
+JSON exports contain `metadata` and `decisions`. CSV starts with four `#` metadata
+lines (schema_version, exported_at, filters, count), then a header and decision
+rows. Skip the four-line preamble when importing CSV into tabular tools. Values
+that could execute as spreadsheet formulas are prefixed with an apostrophe in
+CSV; JSON preserves the redacted text. Both formats contain only run ID, variant,
+before/after labels, decision, category, reason, reviewer and UTC timestamp, plus
+export metadata. They exclude package contents, credentials and hashes, use a
+consistent database snapshot and `Cache-Control: no-store`. No curated lessons
+are introduced here.
+
+Round 3 browser evidence: [gallery](docs/evals/phase9j-ui/round3/README.md).

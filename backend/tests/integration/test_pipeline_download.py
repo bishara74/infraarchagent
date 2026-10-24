@@ -40,6 +40,7 @@ async def test_labelled_download_exact_files_and_repeat_bytes(
             review_url(run_id),
             json={
                 "reviewer_name": "Test engineer",
+                "category": "other",
                 "reason": "Reviewed outstanding checks",
                 "action": action,
                 "feedback": "Engineer notes",
@@ -139,6 +140,7 @@ async def _ten_megabyte_download(db_engines):
             review_url(run_id),
             json={
                 "reviewer_name": "Test engineer",
+                "category": "other",
                 "reason": "Reviewed outstanding checks",
                 "action": "approve",
             },

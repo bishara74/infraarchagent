@@ -78,10 +78,10 @@ def test_package_edges_and_full_retry_path() -> None:
     for terminal in (
         P.FAILED,
         P.SCAN_ERROR,
-        P.CHECKS_PASSED,
         P.REJECTED,
     ):
         assert not PACKAGE_TRANSITIONS[terminal]
+    assert PACKAGE_TRANSITIONS[P.CHECKS_PASSED] == {P.REJECTED}
 
 
 @pytest.mark.req("FR-S-03", "FR-S-05")

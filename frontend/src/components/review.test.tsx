@@ -36,3 +36,14 @@ it('FR-UI-05 v2 exceptions identify their profile without changing strict review
  expect(screen.getByText('contextual-v2 · public-lb-https-redirect: HTTPS only')).toBeVisible();
  expect(screen.getByText('Remains blocking under strict policy.')).toBeVisible();
 });
+
+it('FR-S-10 checks-passed rejection requires category and reason and retains download',async()=>{
+ const value=item();value.readiness_label='checks_passed';value.downloadable=true;value.review_available=false;value.review_actions=['reject'];
+ const review=vi.spyOn(api,'review').mockResolvedValue({run_id:'r',variant:'security',status:'rejected'});
+ render(<ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn(async()=>undefined)}/>);
+ expect(screen.getByText('No review needed — this package passed all automatic checks.')).toBeVisible();expect(screen.getByText('checks passed',{exact:true})).toHaveClass('ok');expect(screen.queryByRole('button',{name:'Approve'})).toBeNull();expect(screen.queryByRole('button',{name:'Retry with feedback'})).toBeNull();expect(screen.getByRole('button',{name:'Download ZIP'})).toBeVisible();
+ fireEvent.change(screen.getByLabelText('Reviewer name'),{target:{value:'Engineer'}});fireEvent.change(screen.getByLabelText('Decision reason'),{target:{value:'Too expensive'}});
+ const dialog=document.querySelector('dialog')!;dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
+ await userEvent.click(screen.getByRole('button',{name:'Reject'}));await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));expect(review).not.toHaveBeenCalled();expect(screen.getByRole('alert')).toHaveTextContent('Choose a reason category.');
+ fireEvent.change(screen.getByLabelText('Reason category'),{target:{value:'too_expensive'}});await userEvent.click(screen.getByRole('button',{name:'Reject'}));await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));await vi.waitFor(()=>expect(review).toHaveBeenCalledExactlyOnceWith('r','security',{action:'reject',reviewer_name:'Engineer',reason:'Too expensive',category:'too_expensive'}));
+});

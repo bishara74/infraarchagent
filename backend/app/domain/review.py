@@ -95,6 +95,15 @@ def package_presentation(
         "downloadable": downloadable,
         "review_available": status == PackageStatus.PENDING_REVIEW
         and run_status in TERMINAL_RUNS,
+        "review_actions": (
+            ["approve", "retry", "reject"]
+            if status == PackageStatus.PENDING_REVIEW
+            else ["reject"]
+            if status == PackageStatus.CHECKS_PASSED
+            else []
+        )
+        if run_status in TERMINAL_RUNS
+        else [],
         "review_reasons": reasons,
         "retry_targets": retry_targets(files, security_report, validation_report),
     }
