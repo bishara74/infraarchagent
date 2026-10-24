@@ -1,3 +1,4 @@
+import {catalogueModel} from './modelRouting';
 import type { AgentChoice, Catalog, RunConfig } from '../api/types';
 
 export const generatorRoles = ['generator_cost', 'generator_performance', 'generator_security'] as const;
@@ -9,7 +10,7 @@ export function modelProblem(role:string,catalog:Catalog|null,defaults:Record<st
  for(const key of role==='generators'?generatorRoles:[role]) {
   const saved=merged[key]??(key.startsWith('generator_')?merged.generators:undefined);
   const effective=modelDefault(key,catalog,defaults,overrides,config);
-  const metadata=catalog.models.find(item=>item.id===effective?.model);
+  const metadata=catalogueModel(catalog,effective?.model);
   if(!metadata&&saved)return `This saved model (${saved.model}) is unavailable. Select Use default or a listed model; update the saved default if inherited.`;
   if(metadata?.structured_output===false)return `This model (${metadata.id}) can't return the structured JSON the pipeline needs. Choose a structured-output model or update its saved default.`;
   if(saved&&metadata?.structured_output===null)return `Structured-output support for ${metadata.id} is unknown. Retry the catalogue or choose a confirmed structured-output model.`;

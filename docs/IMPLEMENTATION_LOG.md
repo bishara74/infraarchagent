@@ -27,6 +27,20 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-24 — Phase 9j round 3 section 2 — Resolve routing suffix metadata and compact model options
+
+**Summary:** Resolve OpenRouter routing suffixes separately from inference IDs; restore the tested recommendation, inherited effort, model retry guidance and compact alias-labelled lists.
+
+**Requirements addressed:** FR-UI-01, FR-P-04, NFR-01.
+
+**Files:** model catalogue/routing/default helpers and shared fixtures/tests; ModelControls/Combobox/styles; Input/Settings; backend selection/domain helper/tests; round3-models E2E and screenshots; system.md; D-58; this log.
+
+**Decisions:** Strip only documented routing suffixes (nitro/floor/exacto/online); retain catalogue and unknown suffixes and exact configured inference IDs. Base metadata wins, with exact-entry compatibility for existing catalogues. Recommendations derive provider evidence, aliases stay behind all-compatible, free variants remain hidden. 80px rows and 4px vertical padding preserve keyboard virtualisation. No configuration precedence or header-wire change.
+
+**Tests:** `make frontend-test`: 209 passed, 0 failed/skipped (37 files). `make lint`: exit 0, mypy 168 sources, Ruff/format and ESLint/TypeScript. Focused backend metadata/selection/golden wires: 18 passed. Playwright onboarding + model regressions: 2 passed (48.0s). Two 1280×800 captures; model screenshot visually inspected. An incomplete frontend fixture initially caused 1 failed/208 passed and a TypeScript error; corrected before final passing runs.
+
+**Known gaps / follow-ups:** Section 3 and final full verification remain. No migration, dependency or open question. Verification uses only isolated PostgreSQL and mocked provider HTTP.
+
 ## 2026-10-24 — Phase 9j round 3 section 1 — Consume login deep links and reset logout
 
 **Summary:** Normal login lands on New request; signed-out deep links use one-use router state. Explicit logout replaces the route with /login and clears the target.

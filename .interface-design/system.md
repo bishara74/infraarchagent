@@ -139,7 +139,7 @@ One accent (orange). Status colours are semantic only, never decoration.
 - Model catalogues default to versioned, provider-verified recommendations. A
   shared all-compatible switch never includes unsupported, free or retired models.
   Options show catalogue input/output price and context; a tested badge denotes
-  recommendation membership, never inferred capability. Virtual 104px rows use
+  recommendation membership, never inferred capability. Virtual 80px rows use
   internal spacers inside a maximum 280px scroll viewport; short lists fit content.
 - Diff presentation defaults to hiding whitespace-only changes, with neutral
   formatting labels and explicit meaningful/formatting line counts. Source and

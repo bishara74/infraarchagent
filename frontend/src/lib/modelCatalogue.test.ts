@@ -21,3 +21,8 @@ it('FR-UI-01 model details use catalogue prices and context, preserving unknown 
  const detail=modelDetail(model('unknown',{pricing:{prompt:'not-a-number',completion:-1},context_length:null}));
  expect(detail).toContain('input: unavailable');expect(detail).toContain('output: unavailable');expect(detail).toContain('context: unknown');expect(detail).not.toContain('NaN');
 });
+it('FR-UI-01 recommended routing IDs derive base evidence and aliases are last in all-compatible',()=>{
+ const catalog={...catalogue,models:[model('openai/gpt-oss-120b'),model('~moving'),model('vendor/model-latest:floor'),model('vendor/pinned'),model('vendor/free:free:nitro')]};
+ expect(compatibleModels(catalog,false).map(m=>m.id)).toEqual(['openai/gpt-oss-120b:nitro']);
+ const all=compatibleModels(catalog,true);expect(all.slice(-2).every(m=>modelDetail(m).includes('alias — changes over time'))).toBe(true);expect(all.some(m=>m.id.includes(':free'))).toBe(false);
+});

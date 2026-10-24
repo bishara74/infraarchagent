@@ -11,6 +11,7 @@ from app.core.credentials import CredentialMaterial
 from app.db.repositories.providers import ProviderRepository
 from app.domain.agent_selection import ROLES, AgentChoice, AgentSelection
 from app.domain.enums import LLMProvider
+from app.domain.model_catalogue import catalogue_id
 from app.domain.run_config import RunConfig
 from app.llm.catalog import normalize, probe
 
@@ -170,6 +171,15 @@ class ModelSelectionService:
                 choice = AgentChoice.model_validate(chosen)
                 item = (
                     next(
+                        (
+                            m
+                            for m in catalog["models"]
+                            if m["id"]
+                            == catalogue_id(catalog["provider"], choice.model)
+                        ),
+                        None,
+                    )
+                    or next(
                         (m for m in catalog["models"] if m["id"] == choice.model), None
                     )
                     if catalog

@@ -1,7 +1,7 @@
 import {useId,useLayoutEffect,useRef,useState,type KeyboardEvent} from 'react';
 import {Icon} from './Icon';
 export interface ModelOption {value:string;label:string;detail:string;disabled?:boolean;explanation?:string;tested?:boolean}
-const rowHeight=104;
+const rowHeight=80;
 export function ModelCombobox({label,value,options,onChange,error,selectedLabel}:{label:string;value:string;options:ModelOption[];onChange:(value:string)=>void;error?:string;selectedLabel?:string}) {
  const id=useId();const input=useRef<HTMLInputElement>(null);const list=useRef<HTMLUListElement>(null);
  const [open,setOpen]=useState(false);const [query,setQuery]=useState('');const [active,setActive]=useState(-1);const [top,setTop]=useState(0);

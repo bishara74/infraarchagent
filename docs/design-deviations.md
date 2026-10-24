@@ -2255,6 +2255,16 @@ Individual archives remain unchanged. Missing/unlabelled variants yield no parti
 bundle. Optional test-only Vite cache isolation avoids optimizer collisions with
 an existing developer instance. No migration or new specification open question.
 
+Round 3 section 2: OpenRouter routing suffixes nitro/floor/exacto/online resolve
+metadata from the catalogue ID while the exact configured model ID remains on
+inference requests. Catalogue variants (including free/batch) and unknown suffixes
+are preserved. Tested recommendations are derived only from provider evidence;
+base prices describe catalogue rates, not a guaranteed routed charge. Moving
+aliases are hidden in Recommended and labelled in all-compatible. Missing-details
+copy has Retry; inherited effort remains visible even without metadata. Compact
+80px rows share CSS/virtual geometry. Existing null-thinking and header/benchmark
+semantics remain. No new open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
