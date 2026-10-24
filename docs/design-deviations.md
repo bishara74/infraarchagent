@@ -2337,6 +2337,30 @@ Per-run provider statistics deduplicate calls, exclude unknown serving providers
 from fallback-share denominators and retain unknown counts. No readiness or retry
 policy change. The snapshot producer follows in section 3.
 
+Section 3 (FR-A-01, PR-01, NFR-01): author-run catalogue-snapshot fetches only
+anonymous public models/model-endpoints metadata into ignored .cache/openrouter/.
+It does not instantiate Settings, read keys/dotenv, authenticate or perform
+inference. A public-access failure never triggers authenticated fallback.
+Snapshot provenance includes source URLs, capture time and a payload hash.
+Pinned Sonnet recommendations are advisory and metadata-derived; explicit
+ARCHITECT_MODEL is authoritative and both IDs are recorded. Medium thinking is
+recommended through the existing reasoning.effort mapping. Strict-schema support
+is declared metadata, distinct from JSON-object support and runtime verification.
+No remembered real Sonnet ID, price or context length is introduced.
+
+Cost estimation replays all recorded Architect attempts from the two real broad
+rounds (40 runs; 64,871 input and 31,582 output tokens). Output usage already
+includes reasoning tokens. Reports distinguish replacement, incremental and
+projected full-run costs for one run, scenarios 6/9/10 and twenty runs. Current
+snapshot prices reprice baseline Architect usage; historical total-run usage
+deltas estimate the other roles. Conservative projections use the maximum
+eligible fallback-endpoint price and observed full-run usage. They are neither
+quotes nor spending bounds for a different model/thinking configuration. The
+existing credit guard uses the conservative estimate before its first measured
+cost, without treating it as a measurement or changing reserve semantics.
+Missing snapshots/pricing/capability evidence stop the experiment. Raw snapshots
+remain uncommitted; manifests retain provenance, price basis and source hashes.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -117,6 +117,19 @@ bench-broad: export PHASE9_FORCE = $(FORCE)
 bench-broad:
 	$(BACKEND) .venv/bin/python -m scripts.run_phase9_benchmarks $(MODE) --broad
 
+.PHONY: catalogue-snapshot catalogue-inspect experiment-estimate
+catalogue-snapshot: export PHASE9_CATALOGUE_MODELS = $(CATALOGUE_MODELS)
+catalogue-snapshot:
+	$(BACKEND) .venv/bin/python -m scripts.phase9k_catalogue snapshot
+
+catalogue-inspect:
+	$(BACKEND) .venv/bin/python -m scripts.phase9k_catalogue inspect
+
+experiment-estimate: export ARCHITECT_MODEL := $(ARCHITECT_MODEL)
+experiment-estimate: export ARCHITECT_PROVIDER_PREFERENCE := $(ARCHITECT_PROVIDER_PREFERENCE)
+experiment-estimate:
+	$(BACKEND) .venv/bin/python -m scripts.phase9k_catalogue estimate
+
 .PHONY: bench-stub bench-real
 bench-stub: export PHASE9_BASE_URL = $(BASE_URL)
 bench-stub: export PHASE9_MAX_RUNS = $(MAX_RUNS)

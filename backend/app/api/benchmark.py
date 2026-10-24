@@ -9,10 +9,10 @@ from app.api.deps import require_benchmark_api_key
 from app.api.models import service
 from app.core.generator_settings import GeneratorSettings
 from app.core.model_selection import ModelSelectionError
+from app.core.public_catalogue import CatalogueError, load_snapshot, provenance
 from app.core.safety import PublicDataSafety
 from app.domain.agent_selection import AgentChoice, Thinking
 from app.domain.run_config import RunConfig
-from app.llm.public_catalogue import CatalogueError, load_snapshot, provenance
 
 router = APIRouter(
     prefix="/api/benchmark", dependencies=[Depends(require_benchmark_api_key)]

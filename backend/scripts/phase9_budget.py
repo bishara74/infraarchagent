@@ -123,12 +123,15 @@ class BudgetGuard:
     max_runs: int | None = None
     highest: Decimal = Decimal(0)
     submitted: int = 0
+    estimated_run_cost: Decimal = Decimal(0)
 
     def threshold(self, size: int = 1) -> Decimal:
         return max(
             self.reserve,
-            2 * self.highest,
-            Decimal("4.5") * self.highest if size == 3 else Decimal(0),
+            2 * max(self.highest, self.estimated_run_cost),
+            Decimal("4.5") * max(self.highest, self.estimated_run_cost)
+            if size == 3
+            else Decimal(0),
         )
 
     def reason(self, snapshot: CreditSnapshot, size: int = 1) -> str | None:
@@ -172,7 +175,11 @@ def affordability(
     if cost is None or snapshot.remaining is None:
         return result
     simulation = BudgetGuard(
-        guard.reserve, guard.max_runs, max(guard.highest, cost), guard.submitted
+        guard.reserve,
+        guard.max_runs,
+        max(guard.highest, cost),
+        guard.submitted,
+        guard.estimated_run_cost,
     )
     remaining = snapshot.remaining
     count = 0

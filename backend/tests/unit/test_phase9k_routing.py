@@ -6,15 +6,15 @@ import httpx
 import httpx2
 import pytest
 
-from app.llm.base import RetryPolicy
-from app.llm.openai import OpenAIAdapter
-from app.llm.public_catalogue import (
+from app.core.public_catalogue import (
     CatalogueError,
     load_snapshot,
     provider_order,
     public_endpoints,
     public_get,
 )
+from app.llm.base import RetryPolicy
+from app.llm.openai import OpenAIAdapter
 from scripts.phase9k_routing import preferences, routing_statistics, status_preflight
 from tests.phase9k_fixtures import ARCHITECT, BASELINE, fake_snapshot
 

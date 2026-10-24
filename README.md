@@ -814,6 +814,33 @@ path (default `.cache/openrouter/catalogue.json`). Preflight uses only the maste
 `X-API-Key` header and returns model/thinking/order plus snapshot provenance.
 Metadata/status calls send no API key and never load dotenv.
 
+Create the metadata snapshot **as the author**, without inference or API-key
+access:
+
+```bash
+make catalogue-snapshot
+make catalogue-inspect
+read -r -p 'Pinned Architect model ID from the snapshot: ' ARCHITECT_MODEL
+export ARCHITECT_MODEL ARCHITECT_THINKING=medium
+make experiment-estimate ARCHITECT_MODEL="$ARCHITECT_MODEL"
+```
+
+`CATALOGUE_MODELS` optionally supplies comma-separated additional role models to
+capture (default: the recorded gpt-oss baseline). All pinned Sonnet candidates
+are captured automatically. `OPENROUTER_CATALOGUE_SNAPSHOT` may select an absolute
+path under the ignored `.cache/openrouter/` directory; use the same snapshot on
+the server and client. Public metadata failures stop without authenticated retry.
+Inspection prints capabilities, endpoint providers, prices and context lengths
+from the snapshot; its recommendation is advisory. The experiment always uses
+the explicit `ARCHITECT_MODEL`, and its manifest records both IDs.
+
+The estimate includes historical retries and counts reasoning within output
+usage once. It reports replacement/extra/full-run projections for one run, the
+selected smoke and twenty runs. The credit guard uses a conservative projection
+before the first submission. Different model/thinking choices can change token
+usage, latency and cost; estimates are not quotes or spending limits. A missing
+snapshot or price stops the experiment. No real Sonnet price is supplied here.
+
 ### Running the broad benchmark
 
 The [broad-v1 registration](docs/evals/scenarios/README.md) is committed before any

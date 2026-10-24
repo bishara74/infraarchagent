@@ -27,6 +27,21 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-24 — Phase 9k section 3 — Capture anonymous catalogue evidence and estimate costs
+
+**Summary:** Add author-only anonymous snapshot/inspection/estimate commands and price the explicit Architect selection from recorded broad token usage. Seed the existing credit guard with a conservative projection before submission.
+
+**Requirements addressed:** FR-A-01, PR-01, NFR-01.
+
+**Files:** new scripts/phase9k_catalogue.py and tests/unit/test_phase9k_catalogue.py; public_catalogue moved to core to avoid eager LLM-package settings/credential imports; dependent imports; phase9_budget; run_phase9_benchmarks; Makefile, .gitignore, README, D-59 and this log.
+
+**Decisions:** Public metadata only, fresh anonymous clients and ignored .cache/openrouter/ output. Advisory snapshot-derived recommendation never replaces explicit ARCHITECT_MODEL; manifest retains both. Medium thinking uses the existing adapter mapping. Estimates distinguish Architect replacement/extra/full-run costs and account for retries without adding reasoning twice. Baseline is 40 recorded runs, 64,871 input/31,582 output tokens; conservative fallback pricing seeds a separate estimate field rather than a fake measured cost. Missing data refuses execution. See D-59.
+
+**Tests:** Focused catalogue/routing/guard/benchmark/header tests: **94 passed, 0 failed/skipped** (9.49s). Ruff passes; mypy **173** sources passes. Includes an isolated subprocess audit proving metadata inspection neither imports settings nor opens dotenv, anonymous capture/projection/atomic-failure tests, explicit-vs-recommended selection and first-run guard thresholds. Intermediate **93 passed / 1 failed** caught the eager llm.__init__ settings import; moving metadata into core fixed it.
+
+**Known gaps / follow-ups:** Sections 4–5 remain. No real metadata snapshot fetched; no real Sonnet IDs/prices/context lengths invented and no real-dollar estimate available. Author must run catalogue-snapshot. No real inference, key access in metadata tools, dotenv reads, installs or policy changes.
+
+
 ## 2026-10-24 — Phase 9k section 2 — Add per-role routing and anonymous preflight
 
 **Summary:** Add optional OpenRouter provider order with fallbacks, snapshot validation, public provider-status confirmation and a read-only header-only benchmark preflight endpoint.

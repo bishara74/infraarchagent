@@ -3,7 +3,7 @@
 import json
 from datetime import UTC, datetime
 
-from app.llm.public_catalogue import PUBLIC_BASE, digest
+from app.core.public_catalogue import PUBLIC_BASE, digest
 
 ARCHITECT = "test-only/architect-2099"
 BASELINE = "test-only/baseline"

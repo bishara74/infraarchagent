@@ -10,7 +10,7 @@ from pathlib import Path
 
 import httpx
 
-from app.llm.public_catalogue import CatalogueError
+from app.core.public_catalogue import SNAPSHOT_PATH, CatalogueError, load_snapshot
 from scripts.benchmark import Harness, configured_harness
 from scripts.phase9_common import evidence_directory, safe_main, write_json
 from scripts.phase9_report import summary
@@ -21,6 +21,7 @@ from scripts.phase9i_broad import (
     registered_scenarios,
     scenario_digest,
 )
+from scripts.phase9k_catalogue import estimate, recommendation
 from scripts.phase9k_routing import preferences, status_preflight
 from scripts.seed_benchmark_package import SeedConfigurationError, load_seed_settings
 
@@ -173,6 +174,37 @@ async def run(args) -> None:
                         "Preflight failed; run make catalogue-snapshot and check roles."
                     )
                 preflight = response.json()
+                if getattr(args, "architect_model", None) and (
+                    preflight["selections"]["architect"]["model"]
+                    != args.architect_model
+                    or preflight["selections"]["architect"]["thinking_mode"]
+                    != getattr(args, "architect_thinking", None)
+                ):
+                    raise CatalogueError(
+                        "Server differs from explicit Architect choice."
+                    )
+                snapshot = load_snapshot(args.catalogue_snapshot)
+                if preflight["snapshot"]["sha256"] != snapshot["sha256"]:
+                    raise CatalogueError(
+                        "Client/server snapshot mismatch; no submission."
+                    )
+                experiment_cost = None
+                if getattr(args, "architect_model", None):
+                    experiment_cost = estimate(
+                        snapshot,
+                        args.architect_model,
+                        architect_provider=getattr(
+                            args, "architect_provider_preference", None
+                        ),
+                    )
+                    if harness.guard:
+                        harness.guard.estimated_run_cost = Decimal(
+                            str(experiment_cost["conservative_full_run_usd"])
+                        )
+                    print(
+                        "Experiment cost projection: "
+                        + json.dumps(experiment_cost["per_run"])
+                    )
                 health_checks = await status_preflight(
                     preflight["selections"], force=getattr(args, "force", False)
                 )
@@ -182,6 +214,10 @@ async def run(args) -> None:
                     benchmark_preflight=preflight,
                     provider_status=health_checks,
                     provider_status_force=getattr(args, "force", False),
+                    experiment_cost=experiment_cost,
+                    explicit_architect_model=getattr(args, "architect_model", None),
+                    recommended_architect_model=recommendation(snapshot),
+                    recommendation_advisory=True,
                 )
                 write_json(metadata_path, metadata)
             # Do not submit a rehearsal to a backend lacking its local tool chain.
@@ -261,6 +297,11 @@ def main() -> None:
     parser.add_argument("--timeout", type=float, default=1800)
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--broad", action="store_true")
+    parser.add_argument(
+        "--catalogue-snapshot",
+        type=Path,
+        default=Path(os.environ.get("OPENROUTER_CATALOGUE_SNAPSHOT") or SNAPSHOT_PATH),
+    )
     parser.add_argument(
         "--provider-preference",
         default=os.environ.get("PHASE9_PROVIDER_PREFERENCE")

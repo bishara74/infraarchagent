@@ -3,8 +3,8 @@
 import sys
 from collections import Counter
 
+from app.core.public_catalogue import CatalogueError, provider_health, provider_key
 from app.domain.agent_selection import ROLES
-from app.llm.public_catalogue import CatalogueError, provider_health, provider_key
 
 
 def preferences(args) -> dict:

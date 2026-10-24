@@ -9,13 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.config import Settings
 from app.core.credentials import CredentialMaterial
+from app.core.public_catalogue import CatalogueError, load_snapshot, provider_order
 from app.db.repositories.providers import ProviderRepository
 from app.domain.agent_selection import ROLES, AgentChoice, AgentSelection
 from app.domain.enums import LLMProvider
 from app.domain.model_catalogue import catalogue_id
 from app.domain.run_config import RunConfig
 from app.llm.catalog import normalize, probe
-from app.llm.public_catalogue import CatalogueError, load_snapshot, provider_order
 
 
 class ModelSelectionError(ValueError):
