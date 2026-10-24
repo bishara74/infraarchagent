@@ -1387,7 +1387,13 @@ The author-authorised dependency additions and licenses are listed in D-51.
 
 Interactive choices resolve run overrides, personal defaults, administrator
 defaults, then environment defaults. The UI groups Architect, Generators and
-Fixer; Advanced supports individual generator overrides. Models with unknown
+Fixer; Advanced supports individual generator overrides. Resolve the specific
+generator before its group **within each tier**: a personal Generators group wins
+over an administrator's specific generator default. Each role resolves independently;
+changing Architect never changes Generator/Fixer defaults. Controls identify the
+source tier, including per-variant sources and the actual Settings editing tier.
+Explicit null thinking means provider default. A missing role default requires a
+choice for that role; it never borrows Architect's model. Models with unknown
 structured-output capability cannot be selected for Generators/Fixer. Thinking
 controls only offer supported modes. A custom compatible endpoint needs explicit
 admin capability declarations (and can use its configured static catalog offline).

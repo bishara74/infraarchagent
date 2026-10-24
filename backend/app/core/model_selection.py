@@ -126,31 +126,27 @@ class ModelSelectionService:
         catalog = await self.catalog() if use_catalog else None
         if set(config.agent_models) - {*ROLES, "generators"}:
             raise ModelSelectionError("Unknown agent role.")
-        choices = {
-            **(catalog or {}).get("defaults", {}),
-            **(personal or {}),
-            **{k: v.model_dump() for k, v in config.agent_models.items()},
-        }
-        if catalog is not None and catalog.get("credential_id"):
-            provider = (
+        # Specific roles beat the generator group *within* each tier only.
+        tiers = (
+            {k: v.model_dump() for k, v in config.agent_models.items()},
+            personal or {},
+            (catalog or {}).get("defaults", {}),
+        )
+        selected_credential = catalog is not None and bool(catalog.get("credential_id"))
+        if selected_credential:
+            assert catalog is not None
+            base_provider = (
                 LLMProvider.ANTHROPIC
                 if catalog["provider"] == "anthropic"
                 else LLMProvider.OPENAI
             )
-            model = (
-                (choices.get("architect") or {}).get("model")
-                or config.model
-                or self.settings.llm_model
-            )
-            if not model:
-                raise ModelSelectionError(
-                    "Select models in Settings before submitting."
-                )
-            config = config.model_copy(update={"provider": provider, "model": model})
-        resolved = config.resolve(self.settings)
+            base_model = config.model or self.settings.llm_model
+        else:
+            resolved = config.resolve(self.settings)
+            base_provider, base_model = resolved.provider, resolved.model
         selections = {}
         for role in ROLES:
-            provider, model = resolved.provider, resolved.model
+            provider, model = base_provider, base_model
             effort = self.settings.llm_reasoning_effort
             if (
                 role == "fixer"
@@ -160,13 +156,28 @@ class ModelSelectionService:
                 provider = self.settings.security_fix_provider or provider
                 model = self.settings.security_fix_model or model
                 effort = self.settings.security_fix_reasoning_effort or effort
-            chosen = choices.get(
-                role,
-                choices.get("generators") if role.startswith("generator_") else None,
-            )
+            chosen = None
+            for tier in tiers:
+                chosen = tier.get(role)
+                if chosen is None and role.startswith("generator_"):
+                    chosen = tier.get("generators")
+                if chosen is not None:
+                    break
             inherited = chosen is None
-            if not chosen and catalog and catalog.get("credential_id"):
-                chosen = {"model": model or resolved.model, "thinking_mode": effort}
+            if inherited and selected_credential:
+                if not model:
+                    labels = {
+                        "architect": "Architect",
+                        "generator_cost": "Cost Generator",
+                        "generator_performance": "Performance Generator",
+                        "generator_security": "Security Generator",
+                        "fixer": "Fixer",
+                    }
+                    raise ModelSelectionError(
+                        f"Choose a model for {labels[role]} "
+                        "or configure its default in Settings."
+                    )
+                chosen = {"model": model, "thinking_mode": effort}
             if chosen:
                 choice = AgentChoice.model_validate(chosen)
                 item = (
@@ -223,7 +234,7 @@ class ModelSelectionService:
                 assert catalog is not None
                 selections[role] = AgentSelection(
                     model=choice.model,
-                    provider=resolved.provider,
+                    provider=base_provider,
                     thinking_mode=choice.thinking_mode,
                     configured_thinking=choice.thinking_mode,
                     request_style="anthropic"
@@ -243,6 +254,13 @@ class ModelSelectionService:
                 )
         return config.model_copy(
             update={
+                # Retain the legacy representative model, only after resolving
+                # every role from the independent baseline above.
+                **(
+                    {"provider": base_provider, "model": selections["architect"].model}
+                    if selected_credential
+                    else {}
+                ),
                 "resolved_agents": selections,
                 "credential_id": UUID(catalog["credential_id"])
                 if catalog and catalog.get("credential_id")

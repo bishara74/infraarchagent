@@ -53,3 +53,43 @@ it('FR-UI-01 changing provider during a probe clears loading and ignores its com
  expect(screen.getByRole('status')).not.toHaveTextContent('valid');
  expect(screen.getByLabelText('Provider API key')).toHaveValue('');
 });
+
+import {useState} from 'react';
+import type {AgentChoice} from '../api/types';
+const roleCatalog:Catalog={...catalog,provider:'openrouter',credential_id:'saved',defaults:{},resolution_context:{provider:'openai',model:'openai/gpt-oss-120b:nitro',thinking_mode:'low',fixer_provider:null,fixer_model:null,fixer_thinking_mode:null},models:[...['openai/gpt-oss-120b','anthropic/claude-opus-4.5'].map(id=>({...catalog.models[0]!,id,name:id,thinking_modes:['low','high'] as ['low','high']}))]};
+it('FR-UI-01 FR-P-04 changing Architect leaves Generator/Fixer defaults and edits independent',()=>{
+ const changed=vi.fn();
+ function Harness(){const [value,setValue]=useState<Record<string,AgentChoice>>({});return <ModelControls catalog={roleCatalog} value={value} onChange={next=>{changed(next);setValue(next);}}/>;}
+ render(<Harness/>);
+ const generators=screen.getByRole('combobox',{name:'Generators model'});
+ const fixer=screen.getByRole('combobox',{name:'Fixer model'});
+ const before=[(generators as HTMLInputElement).value,(fixer as HTMLInputElement).value];
+ fireEvent.click(screen.getByRole('checkbox',{name:'Show all compatible models'}));
+ const architect=screen.getByRole('combobox',{name:'Architect model'});fireEvent.click(architect);fireEvent.click(screen.getByRole('option',{name:/anthropic\/claude-opus-4.5/}));
+ expect(changed).toHaveBeenLastCalledWith({architect:{model:'anthropic/claude-opus-4.5'}});
+ expect(generators).toHaveValue(before[0]);expect(fixer).toHaveValue(before[1]);
+ expect(screen.getByLabelText('Generators thinking')).toHaveDisplayValue('low (server default)');
+ expect(screen.getByText('Architect: from this run')).toBeVisible();
+ fireEvent.change(screen.getByLabelText('Generators thinking'),{target:{value:'high'}});
+ expect(changed).toHaveBeenLastCalledWith({architect:{model:'anthropic/claude-opus-4.5'},generators:{model:'openai/gpt-oss-120b:nitro',thinking_mode:'high'}});
+ fireEvent.click(architect);fireEvent.click(screen.getByRole('option',{name:/Use default/}));
+ expect(changed).toHaveBeenLastCalledWith({generators:{model:'openai/gpt-oss-120b:nitro',thinking_mode:'high'}});
+ expect(screen.getByText('Architect: server default')).toBeVisible();
+});
+
+it('FR-UI-01 per-variant provenance distinguishes identical values from different tiers',()=>{
+ const choice={model:'openai/gpt-oss-120b:nitro',thinking_mode:'low' as const};
+ render(<ModelControls catalog={roleCatalog} value={{architect:choice}} personalDefaults={{generator_cost:choice}} defaults={{generators:choice}} onChange={vi.fn()}/>);
+ expect(screen.getByText('Architect: from this run')).toBeVisible();
+ expect(screen.getByText('Fixer: server default')).toBeVisible();
+ expect((screen.getByRole('combobox',{name:'Generators model'}) as HTMLInputElement).value).toContain('cost: openai/gpt-oss-120b:nitro · low (from your defaults)');
+ expect((screen.getByRole('combobox',{name:'Generators model'}) as HTMLInputElement).value).toContain('performance: openai/gpt-oss-120b:nitro · low (from administrator defaults)');
+ expect(screen.getByLabelText('Generators thinking')).toBeEnabled();
+});
+
+it.each(['personal','admin'] as const)('FR-UI-01 Settings %s preview reports the editing tier',tier=>{
+ render(<ModelControls catalog={roleCatalog} tier={tier} value={{generators:{model:'anthropic/claude-opus-4.5',thinking_mode:null}}} defaults={{generator_cost:{model:'openai/gpt-oss-120b:nitro',thinking_mode:'low'}}} onChange={vi.fn()}/>);
+ expect(screen.getByText(`Generators: from ${tier==='personal'?'your':'administrator'} defaults`)).toBeVisible();
+ const source=tier==='personal'?'your':'administrator';
+ expect(screen.getByRole('combobox',{name:'Cost Generator model',hidden:true})).toHaveValue(`Use default — anthropic/claude-opus-4.5 · provider default (from ${source} defaults)`);
+});

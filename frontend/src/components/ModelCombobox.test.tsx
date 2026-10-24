@@ -20,7 +20,7 @@ it('FR-UI-01 combobox supports arrows Enter Escape and skips disabled options',(
 it('FR-UI-01 default reasoning remains editable and materialises the effective model',()=>{
  const onChange=vi.fn();const catalog:Catalog={provider:'custom',credential_id:null,defaults:{architect:{model:'alpha',thinking_mode:'low'}},models:[{id:'alpha',name:'Alpha',context_length:8000,structured_output:true,reasoning:true,thinking_modes:['low','high'],pricing:{},source:'admin'}]};
  render(<ModelControls catalog={catalog} defaults={catalog.defaults} value={{}} onChange={onChange}/>);
- expect(screen.getByRole('combobox',{name:'Architect model'})).toHaveValue('Use default — alpha · low');
+ expect(screen.getByRole('combobox',{name:'Architect model'})).toHaveValue('Use default — alpha · low (from administrator defaults)');
  fireEvent.change(screen.getByLabelText('Architect thinking'),{target:{value:'high'}});expect(onChange).toHaveBeenCalledWith({architect:{model:'alpha',thinking_mode:'high'}});
 });
 

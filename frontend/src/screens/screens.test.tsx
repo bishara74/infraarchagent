@@ -78,7 +78,7 @@ it('FR-UI-05 v2 totals are additive and missing v2 remains unavailable',()=>{
 
 it('FR-UI-01 configuration starts collapsed and shows actual server defaults and experimental guidance',async()=>{
  snapshot();vi.spyOn(api,'request').mockResolvedValue({provider:'stub',credential_id:null,models:[],defaults:{},server_default_max_iterations:7,environment_defaults:{architect:{model:'stub',thinking_mode:null},generator_cost:{model:'stub',thinking_mode:null},generator_performance:{model:'stub',thinking_mode:null},generator_security:{model:'stub',thinking_mode:null},fixer:{model:'stub',thinking_mode:null}}});
- show(<InputScreen/>,'/');await vi.waitFor(()=>expect(screen.getByText(/Defaults: stub · provider default · strict/)).toBeInTheDocument());
+ show(<InputScreen/>,'/');await vi.waitFor(()=>expect(screen.getByText(/Defaults: stub · provider default \(server default\) · strict/)).toBeInTheDocument());
  expect(document.querySelector('details.config')).not.toHaveAttribute('open');
  await userEvent.click(screen.getByText('Configuration options',{exact:false,selector:'summary'}));
  expect(screen.getByPlaceholderText('Server default: 7')).toBeVisible();expect(screen.getByLabelText('Additional assessment (experimental)')).toBeVisible();expect(screen.getByText('Strict checks always decide the readiness label.')).toBeVisible();

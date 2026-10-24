@@ -65,6 +65,13 @@ One accent (orange). Status colours are semantic only, never decoration.
 
 ## Patterns
 
+Model controls show the effective model/thinking source in muted 12px text:
+“from this run”, “from your defaults”, “from administrator defaults”, or “server
+default”. Mixed generator sources are shown per variant, with wrapping instead
+of page overflow. Settings previews name the tier being edited. Resolution uses
+tier order before per-generator specificity; changing one role never changes
+another role's inherited baseline.
+
 ### Primary button (Generate, Download ZIP)
 - Height 36px, padding 8px 16px, radius 6px, 14px/600.
 - Background `--accent`, text `#0f1117`. One per screen.

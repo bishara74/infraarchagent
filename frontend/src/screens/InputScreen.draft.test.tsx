@@ -49,3 +49,24 @@ it('FR-UI-01 examples populate only on click and fresh typing replaces the draft
  expect(getPreferences().data.prompt_draft).toBe('A different AWS infrastructure request');expect(screen.queryByText(/You have an unsent draft/)).toBeNull();
  fireEvent.click(screen.getByRole('button',{name:'Static site + CloudFront + S3'}));expect(screen.getByLabelText('Infrastructure description')).not.toHaveValue('A different AWS infrastructure request');
 });
+
+import {setActiveRun} from '../lib/sessionState';
+it('FR-UI-01 FR-P-04 submitted configuration contains only the explicit Architect override',async()=>{
+ const previous=vi.mocked(api.request).getMockImplementation()!;
+ const primary='openai/gpt-oss-120b:nitro';const architect='anthropic/claude-opus-4.5';
+ vi.mocked(api.request).mockImplementation((url,method,body,signal)=>url.startsWith('/api/models')?Promise.resolve({provider:'openrouter',credential_id:'saved',defaults:{},resolution_context:{provider:'openai',model:primary,thinking_mode:'low',fixer_provider:null,fixer_model:null,fixer_thinking_mode:null},models:[primary,architect].map(id=>({id,name:id,structured_output:true,reasoning:true,thinking_modes:['low','high'],pricing:{},context_length:32768,source:'provider'}))}) as never:previous(url,method,body,signal));
+ const submit=vi.spyOn(api,'submitRun').mockResolvedValue({run_id:'00000000-0000-0000-0000-000000000001',status:'created',stream_url:'/unused'});
+ setActiveRun(null);
+ try {
+  const view=show();fireEvent.click(view.container.querySelector('details.config>summary')!);
+  await waitFor(()=>expect(screen.getByLabelText('Generators thinking')).toHaveDisplayValue('low (server default)'));
+  const baseline=(screen.getByRole('combobox',{name:'Generators model'}) as HTMLInputElement).value;
+  fireEvent.click(screen.getByRole('checkbox',{name:'Show all compatible models'}));
+  fireEvent.click(screen.getByRole('combobox',{name:'Architect model'}));fireEvent.click(screen.getByRole('option',{name:/anthropic\/claude-opus-4.5/}));
+  expect(screen.getByRole('combobox',{name:'Generators model'})).toHaveValue(baseline);
+  expect(getPreferences().data.draft_config.agent_models).toEqual({architect:{model:architect}});
+  fireEvent.change(screen.getByLabelText('Infrastructure description'),{target:{value:text}});
+  fireEvent.click(screen.getByRole('button',{name:'Generate'}));
+  await waitFor(()=>expect(submit).toHaveBeenCalledWith(text,{max_iterations:3,agent_models:{architect:{model:architect}},}));
+ }finally{setActiveRun(null);}
+});

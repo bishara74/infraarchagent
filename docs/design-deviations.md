@@ -1654,6 +1654,15 @@ strict schemas/routing and are compared as serialized bytes. Legacy environment
 requests remain usable without a new catalog dependency; capability enforcement
 applies to explicit model selections. No readiness/blocking rule changes.
 
+Phase 9j role-default correction: each role resolves run, personal, administrator,
+then environment independently. Within each tier, a specific generator precedes
+the Generators group; a higher-tier group beats a lower-tier specific generator.
+Selecting Architect never supplies another role's fallback. The selected provider
+chooses transport/credential only; freeze all five selections before assigning the
+legacy representative run model. Explicit null thinking remains provider default.
+An unconfigured role requires its own choice/default; fully explicit roles need no
+environment model. Existing header benchmark request bytes remain unchanged.
+
 OAuth with consumer subscriptions (ChatGPT/Codex/Anthropic) and future OpenAI
 Sign in with ChatGPT/Responses transport are out of scope. D-51 reserves typed
 credential/protocol fields and encrypted envelope capacity, without implementing
@@ -2150,7 +2159,9 @@ of google/gemini-3.8-flash:batch with null thinking, no administrator override,
 a separate explicit draft openai/gpt-oss-120b selection, and environment default
 openai/gpt-oss-120b:nitro with low thinking. Preserve these settings. Null means
 provider default, never inherited low/off. Role-specific generator settings take
-precedence over a generators-group setting, as in the existing backend resolver.
+precedence over a generators-group setting within the same tier. The approved
+role-default correction applies run > personal > administrator > environment
+before specificity, replacing the earlier flattened-dictionary policy.
 No catalogue ordering chooses a default. No new specification open question.
 
 Section A: wireframe text is #e6e6e6; warning uses the orange accent and a faint
@@ -2166,10 +2177,16 @@ Settings. It filters ID/name, skips disabled unsuitable models on keyboard
 selection and shows capabilities/prices. Null thinking is provider default;
 changing default thinking creates an explicit model choice. The public catalogue
 adds server_default_max_iterations and an allowlisted resolution_context of
-non-secret provider/model/thinking inputs so UI labels can mirror selected-provider
-Architect fallback and explicit SECURITY_FIX_* overrides without guessing. Shared
-JSON cases are asserted against both the real backend resolver and the UI helper.
-Existing precedence, validation, request shapes and model execution are unchanged.
+non-secret provider/model/thinking inputs so UI labels can mirror independent
+role baselines and explicit SECURITY_FIX_* overrides without guessing. The earlier
+selected-provider Architect fallback was an execution bug, also encoded in a
+shared fixture; the role-default correction removes it from both layers. Shared
+JSON cases cover all 64 combinations of absent/group/specific/both at the run,
+personal and administrator tiers for each generator. Controls and Settings
+previews retain tier boundaries and identify “from this run”, “from your defaults”,
+“from administrator defaults”, or “server default”; mixed generator sources are
+shown per variant. Provenance is derived locally without changing public schemas.
+Capability validation and header-authenticated golden request bytes are preserved.
 
 Section E: subtitles use available structured network/storage plan facts, marked
 “planned”. The current shared plan cannot prove different AZ/capacity/encryption

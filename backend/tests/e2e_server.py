@@ -107,6 +107,13 @@ def catalog(request: httpx.Request) -> httpx.Response:
                         "pricing": {"prompt": "0.000001", "completion": "0.000002"},
                         "supported_parameters": ["reasoning", "structured_outputs"],
                     },
+                    {
+                        "id": "anthropic/claude-opus-4.5",
+                        "name": "Claude Opus (mock catalogue)",
+                        "context_length": 32768,
+                        "pricing": {"prompt": "0.000001", "completion": "0.000002"},
+                        "supported_parameters": ["reasoning", "structured_outputs"],
+                    },
                 ]
             },
         )
