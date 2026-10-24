@@ -410,6 +410,7 @@ class Harness:
         self.quality_inputs = {}
         self.resolved_agent_selections = {}
         self.benchmark_kind = None
+        self.run_config = {}
 
     async def credit(self) -> CreditSnapshot:
         return (
@@ -805,6 +806,8 @@ class Harness:
             body = {"text": text}
             if self.mode == "stub":
                 body["config"] = {"provider": "stub"}
+            if self.run_config:
+                body.setdefault("config", {}).update(self.run_config)
             response = await self.client.post(
                 self.base_url + "/api/pipeline/run", json=body, headers=self.headers
             )

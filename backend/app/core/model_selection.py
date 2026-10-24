@@ -35,18 +35,23 @@ class ModelSelectionService:
             client,
         )
 
-    async def catalog(self, *, refresh: bool = False) -> dict[str, Any]:
-        async with self.sessions() as session, session.begin():
-            repository = ProviderRepository(session)
-            saved = await repository.settings()
-            defaults = dict(saved.agent_defaults)
-            identity = saved.default_credential_id
-            material = await repository.material(identity) if identity else None
-            static = [
-                item
-                for item in saved.static_models
-                if item.get("credential_id") == (str(identity) if identity else None)
-            ]
+    async def catalog(
+        self, *, refresh: bool = False, environment_only: bool = False
+    ) -> dict[str, Any]:
+        defaults, identity, material, static = {}, None, None, []
+        if not environment_only:
+            async with self.sessions() as session, session.begin():
+                repository = ProviderRepository(session)
+                saved = await repository.settings()
+                defaults = dict(saved.agent_defaults)
+                identity = saved.default_credential_id
+                material = await repository.material(identity) if identity else None
+                static = [
+                    item
+                    for item in saved.static_models
+                    if item.get("credential_id")
+                    == (str(identity) if identity else None)
+                ]
         if material is None and self.settings.llm_provider == LLMProvider.STUB:
             return {
                 "provider": "stub",
@@ -123,14 +128,18 @@ class ModelSelectionService:
     ) -> RunConfig:
         # Legacy requests never query provider metadata or inherit browser settings.
         use_catalog = interactive or bool(config.agent_models)
-        catalog = await self.catalog() if use_catalog else None
+        catalog = (
+            await self.catalog(environment_only=not interactive)
+            if use_catalog
+            else None
+        )
         if set(config.agent_models) - {*ROLES, "generators"}:
             raise ModelSelectionError("Unknown agent role.")
         # Specific roles beat the generator group *within* each tier only.
         tiers = (
             {k: v.model_dump() for k, v in config.agent_models.items()},
-            personal or {},
-            (catalog or {}).get("defaults", {}),
+            (personal or {}) if interactive else {},
+            (catalog or {}).get("defaults", {}) if interactive else {},
         )
         selected_credential = catalog is not None and bool(catalog.get("credential_id"))
         if selected_credential:

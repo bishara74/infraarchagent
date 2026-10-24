@@ -2309,6 +2309,19 @@ select controls explicit accessible names and retains the checks_passed badge
 beside Reject/Download. History export requests use the existing 15-second finite
 request deadline.
 
+### D-59 — Architect-model experiment and provider preference (Phase 9k)
+
+Section 1 (FR-A-01, FR-P-04, NFR-01): broad benchmarks accept an explicit
+Architect model and optional thinking override through the existing five-role
+resolver. Header-authenticated role overrides use environment credentials and
+role defaults; they never inherit saved browser/admin defaults or credentials.
+The author explicitly selects the experiment model; no recommendation selects
+it automatically. Architect requests remain JSON-object requests with local
+DeploymentPlan validation. The task prompt's reference to an existing strict
+Architect json_schema wire was incorrect; adding one would confound the
+experiment. Generator/Fixer HTTP bytes remain unchanged for Architect-only
+selection changes. No prompts, deadlines, profiles or readiness rules change.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

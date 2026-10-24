@@ -27,6 +27,21 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-24 — Phase 9k section 1 — Isolate explicit benchmark Architect selection
+
+**Summary:** Add optional broad-benchmark Architect model/thinking inputs through the existing resolver; keep shared-key runs on environment credentials and independent role defaults.
+
+**Requirements addressed:** FR-A-01, FR-P-04, PR-01, NFR-01.
+
+**Files:** Makefile; backend/app/core/model_selection.py; backend/scripts/benchmark.py and run_phase9_benchmarks.py; new tests/integration/test_phase9k_architect.py and tests/unit/test_phase9k_benchmark.py; README; D-59; this log.
+
+**Decisions:** Sparse config.agent_models.architect, no second resolver; shared-key explicit choices do not load browser repositories. Preserve JSON-object Architect wire and local plan validation, correcting the task's strict-schema assumption. No automatic recommendation selection.
+
+**Tests:** Focused backend suite: **230 passed, 0 failed/skipped** (9.89s), including existing header golden wires, account role-default matrix and actual Generator/Fixer HTTP-byte equality. Focused Ruff check passes; mypy model_selection passes. Disposable UTF-8 PostgreSQL 16 and absolute dotenv-disabled bootstrap; synthetic keys only.
+
+**Known gaps / follow-ups:** Sections 2–5 remain. Initial verification had database lifecycle errors and one Make variable recursion (219 passed / 1 failed / 10 errors); keeping PostgreSQL in the verification process tree and distinct PHASE9_* forwarding fixed these. A follow-up had 228 passed / 2 failed from a missing session factory in the new test fixture; corrected. No real inference, installs, dotenv reads or history rewrites.
+
+
 ## 2026-10-24 — Phase 9j corrective follow-up — Isolate role defaults and report their source
 
 **Summary:** Fix the selected-provider Architect fallback that silently changed real Generator/Fixer requests. Resolve role defaults independently and show their source tier throughout request controls and Settings previews.

@@ -23,6 +23,16 @@ from scripts.phase9i_broad import (
 from scripts.seed_benchmark_package import SeedConfigurationError, load_seed_settings
 
 
+def architect_override(args) -> dict:
+    model = getattr(args, "architect_model", None)
+    thinking = getattr(args, "architect_thinking", None)
+    if thinking and not model:
+        raise ValueError("ARCHITECT_THINKING requires explicit ARCHITECT_MODEL")
+    if not model:
+        return {}
+    return {"agent_models": {"architect": {"model": model, "thinking_mode": thinking}}}
+
+
 def schedule(runs: int = 10) -> list[int]:
     return [1] * runs + [1, 3]
 
@@ -128,6 +138,7 @@ async def run(args) -> None:
         timeout=httpx.Timeout(60, connect=5), follow_redirects=False
     ) as client:
         harness = await configured_harness(args, directory, client)
+        harness.run_config = architect_override(args)
         if broad:
             harness.benchmark_kind = "broad"
 
@@ -222,11 +233,30 @@ def main() -> None:
     parser.add_argument("--smoke", action="store_true")
     parser.add_argument("--broad", action="store_true")
     parser.add_argument(
+        "--architect-model",
+        default=os.environ.get("PHASE9_ARCHITECT_MODEL")
+        or os.environ.get("ARCHITECT_MODEL")
+        or None,
+    )
+    parser.add_argument(
+        "--architect-thinking",
+        choices=["off", "low", "medium", "high"],
+        default=os.environ.get("PHASE9_ARCHITECT_THINKING")
+        or os.environ.get("ARCHITECT_THINKING")
+        or None,
+    )
+    parser.add_argument(
         "--runs-per-scenario",
         type=int,
         default=os.environ.get("PHASE9_RUNS_PER_SCENARIO") or 2,
     )
     args = parser.parse_args()
+    if (args.architect_model or args.architect_thinking) and not args.broad:
+        parser.error("Architect experiment overrides require --broad")
+    try:
+        architect_override(args)
+    except ValueError as error:
+        parser.error(str(error))
     if args.broad:
         if args.smoke or args.runs_per_scenario < 1:
             parser.error("Broad requires positive RUNS_PER_SCENARIO and no --smoke")

@@ -793,6 +793,16 @@ submission. `bench-smoke` runs one of each example and writes
 `docs/evals/phase9-bench-smoke-*`; a three-sample smoke check does not establish
 full PR-01 acceptance. Budget guard stops can produce fewer than three runs.
 
+### Architect-only benchmark selection (Phase 9k)
+
+`make bench-broad ARCHITECT_MODEL=<explicit-model-id> ARCHITECT_THINKING=medium`
+sets only the Architect through the existing per-role resolver. Thinking is
+optional; omitting it requests provider default. Thinking without a model is
+rejected. Header-authenticated runs retain environment credentials and independent
+Generator/Fixer defaults, regardless of saved browser settings. The Architect
+continues to request a JSON object and validate its plan locally. The author must
+select the model explicitly; recommendations never select it automatically.
+
 ### Running the broad benchmark
 
 The [broad-v1 registration](docs/evals/scenarios/README.md) is committed before any
