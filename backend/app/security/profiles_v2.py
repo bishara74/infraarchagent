@@ -34,9 +34,9 @@ def protocol(value: Any) -> str | None:
 
 
 class EvidenceV2:
-    def __init__(self, files: Mapping[str, str]):
-        self.graph = Instances(dict(files))
-        self.legacy = Evidence(files)
+    def __init__(self, files: Mapping[str, str], *, legacy: Evidence | None = None):
+        self.legacy = legacy if legacy is not None else Evidence(files)
+        self.graph = Instances(dict(files), package=self.legacy.package)
 
     def public(self, lb: Instance) -> bool:
         return (
@@ -365,9 +365,13 @@ class EvidenceV2:
 
 
 def assess_v2(
-    package: Mapping[str, Any], files: Mapping[str, str], legacy: dict[str, Any]
+    package: Mapping[str, Any],
+    files: Mapping[str, str],
+    legacy: dict[str, Any],
+    *,
+    evidence: Evidence | None = None,
 ) -> dict[str, Any]:
-    evidence = EvidenceV2(files)
+    view = EvidenceV2(files, legacy=evidence)
     final = security_final(package.get("security_report"))
     findings = final.get("remaining_blocking", [])
     findings = findings if isinstance(findings, list) else []
@@ -377,7 +381,7 @@ def assess_v2(
         address = finding.get("resource", "")
         items = [
             item
-            for item in evidence.graph.all(module)
+            for item in view.graph.all(module)
             if item.address == address
             or ("[" not in address and item.resource.address == address)
         ]
@@ -389,7 +393,7 @@ def assess_v2(
             try:
                 matched = all(
                     item.type in entry["resource_types"]
-                    and evidence.condition(entry["condition"], item)
+                    and view.condition(entry["condition"], item)
                     for item in items
                 )
             except (Unresolved, ValueError, TypeError, KeyError, AttributeError):

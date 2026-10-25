@@ -66,8 +66,10 @@ class Instances:
     MAX_MODULE = 1024
     MAX_LOCALS = 16
 
-    def __init__(self, files: dict[str, str]):
-        self.package = TerraformPackage(files)
+    def __init__(
+        self, files: dict[str, str], *, package: TerraformPackage | None = None
+    ):
+        self.package = package if package is not None else TerraformPackage(files)
         self.declarations = {(r.module, r.address): r for r in self.package.resources}
         self.local_values: dict[tuple[str, str], Any] = {}
         self.expanded: dict[tuple[str, str], Any] = {}

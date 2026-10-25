@@ -14,14 +14,20 @@ def _objects(value: Any) -> list[dict[str, Any]]:
     return [entry for entry in entries if isinstance(entry, dict)]
 
 
-def aes256_buckets(files: Mapping[str, str]) -> set[tuple[str, str]]:
+def aes256_buckets(
+    files: Mapping[str, str], *, documents: PackageDocuments | None = None
+) -> set[tuple[str, str]]:
     """Prove a unique literal encryption configuration, never search source text."""
-    documents = PackageDocuments.parse(
-        {
-            path: text
-            for path, text in files.items()
-            if path.startswith("terraform/") and path.endswith((".tf", ".tf.json"))
-        }
+    documents = (
+        documents
+        if documents is not None
+        else PackageDocuments.parse(
+            {
+                path: text
+                for path, text in files.items()
+                if path.startswith("terraform/") and path.endswith((".tf", ".tf.json"))
+            }
+        )
     )
     bad_modules = {
         str(PurePosixPath(doc.path).parent)

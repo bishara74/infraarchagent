@@ -72,7 +72,7 @@ def values(value: Any) -> Iterator[Any]:
 class Evidence:
     def __init__(self, files: Mapping[str, str]):
         self.package = TerraformPackage(dict(files))
-        self.aes256 = aes256_buckets(files)
+        self.aes256 = aes256_buckets(files, documents=self.package.documents)
 
     def linked(self, resource: Resource, field: str) -> Resource | None:
         linked = self.package.resolve(resource.module, resource.body.get(field))
@@ -360,7 +360,10 @@ class Evidence:
 
 
 def assess_v1(
-    package: Mapping[str, Any], files: Mapping[str, str] | None = None
+    package: Mapping[str, Any],
+    files: Mapping[str, str] | None = None,
+    *,
+    evidence: Evidence | None = None,
 ) -> dict[str, Any]:
     final = security_final(package.get("security_report"))
     raw_findings = final.get("remaining_blocking")
@@ -380,7 +383,11 @@ def assess_v1(
         "remaining_blocking": len(findings),
         "excepted": [],
     }
-    evidence = Evidence(files or package.get("files") or {})
+    evidence = (
+        evidence
+        if evidence is not None
+        else Evidence(files or package.get("files") or {})
+    )
     exceptions = []
     for finding in findings:
         resource = evidence.package.get(
@@ -420,13 +427,21 @@ def assess_v1(
 def assess(
     package: Mapping[str, Any], files: Mapping[str, str] | None = None
 ) -> dict[str, Any]:
-    """Add v2 without changing the frozen strict/v1 evaluator."""
+    """Evaluate every profile against request-local, read-only parsed evidence."""
     from app.security.profiles_v2 import assess_v2
 
-    legacy = assess_v1(package, files)
+    legacy_files = files or package.get("files") or {}
+    v2_files = files if files is not None else package.get("files") or {}
+    evidence = Evidence(legacy_files)
+    legacy = assess_v1(package, files, evidence=evidence)
     return {
         **legacy,
         "contextual-v2": assess_v2(
-            package, files if files is not None else package.get("files") or {}, legacy
+            package,
+            v2_files,
+            legacy,
+            # Preserve v1's historical empty-override fallback, which differs
+            # from v2's explicit-empty override. Never share mismatched inputs.
+            evidence=evidence if v2_files == legacy_files else None,
         ),
     }
