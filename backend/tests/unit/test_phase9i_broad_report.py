@@ -282,7 +282,7 @@ def test_loader_rejects_inconsistent_evidence(committed_broad, bad):
 
 
 def test_historical_outputs_unchanged_when_broad_section_is_appended(
-    committed_broad, tmp_path
+    committed_broad, repository_report_directory
 ):
     broad, _ = committed_broad
     historical = Evidence(ROOT)
@@ -293,7 +293,7 @@ def test_historical_outputs_unchanged_when_broad_section_is_appended(
         for path in historical.paths
         if not path.startswith("docs/evals/phase9-bench-broad-")
     }
-    original_output = tmp_path / "original"
+    original_output = repository_report_directory / "original"
     generate(historical, original_output)
     combined = Evidence(ROOT)
     combined.paths = historical.paths | broad.paths
@@ -314,7 +314,7 @@ def test_historical_outputs_unchanged_when_broad_section_is_appended(
         and (args[0] == "merge-base" or SCENARIO_PATH in args[-1])
         else historical.git(*args)
     )
-    new_output = tmp_path / "extended"
+    new_output = repository_report_directory / "extended"
     generate(combined, new_output)
     for name in ("rates.csv", "costs.csv", "timings.csv", "blockers.csv"):
         assert (new_output / name).read_bytes() == (original_output / name).read_bytes()

@@ -324,6 +324,10 @@ def assert_comparable(left: dict, right: dict) -> None:
 def generate(
     evidence: Evidence, output: Path, *, experiment_folder: str | None = None
 ) -> None:
+    root = evidence.root.resolve()
+    output = (root / output).resolve()
+    if not output.is_relative_to(root):
+        raise ValueError("Report destination must be inside the repository")
     if output.exists():
         raise ValueError("Report destination already exists; use a fresh --output-dir")
     historical_folders = {
@@ -336,7 +340,7 @@ def generate(
         for folder in historical_folders
     ):
         raise ValueError("Output cannot be nested in committed evidence")
-    if output.resolve().is_relative_to(evidence.root / ".cache"):
+    if output.is_relative_to(root / ".cache"):
         raise ValueError("Cache is read-only")
     inventory = []
     broad_folders = []

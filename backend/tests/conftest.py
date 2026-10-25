@@ -3,6 +3,7 @@
 import subprocess
 from collections.abc import AsyncIterator, Iterator
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import pytest
 from sqlalchemy import text
@@ -12,6 +13,13 @@ from app.core.config import Settings, get_settings
 from app.db.session import make_app_engine, make_owner_engine, make_session_factory
 
 BACKEND = Path(__file__).resolve().parents[1]
+
+
+@pytest.fixture
+def repository_report_directory() -> Iterator[Path]:
+    """Fresh, cleaned report destinations inside the real evidence repository."""
+    with TemporaryDirectory(prefix=".report-tests-", dir=BACKEND.parent) as directory:
+        yield Path(directory)
 
 
 @pytest.fixture(scope="session")

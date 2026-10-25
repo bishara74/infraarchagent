@@ -1639,8 +1639,14 @@ Phase 9b adds `make eval-report`. It reads evidence blobs from Git HEAD, never
 committed report into a fresh destination with:
 
 ```sh
-make eval-report EVAL_REPORT_ARGS="--revision INPUT_REVISION --output-dir /tmp/infraarch-eval-reproduction"
+make eval-report EVAL_REPORT_ARGS="--revision INPUT_REVISION --output-dir docs/evals/infraarch-eval-reproduction"
 ```
+
+Relative output directories resolve against the repository root, including when
+the command runs from `backend/`. Absolute paths inside the repository are used
+as supplied. Destinations outside the repository (including symlink escapes),
+inside `.cache`, or nested in committed evidence are refused; the destination
+must be fresh.
 
 Use the input revision from `input-manifest.json`; compare report/CSV contents
 and SHA-256 input hashes. No provider, database, dotenv, scanner execution,

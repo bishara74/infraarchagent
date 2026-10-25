@@ -2,6 +2,8 @@
 
 import json
 import subprocess
+from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -259,15 +261,19 @@ def test_pooling_rejects_unmatched_final_sets(change):
         assert_comparable(left, right)
 
 
-def test_report_reconciles_real_committed_inputs_and_is_deterministic(tmp_path):
+def test_report_reconciles_real_committed_inputs_and_is_deterministic(
+    repository_report_directory, monkeypatch
+):
     from scripts.phase9_common import ROOT
     from scripts.phase9_report import read_csv
     from scripts.phase9b_report import generate
 
     evidence = Evidence(ROOT)
-    first = tmp_path / "first"
-    second = tmp_path / "second"
-    generate(evidence, first)
+    first = repository_report_directory / "first"
+    second = repository_report_directory / "second"
+    # make eval-report changes cwd to backend; relative paths still start at ROOT.
+    monkeypatch.chdir(ROOT / "backend")
+    generate(evidence, first.relative_to(ROOT))
     generate(Evidence(ROOT), second)
     assert {f.name: f.read_bytes() for f in first.iterdir()} == {
         f.name: f.read_bytes() for f in second.iterdir()
@@ -299,3 +305,56 @@ def test_report_reconciles_real_committed_inputs_and_is_deterministic(tmp_path):
         generate(evidence, ROOT / "docs/evals/phase9b-supplement/forbidden-output")
     with pytest.raises(ValueError):
         generate(evidence, ROOT / ".cache/forbidden-output")
+
+
+@pytest.mark.parametrize(
+    "destination", ["../escape", "nested/../../escape", "absolute"]
+)
+def test_report_rejects_outside_repository_before_reading_inputs(tmp_path, destination):
+    from scripts.phase9b_report import generate
+
+    root = tmp_path / "repository"
+    root.mkdir()
+    output = tmp_path / "outside" if destination == "absolute" else Path(destination)
+    # No paths/read attributes: containment must fail before reading any inputs.
+    evidence = SimpleNamespace(root=root)
+    with pytest.raises(ValueError, match="inside the repository"):
+        generate(evidence, output)
+    assert not (tmp_path / "outside").exists()
+    assert not (tmp_path / "escape").exists()
+
+
+@pytest.mark.parametrize("absolute", [False, True])
+def test_report_rejects_symlink_escape_before_reading_inputs(tmp_path, absolute):
+    from scripts.phase9b_report import generate
+
+    root = tmp_path / "repository"
+    root.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (root / "linked").symlink_to(outside, target_is_directory=True)
+    output = Path("linked/report")
+    if absolute:
+        output = root / output
+    with pytest.raises(ValueError, match="inside the repository"):
+        generate(SimpleNamespace(root=root), output)
+    assert list(outside.iterdir()) == []
+
+
+@pytest.mark.parametrize("protected", ["docs/evals/immutable", ".cache"])
+def test_report_rejects_relative_and_symlinked_protected_destinations(
+    tmp_path, monkeypatch, protected
+):
+    from scripts.phase9b_report import generate
+
+    root = tmp_path / "repository"
+    (root / "backend").mkdir(parents=True)
+    target = root / protected
+    target.mkdir(parents=True)
+    (root / "linked").symlink_to(target, target_is_directory=True)
+    evidence = SimpleNamespace(root=root, paths={"docs/evals/immutable/results.json"})
+    monkeypatch.chdir(root / "backend")
+    for output in (Path(protected) / "report", Path("linked/report")):
+        with pytest.raises(ValueError, match="committed evidence|Cache is read-only"):
+            generate(evidence, output)
+    assert list(target.iterdir()) == []

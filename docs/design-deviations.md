@@ -2471,6 +2471,17 @@ provider behavior. No provider documentation is asserted from memory, no live
 request was made and no adapter fix is introduced. See the Chapter 6 offline
 wire inspection for the exact fields and test references.
 
+Results section 3 (NFR-01): eval-report resolves relative output destinations
+against the evidence repository root, including when Make runs the command from
+backend/. Absolute destinations inside the repository retain their location;
+resolved paths outside it (including traversal and symlink escapes) are refused
+before evidence processing or output creation. Existing fresh-directory,
+committed-evidence and cache protections remain. Tests generate deterministic
+reports under temporary repository-local directories and clean them afterward;
+the README reproduction example now uses a fresh docs/evals/ destination.
+This corrects a reporting-tool path bug; no thesis policy, readiness condition,
+threshold, source evidence or adapter behavior changes, and no new open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

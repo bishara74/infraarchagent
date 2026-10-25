@@ -27,6 +27,20 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9k results section 3 — phase9k: resolve report destinations from the repository root
+
+**Summary:** Fix make eval-report placing relative destinations under backend/. Resolve them from the evidence repository root and refuse destinations that resolve outside it, including symlink escapes. Update the reproduction example and preserve existing evidence/cache/fresh-directory protections.
+
+**Requirements addressed:** NFR-01; PR-01/03/05 reporting regressions.
+
+**Files:** backend/scripts/phase9b_report.py; backend/tests/conftest.py; backend/tests/unit/test_phase9b_report.py and test_phase9i_broad_report.py; README.md; docs/design-deviations.md; docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Normalize and enforce containment before evidence processing/output creation. Absolute in-repository destinations keep their location. Real-evidence report tests now use cleaned repository-local temporary directories. Add seven parametrized cases for relative/absolute outside paths, traversal, symlink escapes and protected evidence/cache aliases; the existing deterministic integration check now invokes generation with a relative destination while cwd is backend/. See D-59.
+
+**Tests:** Focused report/broad/Architect suite: **62 passed, 0 failed/skipped** (25.74s). Ruff check passes; four touched Python files formatted. Actual `make eval-report --revision 91275dc7bc499a7c8be99590667d8db4875622b4 --experiment-folder ...` through EVAL_REPORT_ARGS writes at the repository root; **20/20 output files byte-identical** to committed phase9k-architect-report, **1,225 hashed inputs**, with the fresh reproduction directory removed afterward. An earlier constrained-sandbox duplicate was interrupted after **53 passed, 1 failed**: the existing mocked truncation test hit an adapter timeout; the same full focused suite passed under normal offline verification permissions. Required full lint/tests are in progress for section 4.
+
+**Known gaps / follow-ups:** Section 4 remains. No dependencies, setup variables, adapter, migration, spec, prompts, readiness, profiles, thresholds or committed evidence changed. No new open question. The outside-repository refusal intentionally replaces the README's old /tmp example.
+
 ## 2026-10-25 — Phase 9k results section 2 — phase9k: document the offline thinking limitation
 
 **Summary:** Record the exact OpenRouter reasoning/JSON-object wire, response usage field, corrected call denominator and author-observed billing. Preserve the adapter and distinguish possible causes from verified facts.
