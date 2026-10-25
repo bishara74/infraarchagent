@@ -58,7 +58,11 @@ async def test_labelled_download_exact_files_and_repeat_bytes(
     events = await app.state.event_log.list_after(run_id, None)
     label_event = events[-1]
     with ZipFile(BytesIO(first.content)) as archive:
-        assert set(archive.namelist()) == {*row.files, "INFRAARCHAGENT_READINESS.md"}
+        assert set(archive.namelist()) == {
+            *row.files,
+            "INFRAARCHAGENT_READINESS.md",
+            "_infraarchagent/LESSONS.json",
+        }
         for path, content in row.files.items():
             assert archive.read(path).decode() == content
         readiness = archive.read("INFRAARCHAGENT_READINESS.md").decode()
@@ -152,7 +156,11 @@ async def _ten_megabyte_download(db_engines):
         response.status_code == 200 and 7_000_000 < len(response.content) < 10_000_000
     )
     with ZipFile(BytesIO(response.content)) as archive:
-        assert set(archive.namelist()) == {*files, "INFRAARCHAGENT_READINESS.md"}
+        assert set(archive.namelist()) == {
+            *files,
+            "INFRAARCHAGENT_READINESS.md",
+            "_infraarchagent/LESSONS.json",
+        }
         for path, content in files.items():
             assert archive.read(path).decode() == content
         assert archive.read("INFRAARCHAGENT_READINESS.md").startswith(

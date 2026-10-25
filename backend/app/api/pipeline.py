@@ -27,6 +27,7 @@ from app.api.schemas import (
 )
 from app.core.config import Settings
 from app.core.credentials import CredentialError
+from app.core.lessons import LessonService
 from app.core.model_selection import ModelSelectionError
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
@@ -179,7 +180,8 @@ async def submit_run(
         return failure(status, error.code, error.message)
     try:
         if isinstance(body.get("config"), dict) and (
-            {"resolved_agents", "credential_id"} & set(body["config"])
+            {"resolved_agents", "credential_id", "lessons", "lesson_run_id"}
+            & set(body["config"])
         ):
             raise ValueError("Private configuration fields")
         config = RunConfig.model_validate(body.get("config") or {})
@@ -223,6 +225,9 @@ async def submit_run(
         return failure(429, "too_many_runs", "Too many pipeline runs are active.")
     run_id: UUID | None = None
     try:
+        lesson_snapshot = await LessonService(
+            request.app.state.session_factory, settings, event_log
+        ).snapshot(request.state.auth_mode)
         session_factory: async_sessionmaker[AsyncSession] = (
             request.app.state.session_factory
         )
@@ -242,8 +247,15 @@ async def submit_run(
                         }
                     ),
                     credential_id=config.credential_id,
+                    lessons=lesson_snapshot,
                 )
                 run_id = row.run_id
+                config = config.model_copy(
+                    update={
+                        "lessons": lesson_snapshot,
+                        "lesson_run_id": run_id,
+                    }
+                )
                 if request.state.user:
                     await PreferenceRepository(session).visit(
                         request.state.user.id, run_id
@@ -259,6 +271,11 @@ async def submit_run(
                 "agent_models": {
                     k: v.model_dump(mode="json")
                     for k, v in config.resolved_agents.items()
+                },
+                "lessons": {
+                    key: value
+                    for key, value in lesson_snapshot.items()
+                    if key != "entries"
                 },
             },
         )

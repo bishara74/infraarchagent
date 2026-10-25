@@ -28,6 +28,7 @@ class RunRepository:
         user_id: UUID | None = None,
         agent_models: dict[str, Any] | None = None,
         credential_id: UUID | None = None,
+        lessons: dict[str, Any] | None = None,
     ) -> PipelineRun:
         if max_iterations < 1:
             raise ValueError("max_iterations must be positive")
@@ -37,6 +38,7 @@ class RunRepository:
             user_id=user_id,
             agent_models=agent_models,
             credential_id=credential_id,
+            lessons=lessons,
             policy_profile=policy_profile,
             status=RunStatus.CREATED,
             start_time=datetime.now(UTC),

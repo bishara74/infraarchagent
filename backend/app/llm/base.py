@@ -113,6 +113,7 @@ class LLMAttempt:
     model: str | None = None
     cached_input_tokens: int | None = None
     finish_reason: str | None = None
+    lesson_usage: dict[str, Any] | None = None
 
 
 class LLMAdapter(ABC):
@@ -144,6 +145,11 @@ class LLMAdapter(ABC):
         self.output_schema: dict[str, Any] | None = None
         self.output_schema_name = "generator_package"
         self.provider_order: tuple[str, ...] = ()
+        self.lesson_hook: (
+            Callable[[str, str], Awaitable[tuple[str, dict[str, Any]]]] | None
+        ) = None
+        self.lesson_gate: asyncio.Lock | None = None
+        self.lesson_provenance: dict[str, Any] | None = None
         self._structured_request: ContextVar[bool] = ContextVar(
             "structured_request", default=False
         )
@@ -163,6 +169,48 @@ class LLMAdapter(ABC):
 
     @abstractmethod
     def parse_response(self, response: LLMResponse) -> dict[str, Any]: ...
+
+    async def _lesson_dispatch(
+        self,
+        prompt: str,
+        call_id: str,
+        usage: dict[str, Any],
+        *,
+        system: str | None,
+        max_output_tokens: int,
+        timeout: float,
+    ) -> LLMResponse:
+        gate = self.lesson_gate
+        if gate is None:
+            usage.clear()
+            usage.update(self.lesson_provenance or {})
+            return await self.send_prompt(
+                prompt,
+                system=system,
+                max_output_tokens=max_output_tokens,
+                timeout=timeout,
+            )
+        async with gate:
+            # The switch may have detached the hook while this attempt waited.
+            hook = self.lesson_hook
+            if hook is not None:
+                prompt, prepared_usage = await hook(prompt, call_id)
+                usage.clear()
+                usage.update(prepared_usage)
+            else:
+                usage.clear()
+                usage.update(self.lesson_provenance or {})
+            # Creating the transport task is the dispatch boundary. Kill-switch
+            # serialization ends here; it never waits for an HTTP response.
+            task = asyncio.create_task(
+                self.send_prompt(
+                    prompt,
+                    system=system,
+                    max_output_tokens=max_output_tokens,
+                    timeout=timeout,
+                )
+            )
+        return await task
 
     async def complete_json(
         self,
@@ -210,22 +258,34 @@ class LLMAdapter(ABC):
             format_reason: str | None = None
             http_status: int | None = None
             exception_class: str | None = None
+            call_id = str(uuid4())
+            lesson_usage = dict(self.lesson_provenance or {})
             attempt_prompt = retry_prompt
             context_token = self._structured_request.set(response_validator is not None)
             try:
-                response = await asyncio.wait_for(
-                    self.send_prompt(
+                output_limit = (
+                    max_output_tokens
+                    if max_output_tokens is not None
+                    else self.policy.max_output_tokens
+                )
+                if self.lesson_hook is None:
+                    # No lesson callback is invoked in the default/disabled path.
+                    transport = self.send_prompt(
                         attempt_prompt,
                         system=system,
-                        max_output_tokens=(
-                            max_output_tokens
-                            if max_output_tokens is not None
-                            else self.policy.max_output_tokens
-                        ),
+                        max_output_tokens=output_limit,
                         timeout=timeout,
-                    ),
-                    timeout=timeout,
-                )
+                    )
+                else:
+                    transport = self._lesson_dispatch(
+                        attempt_prompt,
+                        call_id,
+                        lesson_usage,
+                        system=system,
+                        max_output_tokens=output_limit,
+                        timeout=timeout,
+                    )
+                response = await asyncio.wait_for(transport, timeout=timeout)
                 last_stats = response.stats()
                 if response.stop_reason == "max_tokens":
                     raise LLMResponseFormatError("truncated", last_stats)
@@ -325,7 +385,6 @@ class LLMAdapter(ABC):
                     fields.append(f"reasoning_tokens={response.reasoning_tokens}")
                 if format_reason is not None:
                     fields.append(f"format_reason={format_reason}")
-                call_id = str(uuid4())
                 context = tags.get() or {}
                 requested_effort = (
                     self.reasoning_effort
@@ -385,6 +444,7 @@ class LLMAdapter(ABC):
                     )
                     if response
                     else None,
+                    lesson_usage=lesson_usage or None,
                 )
                 diagnostic = observe(
                     {

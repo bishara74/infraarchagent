@@ -2561,6 +2561,67 @@ Approved advisory text cannot directly alter scanners, profiles, thresholds,
 schemas, validation or readiness; their regression proof follows in section 2.
 No new specification open question is introduced by the author-chosen policies.
 
+Section 2 freezes the canonical active set at acceptance, records its effective
+enabled flag/version/hash in the run row and acceptance event, and rejects
+client-supplied lesson snapshots/run IDs. Acceptance events omit set text to
+preserve EventLog's 64 KB bound; the immutable set and run snapshot retain the
+canonical content. Header-authenticated runs receive the canonical empty set
+even when server/runtime gates are enabled. Legacy runs disclose that lesson
+configuration was not recorded rather than inventing provenance.
+
+Only eligible Architect/Generator adapters with matching lessons register the
+optional pre-transport hook. Disabled/unconfigured/benchmark/empty-role paths
+have a null hook and take the ordinary provider send path; the hook is not
+invoked as a no-op. A short single-process gate serializes preparation, durable
+authorization and transport-task creation with the kill switch. It is released
+before waiting for the HTTP response, so disabling does not wait for inference.
+Transport-task creation is the authorization boundary: already-authorized
+attempts can finish; later attempts use their original undecorated prompts.
+Disabling detaches all registered hooks, including for HTTP retries, and the
+durable generation check prevents adapters created later in the same run from
+resuming after re-enable. Failed eligibility/provenance checks omit lessons and
+detach the affected run. No Fixer or SecurityAgent hook is installed.
+
+One escaped numbered advisory block is appended to the user message on every
+eligible initial/corrective/regeneration/HTTP attempt. System prompts, schemas,
+scanners, security loops, thresholds and readiness functions are unchanged.
+Selection is ordered by lesson UUID/revision, includes all_generators for each
+Generator, and uses whole entries up to eight lessons/2,000 block characters.
+Twelve complete pre-integration OpenAI-compatible request bodies were captured
+with mocked HTTP from unchanged prompt/provider sources at revision 29751f1.
+Forty-eight comparisons cover disabled, benchmark-enabled, unconfigured and
+empty-role contexts across four roles and three output-format modes, asserting
+both byte equality and zero hook/dispatch/governance-query invocations.
+
+Each authorized use is a durable source-free run event before dispatch; completed
+attempt telemetry retains the same call ID and selected lesson IDs, block/set
+hashes and self-approval provenance. Results/manifests deduplicate completed
+telemetry against dispatch authorization, preserving evidence even if a process
+dies during the request. They distinguish acceptance eligibility from actual
+use and retain suppression reasons per call. Individual ZIPs add a collision-
+safe _infraarchagent/LESSONS.json and readiness provenance; combined ZIP manifests
+include the same lesson evidence and hash the additional files. Generated IaC
+bytes, original filenames and readiness/download gates remain unchanged.
+
+The initial 46-case corpus blocks 10 cases structurally and 28 additional cases
+after normalization/filtering (38 cumulative). Independently applying the
+filter to raw payloads blocks 29 cases; this differs from sequential filtering
+because normalization exposes some text and structural rejection excludes other
+payloads. Six benign examples and two documented semantic-manipulation residuals
+pass the syntax checks. All eight require human approval and are excluded from
+prompt snapshots while proposed. Delimiting, output controls and kill-switch
+tests verify boundaries; they are not represented as universal attack detectors.
+
+Verification correction: the pre-existing in-flight HTTP-cancellation test used
+a 1.1-second budget with a one-second pre-call reserve, leaving only 100 ms to
+build schema-backed prompts. Local setup measured 1.94 seconds cold and about
+0.10–0.15 seconds warm, so it could fail before starting any HTTP request. The
+test now builds its real messages before its timed region, retaining the same
+production deadline and 1.05–1.5 second assertions. No production timing rule is
+changed. An extra PR-04 perf probe (outside make test's not-perf scope) measured
+7.89–8.07 seconds for a 10 MB Docker-backed download and failed its unchanged
+two-second bound; its baseline/host attribution has not been established.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -16,6 +16,7 @@ from app.agents.security.verification import TerraformVerifier
 from app.agents.validator import ValidatorAgent
 from app.core.config import Settings
 from app.core.credentials import CredentialMaterial
+from app.core.lesson_runtime import LessonRuntime
 from app.db.repositories.providers import ProviderRepository
 from app.domain.agent_selection import AgentSelection
 from app.domain.enums import LLMProvider, Variant
@@ -37,8 +38,10 @@ class AgentFactory:
         session_factory: async_sessionmaker[AsyncSession] | None = None,
         scanner: Scanner | None = None,
         scanner_versions: dict[str, str | None] | None = None,
+        lesson_runtime: LessonRuntime | None = None,
     ) -> None:
         self.settings = settings
+        self.lesson_runtime = lesson_runtime
         self.pipeline_demo_stub = pipeline_demo_stub
         self.session_factory = session_factory
         self.scanner = scanner or Scanner(
@@ -99,6 +102,8 @@ class AgentFactory:
             )
         if self.pipeline_demo_stub and resolved.provider == LLMProvider.STUB:
             adapter = PipelineDemoStub(None, adapter.policy, model=adapter.model)
+        if self.lesson_runtime is not None:
+            self.lesson_runtime.bind(adapter, run_config or RunConfig(), "architect")
         return ArchitectAgent(
             adapter,
             deadline_seconds=self.settings.agent_deadline_seconds,
@@ -135,6 +140,10 @@ class AgentFactory:
                 adapter.policy,
                 model=adapter.model,
                 scenario=self.settings.pipeline_demo_scenario,
+            )
+        if self.lesson_runtime is not None:
+            self.lesson_runtime.bind(
+                adapter, run_config or RunConfig(), "generator_" + variant.value
             )
         return classes[Variant(variant)](
             adapter,

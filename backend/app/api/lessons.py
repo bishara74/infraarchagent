@@ -100,7 +100,13 @@ async def control(request: Request) -> dict[str, Any]:
 
 @router.put("/control", dependencies=[Depends(require_lesson_admin)])
 async def set_control(request: Request, body: Control) -> dict[str, Any]:
-    return await service(request).set_enabled(request.state.user, body.enabled)
+    runtime = request.app.state.lesson_runtime
+    async with runtime.gate:
+        if not body.enabled:
+            runtime.disable()
+        result = await service(request).set_enabled(request.state.user, body.enabled)
+        runtime.synchronize(result)
+        return result
 
 
 @router.get("/history", dependencies=[Depends(require_lesson_admin)])

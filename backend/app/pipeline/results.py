@@ -1,5 +1,6 @@
 """Assemble safe results; HTTP and database statements stay at their boundaries."""
 
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
@@ -13,11 +14,32 @@ from app.db.repositories.results import ResultsRepository, ResultsSnapshot
 from app.domain.agent_selection import reported_selections
 from app.domain.archive import bundle_zip, package_zip, readiness_document
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
+from app.domain.lessons import lesson_manifest
 from app.domain.plan import DeploymentPlan
 from app.domain.review import package_presentation
 from app.domain.states import is_downloadable
 from app.pipeline.review import ReviewError
 from app.security.profiles import assess
+
+
+def run_lessons(snapshot: ResultsSnapshot) -> dict[str, Any]:
+    # Finished telemetry wins over its earlier dispatch authorization. Durable
+    # authorizations preserve evidence if a process dies during transport.
+    records = [
+        *snapshot.telemetry,
+        *[
+            {
+                "kind": "llm",
+                "id": row.get("call_id"),
+                "call_id": row.get("call_id"),
+                "role": row.get("role"),
+                "outcome": "authorized",
+                "lesson_usage": row.get("lessons"),
+            }
+            for row in snapshot.lesson_uses
+        ],
+    ]
+    return lesson_manifest(snapshot.run.lessons, safe_records(records))
 
 
 class ResultsService:
@@ -65,6 +87,7 @@ class ResultsService:
         retried: bool,
     ) -> tuple[bytes, str]:
         status = PackageStatus(row.status)
+        lessons = run_lessons(snapshot)
         readiness = readiness_document(
             run_id=run_id,
             variant=variant,
@@ -87,8 +110,13 @@ class ResultsService:
                     "files": row.files,
                 }
             ),
+            lessons=lessons,
         )
-        archive = package_zip(self.safety.value(row.files), self.safety.text(readiness))
+        archive = package_zip(
+            self.safety.value(row.files),
+            self.safety.text(readiness),
+            self.safety.value(lessons),
+        )
         return (
             archive,
             f"infraarch-{str(run_id)[:8]}-{variant.value}-{status.value}.zip",
@@ -124,7 +152,11 @@ class ResultsService:
                     run_id, variant, snapshot, row, label, retried
                 )
                 packages[variant] = (archive, filename, row.status)
-        return bundle_zip(run_id, packages), f"infraarch-{str(run_id)[:8]}-all.zip"
+        return bundle_zip(
+            run_id,
+            packages,
+            lessons=self.safety.value(run_lessons(snapshot)),
+        ), f"infraarch-{str(run_id)[:8]}-all.zip"
 
     async def results(self, run_id: UUID) -> ResultsResponse | None:
         async with self.sessions() as session:
@@ -190,6 +222,7 @@ class ResultsService:
         return ResultsResponse(
             telemetry=self.safety.value(safe_records(snapshot.telemetry)) or None,
             run=RunResult(
+                lessons=self.safety.value(run_lessons(snapshot)),
                 id=row.run_id,
                 agent_models=self.safety.value(reported_selections(row.agent_models)),
                 policy_profile="contextual-v1"

@@ -127,6 +127,7 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
         data = (await client.get(f"/api/pipeline/{run_id}/results")).json()
         schema = (await client.get("/openapi.json")).json()
     assert set(data["run"]) == {
+        "lessons",
         "id",
         "status",
         "input_text",

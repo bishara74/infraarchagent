@@ -19,6 +19,7 @@ class ResultsSnapshot:
     packages: list[GeneratedPackage]
     plan: dict[str, Any] | None
     telemetry: list[dict[str, Any]] = field(default_factory=list)
+    lesson_uses: list[dict[str, Any]] = field(default_factory=list)
 
 
 class ResultsRepository:
@@ -78,6 +79,17 @@ class ResultsRepository:
         )
 
     async def snapshot(self, run_id: UUID) -> ResultsSnapshot | None:
+        lesson_uses = (
+            select(
+                func.jsonb_agg(aggregate_order_by(AgentEvent.payload, AgentEvent.seq))
+            )
+            .where(
+                AgentEvent.run_id == PipelineRun.run_id,
+                AgentEvent.payload["notice"].astext == "lesson use",
+            )
+            .correlate(PipelineRun)
+            .scalar_subquery()
+        )
         telemetry = (
             select(
                 func.jsonb_agg(
@@ -104,7 +116,7 @@ class ResultsRepository:
         )
         rows = (
             await self.session.execute(
-                select(PipelineRun, GeneratedPackage, plan, telemetry)
+                select(PipelineRun, GeneratedPackage, plan, telemetry, lesson_uses)
                 .outerjoin(
                     GeneratedPackage, GeneratedPackage.run_id == PipelineRun.run_id
                 )
@@ -119,4 +131,5 @@ class ResultsRepository:
             [row[1] for row in rows if row[1] is not None],
             rows[0][2],
             [record for batch in rows[0][3] or [] for record in batch],
+            rows[0][4] or [],
         )

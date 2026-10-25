@@ -27,6 +27,64 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9l section 2 — Isolate advisory transport and retain exact provenance
+
+**Summary:** Freeze approved lesson sets at run acceptance; attach advisory text
+only to eligible Architect/Generator user messages, with zero disabled hooks,
+sticky kill-switch revocation and durable per-attempt provenance. Add manifests,
+archive evidence, complete-body golden fixtures and a layered injection corpus.
+
+**Requirements addressed:** FR-A-01/05, FR-G-01/02, FR-S-04/07, FR-P-04,
+FR-UI-06/07, NFR-01/02. D-60 retains the proposed thesis-extension IDs.
+
+**Files:** agent factory, run API/config/repository/schema, core lessons/runtime/
+telemetry, LLM base, main/orchestrator, results repository/service and archive;
+new complete-body/corpus fixtures, wire/corpus/transport tests and security
+evidence; updated archive/result assertions and the cancellation test fixture;
+README, D-60 and this log.
+
+**Decisions:** Unconfigured, disabled, benchmark and empty-role adapters have
+no hook/gate registered; their ordinary send path never invokes the lesson
+dispatcher. A short gate orders preparation/authorization/transport-task
+creation against disabling, without waiting for HTTP completion. Disable
+detaches hooks and advances durable generation; earlier run snapshots cannot
+resume on re-enable, including adapters instantiated later. Initial, correction,
+regeneration and HTTP retries share one escaped bounded user-message block.
+System prompts, schemas, fixer/security logic, scanners and readiness are
+unchanged. Acceptance records enabled/version/hash; authorized-use events and
+completed telemetry share call IDs and selected revisions/block hashes. Results
+deduplicate them, preserving evidence on interruption. Individual/combined
+archives retain machine-readable lessons and self-approval provenance while
+preserving generated IaC bytes. Raw decision reasons never enter this path.
+
+**Tests:** Final focused Phase 9l + existing golden-wire/cancellation cohort:
+**185 passed, 0 failed/skipped** (137.88s). Separate download/results/bundle/
+governance/transport/cancellation run: **66 passed, 0 failed/skipped, 1 perf
+deselected** (109.72s). Earlier prompt/provider suite: **118 passed**, including
+**48** complete serialized-body comparisons against **12** pre-integration
+fixtures with zero dispatcher/hook/governance-query invocations. Corpus suite:
+**47 passed**; **46 cases**, **10** structured blocks, **29** independent raw
+filter blocks, **28** additional sequential filter blocks, **38** cumulative.
+Six benign and two semantic residuals pass syntax checks; integration proves
+all **8/8** remain excluded without approval. Full `make lint`: **exit 0**,
+40 scripts / 375 app-and-test files, mypy **181 sources**, frontend ESLint/TS.
+`git diff --check` passes. Payload-free evidence is under phase9l-security.
+
+**Known gaps / follow-ups:** Sections 3–5 remain. The section-1 full `make test`
+completed **2,354 passed, 1 failed, 6 perf deselected** (1355.23s). Its sole
+failure was the pre-existing in-flight cancellation test failing before any
+HTTP handler started. Measured schema-backed prompt setup was **1.94s cold**
+and **0.10–0.15s warm**, exceeding that test's 100ms setup allowance. Its real
+prompts are now prepared before the timed region; the production deadline and
+1.05–1.5s assertions are unchanged, and both focused reruns pass. Final full
+make test will be rerun in section 5. An extra perf-inclusive run had **64
+passed / 2 failed** (144.52s); the cancellation issue and the unchanged PR-04
+two-second ZIP bound failed. Isolated pre-fix recheck: **2 failed** (41.16s),
+ZIP **8.0741s** versus **7.8897s** in the first probe. Attribution to host versus
+baseline implementation is unverified; no performance threshold was relaxed.
+No inference, dotenv read, install, new dependency, external service, push or
+spec change. No new specification open question.
+
 ## 2026-10-25 — Phase 9l section 1 — Add versioned named-account lesson governance
 
 **Summary:** Add human-curated lesson revisions, canonical immutable active sets,

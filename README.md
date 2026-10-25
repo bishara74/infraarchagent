@@ -1920,3 +1920,43 @@ consistent database snapshot and `Cache-Control: no-store`. No curated lessons
 are introduced here.
 
 Round 3 browser evidence: [gallery](docs/evals/phase9j-ui/round3/README.md).
+
+## Phase 9l curated lessons
+
+Apply migration 0013 with `make migrate`. Lessons are off by default. Using them
+requires both `LESSONS_ENABLED=true` in the backend process environment and the
+named administrator's runtime switch. The switch starts off; it cannot override
+a false server setting. Shared-key benchmark requests always omit lessons.
+
+Named reviewers and administrators may propose short lessons from their own
+authenticated Approve/Reject decisions. An administrator approves, rejects or
+retires proposals. Normally a different named administrator must approve.
+Single-operator deployments may explicitly set
+`LESSONS_REQUIRE_SECOND_APPROVER=false`; self-approval then requires a second,
+expiring confirmation that displays the filter result and exact prompt preview.
+The approval, lesson set, run evidence and archives retain `self_approved`.
+This weakens human review to one person, and the interface warns accordingly.
+
+Lesson API operations require named account sessions and same-origin mutation
+requests: `POST /api/lessons/check`, `POST /api/lessons`, and named-admin list,
+detail, history, confirmation and approve/reject/retire operations under
+`/api/lessons`. `GET /api/lessons/control` reports both gates and set provenance;
+`PUT /api/lessons/control` accepts `{"enabled":false}` to disable lessons.
+Revision edits are new proposals using `previous_id`; approved text is immutable.
+Review-history GET rows expose `decision_id`; existing exports keep their format.
+
+Disabling detaches active hooks before later attempts, including retries, without
+waiting for requests already authorized for transport. Re-enabling applies to
+newly accepted runs; an earlier run never resumes lessons. Disabled/unconfigured
+adapters have no pre-transport lesson hook at all. The server applies role-only
+selection, at most eight lessons and 2,000 total advisory-block characters.
+Tags support curation only. No model drafts lessons or reads decision reasons;
+the existing explicit remediation-feedback action remains separate.
+
+Results expose `run.lessons`, distinguishing acceptance configuration from
+per-call use and suppression. Individual ZIPs include a collision-safe
+`_infraarchagent/LESSONS.json`; combined ZIP manifests also retain lesson
+provenance. The lesson set version/hash and any self-approved use remain
+traceable after retirement or disabling. Scanners, output validation and readiness
+continue to decide independently of advisory text. The syntactic filter cannot
+exclude all semantic manipulation; see [D-60](docs/design-deviations.md#d-60--human-curated-advisory-lessons-and-injection-defense-phase-9l).

@@ -950,5 +950,8 @@ class PipelineOrchestrator:
                 logger.exception("could not settle failed run %s", self.run_id)
             return RunStatus.FAILED
         finally:
+            runtime = getattr(self.factory, "lesson_runtime", None)
+            if runtime is not None:
+                runtime.release(self.run_id)
             for workspace in self.workspaces.values():
                 workspace.close()

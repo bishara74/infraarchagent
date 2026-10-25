@@ -226,13 +226,35 @@ async def test_format_retry_contains_reason_not_previous_output():
 
 
 @pytest.mark.req("FR-G-06", "PR-05")
-async def test_inflight_http_is_cancelled_at_shared_deadline():
+async def test_inflight_http_is_cancelled_at_shared_deadline(monkeypatch):
     import asyncio
     import time
 
     from app.agents.generators.base import GeneratorDeadlineExceeded
 
     started, cancelled, never = asyncio.Event(), asyncio.Event(), asyncio.Event()
+
+    # This test targets cancellation of an in-flight HTTP request. Schema-backed
+    # prompt construction can exceed the 100ms setup allowance on a cold/slow
+    # filesystem and prevent that request from starting at all. Build the real
+    # messages before the timed region; retain the production deadline and its
+    # unchanged elapsed-time assertions.
+    from app.agents.generators import base
+
+    deployment = plan()
+    prepared_user = base.build_user_prompt(deployment)
+    prepared_system = base.build_system_prompt(
+        CostGeneratorAgent.optimisation_directive,
+        max_output_tokens=8000,
+        wire_files=False,
+        plan=deployment,
+    )
+    monkeypatch.setattr(
+        base, "build_user_prompt", lambda *args, **kwargs: prepared_user
+    )
+    monkeypatch.setattr(
+        base, "build_system_prompt", lambda *args, **kwargs: prepared_system
+    )
 
     async def handler(request):
         started.set()
@@ -245,7 +267,7 @@ async def test_inflight_http_is_cancelled_at_shared_deadline():
         agent = generator(client, attempts=3, deadline_seconds=1.1, attempt_timeout=90)
         before = time.monotonic()
         with pytest.raises(GeneratorDeadlineExceeded):
-            await agent.generate(plan())
+            await agent.generate(deployment)
         elapsed = time.monotonic() - before
     assert started.is_set() and cancelled.is_set()
     assert 1.05 <= elapsed < 1.5

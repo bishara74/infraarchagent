@@ -122,3 +122,54 @@ class LessonAudit:
     source_run_id: UUID | None = None
     set_version: int | None = None
     data: dict[str, Any] = field(default_factory=dict)
+
+
+def empty_snapshot(reason: str) -> dict[str, Any]:
+    return {
+        "lessons_enabled": False,
+        "set_version": 0,
+        "set_hash": content_hash([]),
+        "entries": [],
+        "disable_generation": None,
+        "self_approved": False,
+        "reason": reason,
+    }
+
+
+def lesson_manifest(
+    snapshot: dict[str, Any] | None, telemetry: list[dict[str, Any]]
+) -> dict[str, Any]:
+    configuration = snapshot or empty_snapshot("not_recorded")
+    calls = [
+        {
+            "call_id": row.get("call_id"),
+            "role": row.get("role"),
+            "outcome": row.get("outcome"),
+            **row["lesson_usage"],
+        }
+        for row in telemetry
+        if isinstance(row.get("lesson_usage"), dict)
+    ]
+    used = sorted(
+        {
+            identity
+            for row in calls
+            if row.get("enabled")
+            for identity in row.get("lesson_ids", [])
+        }
+    )
+    return {
+        "schema_version": 1,
+        "recorded": snapshot is not None,
+        **configuration,
+        "calls": calls,
+        "used_lesson_ids": used,
+        "used_count": len(used),
+        "self_approved": any(
+            row.get("enabled") and row.get("self_approved") for row in calls
+        ),
+        "eligible_self_approved": configuration.get("self_approved", False),
+        "disabled_during_run": any(
+            row.get("reason") == "disabled_during_run" for row in calls
+        ),
+    }

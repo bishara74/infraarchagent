@@ -1,6 +1,6 @@
 """Per-run LLM and remediation choices, without transport concerns."""
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -42,6 +42,8 @@ class RunConfig(BaseModel):
     provider_preferences: dict[str, str] = Field(default_factory=dict)
     resolved_agents: dict[str, AgentSelection] = Field(default_factory=dict)
     credential_id: UUID | None = None
+    lessons: dict[str, Any] | None = None
+    lesson_run_id: UUID | None = None
 
     def resolve(self, settings: "Settings") -> ResolvedRunConfig:
         provider = self.provider if self.provider is not None else settings.llm_provider

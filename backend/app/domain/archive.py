@@ -76,6 +76,7 @@ def readiness_document(
     policy_profile: str = "strict",
     assessments: dict[str, Any] | None = None,
     files: dict[str, str] | None = None,
+    lessons: dict[str, Any] | None = None,
 ) -> str:
     if not is_downloadable(status):
         raise ValueError("package is not downloadable")
@@ -112,6 +113,23 @@ def readiness_document(
             f"Run ID: {run_id}",
             f"Variant: {variant.value}",
             f"Model: {model or 'unavailable'}",
+            *(
+                [
+                    f"Lessons used: set v{lessons['set_version']} "
+                    f"({lessons['used_count']} lessons)"
+                    if lessons.get("used_count")
+                    else "Lessons used: none",
+                    f"Lesson set SHA-256: {lessons['set_hash']}",
+                    "Self-approved lessons used: "
+                    + (
+                        "yes — four-eyes review was off"
+                        if lessons.get("self_approved")
+                        else "no"
+                    ),
+                ]
+                if lessons
+                else []
+            ),
             "Agent models and thinking modes:",
             *[
                 f"- {role}: {selection}"
@@ -188,7 +206,9 @@ def readiness_document(
     )
 
 
-def package_zip(files: dict[str, str], readiness: str) -> bytes:
+def package_zip(
+    files: dict[str, str], readiness: str, lessons: dict[str, Any] | None = None
+) -> bytes:
     safe = validate_file_map(files)
     occupied = {path.casefold() for path in safe}
     readiness_path = "INFRAARCHAGENT_READINESS.md"
@@ -199,6 +219,15 @@ def package_zip(files: dict[str, str], readiness: str) -> bytes:
             readiness_path = f"_infraarchagent/READINESS-{number}.md"
             number += 1
     entries = {**safe, readiness_path: readiness}
+    if lessons is not None:
+        lesson_path = "_infraarchagent/LESSONS.json"
+        number = 2
+        while lesson_path.casefold() in {path.casefold() for path in entries}:
+            lesson_path = f"_infraarchagent/LESSONS-{number}.json"
+            number += 1
+        entries[lesson_path] = (
+            json.dumps(lessons, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
+        )
     return _zip_entries(
         {path: content.encode("utf-8") for path, content in entries.items()}
     )
@@ -221,7 +250,12 @@ def _zip_entries(entries: dict[str, bytes]) -> bytes:
     return buffer.getvalue()
 
 
-def bundle_zip(run_id: UUID, packages: dict[Variant, tuple[bytes, str, str]]) -> bytes:
+def bundle_zip(
+    run_id: UUID,
+    packages: dict[Variant, tuple[bytes, str, str]],
+    *,
+    lessons: dict[str, Any] | None = None,
+) -> bytes:
     """Flatten the unchanged individual ZIP payloads, retaining verifiable hashes."""
     entries: dict[str, bytes] = {}
     variants = {}
@@ -253,6 +287,7 @@ def bundle_zip(run_id: UUID, packages: dict[Variant, tuple[bytes, str, str]]) ->
         "schema_version": 1,
         "run_id": str(run_id),
         "variants": variants,
+        **({"lessons": lessons} if lessons is not None else {}),
         "files": {
             path: hashlib.sha256(data).hexdigest()
             for path, data in sorted(entries.items())

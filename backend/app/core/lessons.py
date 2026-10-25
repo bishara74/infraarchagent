@@ -12,7 +12,13 @@ from app.core.config import Settings
 from app.core.safety import PublicDataSafety
 from app.db.models import LessonConfirmation, LessonRevision, LessonSet, User
 from app.db.repositories.lessons import LessonRepository, lesson_entry
-from app.domain.lessons import LessonAudit, LessonInput, content_hash, render_lessons
+from app.domain.lessons import (
+    LessonAudit,
+    LessonInput,
+    content_hash,
+    empty_snapshot,
+    render_lessons,
+)
 from app.events.log import EventLog
 from app.security.lesson_filter import screen
 
@@ -53,6 +59,29 @@ class LessonService:
                 ],
             }
         return result
+
+    async def snapshot(self, auth_mode: str) -> dict[str, Any]:
+        if auth_mode != "account":
+            return empty_snapshot(
+                "benchmark" if auth_mode == "shared_key" else "unconfigured"
+            )
+        if not self.settings.lessons_enabled:
+            return empty_snapshot("server_disabled")
+        async with self.sessions() as session, session.begin():
+            control = await LessonRepository(session).control()
+            if not control.runtime_enabled:
+                return empty_snapshot("runtime_disabled")
+            active = await session.get(LessonSet, control.set_version)
+            assert active is not None
+            return {
+                "lessons_enabled": True,
+                "set_version": active.version,
+                "set_hash": active.sha256,
+                "entries": active.entries,
+                "disable_generation": control.disable_generation,
+                "self_approved": any(row["self_approved"] for row in active.entries),
+                "reason": "eligible" if active.entries else "no_lessons",
+            }
 
     def screened(self, lesson: LessonInput) -> dict[str, Any]:
         result = self.check(lesson)

@@ -91,7 +91,11 @@ def safe_records(raw: object) -> list[dict[str, Any]]:
             continue
         clean: dict[str, Any] = {"kind": item["kind"]}
         for key, value in item.items():
-            if value is None and key in (
+            if key == "lesson_usage" and isinstance(value, dict):
+                usage = safe_lesson_usage(value)
+                if usage is not None:
+                    clean[key] = usage
+            elif value is None and key in (
                 TEXT_FIELDS | NUMBER_FIELDS | INTEGER_FIELDS | ID_FIELDS | TIME_FIELDS
             ):
                 clean[key] = None
@@ -125,6 +129,63 @@ def safe_records(raw: object) -> list[dict[str, Any]]:
             seen.add(identity)
         result.append(clean)
     return result
+
+
+def safe_lesson_usage(value: dict[str, Any]) -> dict[str, Any] | None:
+    import re
+
+    if (
+        type(value.get("enabled")) is not bool
+        or type(value.get("self_approved")) is not bool
+    ):
+        return None
+    if type(value.get("set_version")) is not int or value["set_version"] < 0:
+        return None
+    if not isinstance(value.get("set_hash"), str) or not re.fullmatch(
+        r"[a-f0-9]{64}", value["set_hash"]
+    ):
+        return None
+    block_hash = value.get("block_hash")
+    if block_hash is not None and (
+        not isinstance(block_hash, str) or not re.fullmatch(r"[a-f0-9]{64}", block_hash)
+    ):
+        return None
+    if value.get("reason") not in {
+        "used",
+        "unconfigured",
+        "benchmark",
+        "server_disabled",
+        "runtime_disabled",
+        "no_lessons",
+        "no_applicable_lessons",
+        "disabled_during_run",
+        "invalid_snapshot",
+        "eligibility_unavailable",
+        "not_dispatched",
+    }:
+        return None
+    identities = value.get("lesson_ids")
+    if not isinstance(identities, list) or len(identities) > 8:
+        return None
+    try:
+        identities = [str(UUID(identity)) for identity in identities]
+    except (ValueError, TypeError, AttributeError):
+        return None
+    if value["enabled"] and (not identities or block_hash is None):
+        return None
+    if not value["enabled"] and (identities or value["self_approved"]):
+        return None
+    return {
+        key: value[key]
+        for key in (
+            "enabled",
+            "self_approved",
+            "set_version",
+            "set_hash",
+            "block_hash",
+            "reason",
+        )
+    } | {"lesson_ids": identities}
 
 
 @dataclass

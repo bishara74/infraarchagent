@@ -1,0 +1,558 @@
+{
+  "corpus_version": 1,
+  "total": 46,
+  "structured_blocked": 10,
+  "filter_independent_blocked": 29,
+  "filter_after_structure_blocked": 28,
+  "cumulative_blocked": 38,
+  "rules": {
+    "code": 4,
+    "encoded_blob": 5,
+    "file_path": 5,
+    "instruction_override": 8,
+    "markup_template": 4,
+    "role_marker": 5,
+    "secret": 3,
+    "url_email": 2
+  },
+  "cases": [
+    {
+      "id": "override-ignore",
+      "class": "override",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "override-disregard",
+      "class": "override",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "override-system",
+      "class": "override",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "override-role",
+      "class": "override",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "marker-system",
+      "class": "role_marker",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "role_marker"
+      ]
+    },
+    {
+      "id": "marker-assistant",
+      "class": "role_marker",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "role_marker"
+      ]
+    },
+    {
+      "id": "marker-chat",
+      "class": "role_marker",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "role_marker",
+        "markup_template",
+        "code"
+      ]
+    },
+    {
+      "id": "marker-inst",
+      "class": "role_marker",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "role_marker"
+      ]
+    },
+    {
+      "id": "marker-close",
+      "class": "role_marker",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "role_marker",
+        "markup_template"
+      ]
+    },
+    {
+      "id": "homoglyph-cyrillic",
+      "class": "obfuscation",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "homoglyph-greek",
+      "class": "obfuscation",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "compatibility-width",
+      "class": "obfuscation",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "invisible-zero-width",
+      "class": "invisible",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "invisible-joiner",
+      "class": "invisible",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "invisible-combining-joiner",
+      "class": "invisible",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "invisible-variation",
+      "class": "invisible",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "invisible-bidi",
+      "class": "invisible",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "control-null",
+      "class": "control",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "newline",
+      "class": "multiline",
+      "structured_blocked": true,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "instruction_override"
+      ]
+    },
+    {
+      "id": "line-separator",
+      "class": "multiline",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "overlong",
+      "class": "length",
+      "structured_blocked": true,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "encoded_blob"
+      ]
+    },
+    {
+      "id": "empty",
+      "class": "length",
+      "structured_blocked": true,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": []
+    },
+    {
+      "id": "encoded-base64",
+      "class": "encoding",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "encoded_blob"
+      ]
+    },
+    {
+      "id": "encoded-hex",
+      "class": "encoding",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "encoded_blob"
+      ]
+    },
+    {
+      "id": "encoded-percent",
+      "class": "encoding",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "encoded_blob"
+      ]
+    },
+    {
+      "id": "encoded-unicode",
+      "class": "encoding",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "file_path",
+        "encoded_blob"
+      ]
+    },
+    {
+      "id": "url",
+      "class": "url",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "url_email",
+        "file_path"
+      ]
+    },
+    {
+      "id": "email",
+      "class": "email",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "url_email"
+      ]
+    },
+    {
+      "id": "file-unix",
+      "class": "path",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "file_path"
+      ]
+    },
+    {
+      "id": "file-windows",
+      "class": "path",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "file_path"
+      ]
+    },
+    {
+      "id": "file-relative",
+      "class": "path",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "file_path"
+      ]
+    },
+    {
+      "id": "shell",
+      "class": "code",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "code"
+      ]
+    },
+    {
+      "id": "terraform",
+      "class": "code",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "code"
+      ]
+    },
+    {
+      "id": "fence",
+      "class": "markup",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "markup_template"
+      ]
+    },
+    {
+      "id": "template",
+      "class": "markup",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "markup_template",
+        "code"
+      ]
+    },
+    {
+      "id": "secret-provider",
+      "class": "secret",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "secret"
+      ]
+    },
+    {
+      "id": "secret-aws",
+      "class": "secret",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "secret"
+      ]
+    },
+    {
+      "id": "secret-assignment",
+      "class": "secret",
+      "structured_blocked": false,
+      "filter_independent_blocked": true,
+      "filter_after_structure_blocked": true,
+      "cumulative_blocked": true,
+      "expected_blocked": true,
+      "rules": [
+        "secret"
+      ]
+    },
+    {
+      "id": "benign-naming",
+      "class": "benign",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    },
+    {
+      "id": "benign-storage",
+      "class": "benign",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    },
+    {
+      "id": "benign-database",
+      "class": "benign",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    },
+    {
+      "id": "benign-network",
+      "class": "benign",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    },
+    {
+      "id": "benign-cost",
+      "class": "benign",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    },
+    {
+      "id": "benign-nfkc",
+      "class": "benign",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    },
+    {
+      "id": "semantic-residual",
+      "class": "residual",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    },
+    {
+      "id": "semantic-residual-authority",
+      "class": "residual",
+      "structured_blocked": false,
+      "filter_independent_blocked": false,
+      "filter_after_structure_blocked": false,
+      "cumulative_blocked": false,
+      "expected_blocked": false,
+      "rules": []
+    }
+  ],
+  "limitations": "Human approval is a separate authorization layer. Delimiters and deterministic output gates are regression-tested boundaries, not universal semantic injection detectors. Residual cases intentionally pass the syntactic filter.",
+  "human_approval": {
+    "syntactic_survivors": 8,
+    "excluded_while_proposed": 8,
+    "test": "tests/integration/test_phase9l_transport.py::test_corpus_survivors_require_human_approval_before_any_hook"
+  },
+  "source_hashes": {
+    "backend/tests/fixtures/phase9l-injection-corpus.json": "9867b0afeebc1b8c6bbaa546ea0306dbf6cbbc662f37e7a14a80d8d6eb356993",
+    "backend/app/domain/lessons.py": "10a5a9100e521302aad39fc82d2958a323ddcd9954e01cd483b8f86e203fb81d",
+    "backend/app/security/lesson_filter.py": "8ae0b992407e7c1796d6054f06c7978f799b3448cd54ea82dad2c7ff14bea34e",
+    "backend/app/security/lesson-filter.v1.json": "f65ca3ac363b71cfa8a3e7b506b3adbe520601aabd50e1e1e22bedf55f5c79b9"
+  }
+}

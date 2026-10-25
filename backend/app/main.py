@@ -32,6 +32,7 @@ from app.core.errors import (
     unauthorized_error_handler,
     validation_error_handler,
 )
+from app.core.lesson_runtime import LessonRuntime
 from app.core.lessons import LessonError
 from app.core.logging import configure_logging
 from app.core.safety import PublicDataSafety
@@ -65,11 +66,13 @@ def create_app(
     broker = InMemoryBroker(configured.broker_queue_size)
     event_log = EventLog(session_factory, broker, safety=PublicDataSafety(configured))
     writer = PipelineStateWriter(session_factory, event_log)
+    lesson_runtime = LessonRuntime(session_factory, event_log)
     scanner_info = scanner_versions()
     factory = AgentFactory(
         configured,
         pipeline_demo_stub=True,
         session_factory=session_factory,
+        lesson_runtime=lesson_runtime,
         scanner_versions={
             tool: details["version"] if isinstance(details["version"], str) else None
             for tool, details in scanner_info.items()
@@ -142,6 +145,7 @@ def create_app(
     app.state.broker = broker
     app.state.event_log = event_log
     app.state.writer = writer
+    app.state.lesson_runtime = lesson_runtime
     app.state.runner = runner
     app.state.settings = configured
     app.state.session_factory = session_factory
