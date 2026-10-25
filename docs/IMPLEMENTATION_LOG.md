@@ -27,6 +27,20 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9k results section 2 — phase9k: document the offline thinking limitation
+
+**Summary:** Record the exact OpenRouter reasoning/JSON-object wire, response usage field, corrected call denominator and author-observed billing. Preserve the adapter and distinguish possible causes from verified facts.
+
+**Requirements addressed:** FR-A-01, NFR-01.
+
+**Files:** docs/design-deviations.md, docs/thesis-notes/chapter6-evaluation.md, docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Medium sends reasoning.effort through extra_body alongside response_format=json_object; Architect has no strict-schema request context or separate thinking budget. Only usage.completion_tokens_details.reasoning_tokens is parsed. All 21 full-round unique calls (24 with smoke) report zero. The author's 2,245/1,260 billing observation prices to $0.01709, rounded $0.0171. Record the required conclusion that the experiment tests a stronger Architect without extended thinking. Hypotheses are unverified; no adapter fix, provider documentation claim or live call. See D-59.
+
+**Tests:** Existing mocked provider, frozen golden-wire and Architect-override integration suites: **76 passed, 0 failed/skipped** (16.37s), dotenv disabled, synthetic credentials, disposable UTF-8 PostgreSQL 16. Initial attempt: **68 passed, 8 setup errors**, because the new disposable cluster lacked the inspection role required by migration 0012. Provisioned the existing NOLOGIN inspection role according to repository bootstrap, then reran successfully; no migration or app privilege changes. Final required checks follow in section 4.
+
+**Known gaps / follow-ups:** Sections 3–4 remain. Provider honoring of medium and the reason for zero usage are unverified. No new spec deviation or open question beyond the documented experiment limitation; no network, installs or dotenv reads.
+
 ## 2026-10-25 — Phase 9k results section 1 — phase9k: record recomputed Architect experiment results
 
 **Summary:** Document the real smoke/full Architect experiment in D-59 and Chapter 6, with package and run-level Fisher tests, LB evidence, routing, measured cost and explicitly attributed author interpretation.

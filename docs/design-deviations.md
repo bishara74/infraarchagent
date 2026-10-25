@@ -2448,6 +2448,29 @@ estimate, not measured cost. The canonical snapshot
 activity view for an inspected request; telemetry records the unpinned alias.
 Committed evidence, prompts, profiles, thresholds and readiness remain unchanged.
 
+Results section 2 (FR-A-01, NFR-01): offline adapter/golden-wire inspection
+finds medium OpenRouter requests send top-level `reasoning: {effort: medium}`
+through SDK extra_body, together with `response_format: {type: json_object}`.
+There is no native reasoning_effort, Anthropic thinking/output_config, explicit
+enabled flag or separate thinking-token budget for this request. Architect
+requests do not use the strict json_schema/provider.require_parameters path;
+DeploymentPlan validation remains local. The adapter parses only
+`usage.completion_tokens_details.reasoning_tokens`, retaining integer zero and
+using None for missing/unusable detail. All 21 unique full-round Architect calls
+(24 with smoke) report zero, not 42 distinct calls. The author's billing check
+of 2,245 in / 1,260 out gives $0.01709, rounded $0.0171 at recorded prices, with
+no additional reasoning output reported or billed. This is author-observed
+billing, not an independently fetched record.
+
+"thinking requested at medium; no reasoning tokens reported or billed; the experiment therefore tests a stronger Architect model without extended thinking".
+
+Possible causes remain unverified hypotheses: ignored/mapped effort, a different
+model/endpoint activation requirement, interaction with JSON-object output, or
+incomplete/different usage accounting. Code and mocked wires cannot establish
+provider behavior. No provider documentation is asserted from memory, no live
+request was made and no adapter fix is introduced. See the Chapter 6 offline
+wire inspection for the exact fields and test references.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

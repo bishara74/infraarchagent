@@ -390,3 +390,71 @@ The configured/routed model is `anthropic/claude-sonnet-5.5`. The canonical
 snapshot `anthropic/claude-sonnet-5.5-20260928` is **author-observed in the
 OpenRouter activity view for the inspected request**; it is not independently
 established for every call by the committed telemetry.
+
+### Thinking limitation: offline wire inspection only
+
+The full round's 21 unique Architect calls (24 including smoke, rather than the
+author's stated 42) all record `requested_effort=medium`,
+`request_style=openrouter`, `response_format=json_object` and
+`reasoning_tokens=0`. The
+[Architect diagnostics](../evals/phase9k-architect-report/architect-diagnostics.json)
+agree with the full-round telemetry. The author's inspected billing observation
+is 2,245 input / 1,260 output tokens, $0.0171: using the captured prices gives
+`2245 * 0.000002 + 1260 * 0.000010 = 0.01709`, rounded to $0.0171, with no
+additional hidden reasoning output reported or billed. That billing observation
+comes from the author, not a new provider request or an independently fetched
+billing record.
+
+Offline code and existing mocked wire tests establish the following boundary:
+
+- `ModelSelectionService` selects OpenRouter request style for the explicit
+  Architect model; `AgentFactory.selected_adapter()` applies its resolved
+  medium effort and reasoning capability to `OpenAIAdapter`.
+- `OpenAIAdapter.send_prompt()` puts `{"reasoning":{"effort":"medium"}}`
+  in SDK `extra_body`; the SDK merges it into the top-level Chat Completions
+  JSON. It does not send native OpenAI `reasoning_effort`, Anthropic `thinking`
+  or `output_config`, `budget_tokens`, `max_tokens` inside `reasoning`, or an
+  explicit `enabled`/`exclude` flag for this medium OpenRouter request.
+  `max_completion_tokens` is the ordinary output cap, not a separate thinking
+  budget. There is no model-name-specific Sonnet branch.
+- The same body contains `"model":"anthropic/claude-sonnet-5.5"` and
+  `"response_format":{"type":"json_object"}`. Architect calls do not
+  activate the response-validator structured-request context, so they do not
+  get a strict `json_schema` or its `provider.require_parameters=true` option.
+  Local DeploymentPlan validation follows the JSON response. Architect provider
+  order is empty in the evidence. On Generator/Fixer schema requests, the
+  adapter merges `provider.require_parameters` and optional routing order into
+  `extra_body` without removing `reasoning`; that path is separate from this
+  Architect wire.
+- The adapter reads exactly
+  `completion.usage.completion_tokens_details.reasoning_tokens` after SDK
+  response parsing. A nonnegative integer, including zero, is retained;
+  absent/unusable detail is `None`, not silently zero. It does not derive
+  reasoning usage from message `reasoning`/`reasoning_details`, text, billing or
+  `completion_tokens`. Reported output usage already includes any reported
+  reasoning; the report does not add it again.
+
+Evidence for these statements is repository code in
+[`openai.py`](../../backend/app/llm/openai.py),
+[`model_selection.py`](../../backend/app/core/model_selection.py),
+[`factory.py`](../../backend/app/agents/factory.py), the frozen
+[`phase9h-baseline-wire.json`](../../backend/tests/fixtures/phase9h-baseline-wire.json)
+and its integration test, the medium-effort Architect override wire test in
+[`test_phase9k_architect.py`](../../backend/tests/integration/test_phase9k_architect.py),
+and the reasoning-body/optional-usage tests in
+[`test_llm_providers.py`](../../backend/tests/unit/test_llm_providers.py).
+Mocked wire tests prove adapter serialization and parsing, not that the selected
+real model/backend honors the parameter.
+
+Possible causes are **unverified hypotheses**: the router/backend may ignore or
+map the effort field without activating extended thinking; this model/endpoint
+may require a different activation/budget mechanism; the combination with
+JSON-object output may affect support; or provider usage reporting may omit
+reasoning accounting or expose it elsewhere. No provider documentation or live
+request was consulted, so none is established as the cause. The observed zero
+detail and the author's billing check constrain interpretation but do not
+diagnose the provider implementation. The adapter is unchanged.
+
+**Thinking requested at medium; no reasoning tokens reported or billed; the
+experiment therefore tests a stronger Architect model without extended
+thinking.**
