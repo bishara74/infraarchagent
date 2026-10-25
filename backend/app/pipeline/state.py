@@ -67,6 +67,9 @@ class PipelineStateWriter:
             previous,
             f"engineer review {action}",
             payload,
+            event_id=UUID(decision["decision_id"])
+            if decision and decision.get("decision_id")
+            else None,
         )
 
     async def abort_review_retry(

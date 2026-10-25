@@ -6,6 +6,7 @@ from uuid import UUID
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     DateTime,
     ForeignKey,
     Identity,
@@ -29,6 +30,7 @@ class PipelineRun(Base):
     )
     user_id: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
     agent_models: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    lessons: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
     credential_id: Mapped[UUID | None] = mapped_column(
         ForeignKey("provider_credentials.id")
     )
@@ -159,3 +161,67 @@ class UserRecentRun(Base):
     )
     opened_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     last_seq: Mapped[int] = mapped_column(BigInteger)
+
+
+class LessonRevision(Base):
+    __tablename__ = "lesson_revisions"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    lesson_id: Mapped[UUID]
+    revision: Mapped[int] = mapped_column(Integer)
+    previous_id: Mapped[UUID | None] = mapped_column(ForeignKey("lesson_revisions.id"))
+    decision_id: Mapped[UUID] = mapped_column(ForeignKey("agent_events.event_id"))
+    proposer_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    scope_role: Mapped[str] = mapped_column(String(32))
+    applies_to: Mapped[list[str]] = mapped_column(JSONB)
+    category: Mapped[str] = mapped_column(String(32))
+    text: Mapped[str] = mapped_column(String(280))
+    status: Mapped[str] = mapped_column(String(16))
+    filter_result: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    approval_filter_result: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    approved_by: Mapped[UUID | None] = mapped_column(ForeignKey("users.id"))
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    self_approved: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class LessonSet(Base):
+    __tablename__ = "lesson_sets"
+    version: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    sha256: Mapped[str] = mapped_column(String(64))
+    entries: Mapped[list[dict[str, Any]]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class LessonControl(Base):
+    __tablename__ = "lesson_control"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    runtime_enabled: Mapped[bool] = mapped_column(Boolean)
+    disable_generation: Mapped[int] = mapped_column(Integer)
+    set_version: Mapped[int] = mapped_column(ForeignKey("lesson_sets.version"))
+
+
+class LessonAuditEvent(Base):
+    __tablename__ = "lesson_audit_events"
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    seq: Mapped[int] = mapped_column(BigInteger, Identity(always=True, cache=1))
+    actor_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    action: Mapped[str] = mapped_column(String(32))
+    revision_id: Mapped[UUID | None] = mapped_column(ForeignKey("lesson_revisions.id"))
+    previous_version: Mapped[UUID | None] = mapped_column(
+        ForeignKey("lesson_revisions.id")
+    )
+    set_version: Mapped[int | None] = mapped_column(ForeignKey("lesson_sets.version"))
+    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    payload: Mapped[dict[str, Any]] = mapped_column(JSONB)
+
+
+class LessonConfirmation(Base):
+    __tablename__ = "lesson_confirmations"
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    actor_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    session_hash: Mapped[str] = mapped_column(String(64))
+    revision_id: Mapped[UUID] = mapped_column(ForeignKey("lesson_revisions.id"))
+    preview_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

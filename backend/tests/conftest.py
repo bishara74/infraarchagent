@@ -44,7 +44,9 @@ async def db_engines(
         async with owner_engine.begin() as connection:
             await connection.execute(
                 text(
-                    "TRUNCATE provider_credentials, llm_settings, auth_sessions, "
+                    "TRUNCATE lesson_confirmations, lesson_audit_events, "
+                    "lesson_control, lesson_sets, lesson_revisions, "
+                    "provider_credentials, llm_settings, auth_sessions, "
                     "agent_events, generated_packages, "
                     "pipeline_runs, users RESTART IDENTITY CASCADE"
                 )

@@ -1,0 +1,13 @@
+{
+  "version": "1",
+  "confusables": {"а":"a","е":"e","о":"o","р":"p","с":"c","у":"y","х":"x","і":"i","ј":"j","ѕ":"s","ԁ":"d","ɡ":"g","ο":"o","ι":"i","ν":"v","α":"a"},
+  "rules": [
+    {"id":"instruction_override","message":"Remove instructions that override model behavior.","pattern":"\\b(?:ignore\\s+(?:all\\s+)?(?:previous|prior|above)|system\\s+prompt|you\\s+are\\s+now|disregard|override\\s+(?:the\\s+)?(?:rules|instructions|security))\\b"},
+    {"id":"role_marker","message":"Remove chat or role markers.","pattern":"(?:\\b(?:system|assistant|developer|user)\\s*:|<\\||</|\\[/?INST\\])"},
+    {"id":"markup_template","message":"Use plain text without markup, fences or templates.","pattern":"(?:[`<>]|\\{\\{|\\}\\}|\\{%|%\\}|\\$\\{|\\[[^\\]]+\\]\\(|^\\s*#{1,6}\\s|\\*\\*|__|<%|%>)"},
+    {"id":"url_email","message":"Remove URLs, domains and email addresses.","pattern":"(?:\\b[a-z][a-z0-9+.-]*://|\\bwww\\.|\\b[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,}\\b|\\b[a-z0-9-]+\\.(?:com|org|net|io|dev|invalid|example)\\b)"},
+    {"id":"file_path","message":"Describe the preference without file paths.","pattern":"(?:[a-z]:[\\\\/]|(?:^|\\s)(?:/|\\./|\\.\\./|~/)|\\b[a-z0-9_.-]+[/\\\\][a-z0-9_.-]+|\\b[a-z0-9_.-]+\\.(?:tf|tfvars|py|sh|yaml|yml|json|pem|key)\\b)"},
+    {"id":"code","message":"Describe one preference without shell or Terraform code.","pattern":"(?:[{};|&]|\\$\\(|\\b(?:resource|data|variable|provider|module|output)\\s+[\\\"]|\\b(?:terraform\\s+(?:apply|destroy|plan|init)|curl|wget|sudo|bash|sh\\s+-c|rm\\s+-|chmod|powershell)\\b|\\b(?:API_KEY|password|secret|token)\\s*=)"},
+    {"id":"encoded_blob","message":"Remove encoded or opaque payloads.","pattern":"(?:\\b[0-9a-f]{24,}\\b|(?:^|\\s)[A-Za-z0-9+/]{32,}={0,2}(?:\\s|$)|(?:%[0-9a-f]{2}){4,}|(?:\\\\[ux][0-9a-f]{2,4}){3,})"}
+  ]
+}

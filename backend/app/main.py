@@ -14,6 +14,8 @@ from app.api.auth import router as auth_router
 from app.api.benchmark import router as benchmark_router
 from app.api.frontend import DEFAULT_DIST, register_frontend
 from app.api.health import router as health_router
+from app.api.lessons import lesson_error_handler
+from app.api.lessons import router as lessons_router
 from app.api.models import router as models_router
 from app.api.pipeline import router as pipeline_router
 from app.api.preferences import router as preferences_router
@@ -30,6 +32,7 @@ from app.core.errors import (
     unauthorized_error_handler,
     validation_error_handler,
 )
+from app.core.lessons import LessonError
 from app.core.logging import configure_logging
 from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
@@ -151,10 +154,12 @@ def create_app(
     app.add_exception_handler(RequestValidationError, validation_error_handler)
     app.add_exception_handler(UnauthorizedError, unauthorized_error_handler)
     app.add_exception_handler(ForbiddenError, forbidden_error_handler)
+    app.add_exception_handler(LessonError, lesson_error_handler)  # type: ignore[arg-type]
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(providers_router)
     app.include_router(review_history_router)
+    app.include_router(lessons_router)
     app.include_router(models_router)
     app.include_router(preferences_router)
     app.include_router(benchmark_router)

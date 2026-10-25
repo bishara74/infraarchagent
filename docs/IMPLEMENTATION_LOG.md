@@ -27,6 +27,60 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9l section 1 — Add versioned named-account lesson governance
+
+**Summary:** Add human-curated lesson revisions, canonical immutable active sets,
+named-account lifecycle APIs, atomic append-only governance audits and the two
+server settings. Establish the structured input/filter/preview values needed by
+approval; model-call integration follows in section 2.
+
+**Requirements addressed:** FR-A-05, FR-S-08/10, FR-P-04, FR-UI-07, NFR-01/02.
+Proposed thesis extensions FR-S-11/12, FR-P-05 and FR-UI-08/09 are documented
+in D-60, not added to the immutable specification or executable markers.
+
+**Files:** new domain/lessons and secret_patterns, security/lesson_filter and
+versioned JSON, core/lessons, api/lessons, db/repositories/lessons, migration
+0013 and two Phase 9l test modules; updated config, models, EventLog, main,
+review identity/history, shared offline secret-scan imports, package data and
+test cleanup; .env.example, README, D-60 and this log.
+
+**Decisions:** Named reviewers/admins propose only from their own authenticated
+review-event UUIDs. A different named admin normally approves; the author's
+single-operator exception requires a separate, expiring, session/revision/
+filter/preview/set/policy-bound one-use hashed confirmation. Self-approval is
+retained in revision/set/audit provenance. Content revisions and sets are
+immutable; successor approval atomically retires its active predecessor. A
+typed EventLog.append branch writes global governance audits in the mutation
+transaction without broadcasting them to run SSE. Database grants/trigger
+preserve content and approval provenance. LESSONS_ENABLED is a hard false-by-
+default gate; the saved switch also starts off and every disable advances its
+generation. No model receives lesson text yet. Existing history exports keep
+their nine fields; history GET adds event IDs. D-60 records the threat model,
+author choices and residual semantic/confusable/malicious-admin risks.
+
+**Tests:** Focused governance/domain/scanner suite: **59 passed, 0 failed or
+skipped** (30.40s), including account/ownership/CSRF, four-eyes, self-confirmation
+expiry/session/policy/set invalidation, concurrency, lifecycle/history/hash,
+audit rollback and database privilege denials. A later domain/scanner rerun
+with three extra invisible-Unicode cases: **43 passed, 0 failed or skipped**
+(2.56s). `make lint`: **exit 0**, Ruff/format (40 scripts, 371 app/test files),
+mypy **180 sources**, frontend ESLint and both TypeScript configurations.
+The broader `make test` was started against isolated Docker PostgreSQL 16 and
+is still running at this commit; its outcome will be recorded when available.
+All verification uses the absolute dotenv-disabled bootstrap and synthetic
+credentials. Captured **12** complete mocked pre-integration HTTP request
+bodies in a temporary file, after verifying prompt/provider sources unchanged.
+`git diff --check` passes.
+
+**Known gaps / follow-ups:** Sections 2–5 remain: run manifests/archive and
+per-call provenance, transport-hook integration/kill-switch detachment, full
+injection corpus, insights, frontend/browser coverage, screenshots and final
+verification. Tightened the linked-decision projection to an explicit
+allowlist after the first focused run; the full phase verification will cover
+the added assertion. No real inference, dotenv reads, installs, new dependency,
+external network service, push or spec edit. Existing unrelated untracked files
+were preserved. No new specification open question.
+
 ## 2026-10-25 — Phase 9k results section 4 — phase9k: record future Architect work and final verification
 
 **Summary:** Finish D-59 and Chapter 6 with verified extended thinking as a future experiment, proposed CloudFront VPC origin/internal-ALB ingress for levels 4–5, and the continuing KSV-0125 limitation. Record final verification of all four results sections.

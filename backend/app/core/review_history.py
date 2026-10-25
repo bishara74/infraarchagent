@@ -32,7 +32,11 @@ class ReviewHistoryService:
         self.sessions, self.safety = sessions, safety
 
     async def read(
-        self, filters: dict[str, Any], page: int | None = None
+        self,
+        filters: dict[str, Any],
+        page: int | None = None,
+        *,
+        include_ids: bool = True,
     ) -> dict[str, Any]:
         async with self.sessions() as session:
             rows, total = await ReviewHistoryRepository(session).read(
@@ -45,6 +49,9 @@ class ReviewHistoryService:
             decisions.append(
                 self.safety.value(
                     {
+                        **(
+                            {"decision_id": str(row["event_id"])} if include_ids else {}
+                        ),
                         "run_id": str(row["run_id"]),
                         "variant": row["variant"],
                         "label_before": row["previous_state"],
@@ -66,7 +73,7 @@ class ReviewHistoryService:
         }
 
     async def export(self, filters: dict[str, Any], format: str) -> str:
-        history = await self.read(filters)
+        history = await self.read(filters, include_ids=False)
         metadata = {
             "schema_version": 1,
             "exported_at": datetime.now(UTC).isoformat(),

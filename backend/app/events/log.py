@@ -15,7 +15,7 @@ import json
 import logging
 import weakref
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, overload
 from uuid import UUID, uuid4
 
 from sqlalchemy import insert, select, text
@@ -23,9 +23,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.core.deadlines import deadline_bound
 from app.core.safety import PublicDataSafety
-from app.db.models import AgentEvent
+from app.db.models import AgentEvent, LessonAuditEvent
 from app.db.session import clip_database_waits
 from app.domain.enums import AgentName, AgentState, PackageStatus, RunStatus
+from app.domain.lessons import GOVERNANCE_LOCK, LessonAudit
 from app.events.publisher import EventRecord, Publisher
 
 logger = logging.getLogger(__name__)
@@ -66,7 +67,12 @@ class EventLog:
         """Internal no-op seam for deterministic transaction-order tests."""
         return None
 
-    @deadline_bound("event_publication")
+    @overload
+    async def append(
+        self, run_id: LessonAudit, *, audit_session: AsyncSession
+    ) -> LessonAuditEvent: ...
+
+    @overload
     async def append(
         self,
         run_id: UUID,
@@ -75,15 +81,61 @@ class EventLog:
         previous_state: RunStatus | PackageStatus | AgentState | str | None = None,
         message: str | None = None,
         payload: dict[str, Any] | None = None,
-    ) -> EventRecord:
+        *,
+        event_id: UUID | None = None,
+    ) -> EventRecord: ...
+
+    @deadline_bound("event_publication")
+    async def append(
+        self,
+        run_id: UUID | LessonAudit,
+        agent_name: AgentName | None = None,
+        new_state: RunStatus | PackageStatus | AgentState | str | None = None,
+        previous_state: RunStatus | PackageStatus | AgentState | str | None = None,
+        message: str | None = None,
+        payload: dict[str, Any] | None = None,
+        *,
+        audit_session: AsyncSession | None = None,
+        event_id: UUID | None = None,
+    ) -> EventRecord | LessonAuditEvent:
+        if isinstance(run_id, LessonAudit):
+            if audit_session is None or not audit_session.in_transaction():
+                raise ValueError("governance audit requires the mutation transaction")
+            if agent_name is not None or new_state is not None or payload is not None:
+                raise ValueError("governance audit is separate from run state events")
+            await self._acquire_advisory_lock(audit_session, GOVERNANCE_LOCK)
+            if run_id.source_run_id is not None:
+                await self._acquire_advisory_lock(audit_session, run_id.source_run_id)
+            data = self.safety.value(run_id.data) if self.safety else run_id.data
+            if len(json.dumps(data, allow_nan=False).encode()) > 64 * 1024:
+                raise ValueError("event payload exceeds 64 KB")
+            row = LessonAuditEvent(
+                id=uuid4(),
+                actor_id=run_id.actor_id,
+                action=run_id.action,
+                revision_id=run_id.revision_id,
+                previous_version=run_id.previous_version,
+                set_version=run_id.set_version,
+                timestamp=datetime.now(UTC),
+                payload=data,
+            )
+            audit_session.add(row)
+            await audit_session.flush()
+            # Governance is read through admin history, never broadcast to run SSE.
+            # The caller commits this record atomically with the governed change.
+            return row
+        if audit_session is not None:
+            raise ValueError("run event transaction ownership is unchanged")
         if str(new_state) not in STATE_VALUES or (
             previous_state is not None and str(previous_state) not in STATE_VALUES
         ):
             raise ValueError("invalid event state")
         try:
-            name = AgentName(agent_name)
+            name = AgentName(agent_name) if agent_name is not None else None
         except ValueError as error:
             raise ValueError("invalid agent name") from error
+        if name is None:
+            raise ValueError("invalid agent name")
         data = {} if payload is None else payload
         if not isinstance(data, dict):
             raise ValueError("event payload must be an object")
@@ -99,7 +151,7 @@ class EventLog:
         if len(encoded) > 64 * 1024:
             raise ValueError("event payload exceeds 64 KB")
 
-        event_id = uuid4()
+        event_id = event_id or uuid4()
         timestamp = datetime.now(UTC)
         async with self._run_lock(run_id):
             async with self.session_factory() as session:

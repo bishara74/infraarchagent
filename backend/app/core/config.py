@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     llm_model: str | None = None
     llm_api_key: SecretStr | None = None
     api_key: SecretStr | None = None
+    lessons_enabled: bool = False
+    lessons_require_second_approver: bool = True
     auth_idle_seconds: int = Field(default=1800, gt=0)
     auth_absolute_seconds: int = Field(default=43200, gt=0)
     auth_cookie_secure: bool = False

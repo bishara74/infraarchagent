@@ -53,6 +53,7 @@ class ReviewHistoryRepository:
         )
         statement = (
             select(
+                AgentEvent.event_id,
                 AgentEvent.run_id,
                 AgentEvent.payload["variant"].astext.label("variant"),
                 AgentEvent.previous_state,

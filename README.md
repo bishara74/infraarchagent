@@ -503,6 +503,8 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_MODEL` | Model name, required for a real adapter | Unset |
 | `LLM_API_KEY` | Real-adapter credential | Unset |
 | `API_KEY` | Shared login key; scripts use `X-API-Key`. Unset requires verified `127.0.0.1` local mode | Unset |
+| `LESSONS_ENABLED` | Hard server gate for curated advisory lessons; also requires the administrator runtime switch | `false` |
+| `LESSONS_REQUIRE_SECOND_APPROVER` | Require a different named admin to approve a proposal; `false` permits explicit, separately confirmed admin self-approval | `true` |
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
 | `LLM_STRUCTURED_OUTPUT` | Generator-only `json_schema`, `json_object`, or `off`; strict mode uses a closed file-entry list over OpenAI-compatible requests | `json_schema` |

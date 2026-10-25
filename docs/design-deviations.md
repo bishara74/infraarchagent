@@ -2491,6 +2491,76 @@ work, not a change to the completed experiment. KSV-0125 remains a limitation:
 four retained full-round occurrences, two in smoke and seven in the pooled
 baseline. No scanner rule, profile, threshold or readiness exception is added.
 
+### D-60 — Human-curated advisory lessons and injection defense (Phase 9l)
+
+The author approved this extension after a read-only section report and plan.
+Existing traceability anchors are FR-A-01/05, FR-G-01/02, FR-S-04/07–10,
+FR-P-04, FR-UI-02/06/07 and NFR-01/02. Proposed thesis additions, not yet
+specification requirements, are FR-S-11 (lesson governance), FR-S-12 (layered
+injection defenses), FR-P-05 (lesson provenance), FR-UI-08 (lesson management)
+and FR-UI-09 (deterministic insights). Tests keep existing requirement markers;
+the immutable specification is not edited or implicitly extended by a marker.
+
+Section 1 adds immutable content revisions linked to immutable approval/rejection
+event UUIDs, versioned canonical active sets, a persisted runtime gate and an
+append-only governance audit. Content edits create a new row even while proposed.
+Approving a successor atomically retires the active predecessor; rejecting a
+successor leaves its predecessor active. Proposed revisions superseded by their
+author are rejected and audited. Historical review events are never rewritten.
+New review decisions expose their event UUID in the package decision; history
+GETs expose event UUIDs for older decisions too. Existing nine-field history
+exports retain their format. All timestamps come from application UTC.
+
+Named reviewers/admins may propose only from their own authenticated decisions.
+Shared-key and local-mode access cannot curate lessons. The existing generic
+admin guard admits shared-key scripts, so these endpoints deliberately use a
+stricter named-admin guard. The default four-eyes policy requires another named
+administrator. The author's single-operator exception is explicit:
+`LESSONS_REQUIRE_SECOND_APPROVER=false` permits an admin to approve their own
+proposal only after a separate filter/preview confirmation. The one-use random
+token is stored hashed, expires after five minutes and is bound to the actor,
+session, revision, current set, filter result and approval policy. A change
+invalidates the confirmation. Approval provenance records `self_approved` on
+the revision, active set and audit, for later run/archive propagation. Single
+operator mode weakens human review to one person; other defenses still apply.
+
+`LESSONS_ENABLED=false` is a hard server gate. The persisted runtime switch
+also starts off and cannot override that gate. Every disable advances a durable
+generation counter; re-enabling never restores lessons to an earlier run.
+Section 2 integrates run snapshots and actual per-call use, with no hook
+registered/invoked for disabled, unconfigured, empty-role or benchmark contexts.
+Disabling will detach active hooks before subsequent transport attempts; no
+already-dispatched request can be recalled. Tags are curation metadata only;
+they do not cause guesses about an Architect's not-yet-created plan.
+
+Governance records have no natural pipeline run (notably the kill switch), so
+they live in a separate append-only table. A typed `EventLog.append()` branch
+inserts them in the caller's mutation transaction under a fixed global advisory
+lock, plus the source-run lock when supplied. They are visible only through
+named-admin audit history and never published to run SSE. Existing run-event
+transactions, locks and post-commit publication remain unchanged. The app role
+has no UPDATE/DELETE on active-set snapshots or audits, no DELETE on revisions,
+and no UPDATE on revision text/scope/tags/category. A database trigger also
+freezes approval provenance after approval and enforces lifecycle transitions.
+
+Threat model: reviewer reasons and proposed lessons are untrusted. The assets
+are model-prompt integrity, credential confidentiality, deterministic gates and
+reproducible evidence. The initial defenses are NFKC single-line bounded values,
+fixed vocabulary, versioned deterministic screening (including a bounded
+confusable map and shared secret-scan heuristics), explicit human approval and
+the exact bounded escaped prompt-preview renderer. No LLM drafts, summarizes
+or rewrites feedback. The remaining prompt, kill-switch, insight and UI layers
+are implemented in the following section commits. Do not interpret this section
+as completed defense verification or evidence that lessons improve outputs.
+
+Residual risks: semantic manipulation may pass a syntactic filter; the bounded
+confusable map and encoded/secret heuristics are incomplete. A malicious or
+careless administrator can approve harmful preferences, especially with
+self-approval enabled. A clean preview is not proof of safe model behavior.
+Approved advisory text cannot directly alter scanners, profiles, thresholds,
+schemas, validation or readiness; their regression proof follows in section 2.
+No new specification open question is introduced by the author-chosen policies.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

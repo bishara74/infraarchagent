@@ -4,7 +4,7 @@ import asyncio
 import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from app.agents.security.agent import ReviewRetryScanError
 from app.api.schemas import RetryResponse, ReviewRequest, ReviewResponse
@@ -131,6 +131,7 @@ class ReviewService:
                     decision = (
                         self.safety.value(
                             {
+                                "decision_id": str(uuid4()),
                                 "action": body.action,
                                 "reviewer_name": user.username
                                 if user
