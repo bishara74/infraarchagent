@@ -19,6 +19,7 @@ export interface DeploymentPlan {
 }
 export interface ProfileAssessment {checks_passed:boolean;remaining_blocking:number;excepted:{rule_id:string;resource:string;file_path:string;entry_id:string;classification:string;justification:string}[]}
 export interface RunResult {
+  lessons?:LessonManifest|null;
   agent_models?: Record<string,AgentSelection>|null;
   policy_profile?: 'strict'|'contextual-v1';
   id: string; status: RunStatus; input_text: string; start_time: string;
@@ -69,4 +70,31 @@ export interface FeedbackInsightsData {
   by_category:InsightGroup[];by_variant:InsightGroup[];by_decision:InsightGroup[];
   blocking_rules:{rule_id:string;count:number;filters:Record<string,string>}[];
   rejected_total:number;blocking_snapshot_available:number;blocking_snapshot_unavailable:number;
+}
+
+export type LessonRole='architect'|'generator_cost'|'generator_performance'|'generator_security'|'all_generators';
+export type LessonTag='load_balancer'|'database'|'storage'|'network'|'kubernetes'|'cost'|'logging';
+export interface LessonFilterResult {version:string;passed:boolean;reasons:{id:string;message:string}[]}
+export interface LessonInput {scope_role:LessonRole;applies_to:LessonTag[];category:ReviewCategory;text:string}
+export interface LessonEntry extends LessonInput {id:string;lesson_id:string;revision:number;self_approved:boolean;filter_version:string}
+export interface LessonRevision extends LessonEntry {
+  status:'proposed'|'approved'|'retired'|'rejected';previous_id:string|null;decision_id:string;
+  proposer_id:string;proposer:string|null;approved_by:string|null;approver:string|null;
+  approved_at:string|null;created_at:string;filter_result:LessonFilterResult;
+  proposal_filter_result:LessonFilterResult;approval_filter_result:LessonFilterResult|null;
+  source_decision?:{id:string;run_id:string;variant:string|null;timestamp:string;action:string|null;reviewer_name:string|null;user_id:string|null;reason:string|null;category:ReviewCategory|null;decided_at:string|null;identity_basis:string|null}|null;
+}
+export interface LessonPreview {filter_result:LessonFilterResult;roles:Record<string,{block:string;selected_ids:string[];included:boolean}>}
+export interface LessonDetail {lesson:LessonRevision;previous:LessonRevision|null;preview:LessonPreview}
+export interface LessonControls {server_enabled:boolean;runtime_enabled:boolean;enabled:boolean;require_second_approver:boolean;disable_generation:number;set_version:number;set_hash:string;lesson_count:number}
+export interface LessonPage {items:LessonRevision[];total:number;page:number;page_size:number}
+export interface LessonAuditRow {id:string;seq:number;actor_id:string;action:string;revision_id:string|null;previous_version:string|null;set_version:number|null;timestamp:string;payload:Record<string,unknown>}
+export interface LessonHistoryPage {items:LessonAuditRow[];total:number;page:number;page_size:number}
+export interface LessonConfirmation {confirmation_token:string;expires_at:string;lesson:LessonEntry;preview:LessonPreview;set_version:number;require_second_approver:boolean;warning:string}
+export interface LessonUsage {enabled:boolean;set_version:number;set_hash:string;lesson_ids:string[];block_hash:string|null;self_approved:boolean;reason:string}
+export interface LessonManifest {
+  schema_version:number;recorded:boolean;lessons_enabled:boolean;set_version:number;set_hash:string;
+  entries:LessonEntry[];disable_generation:number|null;self_approved:boolean;eligible_self_approved:boolean;
+  reason:string;calls:(LessonUsage&{call_id:string|null;role:string|null;outcome:string|null})[];
+  used_lesson_ids:string[];used_count:number;disabled_during_run:boolean;
 }

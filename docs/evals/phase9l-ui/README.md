@@ -9,6 +9,13 @@ no real provider inference or deployment is represented.
 |---|---|
 | [Feedback insights](feedback-insights.png) | Named-admin aggregates, visible decision filter, snapshot coverage and count links |
 | [Linked decision](insight-decision.png) | The matching retained decision, required category/reason and unchanged export controls |
+| [Proposal filter feedback](proposal-filter-feedback.png) | Empty-start owned-decision proposal, fixed controls, live normalized count and blocked override feedback |
+| [Approval preview](lesson-approval-preview.png) | Linked decision and exact role-scoped advisory text, filter result and lifecycle actions |
+| [Active lessons](lessons-active.png) | Approved revision, proposer/approver, canonical set version and SHA-256 |
+| [Run uses lessons](run-lessons-used.png) | Live actual-use count from dispatch events, separate from automatic pipeline stages |
+| [Lessons disabled](lessons-disabled.png) | Immediate kill switch leaves the approved set retained for traceability |
+| [Run without lessons](run-lessons-none.png) | A newly accepted run after disabling reports no lessons used |
+| [Self-approval confirmation](self-approval-confirmation.png) | Separate fresh filter/preview confirmation with four-eyes-off warning |
 
 The fixture rejection is validation-related, so its recorded remaining-blocking
 rule list is empty. The empty ranking is shown explicitly. Backend tests also

@@ -27,6 +27,51 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9l section 4 — Add lesson curation and actual-use UI
+
+**Summary:** Add owned-decision lesson proposals, administrator lifecycle/preview
+and version management, immediate disabling and actual-use provenance on run
+pages. Keep existing tokens, native controls, named sessions and CSRF requests.
+
+**Requirements addressed:** FR-UI-02/06/07, FR-P-04, NFR-01. Proposed FR-UI-08
+remains the D-60 extension rather than a specification/test marker.
+
+**Files:** frontend lesson form/filter/proposal/preview/versions/usage components,
+LessonsSettings, role/usage helpers, API types, settings/review/run screens,
+StatusBadge/styles, typed fixtures, four unit suites and lesson browser flows;
+browser archive helper/config; backend approval service and confirmation-target
+test; README, D-60, phase9l-ui screenshots/gallery and this log.
+
+**Decisions:** Proposal text starts empty and uses server-side live screening.
+Only the named decision owner sees the proposal action. Admin inspection shows
+the source decision, exact role text, field diff, immutable version history and
+set hash. Self-approval needs a separate fresh-preview action; its token stays
+in memory. Dialogs bind to the selected revision, and the server rejects a
+self-approval token submitted for somebody else's proposal. Reject/retire are
+confirmed; disabling is immediate. Native dialogs wrap Tab/Shift+Tab and return
+focus. Run labels derive from recorded dispatch/telemetry, with retained prior
+use and self-approval warnings. No readiness/scanner rule changes. See D-60.
+
+**Tests:** Focused Vitest: **18 passed, 0 failed/skipped**, four files (10.95s).
+New real-PostgreSQL confirmation-target API test: **1 passed**, no failure/skip
+(33.55s). Default-policy Playwright: **2 passed**, no failure/skip (1.1m);
+separate self-approval-exception browser test: **1 passed** (32.0s), checking
+both focus directions, no initial approval request and exactly one final
+approval. Full `make lint`: **exit 0**, 40 script / 377 app-and-test formatted
+files and mypy **181 sources**, frontend ESLint/TS. Screenshots inspected at
+1280×800; browser checks no document-level horizontal overflow. `git diff
+--check` passes.
+
+**Known gaps / follow-ups:** Section 5 full-suite/build/secret-scan and thesis
+notes remain. Initial UI runs caught ambiguous/incorrect selectors (14/15 and
+17/18 passed); corrected. First browser run had one pass/one failure at an
+asynchronous controlled checkbox; corrected the assertion to wait for persisted
+state. Explicit accessible names fixed changing select/textarea labels. The
+first exception browser run failed keyboard focus wrapping; implemented and
+verified before committing. Screenshots exposed the shared dialog max-width;
+overridden for readable previews. No dependency/install, dotenv read, external
+service, real inference, push or new specification open question.
+
 ## 2026-10-25 — Phase 9l section 3 — Add deterministic retained feedback insights
 
 **Summary:** Add named-admin category/variant/action aggregates and blocking-rule

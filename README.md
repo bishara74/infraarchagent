@@ -1960,6 +1960,18 @@ provenance. The lesson set version/hash and any self-approved use remain
 traceable after retirement or disabling. Scanners, output validation and readiness
 continue to decide independently of advisory text. The syntactic filter cannot
 exclude all semantic manipulation; see [D-60](docs/design-deviations.md#d-60--human-curated-advisory-lessons-and-injection-defense-phase-9l).
+
+After recording a decision, its named owner can use **Propose a lesson** in the
+Review tab. The form starts empty, counts normalized characters and checks the
+server's versioned filter as you type. **Settings → Lessons** is available to
+named administrators: inspect the linked decision, exact role previews and
+version diff before approval; review Active, Retired and audit History tabs.
+The page displays the active-set hash and both enable gates. **Disable lessons**
+stops subsequent attempts without an extra confirmation. Run progress, results
+and package pages show actual lesson use, retained provenance and self-approval
+warnings. The optional self-approval dialog requires its own second action and
+keeps the expiring confirmation token only in memory.
+
 ### Feedback insights
 
 Named administrators can open **Settings → Review history → Feedback insights**

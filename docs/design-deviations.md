@@ -2641,6 +2641,22 @@ URL-addressable views/filters, explicit missing-snapshot counts and empty/error
 states use the existing tokens and native controls. Browser evidence is captured
 at 1280×800 under docs/evals/phase9l-ui/.
 
+Section 4 adds an optional empty proposal form only for the named decision
+owner, with fixed role/category/tag controls, normalized character count and
+debounced server filter feedback. Administrator Lessons tabs expose the set
+version/hash, both enable gates, immediate disabling, lifecycle actions,
+linked source decision, exact role previews, immutable version history and
+field diffs. Rejected/retired previews are explicitly hypothetical. Content
+renders as React text, including raw source reasons in this admin inspector.
+Native dialogs preserve keyboard focus; reject/retire require confirmation,
+whereas disabling is immediate. The optional self-approval confirmation repeats
+the fresh filter/preview and holds its token only in memory. Confirmation
+dialogs bind to the inspected revision and close if selection changes; the
+server additionally rejects a self-approval token presented for another
+proposer's revision rather than ignoring it. Progress/results/package screens
+show actual use separately from acceptance eligibility, sticky disabling and
+self-approved provenance. No readiness decision is computed in these views.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

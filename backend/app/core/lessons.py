@@ -469,6 +469,12 @@ class LessonService:
                         }
                     )
                 )
+                if confirmation_token is not None and row.proposer_id != actor.id:
+                    raise LessonError(
+                        409,
+                        "lesson_confirmation_mismatch",
+                        "Self-approval confirmation does not match this proposal.",
+                    )
                 if row.proposer_id == actor.id:
                     if self.settings.lessons_require_second_approver:
                         raise LessonError(
