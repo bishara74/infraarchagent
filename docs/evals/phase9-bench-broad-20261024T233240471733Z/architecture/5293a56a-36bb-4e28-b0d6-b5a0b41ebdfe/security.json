@@ -1,0 +1,68 @@
+{
+  "run_id": "5293a56a-36bb-4e28-b0d6-b5a0b41ebdfe",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 6,
+  "complexity": 4,
+  "round": 1,
+  "sequence": 6,
+  "variant": "security",
+  "plan_sha256": "c6ceaab808df8cbf142236955bf95c1268e24d31497236506a7af17ad26d08ef",
+  "original_files_sha256": "3bf41c69e19045611d730543bb1096aaf29e13e69c90392a8304081f7b8d447e",
+  "retained_files_sha256": "18e21e60f390fbe0e8539c32fa09aa4d977f2f31f9e631ae853f13c808d12cfb",
+  "plan": {
+    "classification": "public",
+    "resources": [
+      {
+        "service": "web-alb",
+        "aws_service": "alb",
+        "classification": "public",
+        "evidence": "network.public_services/private_services"
+      }
+    ],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "unknown",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "unknown",
+        "internal": "unresolved",
+        "line": 150,
+        "source_sha256": "fda0b8e2672c59d1254d636f9c03c539fa3b5ada6cf2a751613af1d951a5cebe"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb_logging",
+        "classification": "unknown",
+        "internal": "unresolved",
+        "line": 308,
+        "source_sha256": "fda0b8e2672c59d1254d636f9c03c539fa3b5ada6cf2a751613af1d951a5cebe"
+      }
+    ],
+    "has_public": false,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 159,
+        "source_sha256": "f9cfb2e91406f460b5df5d2a420815f52d5e882621cc33650363af3ffbaf2c03"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": false
+}

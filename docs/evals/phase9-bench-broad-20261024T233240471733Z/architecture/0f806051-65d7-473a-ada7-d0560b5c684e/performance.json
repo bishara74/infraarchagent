@@ -1,0 +1,40 @@
+{
+  "run_id": "0f806051-65d7-473a-ada7-d0560b5c684e",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 8,
+  "complexity": 4,
+  "round": 2,
+  "sequence": 13,
+  "variant": "performance",
+  "plan_sha256": "71a0b6ebb715534d8eb19ac2887d9f2fc420f98c11a580d773be3ca1293fbbcd",
+  "original_files_sha256": "babd1d57d9f7f309dd336ff9fffecba501da961288124a7d4f6cd268f485a020",
+  "retained_files_sha256": "a08a48c018b136798417da67688dd0a9cc439a7b5a5b95344ee4434441f929b1",
+  "plan": {
+    "classification": "public",
+    "resources": [
+      {
+        "service": "web-alb",
+        "aws_service": "alb",
+        "classification": "public",
+        "evidence": "network.public_services/private_services"
+      }
+    ],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "absent",
+    "resources": [],
+    "has_public": false,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "absent",
+    "resources": [],
+    "has_public": false,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": true
+}
