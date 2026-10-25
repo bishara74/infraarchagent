@@ -279,3 +279,114 @@ Evidence for the discussion findings: [initial Sonnet](../evals/phase9-bench-rea
 [post-9h smoke](../evals/phase9-bench-smoke-20261019T222520294388Z/summary.md),
 [9g reclassification](../evals/phase9g-reclassification-20261019/summary.md),
 and [accepted deviations D-43–D-55](../design-deviations.md).
+
+## Phase 9k — Stronger Architect experiment results
+
+Requirements: FR-A-01, FR-P-04, PR-01, NFR-01; decision record: D-59.
+The [committed comparison](../evals/phase9k-architect-report/report.md),
+[configuration and groups](../evals/phase9k-architect-report/experiment-comparison.json),
+[plan audit](../evals/phase9k-architect-report/experiment-plans.json) and
+[package architecture audit](../evals/phase9k-architect-report/experiment-architecture.json)
+compare the twenty-run Sonnet round with the two pooled twenty-run gpt-oss broad
+rounds (2026-10-20 and 2026-10-21). The
+[three-run real smoke](../evals/phase9-bench-broad-smoke-20261024T220546075719Z/summary.md)
+is separate from the [full round](../evals/phase9-bench-broad-20261024T233240471733Z/summary.md).
+All counts below were recomputed from committed `results.json` telemetry and
+per-run `quality/<run_id>/<variant>.json`, joined by run ID to scenario complexity;
+plan and original/retained scheme counts were checked against the committed audits.
+Fisher calculations use `scripts.phase9b_stats.fisher(successes, total, successes,
+total)`, a two-sided fixed-margin test.
+
+| Package comparison | Sonnet Architect | Pooled gpt-oss Architect | Fisher p |
+|---|---:|---:|---:|
+| Full round, strict checks_passed | 24/56 (42.9%) | 43/120 (35.8%) | 0.40692 |
+| Levels 1–3, strict checks_passed | 24/30 (80.0%) | 39/60 (65.0%) | 0.22199 |
+| Levels 1–3, validation valid | 28/30 (93.3%) | 43/60 (71.7%) | 0.02634 |
+| Levels 4–5, strict checks_passed | 0/26 (0.0%) | 4/60 (6.7%) | 0.31013 |
+| Levels 4–5, validation valid | 8/26 (30.8%) | 29/60 (48.3%) | 0.15898 |
+
+These package counts and the author's approximate p-values agree with the
+committed evidence. Four of sixty full-round variant slots are missing, all at
+levels 4–5; generated-package denominators exclude them. The baseline has no
+missing variants. The smoke generated eight of nine variants, zero strictly
+passing and six validation-valid; it is not pooled with the full round.
+
+The level splits are **exploratory, chosen after seeing the data**, and
+uncorrected for multiple comparisons. Packages of one run share a plan, so
+package-level tests assume more independence than the design provides. As a
+clustering sensitivity, count settled runs with at least one passing (or valid)
+package, retaining runs with missing packages in the run denominator:
+
+| Run-level comparison | Sonnet Architect | Pooled gpt-oss Architect | Fisher p |
+|---|---:|---:|---:|
+| Full round, any strict pass | 10/20 | 23/40 | 0.59569 |
+| Full round, any valid package | 16/20 | 34/40 | 0.71810 |
+| Levels 1–3, any strict pass | 10/10 | 19/20 | 1.00000 |
+| Levels 1–3, any valid package | 10/10 | 19/20 | 1.00000 |
+| Levels 4–5, any strict pass | 0/10 | 4/20 | 0.27203 |
+| Levels 4–5, any valid package | 6/10 | 15/20 | 0.43108 |
+
+These run-level tests reduce within-run clustering but do not eliminate repeated
+scenario, time or provider dependence. In particular, the exploratory validity
+signal at package level does not survive this any-valid-run sensitivity. This is
+not evidence of equivalence, deployment success or a causal Architect effect.
+Recorded baseline revisions are `6b343e6138c9dac8fd5d119212ac737d8e806d39` and
+`d6ba66eb044d5747fb244c3692a6cafb2163f188`; the full experiment records
+`87cb3c50a11f551f88768d400409dc9b44af4617`. Historical code/prompt differences,
+provider preferences and actual serving backends remain confounders even though
+the Generator/Fixer model and low thinking selections are unchanged.
+
+At levels 4–5, Sonnet plans a public LB in 10/10 runs and never an internal LB.
+The pooled gpt-oss plans classify eight as public and twelve as absent. Absence
+means no explicit structured LB service, not private ingress. In baseline
+scenario 7 all four plans omit an LB, yet ten of twelve original Generator
+packages classify as public and two as unknown; retained schemes are ten
+public, one internal and one unknown. The full Sonnet level 4–5 packages classify
+originally as fifteen public, three absent and eight unknown; retained schemes are sixteen
+public, one internal, three absent and six unknown. These are static configured
+schemes, not verified network reachability.
+
+Summing retained `remaining_findings` from the full round gives AWS-0053 = 27,
+CKV_AWS_130 = 24 and AWS-0164 = 21, making AWS-0053 the leading blocker. The
+baseline AWS-0053 count is 18 + 23 = 41. The author's reading is that a much
+stronger Architect improves validity on simpler scenarios but does not remove
+the level 4–5 wall. Public LBs follow from internet-facing requirements and
+appear even when the plan omits them, placing the blocker downstream of plan
+quality in that interpretation. This is an observational interpretation, not a
+causal finding; not every scenario explicitly requires public ingress.
+
+Routing recomputed from unique LLM `call_id` records agrees with
+[provider-routing.json](../evals/phase9k-architect-report/provider-routing.json):
+the full round has 395 known Generator/Fixer calls, all Cerebras, zero recorded
+fallbacks and **one additional cancelled Fixer call with unknown serving
+provider**. Thus “all calls served by Cerebras” needs that qualification.
+All 21 full-round Architect calls were served by Claude Platform on AWS.
+Smoke adds 83 Cerebras Generator/Fixer calls and three Architect calls served
+by Claude Platform on AWS, with no unknowns or fallbacks. Historical baseline
+routing includes Groq as well as Cerebras; no explicit baseline preference
+means no comparable baseline fallback-share denominator.
+
+The author's call totals differ from the evidence: the full round contains
+**21 unique Architect calls across twenty runs, not 42**; smoke plus full round
+contains 24. All report zero reasoning tokens with medium requested. There are
+**two unique `finish_reason=length` calls, not eight**, both full-round gpt-oss
+Fixer calls (scenarios 9 and 10); smoke has none and no Architect call is
+length-terminated. Count a call once by `call_id` rather than counting its
+repeated projections in telemetry, attempt details, events and CSV files.
+
+Measured known costs, summed as decimal `cost_usd` values, are $1.85209835 for
+the full round, $0.35977435 for smoke and $2.69311165 for the pooled baseline
+($1.27561460 + $1.41749705). All twenty/three/forty respective run costs are
+recorded. Full-round Architect usage is 48,412 input / 27,030 output tokens;
+smoke is 6,774 / 5,215. At the captured `expected_pricing_per_token` of
+$0.000002 input and $0.000010 output, those Architect usages price to
+$0.367124 (19.82% of full-round known cost) and $0.065698 (18.26% of smoke).
+This is token-priced attribution using recorded rates, not separately measured
+role billing. The recorded $0.222781 Architect / $1.5549969 full-round estimate
+is a pre-experiment historical-token projection, not the measured experiment
+cost. Usage-delta timing and caching/billing attribution remain limitations.
+
+The configured/routed model is `anthropic/claude-sonnet-5.5`. The canonical
+snapshot `anthropic/claude-sonnet-5.5-20260928` is **author-observed in the
+OpenRouter activity view for the inspected request**; it is not independently
+established for every call by the committed telemetry.

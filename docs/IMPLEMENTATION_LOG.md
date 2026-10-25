@@ -27,6 +27,20 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9k results section 1 — phase9k: record recomputed Architect experiment results
+
+**Summary:** Document the real smoke/full Architect experiment in D-59 and Chapter 6, with package and run-level Fisher tests, LB evidence, routing, measured cost and explicitly attributed author interpretation.
+
+**Requirements addressed:** FR-A-01, FR-P-04, PR-01, NFR-01.
+
+**Files:** docs/design-deviations.md, docs/thesis-notes/chapter6-evaluation.md, docs/IMPLEMENTATION_LOG.md.
+
+**Decisions:** Read-only plan/findings preceded edits. Recompute from Git HEAD quality/telemetry and cross-check experiment JSON/CSV audits; never rewrite committed evidence. All supplied package counts/p-values agree. Correct 42 Architect calls to 21 full-round unique calls (24 with smoke), eight length calls to two unique Fixer calls, and qualify Cerebras routing with one cancelled/unknown Fixer. Separate measured totals from token-priced Architect attribution and preflight estimates. Label canonical snapshot and interpretation as author observations. Level splits are post-hoc exploratory, uncorrected; shared-plan clustering and historical code/prompt/provider confounders remain. See D-59.
+
+**Tests:** Focused evidence/report regression suite (`test_phase9b_report`, `test_phase9k_report`, `test_phase9i_broad_report`): **55 passed, 0 failed/skipped** (21.81s). Offline Git-blob recomputation reproduces all five supplied package Fisher comparisons, six run-level comparisons, retained finding totals, plan exposure, unique call/provider counts and decimal costs. Final required lint/full test/secret scan follow in section 4.
+
+**Known gaps / follow-ups:** Sections 2–4 remain. No real inference, dotenv reads, installs, network service access, spec/prompt/readiness/profile/threshold changes or new open questions. Canonical snapshot and per-request billing remain author-observed; static scheme is not reachability or deployment evidence.
+
 ## 2026-10-24 — Phase 9k section 5 — Rehearse registered smoke and complete verification
 
 **Summary:** Add an explicit 6/9/10 smoke schedule, exact author commands and final evidence. Complete the anonymous-preflight edge cases and preserve requested configuration when preflight rejects a run.

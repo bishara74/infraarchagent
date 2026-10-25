@@ -2406,6 +2406,48 @@ the real local stub smoke completes three runs/nine packages. No real catalogue
 snapshot or inference was used, so real model metadata and dollar projections
 remain author-run outputs rather than invented evidence. No new open question.
 
+Results section 1 (FR-A-01, FR-P-04, PR-01, NFR-01): the author subsequently
+committed a real three-run smoke and twenty-run Sonnet Architect round. The
+[Chapter 6 results](thesis-notes/chapter6-evaluation.md#phase-9k--stronger-architect-experiment-results)
+recompute counts from committed per-package quality and per-run telemetry,
+cross-checking the immutable phase9k-architect-report JSON/CSV audits. Full-round
+strict pass is 24/56 (42.9%) versus pooled gpt-oss 43/120 (35.8%), package Fisher
+p=0.40692; four high-level variants are missing. Levels 1–3 pass 24/30 vs 39/60
+(p=0.22199), valid 28/30 vs 43/60 (p=0.02634). Levels 4–5 pass 0/26 vs 4/60
+(p=0.31013), valid 8/26 vs 29/60 (p=0.15898). These splits are exploratory,
+chosen after seeing the data, and uncorrected for multiple comparisons.
+Packages share a plan; any-pass run sensitivity is 10/20 vs 23/40 (p=0.59569).
+Any-valid run sensitivity is 16/20 vs 34/40 (p=0.71810); Chapter 6 also records
+run-level splits. Historical code/prompt and provider differences remain
+confounders. No causal model superiority or deployment success is inferred.
+
+Sonnet level 4–5 plans are public-LB 10/10, never internal; baseline plans omit
+an explicit LB in 12/20 runs. Baseline scenario 7 has four LB-absent plans but
+10/12 original packages with public LBs (two unknown). AWS-0053 leads the full
+round's retained findings with 27 occurrences. The author's interpretation is
+that a stronger Architect improves simpler-scenario validity but leaves the
+level 4–5 wall: internet-facing requirements can lead Generators to public LBs
+even without an explicit planned LB, suggesting a downstream blocker. This is
+the author's reading, not a causal claim or a statement that all scenarios
+explicitly demand public ingress.
+
+Corrections to the author's figures: full-round telemetry has 21 unique Architect
+calls, not 42 (24 including smoke), and two unique finish_reason=length calls,
+not eight, both gpt-oss Fixer; none are Architect. All 395 known full-round
+Generator/Fixer calls used Cerebras with zero recorded fallbacks; one additional
+cancelled Fixer call has unknown serving provider. All 21 Architect calls used
+Claude Platform on AWS. Smoke adds 83 Cerebras and three Claude Platform on AWS
+calls, no unknowns or fallbacks. Repeated evidence projections are not new calls.
+
+Measured known full/smoke costs are $1.85209835 / $0.35977435; pooled baseline
+is $2.69311165. Architect usage at captured input/output prices gives $0.367124
+(19.82%) / $0.065698 (18.26%), a token-priced role attribution rather than
+independent role billing. The manifest's $0.222781 Architect projection is an
+estimate, not measured cost. The canonical snapshot
+`anthropic/claude-sonnet-5.5-20260928` is author-observed in the OpenRouter
+activity view for an inspected request; telemetry records the unpinned alias.
+Committed evidence, prompts, profiles, thresholds and readiness remain unchanged.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
