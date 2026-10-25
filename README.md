@@ -1960,3 +1960,16 @@ provenance. The lesson set version/hash and any self-approved use remain
 traceable after retirement or disabling. Scanners, output validation and readiness
 continue to decide independently of advisory text. The syntactic filter cannot
 exclude all semantic manipulation; see [D-60](docs/design-deviations.md#d-60--human-curated-advisory-lessons-and-injection-defense-phase-9l).
+### Feedback insights
+
+Named administrators can open **Settings → Review history → Feedback insights**
+to see counts by category, variant and decision, plus the most common remaining
+blocking rules at rejection. Count links open matching retained decisions.
+Category, variant, decision and UTC date filters apply to both views; rule and
+individual-decision filters are visible and can be cleared. The API endpoint is
+`GET /api/reviews/history/insights`, with the same filters as history.
+
+Each rule counts once per rejected decision. New decisions snapshot the rules
+present when the decision was made. Older decisions without snapshots remain
+explicitly unavailable and do not enter that ranking. Insights remain available
+after package retention and never generate lesson wording automatically.

@@ -29,7 +29,9 @@ async def prepare() -> None:
         async with engine.begin() as connection:
             await connection.execute(
                 text(
-                    "TRUNCATE users, auth_sessions, provider_credentials, "
+                    "TRUNCATE lesson_confirmations, lesson_audit_events, "
+                    "lesson_control, lesson_sets, lesson_revisions, "
+                    "users, auth_sessions, provider_credentials, "
                     "llm_settings, "
                     "pipeline_runs, generated_packages, agent_events, "
                     "user_preferences, user_recent_runs RESTART IDENTITY CASCADE"

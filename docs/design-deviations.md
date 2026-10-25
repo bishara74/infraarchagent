@@ -2622,6 +2622,25 @@ changed. An extra PR-04 perf probe (outside make test's not-perf scope) measured
 7.89–8.07 seconds for a 10 MB Docker-backed download and failed its unchanged
 two-second bound; its baseline/host attribution has not been established.
 
+Section 3 adds a deterministic named-admin Feedback insights view within Review
+history. It groups the filtered immutable decisions by category, variant and
+action, and ranks each remaining blocking rule once per rejected decision.
+New Approve/Reject decisions snapshot their current remaining blocking rule IDs
+into the existing decision/event JSONB. No schema change or historical event
+rewrite is needed. Historical records without a rule snapshot are explicitly
+unavailable and excluded from rankings; neither current package state nor lesson
+text reconstructs past evidence. The aggregates and their category/variant/
+action/rule links use the same retained event query, including after package
+expiry. Unknown historical category/variant data is grouped as not recorded.
+The new insights endpoint requires a named admin; existing trusted shared-key
+history/export semantics and nine-field exports remain unchanged. Aggregate
+responses never include free-text reasons, package contents or credentials.
+Decision reasons in the linked admin history render as React text. No model
+creates proposals or summaries, and no insight automatically creates a lesson.
+URL-addressable views/filters, explicit missing-snapshot counts and empty/error
+states use the existing tokens and native controls. Browser evidence is captured
+at 1280×800 under docs/evals/phase9l-ui/.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

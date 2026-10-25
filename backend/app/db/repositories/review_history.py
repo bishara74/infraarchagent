@@ -2,11 +2,13 @@
 
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
+from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import AgentEvent
+from app.domain.review_categories import CATEGORIES
 from app.events.kinds import EventKind
 
 
@@ -27,7 +29,25 @@ class ReviewHistoryRepository:
         if category := filters.get("category"):
             column = AgentEvent.payload["review_decision"]["category"].astext
             conditions.append(
-                column.is_(None) if category == "not_recorded" else column == category
+                or_(column.is_(None), ~column.in_(CATEGORIES))
+                if category == "not_recorded"
+                else column == category
+            )
+        if variant := filters.get("variant"):
+            column = AgentEvent.payload["variant"].astext
+            conditions.append(
+                or_(column.is_(None), ~column.in_(["cost", "performance", "security"]))
+                if variant == "not_recorded"
+                else column == variant
+            )
+        if identity := filters.get("decision_id"):
+            conditions.append(AgentEvent.event_id == UUID(identity))
+        if rule := filters.get("blocking_rule"):
+            conditions.append(AgentEvent.payload["review_action"].astext == "reject")
+            conditions.append(
+                AgentEvent.payload["review_decision"][
+                    "remaining_blocking_rules"
+                ].contains([rule])
             )
         if decision := filters.get("decision"):
             conditions.append(AgentEvent.payload["review_action"].astext == decision)

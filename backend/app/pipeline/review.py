@@ -15,7 +15,12 @@ from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.models import IaCPackage
 from app.domain.paths import validate_relative_path
 from app.domain.plan import DeploymentPlan
-from app.domain.review import TERMINAL_RUNS, package_presentation, retry_targets
+from app.domain.review import (
+    TERMINAL_RUNS,
+    package_presentation,
+    retry_targets,
+    security_final,
+)
 from app.domain.run_config import RunConfig
 from app.domain.states import readiness_after_validation
 from app.pipeline.stages import StageContext
@@ -140,6 +145,19 @@ class ReviewService:
                                 "reason": body.reason,
                                 "category": body.category,
                                 "decided_at": datetime.now(UTC).isoformat(),
+                                "remaining_blocking_rules": sorted(
+                                    {
+                                        item["rule_id"]
+                                        for item in security_final(
+                                            row.security_report
+                                        ).get("remaining_blocking", [])
+                                        if isinstance(item, dict)
+                                        and isinstance(item.get("rule_id"), str)
+                                    }
+                                )
+                                if "remaining_blocking"
+                                in security_final(row.security_report)
+                                else None,
                                 "identity_basis": "authenticated account"
                                 if user
                                 else "self-declared (shared-key authentication)"

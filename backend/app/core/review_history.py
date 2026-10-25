@@ -3,6 +3,7 @@
 import csv
 import io
 import json
+from collections import Counter
 from datetime import UTC, datetime
 from typing import Any
 
@@ -105,3 +106,67 @@ class ReviewHistoryService:
                 ]
             )
         return output.getvalue()
+
+    async def insights(self, filters: dict[str, Any]) -> dict[str, Any]:
+        async with self.sessions() as session:
+            rows, total = await ReviewHistoryRepository(session).read(filters)
+        categories: Counter[str] = Counter()
+        variants: Counter[str] = Counter()
+        decisions: Counter[str] = Counter()
+        rules: Counter[str] = Counter()
+        rejected = available = 0
+        for row in rows:
+            details = row["details"] if isinstance(row["details"], dict) else {}
+            category = details.get("category")
+            categories[category if category in CATEGORIES else "not_recorded"] += 1
+            variant = row["variant"]
+            variants[
+                variant
+                if variant in {"cost", "performance", "security"}
+                else "not_recorded"
+            ] += 1
+            decisions[row["decision"]] += 1
+            if row["decision"] == "reject":
+                rejected += 1
+                blocking = details.get("remaining_blocking_rules")
+                if isinstance(blocking, list) and all(
+                    isinstance(rule, str) for rule in blocking
+                ):
+                    available += 1
+                    rules.update(set(blocking))
+
+        def groups(counts: Counter[str], key: str) -> list[dict[str, Any]]:
+            return [
+                {"value": value, "count": count, "filters": {**filters, key: value}}
+                for value, count in sorted(
+                    counts.items(), key=lambda pair: (-pair[1], pair[0])
+                )
+            ]
+
+        result: dict[str, Any] = self.safety.value(
+            {
+                "total": total,
+                "filters": filters,
+                "by_category": groups(categories, "category"),
+                "by_variant": groups(variants, "variant"),
+                "by_decision": groups(decisions, "decision"),
+                "blocking_rules": [
+                    {
+                        "rule_id": rule,
+                        "count": count,
+                        "filters": {
+                            **filters,
+                            "decision": "reject",
+                            "blocking_rule": rule,
+                        },
+                    }
+                    for rule, count in sorted(
+                        rules.items(), key=lambda pair: (-pair[1], pair[0])
+                    )
+                ],
+                "rejected_total": rejected,
+                "blocking_snapshot_available": available,
+                "blocking_snapshot_unavailable": rejected - available,
+            }
+        )
+        return result

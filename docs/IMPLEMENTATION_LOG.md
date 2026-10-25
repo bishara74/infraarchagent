@@ -27,6 +27,56 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9l section 3 — Add deterministic retained feedback insights
+
+**Summary:** Add named-admin category/variant/action aggregates and blocking-rule
+rankings, with count links to matching immutable decisions. Snapshot blocking
+rules on new decisions and disclose historical missing evidence. Add the admin
+view, tests and real-browser screenshots.
+
+**Requirements addressed:** FR-S-08/10, FR-UI-07, NFR-01. Proposed FR-UI-09
+remains a documented D-60 thesis extension rather than an executable marker.
+
+**Files:** review service, review-history API/service/repository, E2E database
+cleanup; frontend API types, ReviewHistorySettings, new FeedbackInsights screen
+and tests, existing-token styles and new browser flow; new backend insights
+tests; README, D-60, phase9l-ui captures/gallery and this log.
+
+**Decisions:** Each blocking rule counts once per rejected decision. New events
+snapshot current rule IDs into existing JSONB; historical missing snapshots
+remain unavailable and do not enter rankings. Immutable decisions survive
+package retention. Groups and linked history use identical filters, including
+not-recorded historical category/variant values, exact decision ID and rule.
+The new endpoint requires a named admin; trusted shared-key access to existing
+history/export is preserved. Aggregate responses omit free-text reasons;
+linked admin history renders reasons as React text. No model summarizes
+feedback and no aggregate automatically creates a lesson. Views/filters stay
+in the URL; selected-view and hidden decision/rule filters are visible and can
+be cleared. Owner-only E2E cleanup now includes all lesson tables to avoid
+persisted runtime/set contamination between browser runs. See D-60.
+
+**Tests:** Backend insights plus existing round-3 history suite: **30 passed,
+0 failed/skipped** (112.92s). Final insights-only rerun, including unknown
+historical variant links: **4 passed, 0 failed/skipped** (51.83s). Full
+`make frontend-test`: **417 passed**, **39 files**, no failures/skips; final
+run with affinity limited to two CPUs took 284.04s. A prior ordinary run also
+passed all 417 (53.15s). Focused Playwright flow: **1 passed, 0 failed/skipped**;
+latest capture run 48.2s (test 27.7s). Inspected both 1280×800 screenshots and
+verified no document-level horizontal overflow. Full `make lint`: **exit 0**,
+40 script / 376 app-and-test files, mypy **181 sources**, frontend ESLint/TS;
+the exact-source commit pass is recorded in the command log. `git diff --check`
+passes.
+
+**Known gaps / follow-ups:** Sections 4–5 remain, including lesson management
+UI and final full backend/browser/build/secret-scan verification. First frontend
+run had **415 passed / 2 failed** (65.43s): two unchanged model-picker/user-form
+tests hit their existing 5s limit. A later ordinary run had **416 passed / 1
+failed** (55.16s), again the model-picker timeout. The final two-CPU run passed
+without changing timeouts or product behavior. Initial lint caught a new test
+using Playwright's exact option with Testing Library; corrected. No additional
+specification deviation/open question, dependency, install, real inference,
+dotenv read, external service, push or change to readiness/scanners/thresholds.
+
 ## 2026-10-25 — Phase 9l section 2 — Isolate advisory transport and retain exact provenance
 
 **Summary:** Freeze approved lesson sets at run acceptance; attach advisory text

@@ -32,7 +32,7 @@ export interface PackageResult {
   security_report: Record<string, unknown> | null;
   validation_report: Record<string, unknown> | null;
   profile_assessments?: Record<'strict'|'contextual-v1',ProfileAssessment> & Partial<Record<'contextual-v2',ProfileAssessment>>;
-  review_decision?: {action:string;reviewer_name:string|null;category?:ReviewCategory|null;reason:string|null;decided_at:string|null;identity_basis:string} | null;
+  review_decision?: {decision_id?:string;user_id?:string|null;remaining_blocking_rules?:string[]|null;action:string;reviewer_name:string|null;category?:ReviewCategory|null;reason:string|null;decided_at:string|null;identity_basis:string} | null;
   review_feedback: string | null;
   readiness_label: 'checks_passed' | 'engineer_approved' | 'rejected' | 'pending_review' | null;
   downloadable: boolean; review_available: boolean;
@@ -62,3 +62,11 @@ export interface RunEvent {
 }
 
 export type ReviewCategory='requirements_not_met'|'too_expensive'|'organisational_policy'|'security_concern'|'operability'|'too_complex'|'other';
+
+export interface InsightGroup {value:string;count:number;filters:Record<string,string>}
+export interface FeedbackInsightsData {
+  total:number;filters:Record<string,string>;
+  by_category:InsightGroup[];by_variant:InsightGroup[];by_decision:InsightGroup[];
+  blocking_rules:{rule_id:string;count:number;filters:Record<string,string>}[];
+  rejected_total:number;blocking_snapshot_available:number;blocking_snapshot_unavailable:number;
+}
