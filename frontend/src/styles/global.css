@@ -309,7 +309,9 @@ dialog form { display: grid; gap: var(--space-3); }dialog h2,dialog p { margin: 
 .findings-layout { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-4);align-items:start; }
 @media(max-width:1100px) { .overview-actions { flex-wrap:wrap; }.findings-layout { grid-template-columns:minmax(0,1fr); } }
 
-.comparison-screen>.run-meta { margin:0 0 var(--space-2);font-size:var(--font-size-xs); }
+.comparison-meta { display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-2);font-size:var(--font-size-xs); }
+.comparison-meta>.run-meta,.comparison-meta>.lesson-usage,.comparison-meta .lesson-usage>p { margin:0; }
+.comparison-meta>.lesson-usage { display:flex;align-items:baseline;gap:var(--space-2);flex-wrap:wrap; }
 .comparison-screen .page-heading { margin-bottom:var(--space-3); }
 .comparison-screen>p:not(.run-meta):not(.notice) { font-size:var(--font-size-xs);margin:var(--space-2) 0; }
 .comparison-screen>.notice { margin-block:var(--space-2);padding:var(--space-2) var(--space-3); }

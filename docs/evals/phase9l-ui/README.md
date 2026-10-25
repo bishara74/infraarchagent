@@ -16,6 +16,8 @@ no real provider inference or deployment is represented.
 | [Lessons disabled](lessons-disabled.png) | Immediate kill switch leaves the approved set retained for traceability |
 | [Run without lessons](run-lessons-none.png) | A newly accepted run after disabling reports no lessons used |
 | [Self-approval confirmation](self-approval-confirmation.png) | Separate fresh filter/preview confirmation with four-eyes-off warning |
+| [Comparison metadata](comparison-lessons-none.png) | Actual-use readout shares the existing metadata row; inspect actions fit at 1280×800 |
+| [Comparison ready](comparison-ready.png) | All three download actions remain visible after review; bundle bytes/hashes and lesson manifests are verified |
 
 The fixture rejection is validation-related, so its recorded remaining-blocking
 rule list is empty. The empty ranking is shown explicitly. Backend tests also

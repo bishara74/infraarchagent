@@ -1,5 +1,6 @@
 """Synthetic seeding uses the normal app role, repositories and state rules."""
 
+import json
 from io import BytesIO
 from uuid import UUID
 from zipfile import ZipFile
@@ -37,7 +38,11 @@ async def test_seed_and_download_through_http(db_engines, tmp_path):
             "benchmark synthetic package"
             in archive.read("INFRAARCHAGENT_READINESS.md").decode()
         )
-        assert len(archive.namelist()) == report["file_count"] + 1
+        assert len(archive.namelist()) == report["file_count"] + 2
+        lessons = json.loads(archive.read("_infraarchagent/LESSONS.json"))
+        assert lessons["recorded"] is False
+        assert lessons["lessons_enabled"] is False
+        assert lessons["used_count"] == 0
     events = await app.state.event_log.list_after(UUID(report["run_id"]), None)
     assert any(event.payload.get("review_action") == "reject" for event in events)
 

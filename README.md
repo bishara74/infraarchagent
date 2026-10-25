@@ -1916,8 +1916,8 @@ that could execute as spreadsheet formulas are prefixed with an apostrophe in
 CSV; JSON preserves the redacted text. Both formats contain only run ID, variant,
 before/after labels, decision, category, reason, reviewer and UTC timestamp, plus
 export metadata. They exclude package contents, credentials and hashes, use a
-consistent database snapshot and `Cache-Control: no-store`. No curated lessons
-are introduced here.
+consistent database snapshot and `Cache-Control: no-store`. Curated lessons
+use the separate Phase 9l workflow below.
 
 Round 3 browser evidence: [gallery](docs/evals/phase9j-ui/round3/README.md).
 
@@ -1985,3 +1985,8 @@ Each rule counts once per rejected decision. New decisions snapshot the rules
 present when the decision was made. Older decisions without snapshots remain
 explicitly unavailable and do not enter that ranking. Insights remain available
 after package retention and never generate lesson wording automatically.
+
+Phase 9l verification is recorded in
+[the evidence index](docs/evals/phase9l-verification/README.md), with
+[1280×800 browser captures](docs/evals/phase9l-ui/README.md) and
+[thesis design notes](docs/thesis-notes/phase9l-curated-lessons.md).

@@ -2545,20 +2545,20 @@ freezes approval provenance after approval and enforces lifecycle transitions.
 
 Threat model: reviewer reasons and proposed lessons are untrusted. The assets
 are model-prompt integrity, credential confidentiality, deterministic gates and
-reproducible evidence. The initial defenses are NFKC single-line bounded values,
+reproducible evidence. The defenses are NFKC single-line bounded values,
 fixed vocabulary, versioned deterministic screening (including a bounded
 confusable map and shared secret-scan heuristics), explicit human approval and
 the exact bounded escaped prompt-preview renderer. No LLM drafts, summarizes
-or rewrites feedback. The remaining prompt, kill-switch, insight and UI layers
-are implemented in the following section commits. Do not interpret this section
-as completed defense verification or evidence that lessons improve outputs.
+or rewrites feedback. Prompt, kill-switch, insight and UI boundaries are
+described below. Verification establishes the implemented controls, not evidence
+that lessons improve outputs.
 
 Residual risks: semantic manipulation may pass a syntactic filter; the bounded
 confusable map and encoded/secret heuristics are incomplete. A malicious or
 careless administrator can approve harmful preferences, especially with
 self-approval enabled. A clean preview is not proof of safe model behavior.
 Approved advisory text cannot directly alter scanners, profiles, thresholds,
-schemas, validation or readiness; their regression proof follows in section 2.
+schemas, validation or readiness; section 2 includes their regression checks.
 No new specification open question is introduced by the author-chosen policies.
 
 Section 2 freezes the canonical active set at acceptance, records its effective
@@ -2656,6 +2656,18 @@ server additionally rejects a self-approval token presented for another
 proposer's revision rather than ignoring it. Progress/results/package screens
 show actual use separately from acceptance eligibility, sticky disabling and
 self-approved provenance. No readiness decision is computed in these views.
+
+Section 5 adds thesis notes connecting this design to the phase's OWASP LLM01
+threat framing, a verification matrix, source fingerprints and final command
+results under docs/evals/phase9l-verification/. Full verification found two
+remaining archive assertions that assumed only readiness evidence; they now
+check the additional lesson manifest and preserve all generated-file/hash
+assertions. The comparison actual-use readout shares its existing metadata row
+to preserve action visibility at 1280×800. Existing historical UI captures are
+restored byte-for-byte; refreshed Phase 9l captures are retained. No dependency,
+readiness policy or specification change is introduced by verification. The
+thesis notes make no output-improvement claim and retain the syntactic-filter,
+malicious-admin, self-approval and single-worker limitations.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

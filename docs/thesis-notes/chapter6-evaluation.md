@@ -476,3 +476,12 @@ thinking.**
    baseline). A stronger plan alone does not establish that generated container
    images meet the trusted-registry rule. Report this limitation independently
    of AWS-0053 and retain the existing strict policy.
+
+
+## Phase 9l — Human-curated lessons
+
+The [curated-lessons design and verification notes](phase9l-curated-lessons.md)
+describe the OWASP LLM01 threat boundary, immutable human approval, layered
+corpus counts, disabled-request compatibility and retained provenance. This
+phase verifies controls with local mocked inference; it adds no evidence that
+lessons improve generated outputs and does not change the experiments above.

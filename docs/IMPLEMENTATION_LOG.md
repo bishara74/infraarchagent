@@ -27,6 +27,74 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9l section 5 — Verify layered controls and record thesis evidence
+
+**Summary:** Complete all required functional checks, record source/evidence
+fingerprints and corpus interpretation, and add the OWASP LLM01 thesis notes.
+Correct archive regression assertions and preserve comparison action visibility
+with the lesson readout in its existing metadata row.
+
+**Requirements addressed:** FR-A-01/05, FR-G-01/02, FR-S-04/07–10, FR-P-04,
+FR-UI-02/06/07, NFR-01/02 and PR-04 regression traceability. D-60 retains the
+proposed extension IDs without editing the specification.
+
+**Files:** existing seed-download and round2 bundle/geometry tests;
+ComparisonScreen and its existing-token styles; README, D-60, chapter6 notes,
+new phase9l-curated-lessons thesis notes, phase9l-verification matrix/results,
+refreshed Phase 9l UI captures/gallery, offline secret-scan evidence and this log.
+
+**Decisions:** Keep generated-byte, ZIP hash, readiness and viewport assertions;
+update the two old one-evidence-file assumptions to check both readiness and
+lesson metadata. Keep comparison metadata compact without hiding the actual-use
+readout. Backend and browser full suites use separate isolated PostgreSQL 16
+instances; migrations run as owner, application calls as the limited app role.
+No dotenv read, real inference, external provider service, installation, new
+dependency or push. Restore all 168 tracked historical UI evidence files
+byte-for-byte after browser verification; retain 11 inspected 1280×800 Phase 9l
+captures. Final evidence records 77 changed source/test fingerprints and checks
+that prompt builders, provider serializers, security/validation/readiness rules,
+profiles and frontend dependency files are unchanged from revision 29751f1.
+
+**Tests:** `make test` → **2,466 passed, 0 failed/skipped, 6 performance tests
+deselected**, 750.49s. `taskset -c 0,1 make frontend-test` → **435 passed,
+43 files, 0 failed/skipped**, 93.31s; CPU affinity bounds concurrency without
+changing test timeouts. `make test-e2e` → **21 passed, 0 failed/skipped**, 8.6m.
+The separate policy-false self-approval browser flow passed **1 test** (32.0s),
+including fresh preview, no initial approval, one final approval and Tab/Shift+
+Tab wrapping. `make lint` → **exit 0**, Ruff 40 script / 377 app-test files,
+mypy **181 sources**, frontend ESLint/TypeScript. `make frontend-build` →
+**exit 0, 184 modules**. Two offline `make secret-scan` passes each returned
+**0 findings / 0 scan errors**; the final result points to the latest evidence.
+`git diff --check` passes.
+
+The full backend suite includes **48 complete serialized-body comparisons**
+with zero hook/dispatcher/governance-query calls in disabled, unconfigured,
+benchmark-enabled and empty-role contexts. Corpus: **46 cases; 10 structural
+rejections; 28 additional filter rejections; 38 cumulative**. The independent
+raw filter rejects **29** (not additive). All **8** syntax survivors remain
+excluded while proposed: six benign controls and two documented semantic
+residuals. Delimiting/output/kill-switch checks prove implemented boundaries,
+not universal semantic attack detection. Results and source hashes are in
+`docs/evals/phase9l-verification/results.json`.
+
+**Verification corrections:** The initial final backend run stopped after
+**68 passed / 1 failed / 6 deselected** (159.04s) at an old archive file-count
+assertion. Corrected it to inspect the new metadata, then ran the complete suite
+successfully. The initial full browser run had **19 passed / 2 failed** (7.8m):
+an 8px off-viewport comparison action and an old bundle evidence count. Both
+were corrected without weakening checks. A focused round2 attempt omitted its
+existing onboarding prerequisite: **1 failed / 1 interrupted / 2 not run**;
+the final normal-order full suite passed. The earlier full frontend/build/lint
+runs also passed; final counts above correspond to the corrected UI sources.
+
+**Known gaps / follow-ups:** No new specification deviation/open question beyond
+D-60. Semantic manipulation, incomplete heuristics/confusable coverage,
+malicious admins and weaker self-approval remain explicit risks. Dispatch
+coordination retains the existing single-worker assumption. The extra optional
+PR-04 probe still failed its unchanged two-second limit (7.89–8.07s); its cause
+is unestablished and this functional pass does not resolve it. Real-run output
+improvement/deployment evaluation is outside Phase 9l and remains author work.
+
 ## 2026-10-25 — Phase 9l section 4 — Add lesson curation and actual-use UI
 
 **Summary:** Add owned-decision lesson proposals, administrator lifecycle/preview
