@@ -2669,6 +2669,27 @@ readiness policy or specification change is introduced by verification. The
 thesis notes make no output-improvement claim and retain the syntactic-filter,
 malicious-admin, self-approval and single-worker limitations.
 
+PR-04 follow-up (author-approved extended scope): five same-host samples at
+29751f1 and 7442685 reproduce the two-second failure before Phase 9l. Their
+medians are 2.227745 s and 2.252207 s; these overlapping samples do not establish
+a Phase 9l regression. Request profiles find 250 HCL parses for 50 files in
+the existing contextual evaluators. After the required stop/report, the author
+approved one parsing reuse correction plus runner diagnostics. Each combined
+assessment now shares its parsed package/AES256 evidence across v1 and v2,
+without a cross-request cache. The historical v1/v2 difference for an explicit
+empty file override is preserved. No profile rule or readiness policy changes.
+
+Actual pre/post-edit comparisons preserve all bytes of 18 individual ZIPs,
+six bundles and six serialized assessment snapshots, including manifest hashes,
+readiness labels, lesson provenance, collisions and secret redaction. All three
+profiles also match for 81 historical packages. Five post-fix samples pass the
+unchanged ASGI PR-04 test: median 1.268532 s, maximum 1.314136 s. The earlier
+~0.73 s evidence used warmed loopback HTTP and benchmark/*.txt payloads, avoiding
+Terraform parsing, at a source revision before contextual-v2. It is a different
+benchmark, not a contradictory baseline. The ASGI/curl method distinction from
+D-55 remains; this follow-up adds no specification deviation or open question.
+Evidence and limitations are in docs/evals/phase9l-pr04/summary.md.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -27,6 +27,71 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9l follow-up — Attribute PR-04 and reuse parsed assessments
+
+**Summary:** Compare the unchanged PR-04 test before/after Phase 9l, establish
+that its failure predates 9l, and apply the author's subsequently approved
+single parsing-reuse correction. Make performance-runner prerequisite/test
+failures actionable without exposing settings values or secrets.
+
+**Requirements addressed:** PR-04, NFR-01, FR-S-04, FR-UI-06.
+
+**Files:** security/encryption.py, instances.py, profiles.py and profiles_v2.py;
+scripts/measure_performance.py; unit/test_phase9l_pr04.py and
+test_phase9_performance.py; docs/evals/phase9l-pr04/ raw timing/parity/profile
+evidence; README, D-60 follow-up and this log.
+
+**Decisions:** At a quiet host, alternate five fresh-process measurements each
+at 29751f1 and HEAD 7442685 (the latter differs from cited b6e4185 only by the
+task prompt). Pre-9l seconds: 2.579621, 2.565886, 2.227745, 2.157149, 2.088913;
+median/max 2.227745/2.579621. HEAD seconds: 2.133974, 2.106073, 2.252207,
+2.405053, 2.369835; median/max 2.252207/2.405053. All ten fail unchanged PR-04.
+The overlapping ranges and ~1.1% median difference do not establish a 9l
+regression. Separate profiles show 250 HCL parses per 50-file download,
+spending 1.664/1.739 s in assessments; HEAD lesson provenance costs 0.000113 s.
+Stop at the prompt's decision gate, then follow the author's explicit approval
+to fix repeated assessment parsing and diagnostics, with no further tuning if
+the one fix still fails.
+
+Share one request-local parsed Terraform package and AES256 evidence between
+strict/v1/v2 assessment consumers. Keep independent standalone inputs and the
+historical difference in explicit-empty override handling. Add no persistent
+cache, dependency, migration, rule/threshold/readiness/auth/retention change.
+Capture actual bytes before production edits: all 18 individual ZIPs, six bundles
+and six serialized assessments match byte-for-byte after editing; all three
+assessment results match for 81 historical packages. Fixed snapshots include
+labels, manifests/hashes, lessons, collisions, malformed input and canaries.
+
+Use the same parent settings resolver as run_verification for performance
+wrappers. Report safe field names, launch/timeout stages, failing test/setup
+identifiers and malformed/missing reports; preserve failed exit statuses and
+redact console, structured reports and raw XML/JSON. Verification explicitly
+disables dotenv in every parent/child. The temporary old worktree links the
+existing venv and asserts revision-local imports. Disposable PostgreSQL 16
+clusters use normal owner/app grants; provision the required inspection role
+after the first migration prerequisite failure. Existing project data is untouched.
+
+**Tests:** Focused checks: 148 passed, 0 failed/skipped, 1 perf deselected in
+26.05 s. make lint: exit 0; Ruff/format 40 script and 378 app/test files,
+mypy 181 sources, frontend ESLint/TypeScript passed. Five post-fix unchanged
+PR-04 requests pass: 1.269847, 1.159700, 1.142714, 1.314136, 1.268532 s;
+median/max 1.268532/1.314136 s (43.68% lower median than HEAD before the fix).
+make test: 2,509 passed, 0 failed/skipped, 6 perf deselected in 531.30 s.
+make test-perf: 6 passed, 0 failed/skipped, 2,509 deselected in 27.94 s;
+the printed PR-04 property is 1.042764587 s, separate from the five fresh-process
+samples. The post-fix request profile confirms 50 HCL parses and 0.437631 s
+assessment work. make secret-scan: exit 0, 0 findings, 0 scan errors; raw
+logs and the scan/perf reports are linked from the evidence summary.
+
+**Known gaps / follow-ups:** No new specification deviation/open question;
+D-55's ASGI/curl method distinction remains. Earlier ~0.73 s evidence used
+warmed loopback HTTP with benchmark/*.txt payloads (no Terraform parsing),
+a 9,989,906-byte rejected ZIP and a source revision before contextual-v2.
+It is not the current ASGI test baseline. Preserve the earlier loaded
+7.89–8.07 s failure without claiming its contention was reconstructed. New
+measurements are local synthetic evidence, not real-provider/deployment proof.
+No installs, real dotenv reads, real LLM calls, external services or push.
+
 ## 2026-10-25 — Phase 9l section 5 — Verify layered controls and record thesis evidence
 
 **Summary:** Complete all required functional checks, record source/evidence

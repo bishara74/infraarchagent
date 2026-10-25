@@ -1,0 +1,23 @@
+PR-04: 2.579621s; 7581017 archive bytes
+F
+=================================== FAILURES ===================================
+_____________ test_ten_megabyte_package_download_under_two_seconds _____________
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7b446e77fe10>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7b446e780290>)
+record_property = <function record_property.<locals>.append_property at 0x7b44724c9580>
+
+    @pytest.mark.perf
+    @pytest.mark.req("PR-04", "FR-UI-06")
+    async def test_ten_megabyte_package_download_under_two_seconds(
+        db_engines, record_property
+    ):
+        elapsed, archive_bytes = await _ten_megabyte_download(db_engines)
+        record_property("pr04_seconds", elapsed)
+        print(f"PR-04: {elapsed:.6f}s; {archive_bytes} archive bytes")
+>       assert elapsed < 2
+E       assert 2.5796209370018914 < 2
+
+tests/integration/test_pipeline_download.py:177: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_pipeline_download.py::test_ten_megabyte_package_download_under_two_seconds
+1 failed in 11.15s

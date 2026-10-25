@@ -681,12 +681,30 @@ is included. Then run `make benchmark BENCH_ARGS='pr04 --run-id ID --repeat 10'`
 Timing includes the complete HTTP download, not fixture preparation.
 
 For Phase 9 quiet-machine checks, use `make test-perf` and `make test-ui-perf`.
-The former wraps the existing backend `perf` suite; the latter runs the existing
-Playwright `@perf` test. Export all four database URLs first (test URLs point to
-`infraarch_test`), using the normal app/owner roles. The wrappers disable dotenv,
-clear provider/API credentials and pass only isolated test settings to children.
-They write raw console/JUnit or Playwright JSON, PR-02 samples, environment metadata
-and summaries to `docs/evals/phase9-backend-perf-*` or `phase9-pr02-*`.
+The former selects the same suite as `scripts.run_verification pytest -m perf`;
+the latter runs the existing Playwright `@perf` test. Both now resolve parent
+settings through the verification launcher's normal resolver, including exported
+overrides. Test URLs must point to `infraarch_test`, using normal app/owner roles.
+Children disable dotenv and receive isolated test URLs and empty provider/API
+credentials. For checks that must never read dotenv in the parent either, export
+the two test URLs and run from the repository root:
+
+```bash
+INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH="$PWD/backend/tests/bootstrap:$PWD/backend" make test-perf
+```
+
+Reports include redacted console/JUnit or Playwright JSON, PR-02 samples,
+environment metadata and summaries under `docs/evals/phase9-backend-perf-*` or
+`phase9-pr02-*`. The command prints the console, counts and PR-04 timing property.
+Failures identify invalid/missing setting names, launch/timeout failures,
+failing test/setup identifiers, or missing/malformed test reports. Reports retain
+nonzero test exits; missing reports cannot produce PASS. Settings values and
+configured secrets are redacted from reports and console output.
+
+The [Phase 9l PR-04 follow-up](docs/evals/phase9l-pr04/summary.md) records the
+pre-9l comparison, one request-local parsing reuse fix, fixed-snapshot archive
+parity and five post-fix measurements. It changes no assessment rule, package
+size, test timing boundary or threshold.
 
 Run each timing suite separately on an otherwise idle machine, with backend/Vite
 ports 8000/5173 free, installed Chromium/scanners and the offline Terraform mirror.

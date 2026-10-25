@@ -1,0 +1,208 @@
+{
+  "requirements": [
+    "PR-04",
+    "NFR-01",
+    "FR-S-04",
+    "FR-UI-06"
+  ],
+  "pre9l_commit": "29751f1",
+  "head_before_fix": "7442685d2040e95664bcf5c2c4c495e848e9f9d9",
+  "summary": {
+    "pre9l": {
+      "samples": 5,
+      "median_seconds": 2.227745,
+      "maximum_seconds": 2.579621,
+      "passed": 0,
+      "failed": 5
+    },
+    "head": {
+      "samples": 5,
+      "median_seconds": 2.252207,
+      "maximum_seconds": 2.405053,
+      "passed": 0,
+      "failed": 5
+    },
+    "postfix": {
+      "samples": 5,
+      "median_seconds": 1.268532,
+      "maximum_seconds": 1.314136,
+      "passed": 5,
+      "failed": 0
+    }
+  },
+  "median_reduction_percent": 43.676047539147156,
+  "samples": [
+    {
+      "revision": "pre9l",
+      "sample": 1,
+      "seconds": 2.579621,
+      "archive_bytes": 7581017,
+      "returncode": 1,
+      "load_before": "0.85 0.48 0.76 1/434 731807"
+    },
+    {
+      "revision": "head",
+      "sample": 1,
+      "seconds": 2.133974,
+      "archive_bytes": 7581449,
+      "returncode": 1,
+      "load_before": "0.88 0.50 0.76 2/436 731890"
+    },
+    {
+      "revision": "pre9l",
+      "sample": 2,
+      "seconds": 2.565886,
+      "archive_bytes": 7581018,
+      "returncode": 1,
+      "load_before": "0.90 0.52 0.77 2/434 731975"
+    },
+    {
+      "revision": "head",
+      "sample": 2,
+      "seconds": 2.106073,
+      "archive_bytes": 7581449,
+      "returncode": 1,
+      "load_before": "0.92 0.54 0.77 4/448 732076"
+    },
+    {
+      "revision": "pre9l",
+      "sample": 3,
+      "seconds": 2.227745,
+      "archive_bytes": 7581017,
+      "returncode": 1,
+      "load_before": "1.01 0.58 0.78 2/435 732158"
+    },
+    {
+      "revision": "head",
+      "sample": 3,
+      "seconds": 2.252207,
+      "archive_bytes": 7581449,
+      "returncode": 1,
+      "load_before": "1.08 0.61 0.79 1/435 732240"
+    },
+    {
+      "revision": "pre9l",
+      "sample": 4,
+      "seconds": 2.157149,
+      "archive_bytes": 7581015,
+      "returncode": 1,
+      "load_before": "1.07 0.62 0.79 3/433 732328"
+    },
+    {
+      "revision": "head",
+      "sample": 4,
+      "seconds": 2.405053,
+      "archive_bytes": 7581449,
+      "returncode": 1,
+      "load_before": "1.05 0.64 0.79 2/436 732413"
+    },
+    {
+      "revision": "pre9l",
+      "sample": 5,
+      "seconds": 2.088913,
+      "archive_bytes": 7581018,
+      "returncode": 1,
+      "load_before": "1.05 0.65 0.80 2/435 732514"
+    },
+    {
+      "revision": "head",
+      "sample": 5,
+      "seconds": 2.369835,
+      "archive_bytes": 7581451,
+      "returncode": 1,
+      "load_before": "1.03 0.67 0.80 1/435 732594"
+    },
+    {
+      "revision": "postfix",
+      "sample": 1,
+      "seconds": 1.269847,
+      "archive_bytes": 7581448,
+      "returncode": 0,
+      "load_before": "0.47 0.38 0.53 2/414 735211"
+    },
+    {
+      "revision": "postfix",
+      "sample": 2,
+      "seconds": 1.1597,
+      "archive_bytes": 7581450,
+      "returncode": 0,
+      "load_before": "0.67 0.43 0.54 1/410 735299"
+    },
+    {
+      "revision": "postfix",
+      "sample": 3,
+      "seconds": 1.142714,
+      "archive_bytes": 7581449,
+      "returncode": 0,
+      "load_before": "0.72 0.45 0.55 2/413 735382"
+    },
+    {
+      "revision": "postfix",
+      "sample": 4,
+      "seconds": 1.314136,
+      "archive_bytes": 7581450,
+      "returncode": 0,
+      "load_before": "0.86 0.49 0.56 2/412 735466"
+    },
+    {
+      "revision": "postfix",
+      "sample": 5,
+      "seconds": 1.268532,
+      "archive_bytes": 7581450,
+      "returncode": 0,
+      "load_before": "0.96 0.53 0.57 2/414 735552"
+    }
+  ],
+  "cause": "Repeated contextual-assessment parsing predates Phase 9l. Same-host baseline medians overlap; no Phase 9l regression established. Author explicitly approved one parsing reuse fix plus runner diagnostics after stop gate.",
+  "optimization": "Reuse a request-local TerraformPackage/Evidence across AES256, v1 and v2 evaluators; no cross-request cache. Preserve differing explicit-empty override semantics.",
+  "prior_073_evidence": "docs/evals/phase9b-download-quiet: benchmark/*.txt (no Terraform parsing), warmed loopback HTTP, 9,989,906-byte rejected ZIP, 10 samples/condition; shared-key max 0.730615 s. Source 1a5fce7 with measurement tooling dirty, before contextual-v2. Different fixture and source state.",
+  "parity": "30 actual pre/post-edit output bytes equal; 81 complete historical assessments equal; details in parity.json.",
+  "checks": {
+    "focused": "148 passed, 0 failed/skipped, 1 perf deselected (26.05s)",
+    "lint": "exit 0: 40 scripts, 378 app/test files; mypy 181 sources; frontend ESLint/TypeScript",
+    "functional": "2509 passed, 0 failed/skipped, 6 perf deselected (531.30s); make test exit 0",
+    "perf_suite": {
+      "kind": "backend",
+      "returncode": 0,
+      "counts": {
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "passed": 6
+      },
+      "status": "PASS",
+      "stage": "tests",
+      "reason": "Timing suite passed.",
+      "failed_tests": [],
+      "measurements": [
+        {
+          "id": "tests.integration.test_pipeline_download::test_ten_megabyte_package_download_under_two_seconds",
+          "pr04_seconds": 1.0427645870076958
+        }
+      ],
+      "mode": "stub",
+      "quiet_machine": "Operator must confirm; not inferred.",
+      "directory": "docs/evals/phase9-backend-perf-20261025T142335903500Z",
+      "pytest_summary": "6 passed, 0 failed/skipped, 2509 deselected (27.94s)"
+    },
+    "secret_scan": {
+      "returncode": 0,
+      "findings": 0,
+      "errors": 0,
+      "directory": "docs/evals/phase9-secret-scan-20261025T142649172692Z"
+    }
+  },
+  "limits": "Five samples per revision are descriptive local evidence; no deployment or real-provider latency claim. Random run IDs and event timestamps explain size variation between fresh fixtures; fixed snapshots are the byte-parity proof.",
+  "status": "PASS",
+  "unchanged_surfaces": {
+    "backend/tests/integration/test_pipeline_download.py": "e32f34543006aeac6a592f539c30bc237f8f0aeb08bca9d031ac27aed3ed7ec6",
+    "backend/app/domain/archive.py": "b1066a9c5ef90e96d5ce37860c8dfc53b0b344fddd874dfd3656565785a809ab",
+    "backend/app/pipeline/results.py": "c9d956cac02ef7556ad78a7a9a2aa8c475a098b195a342c33b20a121d0b1bc8c",
+    "backend/app/api/pipeline.py": "7dbc76b19d827511c1335bc192777156020f105117f2436cad6a0ddc63301afc",
+    "backend/app/db/repositories/results.py": "8adeaae6cc568b9a6ba6a294260221eecd89cbf29a2a0096bc18b84548c38966",
+    "backend/app/domain/states.py": "d65401c2b295cae0fc951aceea8a33debc062c9b8271c5c4fb6a7605267a4387",
+    "backend/app/domain/review.py": "4cf261fc59b3d5c64f4456cda73319ec44d28155ce6eea1b70dbaab330198e92",
+    "backend/app/core/safety.py": "29a0706e28500c529d2a535384b88aba7559865122113f292b12aa74e59404e3"
+  }
+}

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="10.268" timestamp="2026-10-25T14:52:34.132395+01:00" hostname="DESKTOP-NP6RDCR"><testcase classname="tests.integration.test_pipeline_download" name="test_ten_megabyte_package_download_under_two_seconds" file="tests/integration/test_pipeline_download.py" line="176" time="4.115"><properties><property name="pr04_seconds" value="2.3698347689933144" /></properties><failure message="assert 2.3698347689933144 &lt; 2">db_engines = (&lt;sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7671b1a7ad10&gt;, &lt;sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7671b1845150&gt;)
+record_property = &lt;function record_property.&lt;locals&gt;.append_property at 0x7671b1852020&gt;
+
+    @pytest.mark.perf
+    @pytest.mark.req("PR-04", "FR-UI-06")
+    async def test_ten_megabyte_package_download_under_two_seconds(
+        db_engines, record_property
+    ):
+        elapsed, archive_bytes = await _ten_megabyte_download(db_engines)
+        record_property("pr04_seconds", elapsed)
+        print(f"PR-04: {elapsed:.6f}s; {archive_bytes} archive bytes")
+&gt;       assert elapsed &lt; 2
+E       assert 2.3698347689933144 &lt; 2
+
+tests/integration/test_pipeline_download.py:185: AssertionError</failure></testcase></testsuite></testsuites>
