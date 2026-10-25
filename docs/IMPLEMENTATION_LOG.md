@@ -27,6 +27,20 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-25 — Phase 9k results section 4 — phase9k: record future Architect work and final verification
+
+**Summary:** Finish D-59 and Chapter 6 with verified extended thinking as a future experiment, proposed CloudFront VPC origin/internal-ALB ingress for levels 4–5, and the continuing KSV-0125 limitation. Record final verification of all four results sections.
+
+**Requirements addressed:** FR-A-01, FR-P-04, PR-01, NFR-01.
+
+**Files:** docs/design-deviations.md, docs/thesis-notes/chapter6-evaluation.md, docs/IMPLEMENTATION_LOG.md; new docs/evals/phase9-secret-scan-20261025T021009861810Z/ (environment.json, findings.json, summary.md).
+
+**Decisions:** Future designs and thinking activation require new author-run evidence; no adapter fix or scanner/readiness exception is introduced. Retained KSV-0125 occurrences recompute to four full-round, two smoke and seven pooled-baseline findings. Preserve historical evidence, prompts, profiles and thresholds. Four separate phase9k commits cover the four requested sections; no push or history rewrite. See D-59.
+
+**Tests:** Final `make test`: **2,304 passed, 0 failed, 0 skipped, 6 perf deselected**, **597.78s**. Ran with the existing absolute dotenv-disabled bootstrap, synthetic credentials and a disposable native UTF-8 PostgreSQL 16 cluster; migrations and existing owner/app/NOLOGIN inspection-role boundaries were preserved. Final `make lint`: **exit 0**, Ruff checks and format checks (**40 script files / 362 app-and-test files**), mypy **173 source files**, frontend ESLint and both TypeScript configurations. `make secret-scan`: **0 findings, 0 scan errors**, all refs/reflogs and working-tree text, dotenv excluded before retrieval; see the new scan summary. Earlier focused results: **55** evidence/report tests, **76** mocked adapter/golden-wire tests and **62** path/report tests passed. Actual make eval-report reproduction: **20/20 files byte-identical**, **1,225 hashed input files**, correct repository-root destination, temporary output cleaned. `git diff --check` passes.
+
+**Known gaps / follow-ups:** No real LLM calls, API keys, dotenv reads, installs, external network services or changes to committed experiment evidence. Docker socket access was unavailable in the sandbox, so verification used an isolated existing PostgreSQL 16 installation rather than Docker. The cause of zero reasoning usage, upstream support for the proposed ingress design, actual deployment and per-call canonical snapshot/billing beyond the author's inspected request remain unverified. No new open questions about the specification. Suggested next step: author verifies extended thinking on a separately recorded probe before another Architect experiment.
+
 ## 2026-10-25 — Phase 9k results section 3 — phase9k: resolve report destinations from the repository root
 
 **Summary:** Fix make eval-report placing relative destinations under backend/. Resolve them from the evidence repository root and refuse destinations that resolve outside it, including symlink escapes. Update the reproduction example and preserve existing evidence/cache/fresh-directory protections.

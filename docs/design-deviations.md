@@ -2482,6 +2482,15 @@ the README reproduction example now uses a fresh docs/evals/ destination.
 This corrects a reporting-tool path bug; no thesis policy, readiness condition,
 threshold, source evidence or adapter behavior changes, and no new open question.
 
+Results section 4 — future work (FR-A-01, NFR-01): run a new Architect experiment
+with verified extended thinking, checking actual request fields, endpoint,
+reported reasoning usage and billed output before interpreting it. Investigate
+CloudFront VPC origin in front of an internal ALB for levels 4–5; compatibility,
+native validity, scanner acceptance and deployment remain unverified future
+work, not a change to the completed experiment. KSV-0125 remains a limitation:
+four retained full-round occurrences, two in smoke and seven in the pooled
+baseline. No scanner rule, profile, threshold or readiness exception is added.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

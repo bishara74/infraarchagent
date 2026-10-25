@@ -458,3 +458,21 @@ diagnose the provider implementation. The adapter is unchanged.
 **Thinking requested at medium; no reasoning tokens reported or billed; the
 experiment therefore tests a stronger Architect model without extended
 thinking.**
+
+### Future work and retained limitations
+
+1. Repeat the Architect experiment with **verified extended thinking**. Before
+   interpreting results as a thinking intervention, verify the actual serialized
+   request, selected endpoint, returned reasoning usage and billed output for an
+   author-run probe. Keep this experiment's evidence and labels intact and
+   record any new transport, prompt or budget changes as additional confounders.
+2. Investigate **CloudFront VPC origin in front of an internal ALB for levels
+   4–5** as a proposed ingress design that might meet public-access requirements
+   without a public ALB. Endpoint support, workload compatibility, Terraform
+   validity and scanner outcomes require a separate experiment; this task makes
+   no deployment or blocker-removal claim and changes no readiness policy.
+3. **KSV-0125 remains a limitation.** Summing retained findings gives four
+   occurrences in the full Sonnet round (two in smoke; seven in the pooled
+   baseline). A stronger plan alone does not establish that generated container
+   images meet the trusted-registry rule. Report this limitation independently
+   of AWS-0053 and retain the existing strict policy.
