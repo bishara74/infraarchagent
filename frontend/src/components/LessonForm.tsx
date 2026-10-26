@@ -1,3 +1,4 @@
+import {ActionButton,ActionGate} from './ActionGate';
 import {useEffect,useRef,useState} from 'react';
 import {api,errorMessage} from '../api/client';
 import type {LessonFilterResult,LessonInput,LessonRevision,LessonRole,LessonTag,ReviewCategory} from '../api/types';
@@ -47,17 +48,17 @@ export function LessonForm({decisionId,initialRole,initialCategory,previous,onPr
   return <form className="panel settings-form lesson-form" noValidate onSubmit={event=>{event.preventDefault();void submit();}}>
     <h3>{previous?'Propose a new lesson version':'Propose a lesson'}</h3>
     <p>Write one short reviewer preference. An administrator must approve it before it can be used.</p>
-    <fieldset disabled={busy}><legend className="sr-only">Lesson proposal</legend>
+    <ActionGate disabled={busy} label="Lesson proposal fields" reason="The lesson is being submitted." nextStep="Wait for the proposal to finish, then edit or cancel."><fieldset disabled={busy}><legend className="sr-only">Lesson proposal</legend>
       <div className="lesson-fields"><label>Lesson role<select aria-label="Lesson role" name="lesson_role" value={role} onChange={event=>setRole(event.target.value as LessonRole)}>{Object.entries(lessonRoles).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
       <label>Lesson category<select aria-label="Lesson category" name="lesson_category" value={category} onChange={event=>setCategory(event.target.value as ReviewCategory)}>{Object.entries(reviewCategories).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
       <fieldset className="lesson-tags"><legend>Applies to (optional curation tags)</legend>{lessonTags.map(tag=><label className="checkbox" key={tag}><input type="checkbox" name="lesson_tags" value={tag} checked={tags.includes(tag)} onChange={event=>setTags(previous=>event.target.checked?[...previous,tag].sort():previous.filter(value=>value!==tag))}/>{tag.replaceAll('_',' ')}</label>)}</fieldset>
       <label>Lesson text<textarea aria-label="Lesson text" ref={textField} name="lesson_text" rows={3} value={text} aria-describedby="lesson-text-help lesson-count" aria-invalid={count>280||undefined} onChange={event=>{setText(event.target.value);setError(null);}}/></label>
       <p id="lesson-count" className={count>280?'danger':'muted'}>{count} / 280 characters after normalization</p>
       <p id="lesson-text-help" className="muted">Use one line of plain text. Links, code, hidden characters and instruction overrides are rejected. Tags support curation; selection uses the lesson role.</p>
-    </fieldset>
+    </fieldset></ActionGate>
     {current?.data&&<LessonFilter result={current.data.filter_result}/>}
     {!!current?.error&&<p className="danger" role="status">{errorMessage(current.error)} Use one line of 1–280 characters.</p>}
     {error&&<p role="alert">{error}</p>}
-    <div className="actions"><button type="submit" disabled={busy}>{previous?'Propose new version':'Submit lesson proposal'}{busy?'…':''}</button><button type="button" disabled={busy} onClick={onCancel}>Cancel proposal</button></div>
+    <div className="actions"><ActionButton type="submit" disabled={busy}>{previous?'Propose new version':'Submit lesson proposal'}{busy?'…':''}</ActionButton><ActionButton type="button" disabled={busy} onClick={onCancel}>Cancel proposal</ActionButton></div>
   </form>;
 }

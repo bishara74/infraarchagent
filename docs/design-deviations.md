@@ -2752,6 +2752,18 @@ Subprocesses share the server's OS identity: proxies/static file guards are not
 an OS network/filesystem sandbox, and parser/tool/plugin vulnerabilities remain
 an explicit shared-host risk. No broader sandbox redesign is claimed here.
 
+Section 5 (FR-UI-01–07): unavailable controls now explain their existing gate
+and a concrete recovery action on hover, keyboard focus and click, with
+associated descriptions and polite announcements. Native disabled semantics,
+backend presentation fields and all authorization/availability predicates remain
+authoritative. Relevant hidden review/download/lifecycle actions have disabled
+counterparts; role-restricted settings retain their access boundary. Bundle
+hints name outstanding variants and link directly to reviews/progress/new
+requests. Stable wrappers preserve native focus/identity across busy changes;
+Escape dismisses a hint without closing a lesson dialog. Full control/condition/
+recovery/test mapping: [UI control inventory](evals/phase9m-verification/ui-controls.md).
+No new dependency or visual direction is introduced.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

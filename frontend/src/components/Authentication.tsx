@@ -1,3 +1,4 @@
+import {ActionButton} from './ActionGate';
 import {useState} from 'react';
 import {api,ApiError,errorMessage} from '../api/client';
 import {PasswordField} from './PasswordField';
@@ -10,7 +11,7 @@ export function Authentication({onSaved,setup=false}:{onSaved:()=>void;setup?:bo
  <PasswordField label="Password" name="password" autoComplete={setup?'new-password':'current-password'} value={password} onChange={event=>setPassword(event.target.value)} required minLength={12}/>
  {setup&&<PasswordField label="Confirm password" autoComplete="new-password" value={confirmation} onChange={event=>setConfirmation(event.target.value)} required minLength={12}/>}
  {validation&&<p role="alert">{validation}</p>}{error?<p role="alert">{!setup&&error instanceof ApiError&&error.status===401?'Username or password is incorrect':errorMessage(error)}</p>:null}
- <button className="primary" disabled={busy} type="submit">{setup?'Create admin account':'Log in'}{busy?'…':''}</button>
+ <ActionButton className="primary" disabled={busy} type="submit">{setup?'Create admin account':'Log in'}{busy?'…':''}</ActionButton>
  {!setup&&<p className="muted auth-footer">Forgot your password? Ask an administrator to reset it.</p>}
  </form></div>;
 }

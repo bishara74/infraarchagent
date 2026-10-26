@@ -79,7 +79,7 @@ it('FR-UI-07 exposes history and a field diff, keeping immutable content out of 
   setup(controls,{...detail,previous:{...lesson,text:'Previous preference.'}});
   const dialog=await screen.findByRole('dialog',{name:'Lesson v1'});
   expect(dialog.querySelector('del')).toHaveTextContent('Previous preference.');
-  expect(within(dialog).queryByRole('button',{name:'Propose new version'})).toBeNull();
+  expect(within(dialog).getByRole('button',{name:'Propose new version'})).toBeDisabled();
   fireEvent.click(within(dialog).getByRole('button',{name:'Close lesson'}));
   fireEvent.click(screen.getByRole('button',{name:'History'}));
   expect(await screen.findByRole('cell',{name:'Admin'})).toBeVisible();
