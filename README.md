@@ -52,6 +52,12 @@ and an isolated full-stack Compose file. Build/run commands are for the author;
 static checks do not establish image availability or deployment success. Runtime
 keys stay outside build layers and provider/schema mirrors are read-only mounts.
 
+[Specification alignment](docs/design-deviations.md#d-62--phase-10-specification-alignment-and-evidence-closure-accepted)
+includes the [final API/table inventory](docs/evals/phase10-alignment/api-and-tables.md)
+and [measured generator directives](docs/evals/phase10-alignment/generator-rates.json).
+The [proposed requirement amendments](docs/phase10-proposed-requirements.md)
+await author/supervisor approval; `docs/spec/` stays unchanged.
+
 ## Local setup
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available

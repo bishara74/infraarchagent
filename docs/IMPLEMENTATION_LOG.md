@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 10 section 4 — Specification alignment register
+
+**Summary:** Record the superseded single-user non-goal, inventory final API/data
+surfaces and measure original generator directives from committed real evidence.
+List proposed new requirements separately for author/supervisor approval.
+
+**Requirements addressed:** FR-G-03/04/05, NFR-01/02/04, PR-03.
+
+**Files:** scripts/phase10_alignment.py, unit/test_phase10_alignment.py,
+phase10-alignment API/table inventory and hashed rate inputs,
+phase10-proposed-requirements.md, D-62/OQ-11, README and this log.
+
+**Decisions:** D-49/D-50 supersede the single-user non-goal after supervisor
+usability/API-key feedback; tenant ownership, consumer OAuth and cloud execution
+remain out of scope. Inventory: 46 API method/path definitions, 14 application
+tables. Original real 12-package corpus: micro literals 2/4 (two unknown literal
+class cases); performance literal Multi-AZ 3/4, autoscaling 3/4, both 2/4;
+security zero Checkov HIGH/CRITICAL first scan 0/4. Source observations cannot
+prove Free Tier eligibility or deployment behavior, and are not latest-model
+reliability rates. Proposed IDs are not test markers or approved requirements.
+
+**Tests:** 2 alignment/corpus inventory tests passed, 0 failed/skipped; offline
+report generation completed from Git blobs with SHA-256 input manifests. No
+original evidence/specification or readiness/profile/scanner threshold changed.
+Full finish checks are recorded at closure.
+
+**Known gaps / follow-ups:** OQ-11: author/supervisor requirement amendments need
+approval. PR-03 stays not met; NFR-04 stays unverified. No new real model or
+clean-deployment measurement is inferred from static reporting.
+
 ## 2026-10-26 — Phase 10 section 3 — Requirement and TC evidence links
 
 **Summary:** Refresh three-framework traceability, add precise frontend use-case

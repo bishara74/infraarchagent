@@ -2826,6 +2826,52 @@ assertion. The one-statement results contract is preserved. The initial
 SQL_ASCII disposable database rejected Unicode JSON; verification recreates
 only its isolated test database as UTF-8. No production database is touched.
 
+### D-62 — Phase 10 specification alignment and evidence closure (Accepted)
+
+The Chapter 1/3 single-user non-goal is superseded by D-49/D-50 following
+supervisor feedback about usability and handling API keys. The delivered system
+has named accounts, login, sessions, admin/reviewer roles and authenticated review
+identity. Runs remain shared; fine-grained tenant isolation/run ownership,
+consumer-subscription OAuth, cloud credentials/application, cost estimation and
+live infrastructure management remain outside scope. Local container networking
+is packaging, not a public HTTPS deployment claim.
+
+Chapter 4's four REST endpoints plus one SSE stream and three-table schema are
+superseded by the additive interfaces/data recorded in
+[the final inventory](evals/phase10-alignment/api-and-tables.md): **46 method/path
+definitions and 14 application tables**, excluding framework documentation/static
+routes and Alembic metadata. Every endpoint/table is listed with its introducing
+or extending deviation. The five lesson tables include the historical confirmation
+table, retained for readability although new self-confirmations are disabled.
+
+FR-G-03/04/05 are generator directives rather than guaranteed properties.
+The canonical committed real Phase 3 corpus used by the scanner evaluation
+contains 12 original packages: two models × two plans × three variants. From
+those committed source files, cost has explicit micro classes in **2/4 (50%)**;
+2/4 have no literal class and cannot establish deployed instance sizing. Performance
+has literal multi_az=true in **3/4 (75%)**, declared autoscaling/HPA in **3/4
+(75%)**, and both in **2/4 (50%)**. Original Checkov first scans find zero
+HIGH/CRITICAL findings in **0/4 security packages (0%)**, with counts 10, 2, 7,
+4. These are original-generation observations, not post-remediation rates.
+Literal matching cannot resolve expressions or prove multi-AZ placement,
+autoscaling operation or actual commercial Free Tier eligibility. No model was
+called to compute them. The rate JSON preserves package observations, stored
+heuristics and SHA-256 input manifests. These older measurements do not estimate
+current model reliability or later broad/final-set generation. Later committed
+quality snapshots lack enough original source to silently fill those measures.
+
+NFR-04 is **unverified** until the author's actual clean-Ubuntu/browser evidence
+is committed. The kit and containers are statically checked recipes only; D-31's
+tfsec→Trivy substitution and D-35's validator coverage revision remain explicit.
+PR-03 is **not met** under its approved 1.5× isolated-baseline target; an
+unadopted proposal cannot turn the verdict into a pass. NFR-02 remains partly met
+because ordinary role swaps do not remove recovery/telemetry coupling (D-55).
+[The evidence index](evals/EVIDENCE.md) separates status from test linkage.
+
+Features added through author decisions but absent as standalone specification
+requirements are listed in [the proposed amendment register](phase10-proposed-requirements.md).
+Those IDs are proposals only, never new test markers or implicit spec edits.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
@@ -2993,6 +3039,15 @@ Deployment/StatefulSet categories are not fully comparable. Any richer role
 metadata or semantic naming inference is a later design decision.
 
 ---
+
+### OQ-11 — Approve the final requirement amendments (Proposed)
+
+The author and supervisor must approve, reject or revise the proposed IDs in
+`docs/phase10-proposed-requirements.md`, including the already proposed D-60
+lesson IDs. The immutable specification is unchanged. Current traceability and
+status counts include only its 59 existing requirements/use cases; proposed IDs
+have no compliance status. PR-03's revised target remains unapproved and its
+current verdict remains not met. NFR-04 needs actual author deployment evidence.
 
 ## Thesis text to update (collected)
 
