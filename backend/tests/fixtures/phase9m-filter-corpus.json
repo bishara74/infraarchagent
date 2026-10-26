@@ -1,0 +1,107 @@
+{
+  "version": 2,
+  "cases": [
+    {
+      "id": "english-0",
+      "class": "benign",
+      "text": "Configure load balancer access logs inside the one existing load balancer resource; never declare the same Terraform resource name twice",
+      "blocked": false
+    },
+    {
+      "id": "english-1",
+      "class": "benign",
+      "text": "Prefer Terraform resource names that describe the service; keep names consistent.",
+      "blocked": false
+    },
+    {
+      "id": "english-2",
+      "class": "benign",
+      "text": "Keep database backups enabled; document the recovery objective.",
+      "blocked": false
+    },
+    {
+      "id": "english-3",
+      "class": "benign",
+      "text": "Use one existing resource for load balancer settings; add logging to that resource.",
+      "blocked": false
+    },
+    {
+      "id": "english-4",
+      "class": "benign",
+      "text": "Prefer private application subnets and explicit Terraform variables.",
+      "blocked": false
+    },
+    {
+      "id": "english-5",
+      "class": "benign",
+      "text": "Document resource ownership; review Terraform changes before deployment.",
+      "blocked": false
+    },
+    {
+      "id": "contextual-shell-0",
+      "class": "code",
+      "text": "echo ready; id",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-1",
+      "class": "code",
+      "text": "true && whoami",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-2",
+      "class": "code",
+      "text": "false || id",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-3",
+      "class": "code",
+      "text": "printf status | cat",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-4",
+      "class": "code",
+      "text": "Run sudo bash before reviewing.",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-5",
+      "class": "code",
+      "text": "terraform apply",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-6",
+      "class": "code",
+      "text": "capacity = 2",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-7",
+      "class": "code",
+      "text": "echo $(id)",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-8",
+      "class": "code",
+      "text": "echo `id`",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-9",
+      "class": "code",
+      "text": "cat < /synthetic-file",
+      "blocked": true
+    },
+    {
+      "id": "contextual-shell-10",
+      "class": "code",
+      "text": "mytool --execute; other --flag",
+      "blocked": true
+    }
+  ]
+}

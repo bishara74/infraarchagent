@@ -10,6 +10,13 @@ from app.main import create_app
 
 
 class _Connection:
+    async def scalars(self, statement: object):
+        from types import SimpleNamespace
+
+        from app.db.schema import migration_graph
+
+        return SimpleNamespace(all=lambda: [migration_graph().get_current_head()])
+
     async def execute(self, statement: object) -> None:
         return None
 

@@ -129,3 +129,17 @@ async def test_real_validate_reads_only_synthetic_package_local_file(tmp_path):
     )
     result = await ProcessToolRunner(10).run("terraform", tmp_path)
     assert result.exit_code == 0
+
+
+@pytest.mark.parametrize("function", ["file", "filesha256"])
+async def test_unicode_escaped_paths_are_decoded_before_any_launch(
+    tmp_path, monkeypatch, function
+):
+    escaped = str(tmp_path.parent / "synthetic-outside.txt").replace("/", r"\u002f")
+    (tmp_path / "terraform").mkdir()
+    (tmp_path / "terraform/main.tf").write_text(source(function, escaped))
+    launch = AsyncMock(side_effect=AssertionError("escaped outside read launched"))
+    monkeypatch.setattr("asyncio.create_subprocess_exec", launch)
+    with pytest.raises(ToolFailure, match="unsafe_file_input"):
+        await ProcessToolRunner().run("terraform", tmp_path)
+    launch.assert_not_called()

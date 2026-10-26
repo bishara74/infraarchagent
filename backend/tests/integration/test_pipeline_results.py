@@ -59,6 +59,8 @@ async def test_results_one_statement_plan_and_failed_variant(db_engines):
         AgentState.COMPLETED,
         payload=plan_created_payload(expected_plan),
     )
+    # Production lifespan checks the schema before serving requests.
+    await app.state.schema_gate.refresh()
     statements = []
 
     def count(_conn, _cursor, statement, _params, _context, _many):

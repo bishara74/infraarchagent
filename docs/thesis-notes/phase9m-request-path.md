@@ -67,7 +67,8 @@ also bypassed the engine's guard.
 
 The shared process boundary now checks package documents before every Terraform
 init/validate call, including both bypass paths. The existing input policy covers
-filemd5, filesha1/256/512 and filebase64sha256/512 too. Paths resolve against the
+filemd5, filesha1/256/512 and filebase64sha256/512 too. Quoted literal escapes are decoded before the path check (a synthetic Unicode-
+escaped separator probe confirmed the need). Paths resolve against the
 actual evaluation working directory, with path.module/path.root support. Escapes,
 .env paths and unverifiable dynamic filenames are refused before process launch.
 It uses existing tool-failure/validation handling; no scanner detection rule,

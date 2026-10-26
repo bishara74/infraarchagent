@@ -2733,7 +2733,9 @@ read outside the package during terraform validate, and the engine guard did
 not cover scanner/JSON native-syntax entrypoints. Synthetic absent/present
 outside-file probes established the read without inspecting any real secret.
 The existing file-input policy now covers the hashing family and runs before
-all request-path init/validate subprocesses. Unsafe input uses existing failure
+all request-path init/validate subprocesses. Final synthetic probes also showed
+Unicode-escaped separators bypassing source-spelling comparisons; decode quoted
+literals before checking their resolved paths. Unsafe input uses existing failure
 handling. No scanner detection/profile/readiness rule or threshold changes.
 
 Remote git/HTTP/registry modules are refused before initialization; providers
@@ -2763,6 +2765,31 @@ requests. Stable wrappers preserve native focus/identity across busy changes;
 Escape dismisses a hint without closing a lesson dialog. Full control/condition/
 recovery/test mapping: [UI control inventory](evals/phase9m-verification/ui-controls.md).
 No new dependency or visual direction is introduced.
+
+Section 6 (NFR-01, FR-A-05): filter v2 replaces punctuation-only shell
+screening with contextual command/operator rules, while retaining unmistakable
+Terraform braces/assignments and the other independent defenses. The author's
+semicolon sentence passes v2. New screening/approval uses v2; explicit
+screen(text, version="1") replays the unchanged v1 configuration. Historical
+proposal/approval results and immutable sets are not rewritten. The original
+46-case corpus is unchanged; 17 new benign/contextual-code cases live separately.
+
+Measured layers (total; structural; independent raw filter; additional filter
+after structural validation; cumulative): original v1 and v2 each
+46; 10; 29; 28; 38. Expanded v1: 63; 10; 44; 43; 53. Expanded v2:
+63; 10; 40; 39; 49. On the expanded labelled corpus v1 has five benign false
+positives and one missed generic assignment; v2 has neither. Every previously
+blocked case remains blocked. Two documented semantic residuals still pass
+syntactic screening and require human governance. Independent and additional
+filter counts must not be added. Per-case evidence and configuration/corpus
+fingerprints are in evals/phase9m-verification/. No universal injection-defense
+or real-provider improvement claim is made.
+
+Verification also updates the existing fake health connection for revision
+queries and prewarms the startup schema gate outside the results query-count
+assertion. The one-statement results contract is preserved. The initial
+SQL_ASCII disposable database rejected Unicode JSON; verification recreates
+only its isolated test database as UTF-8. No production database is touched.
 
 ## Clarifications (spec is silent; the diagrams decide)
 

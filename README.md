@@ -2017,3 +2017,19 @@ Phase 9l verification is recorded in
 [the evidence index](docs/evals/phase9l-verification/README.md), with
 [1280×800 browser captures](docs/evals/phase9l-ui/README.md) and
 [thesis design notes](docs/thesis-notes/phase9l-curated-lessons.md).
+
+### Phase 9m diagnostics and lesson screening
+
+Comparison cards state that infrastructure is not priced; model call prices
+are unrelated. Unavailable UI actions expose a reason and next step on hover,
+focus and click, including direct links to outstanding package reviews.
+
+New lesson proposals and approval previews use deterministic filter v2. Plain
+English semicolons are allowed; contextual shell/code syntax remains screened.
+Historical stored results are retained. Offline replay is available through
+`app.security.lesson_filter.screen(text, version="1")`; the unchanged v1 corpus
+and expanded v1/v2 layer reports are under `docs/evals/phase9m-verification/`.
+D-61 and `docs/thesis-notes/phase9m-request-path.md` describe the request-path
+threat model and limitations. Deterministic duplicate-block repair can change
+generated packages, so affected benchmark packages are not byte-comparable
+with earlier rounds. No automatic schema migration or real deployment occurs.

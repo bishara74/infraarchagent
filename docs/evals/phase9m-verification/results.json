@@ -1,0 +1,93 @@
+{
+  "date": "2026-10-26",
+  "baseline": "7d69907915b8d43d3627e7858935a97022a48816",
+  "mode": "offline synthetic; dotenv disabled; two disposable UTF-8 PostgreSQL 16 clusters; no real provider calls",
+  "commands": {
+    "make lint": {
+      "returncode": 0,
+      "script_files": 40,
+      "app_test_files": 386,
+      "mypy_sources": 185,
+      "frontend": "ESLint and both TypeScript checks passed"
+    },
+    "make test": {
+      "returncode": 0,
+      "passed": 2632,
+      "failed": 0,
+      "skipped": 0,
+      "deselected": 6,
+      "seconds": 938.31
+    },
+    "make frontend-test": {
+      "returncode": 0,
+      "passed": 459,
+      "failed": 0,
+      "skipped": 0,
+      "files": 45,
+      "seconds": 211.93,
+      "invocation": "taskset -c 0,1 make frontend-test"
+    },
+    "make test-e2e": {
+      "returncode": 0,
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0,
+      "duration_reported": "11.6m"
+    },
+    "make test-perf": {
+      "returncode": 0,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "deselected": 2632,
+      "seconds": 26.66,
+      "pr04_seconds": 1.0602536509977654,
+      "artifact": "../phase9-backend-perf-20261026T020442523450Z/"
+    },
+    "make secret-scan": {
+      "returncode": 0,
+      "findings": 0,
+      "scan_errors": 0,
+      "artifact": "../phase9-secret-scan-20261026T015814379372Z/"
+    }
+  },
+  "verification_corrections": [
+    "Initial disposable SQL_ASCII database caused Unicode JSON failures; recreated only isolated test database as UTF-8. Interrupted run: 171 passed, 21 failed, 6 deselected.",
+    "First complete UTF-8 run: 2628 passed, 2 failed, 6 deselected; updated pre-existing health mock and results-query startup seam.",
+    "Stopped an outdated-source run before final decoded-literal verification.",
+    "Frontend iterations exposed control-remount focus loss, tooltip Escape/viewport/hover behavior and test-mock issues; fixed before final passing runs. Two-CPU frontend affinity avoids contention timeouts without changing timeouts."
+  ],
+  "limitations": [
+    "No author database/real ECS/real-provider verification.",
+    "Shared-host tool processes are not an OS filesystem/network sandbox.",
+    "No universal prompt-injection or secret-recognition claim.",
+    "Affected generated packages are not byte-comparable with earlier benchmark rounds."
+  ],
+  "additional_checks": {
+    "extended_gate_browser": {
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 54.5
+    },
+    "decoded_literal_and_terraform": {
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 6.46
+    },
+    "schema_existing_test_compatibility": {
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 15.75
+    },
+    "historical_tracked_captures_restored": 91,
+    "final_history_secret_scan": {
+      "returncode": 0,
+      "findings": 0,
+      "scan_errors": 0,
+      "artifact": "final-secret-scan/"
+    }
+  }
+}

@@ -269,8 +269,13 @@ def file_input_guard(
                 value,
             ):
                 tail = value[function.end() :]
-                literal = re.match(r'"([^"\n]*)"', tail)
-                if literal is None:
+                # Terraform decodes quoted escapes before opening the path.
+                # Compare that decoded literal, never its source spelling.
+                try:
+                    filename, _ = json.JSONDecoder().raw_decode(tail)
+                except ValueError:
+                    filename = None
+                if not isinstance(filename, str):
                     return [
                         ValidationCheck(
                             check_id="terraform.validate",
@@ -283,11 +288,9 @@ def file_input_guard(
                             skip_reason="uninspectable_file_input",
                         )
                     ]
-                filename = (
-                    literal.group(1)
-                    .replace("${path.module}", str(root / Path(doc.path).parent))
-                    .replace("${path.root}", str(cwd))
-                )
+                filename = filename.replace(
+                    "${path.module}", str(root / Path(doc.path).parent)
+                ).replace("${path.root}", str(cwd))
                 if "${" in filename or filename.startswith("~"):
                     return [terraform_skip("uninspectable_file_input")]
                 target = (cwd / filename).resolve()

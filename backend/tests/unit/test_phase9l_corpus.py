@@ -27,9 +27,9 @@ def text_for(case):
     )
 
 
-def evaluate():
+def evaluate(version="1", cases=None):
     rows, rule_counts = [], Counter()
-    for case in CORPUS["cases"]:
+    for case in CORPUS["cases"] if cases is None else cases:
         value = text_for(case)
         try:
             lesson = LessonInput.model_validate({**SAFE, "text": value})
@@ -39,8 +39,8 @@ def evaluate():
         else:
             structured = True
         # Run the independent filter on raw text too, even if layer 1 rejects it.
-        independent = screen(value)
-        filtered = screen(lesson.text) if lesson else independent
+        independent = screen(value, version=version)
+        filtered = screen(lesson.text, version=version) if lesson else independent
         reasons = [reason["id"] for reason in filtered["reasons"]]
         rule_counts.update(reasons)
         rows.append(
@@ -59,6 +59,7 @@ def evaluate():
         )
     return {
         "corpus_version": CORPUS["version"],
+        "filter_version": version,
         "total": len(rows),
         "structured_blocked": sum(row["structured_blocked"] for row in rows),
         "filter_independent_blocked": sum(

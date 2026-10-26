@@ -4,18 +4,25 @@ import json
 import re
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from app.domain.secret_patterns import ASSIGNMENT, PATTERNS
 
 
-@lru_cache(maxsize=1)
-def configuration() -> dict[str, Any]:
-    return json.loads(Path(__file__).with_name("lesson-filter.v1.json").read_text())  # type: ignore[no-any-return]
+@lru_cache(maxsize=2)
+def configuration(version: str = "2") -> dict[str, Any]:
+    if version not in {"1", "2"}:
+        raise ValueError("Unknown lesson filter version")
+    return cast(
+        dict[str, Any],
+        json.loads(
+            Path(__file__).with_name(f"lesson-filter.v{version}.json").read_text()
+        ),
+    )
 
 
-def screen(text: str) -> dict[str, Any]:
-    config = configuration()
+def screen(text: str, *, version: str = "2") -> dict[str, Any]:
+    config = configuration(version)
     folded = text.casefold().translate(str.maketrans(config["confusables"]))
     reasons = [
         {"id": rule["id"], "message": rule["message"]}

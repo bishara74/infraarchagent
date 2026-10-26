@@ -134,4 +134,5 @@ def test_filter_rejects_requested_attack_classes(text):
 
 
 def test_benign_advisory_passes_filter():
-    assert screen(SAFE["text"]) == {"version": "1", "passed": True, "reasons": []}
+    assert screen(SAFE["text"]) == {"version": "2", "passed": True, "reasons": []}
+    assert screen(SAFE["text"], version="1")["version"] == "1"
