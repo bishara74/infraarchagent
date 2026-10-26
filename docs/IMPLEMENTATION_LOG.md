@@ -27,6 +27,27 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 2 — Give the Fixer network intent
+
+**Summary:** Advance the Fixer prompt from version 7 to 8 with structured public,
+private and ingress intent and a fixed instruction to preserve functional exposure.
+
+**Requirements addressed:** FR-S-02, FR-A-05, NFR-01.
+
+**Files:** agents/prompts/security_fix.py, domain/fixer_context.py,
+unit/test_phase10b_fixer_wire.py, fixtures/phase10b-fixer-wire.json; D-63 and log.
+
+**Decisions:** One trusted nonce-delimited trailing advisory context; deterministic
+guard remains authoritative. No output schema, model or budget change.
+
+**Tests:** Fixer prompt/wire subset: 41 passed, 0 failed, 0 skipped. Nine complete
+mock HTTP golden bodies cover three output modes and three repair kinds. Ruff and
+mypy pass (188 app files). Initial capture failed because the new fixture omitted
+the required RetryPolicy token budget; corrected before capturing the baseline.
+
+**Known gaps / follow-ups:** These are mocked wire checks, not model-quality data.
+Optional Fixer lesson binding is the next separate section.
+
 ## 2026-10-27 — Phase 10b section 1 — Preserve planned exposure
 
 **Summary:** Add deterministic exposure preservation before candidate retention,

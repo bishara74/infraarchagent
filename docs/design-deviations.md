@@ -2901,6 +2901,13 @@ capacity and runtime/deployment correctness remain unproven. Unsupported service
 semantics and dynamic bindings cannot establish a positive conformance claim.
 Further phase sections and measured evidence are recorded here as implemented.
 
+Section 2: Fixer prompt 7 becomes 8 for security, validation and syntax repair.
+Every request supplies the structured network section in a trailing nonce-delimited
+advisory context. Fixed system instructions preserve planned exposure and leave
+conflicting findings for engineer review. Nine frozen complete mocked request
+bodies cover three response formats and three repair kinds; they establish wiring,
+not real-provider reliability. Architect/Generator prompts remain unchanged.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
