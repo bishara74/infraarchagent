@@ -250,16 +250,23 @@ def module_preflight(
     return None, local
 
 
-def file_input_guard(root: Path, documents: PackageDocuments) -> list[ValidationCheck]:
+def file_input_guard(
+    root: Path, documents: PackageDocuments, *, evaluation_cwd: Path | None = None
+) -> list[ValidationCheck]:
     """Terraform file functions must never inspect files outside the copied package."""
+    cwd = evaluation_cwd or (
+        root / "terraform" if (root / "terraform").is_dir() else root
+    )
     for doc in documents.documents.values():
-        if not doc.path.startswith("terraform/") or doc.parse_error:
+        if not doc.path.endswith((".tf", ".tf.json", ".tfvars")) or doc.parse_error:
             continue
         for _, value in walk(doc.data):
             if not isinstance(value, str) or not re.search(r"(?<!\$)\$\{", value):
                 continue
             for function in re.finditer(
-                r"\b(file|filebase64|templatefile|fileset|fileexists)\s*\(\s*", value
+                r"\b(file|filebase64|templatefile|fileset|fileexists|filemd5|filesha1|"
+                r"filesha256|filesha512|filebase64sha256|filebase64sha512)\s*\(\s*",
+                value,
             ):
                 tail = value[function.end() :]
                 literal = re.match(r'"([^"\n]*)"', tail)
@@ -279,11 +286,11 @@ def file_input_guard(root: Path, documents: PackageDocuments) -> list[Validation
                 filename = (
                     literal.group(1)
                     .replace("${path.module}", str(root / Path(doc.path).parent))
-                    .replace("${path.root}", str(root / "terraform"))
+                    .replace("${path.root}", str(cwd))
                 )
                 if "${" in filename or filename.startswith("~"):
                     return [terraform_skip("uninspectable_file_input")]
-                target = (root / Path(doc.path).parent / filename).resolve()
+                target = (cwd / filename).resolve()
                 if not target.is_relative_to(root.resolve()) or any(
                     part.startswith(".env") for part in target.parts
                 ):
@@ -328,7 +335,7 @@ async def _validate_module(
     indexed = documents or PackageDocuments.parse(
         {path: (root / path).read_text() for path in files}
     )
-    guarded = file_input_guard(root, indexed)
+    guarded = file_input_guard(root, indexed, evaluation_cwd=tf)
     if guarded:
         return guarded
     reason, local = module_preflight(root, files, indexed, module)

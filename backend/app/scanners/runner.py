@@ -220,6 +220,26 @@ class ProcessToolRunner:
         selected_cwd = (cwd or workdir).resolve()
         if not selected_cwd.is_relative_to(workdir.resolve()):
             raise ToolFailure(tool, "unsafe_workdir")
+        if tool == "terraform" and len(args) > 1 and args[1] in {"init", "validate"}:
+            # Every evaluation entrypoint shares this guard, including scanner
+            # validation and JSON syntax checks that bypass ValidationEngine.
+            from app.validation.documents import PackageDocuments
+            from app.validation.terraform import file_input_guard
+
+            sources = {
+                path.relative_to(workdir).as_posix(): path.read_text()
+                for path in workdir.rglob("*")
+                if path.is_file()
+                and path.name.endswith((".tf", ".tf.json", ".tfvars"))
+                and not any(
+                    part.startswith(".") for part in path.relative_to(workdir).parts
+                )
+            }
+            checks = file_input_guard(
+                workdir, PackageDocuments.parse(sources), evaluation_cwd=selected_cwd
+            )
+            if checks:
+                raise ToolFailure(tool, "unsafe_file_input")
         env = scanner_environment(environment_dir or workdir, tool)
         if allow_provider_download:
             if tool != "terraform" or args[1:3] != ["providers", "mirror"]:

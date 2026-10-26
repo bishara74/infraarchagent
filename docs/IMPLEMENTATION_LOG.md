@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 9m section 4 — Audit and guard request-path file inputs
+
+**Summary:** Record the tool/prompt/credential threat model, and close confirmed
+Terraform hashing and scanner/JSON-syntax guard bypasses at the process boundary.
+
+**Requirements addressed:** NFR-01, FR-V-03.
+
+**Files:** scanners/runner.py, validation/terraform.py,
+unit/test_phase9m_tool_inputs.py; thesis-notes/phase9m-request-path.md, D-61,
+this log.
+
+**Decisions:** Report the synthetic absent/present outside-file proof before
+implementation. Extend only the existing path policy, including file-hashing
+families, and reuse existing unsafe-input/tool-error handling. Guard every
+init/validate entrypoint. Retain the explicit shared-host filesystem/network
+sandbox limitation. Direct injection and stored lesson injection have different
+reach; neither syntactic nor deterministic checks prove universal safety.
+
+**Tests:** Tool-input/Terraform/linter/scanner/timeout suites: 121 passed, 0
+failed/skipped (38.94s). Existing integration canaries and full-body wire checks:
+52 passed, 0 failed/skipped (9.85s). Full make lint: exit 0; Ruff/format 40
+scripts and 385 app/test files, mypy 185 sources, frontend ESLint/TypeScript.
+Synthetic canaries only; no actual credential/dotenv/network access.
+
+**Known gaps / follow-ups:** No broader OS sandbox redesign or universal secret
+recognition claim. No scanner detection/readiness/profile/threshold change.
+Sections 5–6 and full finish checks remain.
+
 ## 2026-10-26 — Phase 9m section 3 — Fail closed on incompatible schemas
 
 **Summary:** Check Alembic compatibility before startup recovery, gate normal

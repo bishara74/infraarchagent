@@ -2721,6 +2721,37 @@ migrations/grants are not rewritten. Pre-0014 app connections cannot read the
 revision, so the honest current value is unreadable with make-migrate guidance.
 No automatic migration or new application data column is introduced.
 
+#### Request-path threat model
+
+Section 4 (NFR-01, FR-V-03) audits direct requests separately from D-60's
+stored lesson injection. The full command/argument, credential, prompt,
+isolation, evidence and residual-risk inventory is in
+[Phase 9m thesis notes](thesis-notes/phase9m-request-path.md).
+
+Confirmed gap, reported before implementation: file-hashing functions could
+read outside the package during terraform validate, and the engine guard did
+not cover scanner/JSON native-syntax entrypoints. Synthetic absent/present
+outside-file probes established the read without inspecting any real secret.
+The existing file-input policy now covers the hashing family and runs before
+all request-path init/validate subprocesses. Unsafe input uses existing failure
+handling. No scanner detection/profile/readiness rule or threshold changes.
+
+Remote git/HTTP/registry modules are refused before initialization; providers
+come only from the local mirror. No plan/apply or provisioner/external program
+execution is present. Helm renders/lints offline with schema validation skipped;
+promtool checks configuration/rules with package-path guards. Explicit argv,
+private workspaces, allowlisted secret-free environments, timeouts/process-group
+cleanup and public-data redaction are covered by existing and new tests.
+Request text is 10–2,000 stripped characters, escaped in the Architect user
+message; generators use the validated plan. SDK authentication is separate.
+
+Direct injection is intended to influence only its requester's checked output;
+stored injection can affect later runs and needs D-60 governance. Neither the
+syntactic filters nor deterministic output checks prove universal safety.
+Subprocesses share the server's OS identity: proxies/static file guards are not
+an OS network/filesystem sandbox, and parser/tool/plugin vulnerabilities remain
+an explicit shared-host risk. No broader sandbox redesign is claimed here.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
