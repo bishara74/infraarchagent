@@ -2698,6 +2698,17 @@ explicitly excludes cost estimation; model-token prices cannot price AWS
 infrastructure. Cards now explain that cost is not calculated and variants
 express optimisation goals rather than priced estimates. No API/schema change.
 
+Section 2 (FR-V-03/04, FR-P-04): deterministic declaration repair now
+consolidates same-identity resource/data blocks within one module only when
+fields are equal or absent. Nested-block collections must match completely;
+dynamic bodies, conflicting values, malformed declarations, repeated JSON keys
+and ambiguous mixed formats abort the module candidate. Source spans preserve
+unrelated bytes; native syntax checks bracket publication. Original generator
+bytes, per-file hashes/locations and introduction-stage origin are retained in
+the existing repair report and generation measurement event. No expression is
+evaluated to decide equality. This changes generated packages: future benchmark
+rounds are not byte-comparable with earlier rounds for affected packages.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

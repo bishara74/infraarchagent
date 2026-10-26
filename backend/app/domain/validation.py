@@ -125,6 +125,7 @@ class DeterministicRepair(BaseModel):
     kind: Literal[
         "missing_variable",
         "duplicate_variable",
+        "duplicate_block",
         "required_providers_merge",
         "missing_data_source",
         "empty_default_security_group_rule",
@@ -143,6 +144,7 @@ class DeterministicRepair(BaseModel):
         "kubernetes_image_values",
     ]
     name: str
+    origin: Literal["generated", "security_fix", "repair", "unknown"] | None = None
     line: int | None = None
     before_hash: str | None = None
     after_hash: str | None = None

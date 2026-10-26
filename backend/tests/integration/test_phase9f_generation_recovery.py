@@ -121,3 +121,75 @@ async def test_generation_syntax_recovery_keeps_newly_revealed_findings_blocking
         assert row.security_report["final"]["remaining_blocking"][0]["blocking"]
     finally:
         workspace.close()
+
+
+@pytest.mark.req("FR-V-03", "FR-V-04", "FR-P-04")
+async def test_duplicate_repair_retains_originals_report_and_event(db_engines):
+    from sqlalchemy import select
+
+    from app.db.models import AgentEvent
+    from tests.unit.test_phase9m_duplicates import ALB, LOGS
+
+    engine, _ = db_engines
+    ctx, _ = await setup(engine)
+    ctx = replace(
+        ctx,
+        plan=DeploymentPlan.model_validate(
+            {**ctx.plan.model_dump(), "file_types": ["terraform"]}
+        ),
+    )
+    sessions = make_session_factory(engine)
+    original = {"terraform/main.tf": ALB + LOGS}
+    generator = SecurityGeneratorAgent(
+        StubAdapter(script=[reply(original)]),
+        deadline_seconds=150,
+        attempt_timeout=140,
+        max_output_tokens=16000,
+        max_package_attempts=2,
+    )
+    pipeline = PipelineOrchestrator(
+        ctx.run_id,
+        "duplicate repair",
+        RunConfig(),
+        factory=SimpleNamespace(settings=get_settings()),
+        session_factory=sessions,
+        writer=ctx.writer,
+        security_stage=None,
+        validation_stage=ValidatorAgent(
+            ValidationEngine(Runner(), versions={}), sessions
+        ),
+    )
+    workspace = ValidationWorkspace()
+    try:
+        with workspace.activate():
+            package = await generator.generate(ctx.plan)
+            # Exercise deterministic repair/event publication without model recovery.
+            generator.deadline_seconds = 0
+            fixed = await pipeline._prepare_generation(
+                generator, ctx.plan, package, ctx.clock()
+            )
+            metadata = fixed.validation_report["remediation"]
+            assert metadata["deterministic_repairs"][0]["kind"] == "duplicate_block"
+            assert metadata["deterministic_repairs"][0]["origin"] == "generated"
+            async with sessions() as session, session.begin():
+                await PackageRepository(session).save_automatic_repairs(
+                    ctx.run_id,
+                    Variant.SECURITY,
+                    original_files=workspace.original_files,
+                    files=fixed.files,
+                )
+        async with sessions() as session:
+            row = await PackageRepository(session).get(ctx.run_id, Variant.SECURITY)
+            events = (
+                await session.scalars(
+                    select(AgentEvent).where(AgentEvent.run_id == ctx.run_id)
+                )
+            ).all()
+        assert row.original_files == original
+        assert row.files["terraform/main.tf"].count('resource "aws_lb"') == 1
+        assert any(
+            event.payload.get("measurement", {}).get("stage") == "deterministic_repairs"
+            for event in events
+        )
+    finally:
+        workspace.close()

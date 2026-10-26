@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 9m section 2 — Repair safe duplicate Terraform blocks
+
+**Summary:** Add module-atomic resource/data consolidation before the existing
+generation gate, preserving expressions, original files and failure behavior
+for conflicts/ambiguity. Record source locations, hashes and stage origin.
+
+**Requirements addressed:** FR-V-03, FR-V-04, FR-P-04, NFR-01.
+
+**Files:** validation/duplicates.py, validation/repairs.py, domain/validation.py;
+unit/test_phase9m_duplicates.py, integration/test_phase9f_generation_recovery.py;
+D-61 and this log.
+
+**Decisions:** Nested collections require exact structural equality. JSON
+repeated keys and mixed-format duplicate groups remain unchanged. Conflicts
+also suppress other declaration edits within the module. Source-span edits
+avoid reserializing unrelated code. D-61 discloses benchmark byte differences.
+
+**Tests:** Focused duplicate/declaration/generation suite: 28 passed, 0 failed/
+skipped (6.05s), including real PostgreSQL persistence and EventLog publication.
+Ruff on section files: passed; mypy: 3 sources passed. Initial focused runs
+caught a missing-variable edit escaping the atomic candidate and integration
+fixture setup mistakes; corrected before the successful run.
+
+**Known gaps / follow-ups:** Sections 3–6 and full finish checks remain. No
+readiness/profile/scanner rule or threshold change; no dependency or spec edit.
+
 ## 2026-10-26 — Phase 9m section 1 — Explain unpriced infrastructure
 
 **Summary:** Replace the comparison's hard-coded unavailable estimate with an

@@ -15,6 +15,7 @@ from app.validation.documents import (
     hcl_reference_locations,
     json_reference_locations,
 )
+from app.validation.duplicates import repair_duplicates
 
 DATA_SOURCES = {
     "aws_availability_zones": '  state = "available"\n',
@@ -27,10 +28,10 @@ SECRET_NAME = re.compile(r"password|secret|token|credential|private[_-]?key", re
 
 def repair_terraform(
     files: dict[str, str],
-) -> tuple[dict[str, str], list[dict[str, str]]]:
+) -> tuple[dict[str, str], list[dict[str, Any]]]:
     """Skip a module if any declaration cannot be safely inspected."""
     result = dict(files)
-    repairs: list[dict[str, str]] = []
+    repairs: list[dict[str, Any]] = []
     modules: dict[str, list[str]] = defaultdict(list)
     for path in sorted(files):
         if path.startswith("terraform/") and path.endswith((".tf", ".tf.json")):
@@ -131,13 +132,13 @@ def repair_terraform(
 
 async def repair_declarations(
     files: dict[str, str],
-) -> tuple[dict[str, str], list[dict[str, str]]]:
+) -> tuple[dict[str, str], list[dict[str, Any]]]:
     """A gate's existence is not evidence that these module bytes were repaired."""
     from app.validation.syntax import native_syntax
     from app.validation.workspace import ValidationWorkspace, current_workspace
 
     result = dict(files)
-    records: list[dict[str, str]] = []
+    records: list[dict[str, Any]] = []
     workspace = current_workspace()
     modules = sorted(
         {
@@ -158,7 +159,12 @@ async def repair_declarations(
             continue
         if await native_syntax(current):
             continue
-        candidate, changes = repair_terraform(current)
+        blocked: set[str] = set()
+        candidate, duplicates = repair_duplicates(current, blocked=blocked)
+        if blocked:
+            continue
+        candidate, changes = repair_terraform(candidate)
+        changes = [*duplicates, *changes]
         if await native_syntax(candidate):
             continue
         result.update(candidate)
