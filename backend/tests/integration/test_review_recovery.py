@@ -118,31 +118,28 @@ async def test_marker_column_timestamp_and_app_update_grant(db_engines):
 async def test_migration_preserves_existing_rows_and_downgrade_drops_only_marker(
     db_engines,
 ):
-    import asyncio
-    import subprocess
-    from pathlib import Path
+    import importlib
     from uuid import uuid4
+
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
 
     from app.db.session import make_session_factory
 
-    backend = Path(__file__).resolve().parents[2]
+    # This regression is about migration 0003 only. Exercise its operations on
+    # PostgreSQL as the owner, without downgrading unrelated immutable provenance.
+    migration = importlib.import_module(
+        "app.db.migrations.versions.0003_review_retry_started_at"
+    )
 
     async def migrate(direction, target):
-        result = await asyncio.to_thread(
-            subprocess.run,
-            [
-                str(backend / ".venv/bin/alembic"),
-                "-x",
-                "database=test",
-                direction,
-                target,
-            ],
-            cwd=backend,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
-        assert result.returncode == 0
+        async with db_engines[1].begin() as connection:
+
+            def apply(sync_connection):
+                with Operations.context(MigrationContext.configure(sync_connection)):
+                    getattr(migration, direction)()
+
+            await connection.run_sync(apply)
 
     engine, _ = db_engines
     await migrate("downgrade", "0002_original_files")

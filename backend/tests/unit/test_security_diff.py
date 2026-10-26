@@ -37,3 +37,12 @@ def test_cumulative_diff_spans_changed_added_deleted_and_reverted_files():
         "--- a/terraform/deleted.tf\n+++ /dev/null\n@@ -1 +0,0 @@\n-old\n"
         "--- /dev/null\n+++ b/terraform/new.tf\n@@ -0,0 +1 @@\n+new\n"
     )
+
+
+@pytest.mark.req("FR-S-06", "UC-04")
+def test_missing_final_newline_has_standard_unified_diff_markers():
+    assert package_diff({"terraform/a.tf": "before"}, {"terraform/a.tf": "after"}) == (
+        "--- a/terraform/a.tf\n+++ b/terraform/a.tf\n@@ -1 +1 @@\n"
+        "-before\n\\ No newline at end of file\n"
+        "+after\n\\ No newline at end of file\n"
+    )

@@ -22,20 +22,15 @@ approve, retry or reject packages that still need a human decision.
 
 ## Status
 
-Phase 8 completes the four desktop screens: input, live progress, comparison,
-and package diff/review/download. The shared fetch-based SSE client resumes
-interruptions and distinguishes a settled close from an active retry. FastAPI
-serves the optional production build from the same origin. Phase 7 provides
-results snapshots, review decisions/retries, deterministic labelled ZIP downloads
-and optional static API-key authentication. Phase 6 provides
-deterministic structure, reference and naming checks, offline
-Terraform provider-schema validation, optional local linters and persisted
-reports. Clean scans plus valid packages reach `checks_passed`; all three
-ready packages give run `success`. Invalid or unavailable required validation
-reaches `pending_review` through the existing Option C rules. See
-[`docs/IMPLEMENTATION_LOG.md`](docs/IMPLEMENTATION_LOG.md) for progress and
-[`docs/design-deviations.md`](docs/design-deviations.md) for where the
-implementation differs from the thesis design.
+The feature-complete pipeline and four desktop screens are accompanied by Phase 10
+packaging and requirement evidence. Accounts, encrypted credentials, model defaults,
+review history and governed advisory lessons are implemented. Strict scan/validation
+rules determine `checks_passed`; human decisions use `engineer_approved` or
+`rejected`. See the [requirement evidence index](docs/evals/EVIDENCE.md),
+[implementation log](docs/IMPLEMENTATION_LOG.md),
+[design deviations](docs/design-deviations.md) and [prepared v1.0 changelog](CHANGELOG.md).
+PR-03 is not met; NFR-04 clean deployment remains unverified. Container recipes and
+the clean-install kit require author execution; no cloud deployment is claimed.
 
 ## Clean deployment
 
@@ -556,7 +551,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `GENERATOR_MAX_PACKAGE_ATTEMPTS` | Full-package attempts, including correction | `3` |
 | `LLM_BACKOFF_BASE_SECONDS` | Exponential retry backoff base | `1.0` |
 | `LLM_MAX_OUTPUT_TOKENS` | Output token limit per request | `16000` |
-| `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `3` |
+| `MAX_REMEDIATION_ITERATIONS` | Fix-pass limit per package | `4` |
 | `SECURITY_DEADLINE_SECONDS` | Overall security budget per package | `240` |
 | `SCANNER_TIMEOUT_SECONDS` | Limit for each local scanner call | `120` |
 | `FIX_ATTEMPT_TIMEOUT_SECONDS` | Limit for each LLM fix attempt | `90` |
@@ -820,7 +815,7 @@ read `summary.md`. The real-provider results are still author-run work.
 
 Generator format retries name the previous safe failure reason without repeating
 its output. The generator has one budget across package corrections and adapter
-retries. Default nominal calls are 2 × 3 × 120 = 720 seconds before backoff,
+retries. Default nominal calls are 3 × 3 × 120 = 1080 seconds before backoff,
 clipped by the shared 150-second budget. A valid package completing synchronous
 final validation after that budget is retained with `deadline_exceeded` and
 `overrun_seconds`; this does not change PR-05's 150-second timing threshold.
@@ -1976,9 +1971,9 @@ use the separate Phase 9l workflow below.
 
 Round 3 browser evidence: [gallery](docs/evals/phase9j-ui/round3/README.md).
 
-## Phase 9l curated lessons
+## Curated lessons (Phase 9l; Phase 10 approval policy)
 
-Apply migration 0013 with `make migrate`. Lessons are off by default. Using them
+Apply migrations through 0015 with `make migrate`. Lessons are off by default. Using them
 requires both `LESSONS_ENABLED=true` in the backend process environment and the
 named administrator's runtime switch. The switch starts off; it cannot override
 a false server setting. Shared-key benchmark requests always omit lessons.
@@ -2071,3 +2066,34 @@ D-61 and `docs/thesis-notes/phase9m-request-path.md` describe the request-path
 threat model and limitations. Deterministic duplicate-block repair can change
 generated packages, so affected benchmark packages are not byte-comparable
 with earlier rounds. No automatic schema migration or real deployment occurs.
+
+## Defence demo and command audit
+
+The [synthetic defence seed](docs/demo.md) creates reproducible stub runs with all
+four readiness labels, approval/rejection categories, retry history and an approved
+lesson through the application's own services. It accepts only loopback HTTP,
+prompts privately for a named admin login and never reads API keys or dotenv.
+
+```bash
+backend/.venv/bin/python -m scripts.phase10_demo --base-url http://127.0.0.1:8765 \
+  --output .cache/defence-demo/index.json
+```
+
+Start the dedicated stub/review server documented in the demo guide first. The
+[command audit](docs/phase10-command-audit.md) distinguishes executed verification
+from statically reviewed, author-only setup/online commands.
+
+## Troubleshooting
+
+| Symptom | Recovery |
+|---|---|
+| HTTP 503 / migration not applied | Run `make migrate` with the owner settings, then restart. An ahead schema needs matching code; never blindly downgrade. |
+| Master key not loaded / credentials unreadable | Export the same persistent `CREDENTIAL_ENCRYPTION_KEY` and key version in the backend process, then restart. A new key cannot decrypt old rows. |
+| Port already in use | Identify the competing process; use `make run PORT=8765` and set `INFRAARCH_BACKEND_URL` for Vite. Keep test ports free or use documented E2E overrides. |
+| Docker not running | Start Docker Desktop or the Ubuntu Docker service, then retry `make up`. Preserve named volumes. |
+| CRLF / `bash\r` in copied scripts | Convert the copied script with `sed -i 's/\r$//' SCRIPT.sh`, then run `bash -n SCRIPT.sh`. |
+| Missing mirror / scanner | Follow pinned prerequisites and provider/schema provisioning. A skip or failed scan is not a clean-deployment pass. |
+
+[Clean-deployment troubleshooting](docs/deployment.md#troubleshooting) includes
+evidence collection and private restart instructions. Author tag/push commands
+are in the changelog; no release tag is created by this task.

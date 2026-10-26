@@ -46,9 +46,9 @@ test('FR-UI-03/06 unavailable downloads and proposal expose reasons and review l
  const security=page.getByRole('article',{name:'security variant'});await expect(security.getByRole('button',{name:'Download this variant'})).toBeDisabled();
  const download=security.getByRole('button',{name:'Download this variant'});await download.locator('..').focus();await expect(download.locator('..').locator('.action-gate-help')).toBeVisible();
  await expect(page.getByRole('link',{name:'Review security',exact:true})).toHaveAttribute('href','/runs/run/packages/security?tab=review');
- await mkdir('../docs/evals/phase9m-verification',{recursive:true});
+ await mkdir('../docs/evals/phase10-ui',{recursive:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
- await page.screenshot({path:'../docs/evals/phase9m-verification/ui-download-reasons.png',animations:'disabled'});
+ for(const colorScheme of ['light','dark'] as const){await page.emulateMedia({colorScheme});await page.screenshot({path:`../docs/evals/phase10-ui/hints-${colorScheme}.png`,animations:'disabled'});}
  await page.getByRole('link',{name:'Review security',exact:true}).click();await checkGate(page,'Download ZIP');await checkGate(page,'Propose a lesson');expect(mutations).toEqual([]);
 });
 

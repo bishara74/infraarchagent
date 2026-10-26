@@ -15,7 +15,11 @@ from sqlalchemy import delete
 from app.db.models import GeneratedPackage
 from app.db.session import make_session_factory
 from app.domain.enums import AgentName, PackageStatus, Variant
-from app.domain.review_categories import CATEGORIES
+from app.domain.review_categories import (
+    APPROVAL_CATEGORIES,
+    CATEGORIES,
+    REJECTION_CATEGORIES,
+)
 from app.events.kinds import package_status_payload
 from tests.integration.test_phase9g_auth import KEY, authenticated
 from tests.integration.test_phase9h_accounts import ORIGIN, PASSWORD
@@ -44,6 +48,11 @@ async def test_categories_persist_in_results_events_and_archive(
                 "category": category,
             },
         )
+        allowed = APPROVAL_CATEGORIES if action == "approve" else REJECTION_CATEGORIES
+        if category not in allowed:
+            assert response.status_code == 400
+            assert (await state(app, run))[1].status == "pending_review"
+            return
         assert response.status_code == 200
         item = (await client.get(f"/api/pipeline/{run}/results")).json()["packages"][0]
         assert item["review_decision"]["category"] == category
@@ -94,7 +103,10 @@ async def test_checks_passed_only_allows_rejection_preserving_reports(db_engines
         }
         for action in ("approve", "retry"):
             assert (
-                await client.post(review_url(run), json={**body, "action": action})
+                await client.post(
+                    review_url(run),
+                    json={**body, "action": action, "category": "other"},
+                )
             ).status_code == 409
         responses = await asyncio.gather(
             *(

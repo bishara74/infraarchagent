@@ -27,6 +27,62 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 10 section 6 — Defence seed and release verification
+
+**Summary:** Add a reproducible, explicitly synthetic defence seed through the
+application's HTTP services; document demo operation, release commands and
+practical recovery. Complete final verification and retain failed-run evidence.
+
+**Requirements addressed:** FR-UI-01/03/06/07, FR-S-06, NFR-01/04, PR-04;
+all requirement verdicts remain in the section 5 register.
+
+**Files:** scripts/phase10_demo.py, integration/test_phase10_demo.py,
+unit/test_phase10_demo_client.py, README, CHANGELOG, docs/demo.md,
+phase10-command-audit.md, deployment/container instructions, Makefile lint scope,
+.env.example policy comment, security/diff.py and its regression test, legacy
+category/migration regressions, StatusBadge/review test/CSS, hint browser capture
+paths, phase10-ui and phase10-verification records.
+
+**Decisions:** The seed creates all four labels, action-specific review history,
+a retry and one approved lesson using stub requests and named-account services.
+It does not enable lesson injection or invent measurements. All 38 Make targets
+and 35 README shell blocks were checked statically; author-only commands remain
+unexecuted. Correct current remediation defaults, nominal retry arithmetic,
+upgrade instructions and private key handling. Deployment version/stop probes use
+the known container name without requiring secret Compose interpolation. Only
+public provider/schema artifacts need container readability. D-47/D-60/D-62 and
+OQ-11 retain the accepted scope and outstanding specification approvals.
+
+**Tests:** `make lint` passed (Ruff, format, mypy 186 app files, frontend lint and
+both TypeScript projects). `make test`: 2,662 passed, 0 failed, 0 skipped,
+6 deselected; 5 subsequently added evidence-index tests passed separately.
+Final index/deployment subset: 8 passed. `make frontend-test`: 463 passed,
+0 failed, 0 skipped across 45 files. `make test-e2e`: 34 passed, 0 failed;
+a final styling recheck passed 3 flows. `make test-perf`: 6 passed, 0 failed,
+0 skipped, 2,667 deselected (1.284 s local 10 MiB ASGI download).
+Demo service/client tests: 7 passed. Traceability: 59 IDs, 0 uncovered,
+0 invalid annotations, 0 collection failures. Production frontend build passed.
+`make secret-scan`: 0 findings, 0 scan errors; all refs/reflogs and working
+files scanned. The linked verification report preserves the actual output.
+
+The initial backend run was interrupted after 12 obsolete assertions failed,
+805 passed and 6 deselected. Updated category/isolated historical migration
+regressions passed 45 tests, followed by the successful full run. A meaningful
+FR-S-06 EOF regression first failed, then passed all 3 diff tests after emitting
+standard no-final-newline markers. Initial browser suite: 33 passed, 1 viewport
+failure; the bundle hint moved beside its button and the full rerun passed.
+Final label/hint contrast is above 4.5:1 using existing tokens under both OS
+preferences. Reviewed 1280×800 captures are indexed; 87 historical evidence files
+overwritten by browser tests were restored unchanged.
+
+**Known gaps / follow-ups:** No clean machine, install/download, image build,
+Windows manual browser matrix, real LLM call, cloud deployment, tag or push.
+NFR-04 remains unverified and PR-03 remains not met. Proposed requirement changes
+await author/supervisor approval; static/reference/role-recovery limits remain
+qualified. Verification used isolated native PostgreSQL 16 clusters with the
+normal roles instead of provisioning Docker test machines. The author receives
+exact clean-deployment/container commands and v1.0 tag/push commands.
+
 ## 2026-10-26 — Phase 10 section 5 — Reviewed evidence index
 
 **Summary:** Publish the single-page requirement/use-case verdict register with

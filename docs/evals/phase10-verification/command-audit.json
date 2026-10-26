@@ -1,0 +1,230 @@
+[
+  {
+    "target": "bench-broad",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.run_phase9_benchmarks real --broad",
+    "verification": "Author-only / online: not executed"
+  },
+  {
+    "target": "bench-real",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.run_phase9_benchmarks real",
+    "verification": "Author-only / online: not executed"
+  },
+  {
+    "target": "bench-smoke",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.run_phase9_benchmarks real --smoke",
+    "verification": "Author-only / online: not executed"
+  },
+  {
+    "target": "bench-stub",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.run_phase9_benchmarks stub",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "benchmark",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.benchmark",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "catalogue-inspect",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.phase9k_catalogue inspect",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "catalogue-snapshot",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.phase9k_catalogue snapshot",
+    "verification": "Author-only / online: not executed"
+  },
+  {
+    "target": "db-tools",
+    "dry_run_exit_code": 0,
+    "command": "docker compose --profile tools up -d --pull never pgadmin",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "down",
+    "dry_run_exit_code": 0,
+    "command": "docker compose down",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "eval-architect",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python scripts/eval_architect.py",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "eval-generators",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python scripts/eval_generators.py",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "eval-report",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.phase9b_report",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "eval-security",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python scripts/eval_security.py",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "eval-validation",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.eval_validation",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "experiment-estimate",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.phase9k_catalogue estimate",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "frontend-build",
+    "dry_run_exit_code": 0,
+    "command": "cd frontend && npm run build",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "frontend-dev",
+    "dry_run_exit_code": 0,
+    "command": "cd frontend && npm run dev",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "frontend-install",
+    "dry_run_exit_code": 0,
+    "command": "cd frontend && npm ci --ignore-scripts",
+    "verification": "Author-only / online: not executed"
+  },
+  {
+    "target": "frontend-test",
+    "dry_run_exit_code": 0,
+    "command": "cd frontend && npm test",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "install",
+    "dry_run_exit_code": 0,
+    "command": "python3 -m venv backend/.venv\ncd backend && .venv/bin/python -m pip install -c requirements.lock -e \".[dev]\"",
+    "verification": "Author-only / online: not executed"
+  },
+  {
+    "target": "lint",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/ruff check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py\ncd backend && .venv/bin/ruff format --check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py\ncd backend && .venv/bin/ruff check app tests\ncd backend && .venv/bin/ruff format --check app tests\ncd backend && .venv/bin/mypy app\ncd frontend && npm run lint",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "migrate",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/alembic upgrade head",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "migrate-test",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/alembic -x database=test upgrade head",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "prepare-db-tools",
+    "dry_run_exit_code": 0,
+    "command": "docker compose exec -T postgres sh /docker-entrypoint-initdb.d/02-inspection-role.sh",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "provider-schema",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.provider_schema",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "providers",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.mirror_providers",
+    "verification": "Author-only / online: not executed"
+  },
+  {
+    "target": "rotate-credential-key",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.rotate_credential_key",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "run",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m app.server --host 127.0.0.1 --port 8000",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "run-pipeline",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python scripts/run_pipeline.py",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "secret-scan",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.secret_scan",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "spike",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python scripts/spike_llm_timing.py",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "sweep",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m app.cli sweep-packages",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "test",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/alembic -x database=test upgrade head\ncd backend && .venv/bin/python -m scripts.run_verification pytest -q -m \"not perf\"",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "test-e2e",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.run_verification e2e",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "test-perf",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.measure_performance backend",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "test-ui-perf",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.measure_performance ui",
+    "verification": "Statically traced; not executed"
+  },
+  {
+    "target": "traceability",
+    "dry_run_exit_code": 0,
+    "command": "cd backend && .venv/bin/python -m scripts.traceability",
+    "verification": "Executed in Phase 10; see verification record"
+  },
+  {
+    "target": "up",
+    "dry_run_exit_code": 0,
+    "command": "docker compose up -d --wait",
+    "verification": "Author-only / online: not executed"
+  }
+]

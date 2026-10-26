@@ -1,0 +1,455 @@
+cd backend && .venv/bin/alembic -x database=test upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+cd backend && .venv/bin/python -m scripts.run_verification pytest -q -m "not perf"
+........................................................................ [  2%]
+..........................................................FFFFFF........ [  5%]
+....FFFF........F....................................................... [  8%]
+........................................................................ [ 10%]
+......................................................F................. [ 13%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 21%]
+........................................................................ [ 24%]
+........................................................................ [ 27%]
+........................................................................ [ 29%]
+.........................
+=================================== FAILURES ===================================
+_ test_categories_persist_in_results_events_and_archive[approve-requirements_not_met] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a25bb3d0>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00ab70b510>)
+category = 'requirements_not_met', action = 'approve'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_ test_categories_persist_in_results_events_and_archive[approve-too_expensive] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00ab70a410>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a2d54050>)
+category = 'too_expensive', action = 'approve'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_ test_categories_persist_in_results_events_and_archive[approve-organisational_policy] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a256d4d0>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a2310450>)
+category = 'organisational_policy', action = 'approve'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_ test_categories_persist_in_results_events_and_archive[approve-security_concern] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a2752190>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a2360450>)
+category = 'security_concern', action = 'approve'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+__ test_categories_persist_in_results_events_and_archive[approve-operability] __
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a2752cd0>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00aabf1ad0>)
+category = 'operability', action = 'approve'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+__ test_categories_persist_in_results_events_and_archive[approve-too_complex] __
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00aabf3f50>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a2dbd610>)
+category = 'too_complex', action = 'approve'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_ test_categories_persist_in_results_events_and_archive[reject-meets_requirements] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009ca9dd50>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c8fa590>)
+category = 'meets_requirements', action = 'reject'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_ test_categories_persist_in_results_events_and_archive[reject-accepted_risk] __
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c661290>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c52bb10>)
+category = 'accepted_risk', action = 'reject'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_ test_categories_persist_in_results_events_and_archive[reject-approved_with_follow_ups] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c583490>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c5b1710>)
+category = 'approved_with_follow_ups', action = 'reject'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_ test_categories_persist_in_results_events_and_archive[reject-organisational_exception] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c67b710>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c67ac10>)
+category = 'organisational_exception', action = 'reject'
+
+    @pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07")
+    @pytest.mark.parametrize("category", CATEGORIES)
+    @pytest.mark.parametrize("action", ["approve", "reject"])
+    async def test_categories_persist_in_results_events_and_archive(
+        db_engines, category, action
+    ):
+        app, run = await pending_app(db_engines[0])
+        async with client_for(app) as client:
+            response = await client.post(
+                review_url(run),
+                json={
+                    "action": action,
+                    "reviewer_name": "Engineer",
+                    "reason": "Engineering judgement",
+                    "category": category,
+                },
+            )
+>           assert response.status_code == 200
+E           assert 400 == 200
+E            +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:47: AssertionError
+_________ test_checks_passed_only_allows_rejection_preserving_reports __________
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00b15a70d0>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00a246c690>)
+
+    @pytest.mark.req("FR-S-10", "FR-UI-06", "FR-UI-07")
+    async def test_checks_passed_only_allows_rejection_preserving_reports(db_engines):
+        app, run = await pending_app(db_engines[0], result="valid", checks_passed=True)
+        async with client_for(app) as client:
+            before = (await client.get(f"/api/pipeline/{run}/results")).json()["packages"][
+                0
+            ]
+            assert before["review_available"] is False and before["review_actions"] == [
+                "reject"
+            ]
+            body = {
+                "reviewer_name": "Engineer",
+                "reason": "Too expensive",
+                "category": "too_expensive",
+            }
+            for action in ("approve", "retry"):
+>               assert (
+                    await client.post(review_url(run), json={**body, "action": action})
+                ).status_code == 409
+E               assert 400 == 409
+E                +  where 400 = <Response [400 Bad Request]>.status_code
+
+tests/integration/test_phase9j_round3_review.py:96: AssertionError
+____ test_migration_preserves_existing_rows_and_downgrade_drops_only_marker ____
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d00aad57910>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7d009c94b590>)
+
+    @pytest.mark.req("FR-S-09", "NFR-01")
+    async def test_migration_preserves_existing_rows_and_downgrade_drops_only_marker(
+        db_engines,
+    ):
+        import asyncio
+        import subprocess
+        from pathlib import Path
+        from uuid import uuid4
+
+        from app.db.session import make_session_factory
+
+        backend = Path(__file__).resolve().parents[2]
+
+        async def migrate(direction, target):
+            result = await asyncio.to_thread(
+                subprocess.run,
+                [
+                    str(backend / ".venv/bin/alembic"),
+                    "-x",
+                    "database=test",
+                    direction,
+                    target,
+                ],
+                cwd=backend,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 0
+
+        engine, _ = db_engines
+>       await migrate("downgrade", "0002_original_files")
+
+tests/integration/test_review_recovery.py:148:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests/integration/test_review_recovery.py:131: in migrate
+    result = await asyncio.to_thread(
+/usr/lib/python3.12/asyncio/threads.py:25: in to_thread
+    return await loop.run_in_executor(None, func_call)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/lib/python3.12/concurrent/futures/thread.py:58: in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = True, timeout = None, check = True
+popenargs = (['/home/bishara/code/infraarchagent/backend/.venv/bin/alembic', '-x', 'database=test', 'downgrade', '0002_original_files'],)
+kwargs = {'cwd': PosixPath('/home/bishara/code/infraarchagent/backend'), 'text': True, 'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+
+        If timeout is given, and the process takes too long, a TimeoutExpired
+        exception will be raised.
+
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['/home/bishara/code/infraarchagent/backend/.venv/bin/alembic', '-x', 'database=test', 'downgrade', '0002_original_files']' returned non-zero exit status 1.
+
+/usr/lib/python3.12/subprocess.py:571: CalledProcessError
+=========================== short test summary info ============================
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[approve-requirements_not_met]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[approve-too_expensive]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[approve-organisational_policy]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[approve-security_concern]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[approve-operability]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[approve-too_complex]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[reject-meets_requirements]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[reject-accepted_risk]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[reject-approved_with_follow_ups]
+FAILED tests/integration/test_phase9j_round3_review.py::test_categories_persist_in_results_events_and_archive[reject-organisational_exception]
+FAILED tests/integration/test_phase9j_round3_review.py::test_checks_passed_only_allows_rejection_preserving_reports
+FAILED tests/integration/test_review_recovery.py::test_migration_preserves_existing_rows_and_downgrade_drops_only_marker
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/usr/lib/python3.12/asyncio/runners.py:123: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+12 failed, 805 passed, 6 deselected in 509.05s (0:08:29)
+make: *** [Makefile:35: test] Error 2

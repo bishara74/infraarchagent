@@ -27,7 +27,11 @@ placeholders. Provision `.cache/terraform-providers/` and
 on the author machine first. Mirrors are mounted **read-only**; runtime cannot
 provision them. Preserve the seven pinned provider versions and linux_amd64.
 
+Use URL-safe hex database passwords for this recipe. Make only the public
+provider/schema artifacts readable by container UID 10001:
+
 ```bash
+chmod -R a+rX -- .cache/terraform-providers .cache/terraform-provider-schemas
 docker compose --env-file /dev/null -f docker-compose.full.yml build backend frontend
 docker compose --env-file /dev/null -f docker-compose.full.yml up -d --wait postgres
 docker compose --env-file /dev/null -f docker-compose.full.yml --profile ops run --rm migrate

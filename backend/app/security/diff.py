@@ -11,12 +11,13 @@ def package_diff(before: Mapping[str, str], after: Mapping[str, str]) -> str:
         new = after.get(path)
         if old == new:
             continue
-        chunks.extend(
-            unified_diff(
-                old.splitlines(keepends=True) if old is not None else [],
-                new.splitlines(keepends=True) if new is not None else [],
-                fromfile=f"a/{path}" if old is not None else "/dev/null",
-                tofile=f"b/{path}" if new is not None else "/dev/null",
-            )
-        )
+        for line in unified_diff(
+            old.splitlines(keepends=True) if old is not None else [],
+            new.splitlines(keepends=True) if new is not None else [],
+            fromfile=f"a/{path}" if old is not None else "/dev/null",
+            tofile=f"b/{path}" if new is not None else "/dev/null",
+        ):
+            chunks.append(line)
+            if not line.endswith("\n"):
+                chunks.extend(["\n", "\\ No newline at end of file\n"])
     return "".join(chunks)

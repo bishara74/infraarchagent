@@ -1,0 +1,287 @@
+{
+  "mode": "Static shell parsing only; no README command was executed by this audit. Environment placeholders and author-only online commands remain unexecuted.",
+  "blocks": [
+    {
+      "fence": 1,
+      "line": 74,
+      "language": "bash",
+      "first_line": "V=0.69.3",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 3,
+      "line": 158,
+      "language": "bash",
+      "first_line": "INFRAARCH_BACKEND_URL=http://127.0.0.1:8765 make frontend-dev",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 5,
+      "line": 183,
+      "language": "bash",
+      "first_line": "cd frontend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 8,
+      "line": 331,
+      "language": "bash",
+      "first_line": "python -m uvicorn app.main:app --port 8765 --workers 1",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 9,
+      "line": 337,
+      "language": "bash",
+      "first_line": "make run PORT=8765",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 10,
+      "line": 347,
+      "language": "bash",
+      "first_line": "export RUN_ID=\"replace-with-run-uuid\"",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 13,
+      "line": 719,
+      "language": "bash",
+      "first_line": "INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH=\"$PWD/backend/tests/bootstrap:$PWD/backend\" make test-perf",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 14,
+      "line": 763,
+      "language": "bash",
+      "first_line": "make migrate",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 15,
+      "line": 770,
+      "language": "bash",
+      "first_line": "make bench-stub BASE_URL=http://127.0.0.1:8765",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 16,
+      "line": 786,
+      "language": "bash",
+      "first_line": "# Run this first after any generator change (three examples, same guard):",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 17,
+      "line": 867,
+      "language": "bash",
+      "first_line": "make catalogue-snapshot",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 18,
+      "line": 894,
+      "language": "bash",
+      "first_line": "make eval-report EVAL_REPORT_ARGS=\"--revision HEAD --experiment-folder <experiment-folder-name> --output-dir docs/evals/<fresh-report-folder>\"",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 19,
+      "line": 914,
+      "language": "bash",
+      "first_line": "export INFRAARCH_TEST_BOOTSTRAP=1",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 20,
+      "line": 943,
+      "language": "bash",
+      "first_line": "make run PORT=8765",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 21,
+      "line": 950,
+      "language": "bash",
+      "first_line": "make bench-broad MODE=real BASE_URL=http://127.0.0.1:8765 BUDGET=2 SMOKE=1 \\",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 22,
+      "line": 974,
+      "language": "bash",
+      "first_line": "make bench-broad MODE=stub SMOKE=1 BASE_URL=http://127.0.0.1:8765 \\",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 23,
+      "line": 1011,
+      "language": "bash",
+      "first_line": "export INFRAARCH_TEST_BOOTSTRAP=1",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 24,
+      "line": 1032,
+      "language": "bash",
+      "first_line": "make migrate",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 25,
+      "line": 1042,
+      "language": "bash",
+      "first_line": "make bench-broad MODE=stub BASE_URL=http://127.0.0.1:8765 RUNS_PER_SCENARIO=2",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 26,
+      "line": 1049,
+      "language": "bash",
+      "first_line": "BROAD_TAG=$(date -u +%Y%m%dT%H%M%SZ)",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 27,
+      "line": 1056,
+      "language": "bash",
+      "first_line": "make bench-broad MODE=real BASE_URL=http://127.0.0.1:8765 BUDGET=2 RUNS_PER_SCENARIO=2",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 28,
+      "line": 1078,
+      "language": "bash",
+      "first_line": "read -r -p 'Evidence folder printed by bench-broad: ' BROAD_EVIDENCE",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 29,
+      "line": 1125,
+      "language": "bash",
+      "first_line": "cd backend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 31,
+      "line": 1214,
+      "language": "sh",
+      "first_line": "cd backend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 34,
+      "line": 1371,
+      "language": "sh",
+      "first_line": "export SECURITY_FIX_PROVIDER=openai",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 36,
+      "line": 1535,
+      "language": "bash",
+      "first_line": "umask 077",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 37,
+      "line": 1561,
+      "language": "bash",
+      "first_line": "export CREDENTIAL_ENCRYPTION_KEY=\"$(python3 -c 'import base64,secrets; print(base64.b64encode(secrets.token_bytes(32)).decode())')\"",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 38,
+      "line": 1688,
+      "language": "sh",
+      "first_line": "make eval-report EVAL_REPORT_ARGS=\"--revision INPUT_REVISION --output-dir docs/evals/infraarch-eval-reproduction\"",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 39,
+      "line": 1762,
+      "language": "bash",
+      "first_line": "cd backend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 40,
+      "line": 1777,
+      "language": "bash",
+      "first_line": "cd backend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 41,
+      "line": 1796,
+      "language": "bash",
+      "first_line": "cd backend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 42,
+      "line": 1812,
+      "language": "bash",
+      "first_line": "cd backend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 43,
+      "line": 1828,
+      "language": "bash",
+      "first_line": "cd backend",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 44,
+      "line": 1854,
+      "language": "bash",
+      "first_line": "unshare --user --map-root-user --net .venv/bin/python -m scripts.phase9i_kubernetes_replay \\",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    },
+    {
+      "fence": 45,
+      "line": 2077,
+      "language": "bash",
+      "first_line": "backend/.venv/bin/python -m scripts.phase10_demo --base-url http://127.0.0.1:8765 \\",
+      "syntax_exit_code": 0,
+      "diagnostic": ""
+    }
+  ],
+  "count": 35,
+  "failures": 0
+}

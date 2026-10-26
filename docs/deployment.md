@@ -48,7 +48,7 @@ tests, stub recordings and container recipes are not clean-deployment evidence.
    ```
 
    Run from the clone root. To stop only this database project:
-   `sudo docker compose --env-file /dev/null -p infraarch-clean stop postgres`.
+   `sudo docker stop infraarch-clean-postgres-1`.
    Do not remove volumes before collecting results.
 6. Copy only the generated `health.json`, `versions.json`, `outcomes.json` and
    the filled browser checklist into a **new** dated evidence folder. Record

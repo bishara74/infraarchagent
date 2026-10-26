@@ -1,0 +1,17 @@
+..F                                                                      [100%]
+=================================== FAILURES ===================================
+_________ test_missing_final_newline_has_standard_unified_diff_markers _________
+tests/unit/test_security_diff.py:44: in test_missing_final_newline_has_standard_unified_diff_markers
+    assert package_diff({"terraform/a.tf":"before"}, {"terraform/a.tf":"after"}) == (
+E   AssertionError: assert '--- a/terraf...-before+after' == '--- a/terraf...end of file\n'
+E
+E     Skipping 51 identical leading characters in diff, use -v to show
+E       @@
+E     + -before+after
+E     - -before
+E     - \ No newline at end of file
+E     - +after
+E     - \ No newline at end of file
+=========================== short test summary info ============================
+FAILED tests/unit/test_security_diff.py::test_missing_final_newline_has_standard_unified_diff_markers
+1 failed, 2 passed in 0.38s
