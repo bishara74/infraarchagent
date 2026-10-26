@@ -27,6 +27,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 1 — Preserve planned exposure
+
+**Summary:** Add deterministic exposure preservation before candidate retention,
+including partial groups and the separate validation-repair path.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-A-05, NFR-02.
+
+**Files:** security/plan_conformance.py, acceptance.py, partial.py;
+agents/security/agent.py, deterministic.py, validation_repair.py;
+domain/validation.py; unit/test_phase10b_conformance.py;
+integration/test_phase10b_validation.py; D-63 and this log.
+
+**Decisions:** D-63 records bounded bindings, conservative unknowns/ingress,
+retained-baseline comparison, and unchanged strict policy/budgets. No dependency.
+
+**Tests:** Guard/partial/validation bypass subset: 24 passed, 0 failed, 0 skipped.
+Existing security/automatic validation subset plus guard/partial tests: 47 passed,
+0 failed, 0 skipped. Ruff passes; mypy passes all 187 app files. The first focused
+run had 22 passed and one failed assertion because its scanner fixture falsely
+removed the retained finding; the corrected source-sensitive oracle passes.
+Full make verification remains for the finish section.
+
+**Known gaps / follow-ups:** No full deployment conformance claim. Fixer context,
+review presentation, lessons and evidence follow in their separate sections.
+
 ## 2026-10-26 — Phase 10 section 6 — Defence seed and release verification
 
 **Summary:** Add a reproducible, explicitly synthetic defence seed through the

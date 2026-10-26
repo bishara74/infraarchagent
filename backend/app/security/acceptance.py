@@ -15,8 +15,11 @@ from app.agents.security.verification import (
 )
 from app.core.telemetry import span, timed
 from app.domain.enums import Variant
+from app.domain.models import Violation
+from app.domain.plan import DeploymentPlan
 from app.domain.validation import ValidationCheck
 from app.scanners.scan import Scanner, ScanResult
+from app.security.plan_conformance import plan_regressions
 from app.validation.documents import PackageDocuments, blocks, code_text
 from app.validation.gate import patch_syntax_failure
 from app.validation.preservation import removes_security_controls
@@ -40,9 +43,13 @@ class CandidateGuard:
         variant: Variant,
         budget: AgentBudget,
         record: dict[str, Any],
+        *,
+        plan: DeploymentPlan | None = None,
+        targeted: list[Violation] | None = None,
     ):
         self.verifier, self.scanner, self.variant = verifier, scanner, variant
         self.budget, self.record = budget, record
+        self.plan, self.targeted = plan, targeted or []
         self.check_cache: dict[str, list[ValidationCheck]] = {}
         self.scan_cache: dict[str, ScanResult] = {}
 
@@ -82,6 +89,11 @@ class CandidateGuard:
             for p in before.keys() | candidate.keys()
             if before.get(p) != candidate.get(p)
         }
+        if self.plan is not None:
+            conflicts = plan_regressions(self.plan, before, candidate, self.targeted)
+            if conflicts:
+                self.record.setdefault("plan_conformance", []).extend(conflicts)
+                return CandidateResult("plan_conformance_regression", checks, scan, [])
         if removes_security_controls(before, candidate):
             return CandidateResult("security_control_removed", checks, scan, [])
         syntax_started = time.monotonic()

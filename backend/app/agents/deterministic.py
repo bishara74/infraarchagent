@@ -77,6 +77,8 @@ async def checked_one(
                     "terraform_verification_seconds": 0.0,
                     "security_verification_seconds": 0.0,
                 },
+                plan=plan,
+                targeted=list(baseline.violations),
             )
             result = await guard.evaluate(files, candidate, before, baseline)
             reason = result.reason or "improved"

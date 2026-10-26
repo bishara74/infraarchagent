@@ -446,7 +446,13 @@ class SecurityAgent:
         if automatic != files:
             verification.update(fix_started=True, candidate_created=True)
             guard = CandidateGuard(
-                self.terraform_verifier, self.scanner, variant, budget, verification
+                self.terraform_verifier,
+                self.scanner,
+                variant,
+                budget,
+                verification,
+                plan=ctx.plan,
+                targeted=[v for entries in targets.values() for v in entries],
             )
             try:
                 result = await guard.evaluate(files, automatic, before, baseline_scan)
@@ -506,7 +512,13 @@ class SecurityAgent:
                 continue
             verification.update(fix_started=True, candidate_created=True)
             guard = CandidateGuard(
-                self.terraform_verifier, self.scanner, variant, budget, verification
+                self.terraform_verifier,
+                self.scanner,
+                variant,
+                budget,
+                verification,
+                plan=ctx.plan,
+                targeted=[v for entries in targets.values() for v in entries],
             )
             try:
                 result = await guard.evaluate(files, automatic, before, baseline_scan)
@@ -568,7 +580,13 @@ class SecurityAgent:
             deterministic_seconds=time.monotonic() - started,
         )
         guard = CandidateGuard(
-            self.terraform_verifier, self.scanner, variant, budget, verification
+            self.terraform_verifier,
+            self.scanner,
+            variant,
+            budget,
+            verification,
+            plan=ctx.plan,
+            targeted=[v for entries in targets.values() for v in entries],
         )
         guard.check_cache[ValidationWorkspace.fingerprint(terraform_files(files))] = (
             before

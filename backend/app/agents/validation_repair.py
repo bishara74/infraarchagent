@@ -22,6 +22,7 @@ from app.pipeline.stages import StageContext
 from app.pipeline.telemetry import traced
 from app.scanners.runner import ToolFailure
 from app.scanners.scan import ScanResult
+from app.security.plan_conformance import plan_regressions
 from app.validation.gate import patch_syntax_failure
 from app.validation.measurement import publish_measurement
 from app.validation.workspace import current_workspace
@@ -191,7 +192,16 @@ class ValidationRepair:
                             for p in files.keys() | candidate.keys()
                             if files.get(p) != candidate.get(p)
                         }
-                        if (
+                        conflicts = plan_regressions(ctx.plan, files, candidate)
+                        if conflicts:
+                            record = record.model_copy(
+                                update={
+                                    "outcome": "rejected",
+                                    "reason": "plan_conformance_regression",
+                                    "plan_conformance": conflicts,
+                                }
+                            )
+                        elif (
                             not proposals
                             or any(not p["accepted"] for p in proposals)
                             or await patch_syntax_failure(files, candidate, touched)

@@ -161,6 +161,7 @@ class DeterministicRepair(BaseModel):
 
 
 class RepairRound(BaseModel):
+    plan_conformance: list[dict[str, Any]] = Field(default_factory=list)
     fixer_attempts: list[dict[str, Any]] = Field(default_factory=list)
     model_config = ConfigDict(extra="forbid", frozen=True)
     phase: Literal["generation", "before_security", "after_security"]
@@ -170,6 +171,7 @@ class RepairRound(BaseModel):
     outcome: Literal["accepted", "rejected", "stopped"]
     reason: Literal[
         "improved",
+        "plan_conformance_regression",
         "no_improvement",
         "new_blocking_findings",
         "invalid_patch",

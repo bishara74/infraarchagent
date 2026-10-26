@@ -2875,6 +2875,32 @@ Features added through author decisions but absent as standalone specification
 requirements are listed in [the proposed amendment register](phase10-proposed-requirements.md).
 Those IDs are proposals only, never new test markers or implicit spec edits.
 
+### D-63 — Remediation preserves planned exposure (Phase 10b)
+
+Section 1 (FR-S-02/03/07, FR-A-05, NFR-02): scanner improvements cannot
+justify changing an explicit public/private network requirement. A deterministic
+change guard compares each candidate with the immediate retained baseline and
+structured network intent before acceptance, including partial groups,
+deterministic repairs and automatic validation-fixer repairs. Rejections retain
+the baseline and scanner finding and record `plan_conformance_regression`,
+service/resource/property, uncertainty and targeted rule IDs. Existing strict
+policy, profiles, validation rules, state transitions and deadlines are unchanged.
+
+Bindings use exact normalized names or one compatible resource for one compatible
+plan service. Missing/ambiguous binding and changed unresolved expressions fail
+closed. Unchanged exposure is not certified as conformant; demonstrably unrelated
+security fixes remain eligible. Explicit network lists take precedence over
+contradictory descriptive notes. Ingress preservation deliberately protects the
+pre-fix ingress when free-text plan rules cannot be uniquely interpreted; safe
+redesign can require engineer review. No new resource-address field or free-text
+semantic inference is introduced. Source and dependency projections stay private.
+
+This guards exposure changes, not all plan semantics or cloud reachability.
+Service purpose, dependency semantics, storage intent, assumptions, operational
+capacity and runtime/deployment correctness remain unproven. Unsupported service
+semantics and dynamic bindings cannot establish a positive conformance claim.
+Further phase sections and measured evidence are recorded here as implemented.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
