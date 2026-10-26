@@ -100,3 +100,10 @@ it('FR-UI-01 model validation errors open configuration with actionable guidance
  snapshot();vi.spyOn(api,'submitRun').mockRejectedValue(new ApiError(400,'invalid_model','Choose a structured-output model for Generators and Fixer.'));
  show(<InputScreen/>,'/');await userEvent.click(screen.getByRole('button',{name:'Generate'}));expect(await screen.findByText(/Check the model and thinking fields in Configuration options/)).toBeVisible();expect(document.querySelector('details.config')).toHaveAttribute('open');
 });
+
+
+it('FR-UI-03 comparison discloses that infrastructure is not priced',()=>{
+ snapshot();show(<ComparisonScreen/>,'/runs/run/compare');
+ expect(screen.getAllByText('Infrastructure cost is not calculated. Variants reflect optimisation goals, not priced estimates.')).toHaveLength(3);
+ expect(screen.queryByText(/Estimated infrastructure cost/)).toBeNull();
+});

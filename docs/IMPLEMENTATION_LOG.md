@@ -27,6 +27,24 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 9m section 1 — Explain unpriced infrastructure
+
+**Summary:** Replace the comparison's hard-coded unavailable estimate with an
+explicit explanation that infrastructure is not priced. The results service,
+models and database produce no such estimate, consistent with Chapter 1.
+
+**Requirements addressed:** FR-UI-03.
+
+**Files:** ComparisonScreen.tsx, screens.test.tsx, D-61 and this log.
+
+**Decisions:** No invented AWS prices or repurposed LLM-token costs. See D-61.
+
+**Tests:** Focused Vitest screen suite: 24 passed, 0 failed/skipped (5.55s).
+Frontend ESLint and both TypeScript checks: exit 0. No full-suite claim yet.
+
+**Known gaps / follow-ups:** Sections 2–6 and full finish verification remain.
+No specification edit, dependency, dotenv read, real inference, network or push.
+
 ## 2026-10-25 — Phase 9l follow-up — Attribute PR-04 and reuse parsed assessments
 
 **Summary:** Compare the unchanged PR-04 test before/after Phase 9l, establish

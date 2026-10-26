@@ -2690,6 +2690,14 @@ benchmark, not a contradictory baseline. The ASGI/curl method distinction from
 D-55 remains; this follow-up adds no specification deviation or open question.
 Evidence and limitations are in docs/evals/phase9l-pr04/summary.md.
 
+### D-61 — Author lesson-test corrections and request safety (Phase 9m)
+
+Section 1 (FR-UI-03): the comparison's unavailable infrastructure estimate was
+hard-coded UI copy. No estimate is produced, stored or returned. Chapter 1
+explicitly excludes cost estimation; model-token prices cannot price AWS
+infrastructure. Cards now explain that cost is not calculated and variants
+express optimisation goals rather than priced estimates. No API/schema change.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
