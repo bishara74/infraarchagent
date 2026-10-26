@@ -15,6 +15,37 @@ from tests.integration.test_phase9l_governance import close, workspace
 pytestmark = pytest.mark.req("FR-S-08", "FR-S-10", "FR-UI-07", "NFR-01")
 
 
+async def test_accepted_risk_approval_categories_export_and_rule_links(db_engines):
+    app, run, _, clients = await workspace(db_engines)
+    admin = clients[0]
+    try:
+        await record(
+            app,
+            run,
+            action="approve",
+            category="accepted_risk",
+            rules=["AWS-0053", "AWS-0053"],
+        )
+        await record(
+            app, run, action="approve", category="meets_requirements", rules=[]
+        )
+        data = (await admin.get("/api/reviews/history/insights")).json()
+        assert data["accepted_risk_total"] == 1
+        assert data["accepted_risk_rules"][0]["count"] == 1
+        filtered = await admin.get(
+            "/api/reviews/history", params=data["accepted_risk_rules"][0]["filters"]
+        )
+        assert filtered.json()["total"] == 1
+        for format in ("csv", "json"):
+            exported = await admin.get(
+                "/api/reviews/history/export", params={"format": format}
+            )
+            assert "accepted_risk" in exported.text
+            assert "meets_requirements" in exported.text
+    finally:
+        await close(clients)
+
+
 async def record(
     app,
     run,

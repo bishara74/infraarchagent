@@ -11,30 +11,19 @@ from tests.integration.test_phase9l_governance import (
 
 
 @pytest.mark.req("NFR-01", "FR-UI-07")
-async def test_confirmation_rejects_other_proposer_without_consuming_token(db_engines):
+async def test_obsolete_confirmation_cannot_enable_self_approval(db_engines):
     app, run, users, clients = await workspace(
-        db_engines, lessons_require_second_approver=False
+        db_engines, lessons_admin_direct_activation=False
     )
-    admin, reviewer, _ = clients
     try:
-        own = (await proposal(admin, await decision(app, run, users[0]))).json()
-        other = (await proposal(reviewer, await decision(app, run, users[1]))).json()
-        token = (await admin.post(f"/api/lessons/{own['id']}/confirmation")).json()[
-            "confirmation_token"
-        ]
-        response = await admin.post(
-            f"/api/lessons/{other['id']}/approve", json={"confirmation_token": token}
-        )
+        own = (await proposal(clients[0], await decision(app, run, users[0]))).json()
+        path = f"/api/lessons/{own['id']}"
+        assert (await clients[0].post(path + "/confirmation")).status_code == 403
         assert (
-            response.status_code == 409
-            and response.json()["error"] == "lesson_confirmation_mismatch"
-        )
-        assert (await admin.get(f"/api/lessons/{other['id']}")).json()["lesson"][
-            "status"
-        ] == "proposed"
-        approved = await admin.post(
-            f"/api/lessons/{own['id']}/approve", json={"confirmation_token": token}
-        )
-        assert approved.status_code == 200 and approved.json()["self_approved"]
+            await clients[0].post(
+                path + "/approve", json={"confirmation_token": "historical-token"}
+            )
+        ).status_code == 403
+        assert (await clients[0].get(path)).json()["lesson"]["status"] == "proposed"
     finally:
         await close(clients)

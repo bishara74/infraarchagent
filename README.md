@@ -401,7 +401,7 @@ custom request headers. The stream stays open through retry scanning and
 validation and closes after the final package-state frame. Keep one backend
 process because the broker is in memory.
 
-Downloads require `checks_passed` or `rejected`; other states
+Downloads require `checks_passed`, `engineer_approved` or `rejected`; other states
 return 409 `not_downloadable`. Missing, expired or failed-generation packages
 return 404; OQ-01's proposed 410 remains deferred. The ZIP uses persisted
 remediated files, sorted paths, fixed metadata and DEFLATED compression level
@@ -513,7 +513,7 @@ When `LLM_BASE_URL` is unset, the OpenAI SDK uses its normal endpoint.
 | `LLM_API_KEY` | Real-adapter credential | Unset |
 | `API_KEY` | Shared login key; scripts use `X-API-Key`. Unset requires verified `127.0.0.1` local mode | Unset |
 | `LESSONS_ENABLED` | Hard server gate for curated advisory lessons; also requires the administrator runtime switch | `false` |
-| `LESSONS_REQUIRE_SECOND_APPROVER` | Require a different named admin to approve a proposal; `false` permits explicit, separately confirmed admin self-approval | `true` |
+| `LESSONS_ADMIN_DIRECT_ACTIVATION` | Passing admin proposals activate in the proposal transaction; `false` requires approval by a different admin for all proposals | `true` |
 | `LLM_BASE_URL` | Optional OpenAI-compatible API root; used only with `LLM_PROVIDER=openai` | Unset |
 | `LLM_REASONING_EFFORT` | OpenAI-compatible reasoning control: `off`, `low`, `medium`, or `high`; Anthropic ignores it | Unset |
 | `LLM_STRUCTURED_OUTPUT` | Generator-only `json_schema`, `json_object`, or `off`; strict mode uses a closed file-entry list over OpenAI-compatible requests | `json_schema` |
@@ -1541,7 +1541,7 @@ Before saving keys, generate a master key outside Codex and export it in the
 backend process environment (do not commit it or store it in PostgreSQL):
 
 ```bash
-python3 -c 'import base64,secrets; print(base64.b64encode(secrets.token_bytes(32)).decode())'
+export CREDENTIAL_ENCRYPTION_KEY="$(python3 -c 'import base64,secrets; print(base64.b64encode(secrets.token_bytes(32)).decode())')"
 ```
 
 Set `CREDENTIAL_ENCRYPTION_KEY` to that value and
@@ -1911,15 +1911,20 @@ reveals moving aliases, labelled “alias — changes over time”; free variant
 hidden. Inherited thinking displays the effective effort; explicit null remains
 provider default. Model rows are 80px with the existing keyboard controls.
 
-`POST /api/pipeline/{run_id}/packages/{variant}/review` now requires `category`
-for approve/reject: `requirements_not_met`, `too_expensive`,
-`organisational_policy`, `security_concern`, `operability`, `too_complex`, or
-`other`. Retry is unchanged. Category uses existing decision/event JSONB, so no
-migration is needed. Historical missing categories are null / “not recorded”.
-Results add server-derived `review_actions`; `review_available` retains its
-pending-review meaning. Rejecting `checks_passed` preserves automatic check
-reports and generated files; the readiness document records the decision and
-category. Decision reasons are never supplied to an LLM.
+`POST /api/pipeline/{run_id}/packages/{variant}/review` requires a `category`
+matching the action. Approval categories are `meets_requirements`, `accepted_risk`,
+`approved_with_follow_ups`, `organisational_exception`, and `other`. Rejection
+categories remain `requirements_not_met`, `too_expensive`, `organisational_policy`,
+`security_concern`, `operability`, `too_complex`, and `other`. The UI offers the
+chosen action's categories; the API rejects mismatches. Historical decisions keep
+their stored category. History and exports include both lists; feedback insights
+count accepted-risk approvals and each blocking rule once per approval.
+
+After an approval or rejection, Review hides Approve / Retry / Reject, shows the
+label, reviewer/time/category/reason, restores primary Download ZIP, and separates
+the optional lesson section. Checks-passed packages retain Reject and Download.
+The outlined green person badge distinguishes engineer approval from automatic
+checks. All original findings remain visible; reasons are never LLM input.
 
 Administrators have **Settings → Review history** at `/settings/review-history`:
 25 rows per page across all runs, newest first, with category, decision and UTC
@@ -1956,17 +1961,28 @@ named administrator's runtime switch. The switch starts off; it cannot override
 a false server setting. Shared-key benchmark requests always omit lessons.
 
 Named reviewers and administrators may propose short lessons from their own
-authenticated Approve/Reject decisions. An administrator approves, rejects or
-retires proposals. Normally a different named administrator must approve.
-Single-operator deployments may explicitly set
-`LESSONS_REQUIRE_SECOND_APPROVER=false`; self-approval then requires a second,
-expiring confirmation that displays the filter result and exact prompt preview.
-The approval, lesson set, run evidence and archives retain `self_approved`.
-This weakens human review to one person, and the interface warns accordingly.
+authenticated Approve/Reject decisions. Admin lessons activate directly; reviewer
+lessons require admin approval. Admin proposals must pass structural checks and
+filter v2, and the proposal form shows the live filter and exact prompt preview
+before submission. Activation creates a new active set in the same transaction,
+with `approval: admin_direct` and the administrator's identity in the lesson,
+audit, run manifest and ZIP. No separate approval or confirmation is required.
+
+`LESSONS_ADMIN_DIRECT_ACTIVATION=false` requires a **different named admin** for
+all proposals. A reviewer can never approve. Historical `self_approved` records
+and immutable set hashes remain readable. Migration 0015 adds provenance and
+approval-category support without rewriting historical events or set snapshots.
+
+The legacy `LESSONS_REQUIRE_SECOND_APPROVER` remains a deprecated input only:
+explicit `true` maps to direct activation `false`; explicit `false` maps to
+`true`. The new setting wins when both exist. A one-time process warning tells
+operators to switch to `LESSONS_ADMIN_DIRECT_ACTIVATION`. Neither setting changes
+the filter, role selection, output gates, versioning or the lesson kill switch.
+See D-60 for the trusted-operator decision and residual admin-lesson risk.
 
 Lesson API operations require named account sessions and same-origin mutation
 requests: `POST /api/lessons/check`, `POST /api/lessons`, and named-admin list,
-detail, history, confirmation and approve/reject/retire operations under
+detail, history and approve/reject/retire operations under
 `/api/lessons`. `GET /api/lessons/control` reports both gates and set provenance;
 `PUT /api/lessons/control` accepts `{"enabled":false}` to disable lessons.
 Revision edits are new proposals using `previous_id`; approved text is immutable.
@@ -1996,8 +2012,7 @@ version diff before approval; review Active, Retired and audit History tabs.
 The page displays the active-set hash and both enable gates. **Disable lessons**
 stops subsequent attempts without an extra confirmation. Run progress, results
 and package pages show actual lesson use, retained provenance and self-approval
-warnings. The optional self-approval dialog requires its own second action and
-keeps the expiring confirmation token only in memory.
+history. Historical self-approved lessons retain their recorded provenance.
 
 ### Feedback insights
 

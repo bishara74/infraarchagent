@@ -62,13 +62,14 @@ export interface RunEvent {
   timestamp: string; payload: Record<string, unknown>;
 }
 
-export type ReviewCategory='requirements_not_met'|'too_expensive'|'organisational_policy'|'security_concern'|'operability'|'too_complex'|'other';
+export type ReviewCategory='requirements_not_met'|'too_expensive'|'organisational_policy'|'security_concern'|'operability'|'too_complex'|'other'|'meets_requirements'|'accepted_risk'|'approved_with_follow_ups'|'organisational_exception';
 
 export interface InsightGroup {value:string;count:number;filters:Record<string,string>}
 export interface FeedbackInsightsData {
   total:number;filters:Record<string,string>;
   by_category:InsightGroup[];by_variant:InsightGroup[];by_decision:InsightGroup[];
   blocking_rules:{rule_id:string;count:number;filters:Record<string,string>}[];
+  accepted_risk_total?:number;accepted_risk_rules?:{rule_id:string;count:number;filters:Record<string,string>}[];
   rejected_total:number;blocking_snapshot_available:number;blocking_snapshot_unavailable:number;
 }
 
@@ -76,7 +77,7 @@ export type LessonRole='architect'|'generator_cost'|'generator_performance'|'gen
 export type LessonTag='load_balancer'|'database'|'storage'|'network'|'kubernetes'|'cost'|'logging';
 export interface LessonFilterResult {version:string;passed:boolean;reasons:{id:string;message:string}[]}
 export interface LessonInput {scope_role:LessonRole;applies_to:LessonTag[];category:ReviewCategory;text:string}
-export interface LessonEntry extends LessonInput {id:string;lesson_id:string;revision:number;self_approved:boolean;filter_version:string}
+export interface LessonEntry extends LessonInput {approval?:string|null;approval_actor?:{user_id:string;username:string}|null;id:string;lesson_id:string;revision:number;self_approved:boolean;filter_version:string}
 export interface LessonRevision extends LessonEntry {
   status:'proposed'|'approved'|'retired'|'rejected';previous_id:string|null;decision_id:string;
   proposer_id:string;proposer:string|null;approved_by:string|null;approver:string|null;
@@ -86,7 +87,7 @@ export interface LessonRevision extends LessonEntry {
 }
 export interface LessonPreview {filter_result:LessonFilterResult;roles:Record<string,{block:string;selected_ids:string[];included:boolean}>}
 export interface LessonDetail {lesson:LessonRevision;previous:LessonRevision|null;preview:LessonPreview}
-export interface LessonControls {server_enabled:boolean;runtime_enabled:boolean;enabled:boolean;require_second_approver:boolean;disable_generation:number;set_version:number;set_hash:string;lesson_count:number}
+export interface LessonControls {admin_direct_activation?:boolean;server_enabled:boolean;runtime_enabled:boolean;enabled:boolean;require_second_approver:boolean;disable_generation:number;set_version:number;set_hash:string;lesson_count:number}
 export interface LessonPage {items:LessonRevision[];total:number;page:number;page_size:number}
 export interface LessonAuditRow {id:string;seq:number;actor_id:string;action:string;revision_id:string|null;previous_version:string|null;set_version:number|null;timestamp:string;payload:Record<string,unknown>}
 export interface LessonHistoryPage {items:LessonAuditRow[];total:number;page:number;page_size:number}

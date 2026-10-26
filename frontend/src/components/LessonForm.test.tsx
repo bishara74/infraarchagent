@@ -32,6 +32,7 @@ it('NFR-01 counts normalized code points and submits only structured lesson fiel
   expect(screen.getByText(`${Array.from(lesson.text).length} / 280 characters after normalization`)).toBeVisible();
   fireEvent.change(screen.getByLabelText('Lesson role'),{target:{value:'all_generators'}});
   fireEvent.click(screen.getByRole('checkbox',{name:'logging'}));
+  await screen.findByText('Passed deterministic filter · v1');
   fireEvent.click(screen.getByRole('button',{name:'Submit lesson proposal'}));
   await waitFor(()=>expect(submitted).toHaveBeenCalledWith(lesson));
   expect(request).toHaveBeenCalledWith('/api/lessons','POST',{decision_id:lesson.decision_id,scope_role:'all_generators',category:'operability',applies_to:['logging'],text:' Ｐrefer explicit log retention periods. '});

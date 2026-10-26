@@ -1,0 +1,15 @@
+cd backend && .venv/bin/ruff check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+All checks passed!
+cd backend && .venv/bin/ruff format --check scripts/phase9*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+40 files already formatted
+cd backend && .venv/bin/ruff check app tests
+All checks passed!
+cd backend && .venv/bin/ruff format --check app tests
+388 files already formatted
+cd backend && .venv/bin/mypy app
+Success: no issues found in 186 source files
+cd frontend && npm run lint
+
+> infraarchagent-frontend@0.1.0 lint
+> eslint . && tsc --noEmit && tsc --noEmit -p tsconfig.node.json
+

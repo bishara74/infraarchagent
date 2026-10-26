@@ -27,6 +27,8 @@ def lesson_entry(row: LessonRevision) -> dict[str, Any]:
         "category": row.category,
         "text": row.text,
         "self_approved": row.self_approved,
+        "approval": row.approval,
+        "approval_actor": row.approval_actor,
         "filter_version": (row.approval_filter_result or row.filter_result)["version"],
     }
 

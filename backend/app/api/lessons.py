@@ -19,6 +19,11 @@ class Proposal(LessonInput):
     previous_id: Annotated[UUID, Field(strict=False)] | None = None
 
 
+class PreviewInput(LessonInput):
+    decision_id: Annotated[UUID, Field(strict=False)] | None = None
+    previous_id: Annotated[UUID, Field(strict=False)] | None = None
+
+
 class Action(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     confirmation_token: str | None = Field(default=None, max_length=128)
@@ -65,11 +70,17 @@ async def lesson_error_handler(request: Request, error: LessonError) -> JSONResp
 
 
 @router.post("/check", dependencies=[Depends(require_account)])
-async def check(request: Request, body: LessonInput) -> dict[str, Any]:
-    result = service(request).check(body)
+async def check(request: Request, body: PreviewInput) -> dict[str, Any]:
+    lesson = LessonInput.model_validate(
+        body.model_dump(exclude={"decision_id", "previous_id"})
+    )
+    result = service(request).check(lesson)
     return {
         "normalized_text": body.text if result["passed"] else None,
         "filter_result": result,
+        "preview": await service(request).proposal_preview(
+            lesson, request.state.user, body.decision_id, body.previous_id
+        ),
     }
 
 

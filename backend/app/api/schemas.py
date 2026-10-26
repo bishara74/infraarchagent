@@ -8,7 +8,11 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.plan import DeploymentPlan
-from app.domain.review_categories import ReviewCategory
+from app.domain.review_categories import (
+    APPROVAL_CATEGORIES,
+    REJECTION_CATEGORIES,
+    ReviewCategory,
+)
 
 
 class StrictResponse(BaseModel):
@@ -98,6 +102,13 @@ class ReviewRequest(BaseModel):
     @model_validator(mode="after")
     def targets_only_for_retry(self) -> "ReviewRequest":
         if self.action in {"approve", "reject"}:
+            allowed = (
+                APPROVAL_CATEGORIES
+                if self.action == "approve"
+                else REJECTION_CATEGORIES
+            )
+            if self.category not in allowed:
+                raise ValueError("category does not match decision")
             if not self.category or not self.reason or not self.reason.strip():
                 raise ValueError("reviewer name and reason are required")
             self.reviewer_name = (

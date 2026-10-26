@@ -1,10 +1,11 @@
 """Environment-backed settings. Secret values must not be logged or returned."""
 
+import logging
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, TypeAdapter, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.domain.enums import LLMProvider
@@ -13,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[3]
 ReasoningEffort = Literal["off", "low", "medium", "high"]
 ResponseFormat = Literal["json_object"]
 StructuredOutput = Literal["json_schema", "json_object", "off"]
+_legacy_lesson_warning_emitted = False
 
 
 class ConfigurationError(ValueError):
@@ -38,7 +40,33 @@ class Settings(BaseSettings):
     llm_api_key: SecretStr | None = None
     api_key: SecretStr | None = None
     lessons_enabled: bool = False
-    lessons_require_second_approver: bool = True
+    lessons_admin_direct_activation: bool = True
+    lessons_require_second_approver: bool | None = Field(default=None, exclude=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def migrate_lesson_policy(cls, values: object) -> object:
+        global _legacy_lesson_warning_emitted
+        if (
+            isinstance(values, dict)
+            and values.get("lessons_require_second_approver") is not None
+        ):
+            if "lessons_admin_direct_activation" not in values:
+                values = {
+                    **values,
+                    "lessons_admin_direct_activation": not TypeAdapter(
+                        bool
+                    ).validate_python(values["lessons_require_second_approver"]),
+                }
+            if not _legacy_lesson_warning_emitted:
+                logging.getLogger(__name__).warning(
+                    "LESSONS_REQUIRE_SECOND_APPROVER is deprecated; switch to "
+                    "LESSONS_ADMIN_DIRECT_ACTIVATION (the inverse value). "
+                    "The new setting takes precedence."
+                )
+                _legacy_lesson_warning_emitted = True
+        return values
+
     auth_idle_seconds: int = Field(default=1800, gt=0)
     auth_absolute_seconds: int = Field(default=43200, gt=0)
     auth_cookie_secure: bool = False

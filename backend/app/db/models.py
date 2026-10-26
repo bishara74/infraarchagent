@@ -165,6 +165,8 @@ class UserRecentRun(Base):
 
 class LessonRevision(Base):
     __tablename__ = "lesson_revisions"
+    approval: Mapped[str | None] = mapped_column(String(32))
+    approval_actor: Mapped[dict[str, Any] | None] = mapped_column(JSONB)
 
     id: Mapped[UUID] = mapped_column(primary_key=True)
     lesson_id: Mapped[UUID]

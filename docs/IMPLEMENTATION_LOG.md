@@ -27,6 +27,41 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 10 section 0 / 0b / 0c — Direct admin lessons and settled review
+
+**Summary:** Activate passing admin lessons in the proposal transaction; preserve
+reviewer approval by another named admin. Show live exact proposal previews,
+separate approval categories, readable gate hints and settled-review actions.
+
+**Requirements addressed:** FR-A-05, FR-S-08/10, FR-UI-06/07, NFR-01.
+
+**Files:** lesson settings/service/API/repository/model and migration 0015;
+review categories/schema/history/insights/archive; shared gate/review/proposal/
+preview/status components, browser configuration and unit/integration/browser
+regressions; .env.example, README, D-47/D-60 and Phase 10 verification/UI evidence.
+
+**Decisions:** D-60 author amendment trusts admin operators while retaining filter
+v2, preview, output gates, kill switch and provenance. New admin_direct provenance
+includes an actor snapshot. Legacy explicit setting maps inversely, new wins,
+and legacy use warns once per process. Historical sets/events/self_approved stay
+readable and unchanged. D-47 adds approval categories without rewriting decisions.
+One existing dark token palette renders under either OS colour preference.
+
+**Tests:** make lint exit 0: Ruff/format 40 scripts and 388 app/test files;
+mypy 186 sources; frontend ESLint and both TypeScript checks passed. Focused
+PostgreSQL policy/provenance/insights: 36 passed, 0 failed/skipped. Full
+make frontend-test: 462 passed, 0 failed/skipped, 45 files. Focused real-backend
+Playwright: 3 passed, 0 failed/skipped (1.5m), including both lesson flows and
+settled approval; inspected the 1280x800 approved screenshot. Earlier iterations
+caught a canary in a blocked preview (fixed by suppressing blocked preview text),
+a stale settled-controls assertion and an incorrect browser role expectation.
+Final outputs are in docs/evals/phase10-verification/section0-*.
+
+**Known gaps / follow-ups:** Full backend/browser/performance/secret/traceability
+finish checks remain for Phase 10 closure. Deployment/container files are author
+recipes only; no installs, real inference, dotenv reads, image build or deployment
+were performed. No new specification open question.
+
 ## 2026-10-26 — Phase 9m section 6 — Version lesson screening and finish verification
 
 **Summary:** Default new screening/approval to v2 while preserving explicit v1

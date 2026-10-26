@@ -1539,6 +1539,17 @@ missing values projected as null / “not recorded”, without a schema migratio
 historical event rewrite. Readiness documents add only the category information.
 Decision reasons are never remediation feedback or LLM inputs in this phase.
 
+**Phase 10 extension to D-47:** Approvals have a separate fixed vocabulary:
+meets requirements, accepted risk, approved with follow-ups, organisational
+exception, other. Rejection vocabulary is unchanged. API validation matches the
+action; historical category values are preserved. Events/history/exports retain
+categories and insights count accepted-risk approvals with their recorded blocking
+rules. Migration 0015 additively expands the lesson category constraint because
+lessons can originate from either decision. FR-UI-07 settled controls are hidden;
+primary ZIP, compact decision provenance and the optional lesson section replace
+them. Engineer approval uses a green outline/person icon with its text label.
+D-61 gate hints now use readable token colours, an info icon and secondary links.
+
 ### D-48 — Versioned secondary exception assessments (Phase 9g appendix)
 
 FR-S-04, FR-UI-05 and NFR-01. Bundled strict/contextual-v1 JSON profiles are
@@ -2492,6 +2503,30 @@ four retained full-round occurrences, two in smoke and seven in the pooled
 baseline. No scanner rule, profile, threshold or readiness exception is added.
 
 ### D-60 — Human-curated advisory lessons and injection defense (Phase 9l)
+
+**Phase 10 author decision supersedes the self-approval flow below.** Admins are
+trusted operators who can already change server configuration. A structurally
+valid, filter-v2-passing admin proposal activates immediately in its proposal
+transaction, including a new active-set version, `approval: admin_direct` and an
+immutable actor snapshot. Reviewer proposals always wait for approval by a
+different named admin. `LESSONS_ADMIN_DIRECT_ACTIVATION=true` is the new default;
+false requires a different admin for admin proposals too. No new self-approval
+confirmation is issued. Historical `self_approved` revisions/sets remain readable.
+Migration 0015 adds immutable provenance and broadens lesson categories; old
+sets/events are unchanged. The live proposal form uses the exact bounded renderer
+and rechecks the filter/set before submission. Role scoping, limits, output gates,
+kill switch, strict policy and provenance remain unchanged.
+
+Author-chosen compatibility: explicit legacy `LESSONS_REQUIRE_SECOND_APPROVER`
+true maps to new false; legacy false maps to new true. An explicit new setting
+wins. Legacy use emits one process-wide deprecation warning naming the replacement.
+The README documents migration; Codex never reads or rewrites operator dotenv.
+
+Residual risk is a mistaken or malicious admin lesson. Mitigations are the
+filter, pre-submit preview, kill switch and full provenance; these controls do
+not prove semantic safety. The neutral policy note replaces the previous warning.
+The Phase 9l narrative below is retained as historical design rationale.
+
 
 The author approved this extension after a read-only section report and plan.
 Existing traceability anchors are FR-A-01/05, FR-G-01/02, FR-S-04/07–10,

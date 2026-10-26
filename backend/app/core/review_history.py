@@ -114,6 +114,8 @@ class ReviewHistoryService:
         variants: Counter[str] = Counter()
         decisions: Counter[str] = Counter()
         rules: Counter[str] = Counter()
+        accepted_rules: Counter[str] = Counter()
+        accepted_risk_total = 0
         rejected = available = 0
         for row in rows:
             details = row["details"] if isinstance(row["details"], dict) else {}
@@ -126,6 +128,13 @@ class ReviewHistoryService:
                 else "not_recorded"
             ] += 1
             decisions[row["decision"]] += 1
+            if row["decision"] == "approve" and category == "accepted_risk":
+                accepted_risk_total += 1
+                blocking = details.get("remaining_blocking_rules")
+                if isinstance(blocking, list) and all(
+                    isinstance(rule, str) for rule in blocking
+                ):
+                    accepted_rules.update(set(blocking))
             if row["decision"] == "reject":
                 rejected += 1
                 blocking = details.get("remaining_blocking_rules")
@@ -162,6 +171,22 @@ class ReviewHistoryService:
                     }
                     for rule, count in sorted(
                         rules.items(), key=lambda pair: (-pair[1], pair[0])
+                    )
+                ],
+                "accepted_risk_total": accepted_risk_total,
+                "accepted_risk_rules": [
+                    {
+                        "rule_id": rule,
+                        "count": count,
+                        "filters": {
+                            **filters,
+                            "decision": "approve",
+                            "category": "accepted_risk",
+                            "blocking_rule": rule,
+                        },
+                    }
+                    for rule, count in sorted(
+                        accepted_rules.items(), key=lambda pair: (-pair[1], pair[0])
                     )
                 ],
                 "rejected_total": rejected,

@@ -47,3 +47,21 @@ it('FR-S-10 checks-passed rejection requires category and reason and retains dow
  await userEvent.click(screen.getByRole('button',{name:'Reject'}));await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));expect(review).not.toHaveBeenCalled();expect(screen.getByRole('alert')).toHaveTextContent('Choose a reason category.');
  fireEvent.change(screen.getByLabelText('Reason category'),{target:{value:'too_expensive'}});await userEvent.click(screen.getByRole('button',{name:'Reject'}));await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));await vi.waitFor(()=>expect(review).toHaveBeenCalledExactlyOnceWith('r','security',{action:'reject',reviewer_name:'Engineer',reason:'Too expensive',category:'too_expensive'}));
 });
+
+it.each(['engineer_approved','rejected'] as const)('FR-UI-07 settled %s hides decision controls and restores primary download',status=>{
+ const value=item();value.status=status;value.readiness_label=status;value.downloadable=true;value.review_available=false;value.review_actions=[];
+ render(<ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/>);
+ for(const name of ['Approve','Retry with feedback','Reject'])expect(screen.queryByRole('button',{name})).toBeNull();
+ expect(screen.getByRole('button',{name:'Download ZIP'})).toHaveClass('primary');
+ if(status==='engineer_approved'){expect(screen.getByText('engineer approved')).toHaveClass('engineer-approved');expect(document.querySelector('.codicon-person')).not.toBeNull();}
+});
+
+it('FR-UI-07 approval and rejection offer separate category lists',()=>{
+ render(<ReviewPanel item={item()} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/>);
+ fireEvent.change(screen.getByLabelText('Decision',{exact:true}),{target:{value:'approve'}});
+ expect(screen.getByRole('option',{name:'accepted risk'})).toBeVisible();
+ expect(screen.queryByRole('option',{name:'too expensive'})).toBeNull();
+ fireEvent.change(screen.getByLabelText('Decision',{exact:true}),{target:{value:'reject'}});
+ expect(screen.queryByRole('option',{name:'accepted risk'})).toBeNull();
+ expect(screen.getByRole('option',{name:'too expensive'})).toBeVisible();
+});

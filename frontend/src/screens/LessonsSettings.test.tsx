@@ -47,24 +47,16 @@ it('NFR-01 shows linked decision, filter and exact preview before approval witho
 it('NFR-01 default four-eyes policy prevents self-approval in the UI',async()=>{
   const request=setup(controls,{...detail,lesson:{...lesson,proposer_id:'admin',proposer:'Admin'}});
   const dialog=await screen.findByRole('dialog',{name:'Lesson v1'});
-  expect(within(dialog).getByText('A different named administrator must approve your proposal.')).toBeVisible();
+  expect(within(dialog).getAllByText('A different named administrator must approve your proposal.')[0]).toBeVisible();
   expect(within(dialog).getByRole('button',{name:'Approve lesson'})).toBeDisabled();
   expect(request.mock.calls.some(([url,method])=>method==='POST'&&url.endsWith('/approve'))).toBe(false);
 });
 
-it('NFR-01 self-approval repeats the filter and preview and requires a separate token-bound action',async()=>{
-  const request=setup({...controls,require_second_approver:false},{...detail,lesson:{...lesson,proposer_id:'admin',proposer:'Admin'}});
-  const dialog=await screen.findByRole('dialog',{name:'Lesson v1'});
-  fireEvent.click(within(dialog).getByRole('button',{name:'Approve lesson'}));
-  const confirm=await screen.findByRole('dialog',{name:'Confirm self-approval'});
-  expect(within(confirm).getByText('Four-eyes review is off. You are approving your own lesson.')).toBeVisible();
-  expect(within(confirm).getByText('Passed deterministic filter · v1')).toBeVisible();
-  expect(within(confirm).getByLabelText('architect advisory block')).toHaveTextContent(lesson.text);
-  expect(request.mock.calls.some(([url,method])=>method==='POST'&&url.endsWith('/approve'))).toBe(false);
-  fireEvent.click(within(confirm).getByRole('button',{name:'Confirm self-approval'}));
-  await waitFor(()=>expect(request).toHaveBeenCalledWith(`/api/lessons/${lesson.id}/approve`,'POST',{confirmation_token:'fixture-confirmation-token'}));
-  expect(await within(dialog).findByText(/Approved by Admin.*self-approved/)).toBeVisible();
-  expect(JSON.stringify({...localStorage,...sessionStorage})).not.toContain('fixture-confirmation-token');
+it('NFR-01 direct policy is neutral and has no self-confirmation action',async()=>{
+  setup({...controls,require_second_approver:true,admin_direct_activation:true});
+  await screen.findByRole('dialog',{name:'Lesson v1'});
+  expect(screen.getByText('Admin lessons activate directly; reviewer lessons require admin approval.')).toBeVisible();
+  expect(screen.queryByRole('dialog',{name:'Confirm self-approval'})).toBeNull();
 });
 
 it('NFR-01 server gate disables enabling while keeping immediate disable available',async()=>{

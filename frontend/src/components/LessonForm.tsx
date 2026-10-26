@@ -5,8 +5,10 @@ import type {LessonFilterResult,LessonInput,LessonRevision,LessonRole,LessonTag,
 import {lessonRoles,lessonTags} from '../lib/lessonLabels';
 import {reviewCategories} from '../lib/reviewCategories';
 import {LessonFilter} from './LessonFilter';
+import {LessonPreview} from './LessonPreview';
+import type {LessonPreview as Preview} from '../api/types';
 
-interface CheckResult {normalized_text:string|null;filter_result:LessonFilterResult}
+interface CheckResult {normalized_text:string|null;filter_result:LessonFilterResult;preview?:Preview&{admin_direct_activation?:boolean}}
 export function LessonForm({decisionId,initialRole,initialCategory,previous,onProposed,onCancel}:{
   decisionId:string;initialRole:LessonRole;initialCategory:ReviewCategory;
   previous?:LessonRevision;onProposed:(lesson:LessonRevision)=>void;onCancel:()=>void;
@@ -19,7 +21,8 @@ export function LessonForm({decisionId,initialRole,initialCategory,previous,onPr
   const [check,setCheck]=useState<{key:string;data?:CheckResult;error?:unknown}|null>(null);
   const textField=useRef<HTMLTextAreaElement>(null);const focusAfter=useRef(false);
   const input:LessonInput={scope_role:role,category,applies_to:tags,text};
-  const key=JSON.stringify(input);const count=Array.from(text.normalize('NFKC').trim()).length;
+  const checkedInput={...input,decision_id:decisionId,...(previous?{previous_id:previous.id}:{})};
+  const key=JSON.stringify(checkedInput);const count=Array.from(text.normalize('NFKC').trim()).length;
   const current=check?.key===key?check:null;
   useEffect(()=>{
     if(!text.trim())return;
@@ -37,9 +40,10 @@ export function LessonForm({decisionId,initialRole,initialCategory,previous,onPr
     if(!count||count>280){setError('Use one plain-text lesson of 1–280 characters.');textField.current?.focus();return;}
     setBusy(true);setError(null);
     try{
-      const checked=await api.request<CheckResult>('/api/lessons/check','POST',input);
+      const checked=await api.request<CheckResult>('/api/lessons/check','POST',checkedInput);
       setCheck({key,data:checked});
       if(!checked.filter_result.passed){setError('Revise the lesson using the filter feedback.');focusAfter.current=true;return;}
+      if(!current?.data||JSON.stringify(current.data.preview)!==JSON.stringify(checked.preview)){setError('Review the updated exact prompt preview before submitting.');return;}
       const proposed=await api.request<LessonRevision>('/api/lessons','POST',{...input,decision_id:decisionId,...(previous?{previous_id:previous.id}:{})});
       onProposed(proposed);
     }catch(cause){setError(errorMessage(cause));focusAfter.current=true;}
@@ -47,7 +51,7 @@ export function LessonForm({decisionId,initialRole,initialCategory,previous,onPr
   }
   return <form className="panel settings-form lesson-form" noValidate onSubmit={event=>{event.preventDefault();void submit();}}>
     <h3>{previous?'Propose a new lesson version':'Propose a lesson'}</h3>
-    <p>Write one short reviewer preference. An administrator must approve it before it can be used.</p>
+    <p>Write one short reviewer preference. Admin lessons activate directly; reviewer lessons require admin approval. Server policy may require a different admin for administrator proposals.</p>
     <ActionGate disabled={busy} label="Lesson proposal fields" reason="The lesson is being submitted." nextStep="Wait for the proposal to finish, then edit or cancel."><fieldset disabled={busy}><legend className="sr-only">Lesson proposal</legend>
       <div className="lesson-fields"><label>Lesson role<select aria-label="Lesson role" name="lesson_role" value={role} onChange={event=>setRole(event.target.value as LessonRole)}>{Object.entries(lessonRoles).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
       <label>Lesson category<select aria-label="Lesson category" name="lesson_category" value={category} onChange={event=>setCategory(event.target.value as ReviewCategory)}>{Object.entries(reviewCategories).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label></div>
@@ -56,7 +60,7 @@ export function LessonForm({decisionId,initialRole,initialCategory,previous,onPr
       <p id="lesson-count" className={count>280?'danger':'muted'}>{count} / 280 characters after normalization</p>
       <p id="lesson-text-help" className="muted">Use one line of plain text. Links, code, hidden characters and instruction overrides are rejected. Tags support curation; selection uses the lesson role.</p>
     </fieldset></ActionGate>
-    {current?.data&&<LessonFilter result={current.data.filter_result}/>}
+    {current?.data&&(current.data.preview?<LessonPreview preview={current.data.preview}/>:<LessonFilter result={current.data.filter_result}/>)}
     {!!current?.error&&<p className="danger" role="status">{errorMessage(current.error)} Use one line of 1–280 characters.</p>}
     {error&&<p role="alert">{error}</p>}
     <div className="actions"><ActionButton type="submit" disabled={busy}>{previous?'Propose new version':'Submit lesson proposal'}{busy?'…':''}</ActionButton><ActionButton type="button" disabled={busy} onClick={onCancel}>Cancel proposal</ActionButton></div>

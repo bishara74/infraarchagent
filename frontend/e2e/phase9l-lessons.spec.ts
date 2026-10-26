@@ -5,7 +5,7 @@ import {originHeaders,PASSWORD,pendingPackage,results,submit,USERNAME} from './s
 async function logout(page:Page,name:string){await page.getByRole('button',{name,exact:true}).click();await page.getByRole('menuitem',{name:'Log out',exact:true}).click();}
 async function login(page:Page,name:string){await page.getByLabel('Username',{exact:true}).fill(name);await page.getByLabel('Password',{exact:true}).fill(PASSWORD);await page.getByRole('button',{name:'Log in',exact:true}).click();await expect(page).toHaveURL(/\/$/);}
 async function reject(page:Page,reason:string){await page.getByLabel('Reason category',{exact:true}).selectOption('operability');await page.getByLabel('Decision reason').fill(reason);await page.getByRole('button',{name:'Reject',exact:true}).click();await page.getByRole('button',{name:'Confirm reject',exact:true}).click();await expect(page.getByRole('button',{name:'Propose a lesson',exact:true})).toBeVisible();}
-async function capture(page:Page,name:string){await mkdir('../docs/evals/phase9l-ui',{recursive:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`../docs/evals/phase9l-ui/${name}.png`,animations:'disabled'});}
+async function capture(page:Page,name:string){await mkdir('../docs/evals/phase10-ui',{recursive:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);await page.screenshot({path:`../docs/evals/phase10-ui/${name}.png`,animations:'disabled'});}
 
 test('FR-UI-07 FR-P-04 NFR-01 propose filter approve run visibility and kill switch',async({page})=>{
   test.setTimeout(300000);await page.setViewportSize({width:1280,height:800});
@@ -58,30 +58,25 @@ test('FR-UI-07 FR-P-04 NFR-01 propose filter approve run visibility and kill swi
   await page.goto(`/runs/${used}`);await expect(page.getByTestId('lesson-usage')).toHaveText('Lessons used: set v1 (1 lesson)');
 });
 
-test('FR-UI-07 NFR-01 self approval follows server policy and a separate confirmation',async({page})=>{
+test('FR-UI-07 NFR-01 admin lesson activates on submit with exact preview',async({page})=>{
   test.setTimeout(240000);await page.setViewportSize({width:1280,height:800});
   const source=await submit(page);await pendingPackage(page,source);
   await reject(page,'Administrator browser fixture decision.');
+  await expect(page.getByRole('button',{name:'Approve',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Reject',exact:true})).toHaveCount(0);
   await page.getByRole('button',{name:'Propose a lesson',exact:true}).click();
+  await page.getByLabel('Lesson role',{exact:true}).selectOption('architect');
   const text='Prefer documented recovery objectives for databases.';
   await page.getByLabel('Lesson text',{exact:true}).fill(text);
-  await expect(page.getByText('Passed deterministic filter · v2',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Submit lesson proposal',exact:true}).click();
-  await expect(page.getByText('Lesson proposed for administrator review.',{exact:true})).toBeVisible();
-  await page.goto('/settings/lessons');await page.getByRole('button',{name:`Inspect lesson: ${text}`,exact:true}).click();
-  const inspector=page.getByRole('dialog',{name:'Lesson v1',exact:true});
-  const policy=await(await page.request.get('/api/lessons/control')).json();
-  if(policy.require_second_approver){await expect(inspector.getByRole('button',{name:'Approve lesson',exact:true})).toBeDisabled();return;}
+  await expect(page.getByRole('heading',{name:'Exact prompt preview',exact:true})).toBeVisible();
+  await expect(page.getByLabel('architect advisory block')).toContainText(text);
   const approvals:string[]=[];page.on('request',request=>{if(request.method()==='POST'&&request.url().endsWith('/approve'))approvals.push(request.url());});
-  await inspector.getByRole('button',{name:'Approve lesson',exact:true}).click();
-  const confirmation=page.getByRole('dialog',{name:'Confirm self-approval',exact:true});
-  await expect(confirmation.getByText('Four-eyes review is off. You are approving your own lesson.',{exact:true})).toBeVisible();
-  await expect(confirmation.getByText('Passed deterministic filter · v2',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Submit lesson proposal',exact:true}).click();
+  await expect(page.getByText('Lesson activated directly by administrator.',{exact:true})).toBeVisible();
   expect(approvals).toEqual([]);
-  await capture(page,'self-approval-confirmation');
-  for(let i=0;i<5;i++){await page.keyboard.press('Tab');expect(await confirmation.evaluate(element=>element.contains(document.activeElement))).toBe(true);}
-  for(let i=0;i<5;i++){await page.keyboard.press('Shift+Tab');expect(await confirmation.evaluate(element=>element.contains(document.activeElement))).toBe(true);}
-  await confirmation.getByRole('button',{name:'Confirm self-approval',exact:true}).click();
-  await expect(inspector.getByText(/self-approved; four-eyes review was off/)).toBeVisible();
-  expect(approvals).toHaveLength(1);
+  await mkdir('../docs/evals/phase10-ui',{recursive:true});
+  await page.screenshot({path:'../docs/evals/phase10-ui/admin-direct.png',animations:'disabled'});
+  await page.goto('/settings/lessons?tab=approved');
+  await expect(page.getByText(text,{exact:true})).toBeVisible();
+  await expect(page.getByText(/Admin direct/)).toBeVisible();
 });

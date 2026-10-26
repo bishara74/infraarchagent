@@ -43,7 +43,10 @@ class ReviewHistoryRepository:
         if identity := filters.get("decision_id"):
             conditions.append(AgentEvent.event_id == UUID(identity))
         if rule := filters.get("blocking_rule"):
-            conditions.append(AgentEvent.payload["review_action"].astext == "reject")
+            conditions.append(
+                AgentEvent.payload["review_action"].astext
+                == filters.get("decision", "reject")
+            )
             conditions.append(
                 AgentEvent.payload["review_decision"][
                     "remaining_blocking_rules"

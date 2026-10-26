@@ -59,7 +59,7 @@ async def test_corpus_survivors_require_human_approval_before_any_hook(db_engine
 
 async def prepared(db_engines, *, self_approved=False, role="architect"):
     app, run, users, clients = await workspace(
-        db_engines, lessons_require_second_approver=not self_approved
+        db_engines, lessons_admin_direct_activation=self_approved
     )
     actor = 0 if self_approved else 1
     source = await decision(
@@ -67,14 +67,8 @@ async def prepared(db_engines, *, self_approved=False, role="architect"):
     )
     row = (await proposal(clients[actor], source, scope_role=role)).json()
     path = f"/api/lessons/{row['id']}"
-    body = {}
-    if self_approved:
-        body = {
-            "confirmation_token": (
-                await clients[0].post(path + "/confirmation")
-            ).json()["confirmation_token"]
-        }
-    assert (await clients[0].post(path + "/approve", json=body)).status_code == 200
+    if not self_approved:
+        assert (await clients[0].post(path + "/approve", json={})).status_code == 200
     assert (
         await clients[0].put("/api/lessons/control", json={"enabled": True})
     ).status_code == 200
@@ -283,7 +277,7 @@ async def test_disable_does_not_wait_for_inflight_model_response(db_engines):
         await close(clients)
 
 
-async def test_self_approval_manifest_archive_and_unchanged_readiness(db_engines):
+async def test_admin_direct_manifest_archive_and_unchanged_readiness(db_engines):
     app, run, clients, row, config = await prepared(db_engines, self_approved=True)
     try:
         before = (await clients[0].get(f"/api/pipeline/{run}/results")).json()[
@@ -305,7 +299,7 @@ async def test_self_approval_manifest_archive_and_unchanged_readiness(db_engines
         ):
             assert after["packages"][0][key] == before[key]
         assert after["packages"][0]["readiness_label"] == "pending_review"
-        assert after["run"]["lessons"]["self_approved"]
+        assert after["run"]["lessons"]["entries"][0]["approval"] == "admin_direct"
         # An engineer decision remains the only existing route to download.
         reviewed = await clients[0].post(
             f"/api/pipeline/{run}/packages/cost/review",
@@ -319,12 +313,13 @@ async def test_self_approval_manifest_archive_and_unchanged_readiness(db_engines
         response = await clients[0].get(f"/api/pipeline/{run}/download/cost")
         with ZipFile(BytesIO(response.content)) as archive:
             manifest = json.loads(archive.read("_infraarchagent/LESSONS.json"))
-            assert manifest["self_approved"] and manifest["entries"][0]["self_approved"]
+            assert not manifest["self_approved"]
+            assert manifest["entries"][0]["approval"] == "admin_direct"
+            assert manifest["entries"][0]["approval_actor"]["username"] == "curator"
             assert manifest["set_hash"] == config.lessons["set_hash"]
             assert manifest["calls"][0]["lesson_ids"] == [row["id"]]
             assert (
-                "four-eyes review was off"
-                in archive.read("INFRAARCHAGENT_READINESS.md").decode()
+                "admin_direct" in archive.read("INFRAARCHAGENT_READINESS.md").decode()
             )
             assert (
                 "RAW_REASON_MUST_NEVER"

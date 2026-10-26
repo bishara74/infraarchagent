@@ -372,3 +372,19 @@ dialog form { display: grid; gap: var(--space-3); }dialog h2,dialog p { margin: 
 .action-gate:not([data-dismissed="true"]):focus-within > .action-gate-help { display: block; }
 .action-gate :disabled { pointer-events: none; }
 .action-gate-enabled { display: contents; }
+
+/* Phase 10: hints and settled review follow the console's shared token scale. */
+.action-gate-help { padding:var(--space-3); font-size:var(--font-size-base); line-height:1.5; }
+.action-gate-help.persistent { max-width:100%; padding:var(--space-3); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); margin-top:var(--space-2); }
+.action-gate-help .icon { color:var(--running); margin-right:var(--space-2); vertical-align:top; }
+.action-gate-copy { display:inline-block; max-width:calc(100% - var(--space-8)); }
+.action-gate-next { display:block; margin-top:var(--space-2); }
+.action-gate-help a { display:inline-block; padding:var(--space-1) var(--space-2); margin:var(--space-1) var(--space-1) 0 0; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); background:var(--surface-raised); text-decoration:none; }
+.action-gate-help a:hover { border-color:var(--accent); color:var(--accent); }
+.action-gate:hover,.action-gate:focus-within { background:transparent; }
+.lesson-proposal { display:block; width:100%; margin-top:var(--space-6); padding-top:var(--space-4); border-top:1px solid var(--border); }
+.lesson-proposal h3 { margin:0 0 var(--space-2); }
+.lesson-proposal>p { margin:0 0 var(--space-3); }
+.decision-summary { margin-top:var(--space-4); padding:var(--space-3); background:var(--surface-raised); border-radius:var(--radius-md); }
+.decision-summary p { margin:var(--space-1) 0; overflow-wrap:anywhere; }
+.badge.engineer-approved { display:inline-flex; gap:var(--space-1); align-items:center; color:var(--ok); background:transparent; border:1px solid var(--ok); }

@@ -1,3 +1,4 @@
+import {Icon} from './Icon';
 import {Children,isValidElement,useId,useLayoutEffect,useRef,useState,type ButtonHTMLAttributes,type ReactNode,type Ref} from 'react';
 
 interface GateProps {
@@ -26,7 +27,7 @@ export function ActionGate({disabled,reason,nextStep,children,persistent=false,d
   onFocus={()=>{if(disabled){setDismissed(false);setOpen(true);}}} onBlur={event=>{if(!event.currentTarget.contains(event.relatedTarget))setOpen(false);}}
   onClick={()=>{if(disabled){setDismissed(false);setOpen(true);}}} onKeyDown={event=>{if(!disabled)return;if(event.key==='Escape'){event.preventDefault();event.stopPropagation();setDismissed(true);setOpen(false);return;}if(event.target!==event.currentTarget)return;if(event.key==='Enter'||event.key===' '){event.preventDefault();setDismissed(false);setOpen(true);}}}>
   {children}
-  {disabled&&<span ref={hint} style={persistent?undefined:position} id={id} className={`action-gate-help${persistent?' persistent':''}`} data-open={persistent||open?'true':undefined}>{reason}{nextStep&&<> {nextStep}</>}</span>}
+  {disabled&&<span ref={hint} style={persistent?undefined:position} id={id} className={`action-gate-help${persistent?' persistent':''}`} data-open={persistent||open?'true':undefined}><Icon name="info"/><span className="action-gate-copy">{reason}{nextStep&&<span className="action-gate-next">{nextStep}</span>}</span></span>}
   {disabled&&open&&<span className="sr-only" role="status">{reason}</span>}
  </span>;
 }

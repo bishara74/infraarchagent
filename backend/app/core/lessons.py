@@ -1,21 +1,20 @@
 """Human lesson governance; no model is involved in curation."""
 
-import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any, Literal
-from uuid import UUID, uuid4
+from uuid import UUID, uuid4, uuid5
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.core.auth import token_hash
 from app.core.config import Settings
 from app.core.safety import PublicDataSafety
-from app.db.models import LessonConfirmation, LessonRevision, LessonSet, User
+from app.db.models import LessonRevision, LessonSet, User
 from app.db.repositories.lessons import LessonRepository, lesson_entry
 from app.domain.lessons import (
+    GOVERNANCE_LOCK,
     LessonAudit,
     LessonInput,
-    content_hash,
+    canonical,
     empty_snapshot,
     render_lessons,
 )
@@ -206,9 +205,23 @@ class LessonService:
                     ),
                     audit_session=session,
                 )
+            identity = (
+                previous.lesson_id
+                if previous
+                else uuid5(
+                    GOVERNANCE_LOCK,
+                    canonical([str(actor.id), str(decision_id), lesson.model_dump()]),
+                )
+            )
+            if previous is None and await repo.latest(identity):
+                raise LessonError(
+                    409,
+                    "lesson_conflict",
+                    "This proposal already exists. Inspect its latest revision.",
+                )
             row = LessonRevision(
                 id=uuid4(),
-                lesson_id=previous.lesson_id if previous else uuid4(),
+                lesson_id=identity,
                 revision=previous.revision + 1 if previous else 1,
                 previous_id=previous.id if previous else None,
                 decision_id=decision_id,
@@ -233,7 +246,109 @@ class LessonService:
                 ),
                 audit_session=session,
             )
+            if actor.role == "admin" and self.settings.lessons_admin_direct_activation:
+                await self._activate(repo, row, actor, "admin_direct", filtered)
+                await repo.new_set(control)
+                await self.events.append(
+                    LessonAudit(
+                        actor.id,
+                        "approved",
+                        row.id,
+                        row.previous_id,
+                        decision.run_id,
+                        control.set_version,
+                        {
+                            "actor": actor.username,
+                            "approval": row.approval,
+                            "approval_actor": row.approval_actor,
+                            "filter_result": filtered,
+                        },
+                    ),
+                    audit_session=session,
+                )
             return await self._view(session, row, admin=actor.role == "admin")
+
+    async def _activate(
+        self,
+        repo: LessonRepository,
+        row: LessonRevision,
+        actor: User,
+        approval: str,
+        filtered: dict[str, Any],
+    ) -> None:
+        for active in await repo.active():
+            if active.lesson_id == row.lesson_id:
+                active.status = "retired"
+                await repo.session.flush()
+                await self.events.append(
+                    LessonAudit(
+                        actor.id,
+                        "superseded_active",
+                        active.id,
+                        active.previous_id,
+                        data={"replacement_id": str(row.id)},
+                    ),
+                    audit_session=repo.session,
+                )
+        row.approved_by, row.approved_at = actor.id, datetime.now(UTC)
+        row.self_approved = False
+        row.approval = approval
+        row.approval_actor = {"user_id": str(actor.id), "username": actor.username}
+        row.approval_filter_result = filtered
+        row.status = "approved"
+        await repo.session.flush()
+
+    async def proposal_preview(
+        self,
+        lesson: LessonInput,
+        actor: User,
+        decision_id: UUID | None = None,
+        previous_id: UUID | None = None,
+    ) -> dict[str, Any]:
+        direct = self.settings.lessons_admin_direct_activation
+        # Stable lesson identity keeps ordering identical between live preview
+        # and submission. No proposed lesson is persisted by previewing.
+        candidate = LessonRevision(
+            id=UUID(int=(1 << 128) - 1),
+            lesson_id=uuid5(
+                GOVERNANCE_LOCK,
+                canonical([str(actor.id), str(decision_id), lesson.model_dump()]),
+            ),
+            revision=1,
+            scope_role=lesson.scope_role,
+            applies_to=lesson.applies_to,
+            category=lesson.category,
+            text=lesson.text,
+            self_approved=False,
+            filter_result=self.check(lesson),
+        )
+        async with self.sessions() as session, session.begin():
+            repo = LessonRepository(session)
+            control = await repo.control()
+            if not candidate.filter_result["passed"]:
+                return {
+                    "filter_result": candidate.filter_result,
+                    "roles": {},
+                    "set_version": control.set_version,
+                    "admin_direct_activation": direct,
+                }
+            if previous_id:
+                previous = await repo.get(previous_id)
+                if previous is None or previous.proposer_id != actor.id:
+                    raise LessonError(
+                        403,
+                        "forbidden",
+                        "Only the proposal owner may preview its next version.",
+                    )
+                candidate.lesson_id = previous.lesson_id
+                candidate.revision = previous.revision + 1
+            return {
+                **await self._preview(repo, candidate),
+                "set_version": control.set_version,
+                "admin_direct_activation": (
+                    self.settings.lessons_admin_direct_activation
+                ),
+            }
 
     async def _preview(
         self, repo: LessonRepository, row: LessonRevision
@@ -340,8 +455,9 @@ class LessonService:
                 "server_enabled": self.settings.lessons_enabled,
                 "runtime_enabled": row.runtime_enabled,
                 "enabled": self.settings.lessons_enabled and row.runtime_enabled,
-                "require_second_approver": (
-                    self.settings.lessons_require_second_approver
+                "require_second_approver": True,
+                "admin_direct_activation": (
+                    self.settings.lessons_admin_direct_activation
                 ),
                 "disable_generation": row.disable_generation,
                 "set_version": active.version,
@@ -375,69 +491,14 @@ class LessonService:
             )
         return await self.controls()
 
-    async def _approval_data(
-        self, repo: LessonRepository, row: LessonRevision, version: int
-    ) -> dict[str, Any]:
-        return {
-            "lesson": lesson_entry(row),
-            "preview": await self._preview(repo, row),
-            "set_version": version,
-            "require_second_approver": (self.settings.lessons_require_second_approver),
-        }
-
     async def confirmation(
         self, actor: User, session_hash: str, identity: UUID
     ) -> dict[str, Any]:
-        async with self.sessions() as session, session.begin():
-            repo = LessonRepository(session)
-            control = await repo.control()
-            row = await repo.get(identity)
-            if row is None:
-                raise LessonError(404, "not_found", "Lesson not found.")
-            if row.status != "proposed":
-                raise LessonError(
-                    409, "lesson_conflict", "Only a proposed lesson can be approved."
-                )
-            if (
-                self.settings.lessons_require_second_approver
-                or row.proposer_id != actor.id
-            ):
-                raise LessonError(
-                    403,
-                    "second_approver_required",
-                    "Self-approval confirmation is unavailable under this policy.",
-                )
-            self.screened(
-                LessonInput.model_validate(
-                    {
-                        "scope_role": row.scope_role,
-                        "applies_to": row.applies_to,
-                        "category": row.category,
-                        "text": row.text,
-                    }
-                )
-            )
-            data = await self._approval_data(repo, row, control.set_version)
-            token = secrets.token_urlsafe(32)
-            expiry = datetime.now(UTC) + timedelta(minutes=5)
-            session.add(
-                LessonConfirmation(
-                    token_hash=token_hash(token),
-                    actor_id=actor.id,
-                    session_hash=session_hash,
-                    revision_id=row.id,
-                    preview_hash=content_hash(data),
-                    expires_at=expiry,
-                )
-            )
-            return {
-                "confirmation_token": token,
-                "expires_at": expiry.isoformat(),
-                **data,
-                "warning": (
-                    "Four-eyes review is off. You are approving your own lesson."
-                ),
-            }
+        raise LessonError(
+            403,
+            "second_approver_required",
+            "A different named administrator must approve pending lessons.",
+        )
 
     async def transition(
         self,
@@ -469,61 +530,13 @@ class LessonService:
                         }
                     )
                 )
-                if confirmation_token is not None and row.proposer_id != actor.id:
+                if actor.role != "admin" or row.proposer_id == actor.id:
                     raise LessonError(
-                        409,
-                        "lesson_confirmation_mismatch",
-                        "Self-approval confirmation does not match this proposal.",
+                        403,
+                        "second_approver_required",
+                        "A different named administrator must approve this lesson.",
                     )
-                if row.proposer_id == actor.id:
-                    if self.settings.lessons_require_second_approver:
-                        raise LessonError(
-                            403,
-                            "second_approver_required",
-                            "A different named administrator must approve this lesson.",
-                        )
-                    token = (
-                        await session.get(
-                            LessonConfirmation, token_hash(confirmation_token)
-                        )
-                        if confirmation_token
-                        else None
-                    )
-                    data = await self._approval_data(repo, row, control.set_version)
-                    if (
-                        token is None
-                        or token.actor_id != actor.id
-                        or token.session_hash != session_hash
-                        or token.revision_id != row.id
-                        or token.consumed_at is not None
-                        or token.expires_at <= datetime.now(UTC)
-                        or token.preview_hash != content_hash(data)
-                    ):
-                        raise LessonError(
-                            409,
-                            "self_approval_confirmation_required",
-                            "Review the filter result and prompt preview "
-                            "in a fresh confirmation first.",
-                        )
-                    token.consumed_at = datetime.now(UTC)
-                for active in await repo.active():
-                    if active.lesson_id == row.lesson_id:
-                        active.status = "retired"
-                        await session.flush()
-                        await self.events.append(
-                            LessonAudit(
-                                actor.id,
-                                "superseded_active",
-                                active.id,
-                                active.previous_id,
-                                set_version=control.set_version,
-                                data={"replacement_id": str(row.id)},
-                            ),
-                            audit_session=session,
-                        )
-                row.approved_by, row.approved_at = actor.id, datetime.now(UTC)
-                row.self_approved = row.proposer_id == actor.id
-                row.approval_filter_result = filtered
+                await self._activate(repo, row, actor, "admin_reviewed", filtered)
             row.status = {
                 "approve": "approved",
                 "reject": "rejected",
@@ -542,6 +555,8 @@ class LessonService:
                     data={
                         "actor": actor.username,
                         "self_approved": row.self_approved,
+                        "approval": row.approval,
+                        "approval_actor": row.approval_actor,
                         "filter_result": filtered,
                     },
                 ),

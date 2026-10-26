@@ -120,6 +120,13 @@ def readiness_document(
                     if lessons.get("used_count")
                     else "Lessons used: none",
                     f"Lesson set SHA-256: {lessons['set_hash']}",
+                    *[
+                        f"Lesson approval: {entry.get('approval')}; "
+                        f"actor: {entry.get('approval_actor')}"
+                        for entry in lessons.get("entries", [])
+                        if entry.get("id") in lessons.get("used_lesson_ids", [])
+                        and entry.get("approval")
+                    ],
                     "Self-approved lessons used: "
                     + (
                         "yes — four-eyes review was off"
