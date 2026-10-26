@@ -671,6 +671,8 @@ random 3.9.1, Kubernetes 2.38.0, Helm 2.17.0, TLS 4.4.1 and null 3.3.2,
 `make traceability` collects pytest requirement markers and Vitest/Playwright
 names, including performance titles, without running tests. Reports preserve the
 seven thesis TC groups, explicitly list uncovered IDs and do not imply tests pass.
+See the [TC-to-test mapping](docs/requirement-test-map.md). To select a fresh output
+folder, use `make traceability TRACEABILITY_ARGS='--output-dir ../docs/evals/phase10-traceability-new'`.
 
 `make secret-scan` checks working-tree text and file history across all refs and
 reflogs. It skips dotenv secrets, dependencies/caches/build output and symlinks;

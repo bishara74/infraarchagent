@@ -27,6 +27,35 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 10 section 3 — Requirement and TC evidence links
+
+**Summary:** Refresh three-framework traceability, add precise frontend use-case
+annotations and validation-status coverage, strengthen the generator barrier and
+cumulative diff cases, and map all seven thesis TC identifiers to real tests.
+
+**Requirements addressed:** FR-P-02, FR-S-06, FR-UI-02–05/07, UC-02–05/08,
+NFR-02 (ordinary dispatch only; documented recovery/telemetry limits remain).
+
+**Files:** traceability collector, generator/diff tests, frontend progress/diff/
+validation/browser tests, docs/requirement-test-map.md, report artifacts,
+Makefile traceability arguments, README and this log. Deployment helper string
+formatting is corrected under the expanded lint scope; behavior is unchanged.
+
+**Decisions:** Vitest node IDs are repository-relative. Existing six agent-role
+swap cases remain the evidence for ordinary injection seams; NFR-02 stays partly
+met due to concrete recovery/telemetry coupling (D-55). Collection never implies
+passing tests or NFR-04 deployment success. No new specification open question.
+
+**Tests:** Focused orchestrator/diff/collector: 27 passed, 0 failed/skipped,
+including six role swaps and both barrier outcomes. Full frontend: 463 passed,
+0 failed/skipped, 45 files. make lint passed (42 application/evaluation scripts,
+two deployment helpers, 392 app/test files; mypy 186 sources; frontend checks).
+Collection: 59 specification IDs, 0 uncovered, 0 invalid annotations and 0
+collection failures. The final report is refreshed again after remaining sections.
+
+**Known gaps / follow-ups:** NFR-04 links only to kit/static tests and stays
+unverified. Full backend/browser/performance/secret checks run at closure.
+
 ## 2026-10-26 — Phase 10 section 2 — Container recipes
 
 **Summary:** Add exact-tag backend/frontend Dockerfiles, secret-excluding build

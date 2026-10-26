@@ -1,4 +1,4 @@
-"""Author restart helper: load private JSON into the child environment, never print it."""
+"""Load private JSON into the author process environment without printing it."""
 
 import json
 import os

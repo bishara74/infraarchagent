@@ -88,7 +88,7 @@ provider-schema:
 
 .PHONY: traceability
 traceability:
-	$(BACKEND) .venv/bin/python -m scripts.traceability
+	$(BACKEND) .venv/bin/python -m scripts.traceability $(TRACEABILITY_ARGS)
 
 .PHONY: secret-scan
 secret-scan:

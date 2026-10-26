@@ -65,3 +65,10 @@ it('FR-UI-07 approval and rejection offer separate category lists',()=>{
  expect(screen.queryByRole('option',{name:'accepted risk'})).toBeNull();
  expect(screen.getByRole('option',{name:'too expensive'})).toBeVisible();
 });
+
+it('FR-UI-05 UC-05 validation report distinguishes passed failed and skipped checks',()=>{
+ const value=item();value.validation_report={summary:{result:'invalid'},checks:[{status:'passed',check_id:'terraform.validate',tool:'terraform',file_path:'terraform/main.tf',message:'Valid syntax.'},{status:'failed',check_id:'terraform.local_ref',tool:'builtin',file_path:'terraform/main.tf',message:'Unresolved local.'},{status:'skipped',check_id:'helm.lint',tool:'helm',skip_reason:'not_installed'}]};
+ const onFile=vi.fn();render(<ReportPanel item={value} section="validation" onFile={onFile}/>);
+ expect(screen.getByText('passed')).toHaveClass('ok');expect(screen.getByText('failed')).toHaveClass('danger');expect(screen.getByText('skipped')).toHaveClass('queued');
+ fireEvent.click(screen.getAllByRole('button',{name:'terraform/main.tf'})[0]!);expect(onFile).toHaveBeenCalledWith('terraform/main.tf');
+});

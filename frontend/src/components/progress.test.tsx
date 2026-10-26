@@ -5,12 +5,12 @@ import {LiveLog} from './LiveLog';
 import {WindowedRows} from './WindowedRows';
 import {blankStage} from '../lib/runReducer';
 import type {RunEvent} from '../api/types';
-it('FR-UI-02 stage cards keep timing event sequence and expandable variants',()=>{
+it('FR-UI-02 UC-02 stage cards keep timing event sequence and expandable variants',()=>{
  const {container}=render(<StageCard id="generators" name="GeneratorAgents" stage={{...blankStage(),status:'completed',seq:12,started:'2026-10-22T10:00:00Z',ended:'2026-10-22T10:00:03Z'}}>Cost variant</StageCard>);
  expect(screen.getByTestId('stage-generators')).toHaveAttribute('data-seq','12');expect(screen.getByText('3s')).toBeVisible();expect(container.querySelector('.codicon-check')).not.toBeNull();
  fireEvent.click(screen.getByText('Generator variants'));expect(screen.getByText('Cost variant')).not.toBeVisible();
 });
-it('FR-UI-02 live log escapes messages and uses a text-flow cursor only while live',()=>{
+it('FR-UI-02 UC-02 live log escapes messages and uses a text-flow cursor only while live',()=>{
  const event:RunEvent={seq:1,kind:'agent_state',agent:'architect',status:'failed',previous_status:null,message:'<script>failure</script>',variant:null,timestamp:'2026-10-22T10:00:00Z',payload:{}};
  const {container,rerender}=render(<LiveLog events={[event]}/>);expect(screen.getByText('[ERROR]')).toBeVisible();expect(container.querySelector('script')).toBeNull();expect(container.querySelector('.log-cursor')).toHaveTextContent('█');
  rerender(<LiveLog events={[event]} live={false}/>);expect(container.querySelector('.log-cursor')).toBeNull();

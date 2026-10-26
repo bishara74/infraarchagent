@@ -202,8 +202,10 @@ async def make_orchestrator(
 
 
 @pytest.mark.req("FR-P-01", "FR-P-02", "FR-G-01")
+@pytest.mark.parametrize("last_fails", [False, True])
 async def test_barrier_blocks_security_until_every_generator_resolves(
     db_engines: tuple[AsyncEngine, AsyncEngine],
+    last_fails: bool,
 ) -> None:
     engine, _ = db_engines
     started = [asyncio.Event() for _ in range(3)]
@@ -212,7 +214,12 @@ async def test_barrier_blocks_security_until_every_generator_resolves(
         [
             FakeGenerator(Variant.COST, started=started[0]),
             FakeGenerator(Variant.PERFORMANCE, started=started[1], release=release[0]),
-            FakeGenerator(Variant.SECURITY, started=started[2], release=release[1]),
+            FakeGenerator(
+                Variant.SECURITY,
+                started=started[2],
+                release=release[1],
+                fail=last_fails,
+            ),
         ]
     )
     security = FakeSecurity()
@@ -228,8 +235,12 @@ async def test_barrier_blocks_security_until_every_generator_resolves(
         )
         assert security.calls == []
         release[1].set()
-        assert await task == RunStatus.SUCCESS
-        assert set(security.calls) == set(Variant)
+        assert await task == (
+            RunStatus.PARTIAL_SUCCESS if last_fails else RunStatus.SUCCESS
+        )
+        assert set(security.calls) == (
+            {Variant.COST, Variant.PERFORMANCE} if last_fails else set(Variant)
+        )
     finally:
         release[0].set()
         release[1].set()

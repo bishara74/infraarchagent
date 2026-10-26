@@ -157,7 +157,10 @@ def main() -> None:
                 "/api/pipeline/run",
                 environment["API_KEY"],
                 {
-                    "text": "Synthetic clean-deployment demo: create an AWS web service with Terraform.",
+                    "text": (
+                        "Synthetic clean-deployment demo: create an AWS web "
+                        "service with Terraform."
+                    ),
                     "config": {"provider": "stub"},
                 },
             )
@@ -231,13 +234,15 @@ def main() -> None:
     except (OSError, RuntimeError):
         report["status"] = "failed"
         raise SystemExit(
-            "Deployment failed; inspect the private operator log. No portability pass is recorded."
+            "Deployment failed; inspect the private operator log. "
+            "No portability pass is recorded."
         ) from None
     finally:
         report["finished_at"] = datetime.now(UTC).isoformat()
         (evidence / "outcomes.json").write_text(json.dumps(report, indent=2))
         print(
-            f"Evidence: {evidence}. Private restart state: {private}. Never commit private state."
+            f"Evidence: {evidence}. Private restart state: {private}. "
+            "Never commit private state."
         )
 
 

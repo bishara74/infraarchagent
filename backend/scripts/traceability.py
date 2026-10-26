@@ -153,7 +153,9 @@ def collect(directory: Path) -> tuple[list[dict], list[str]]:
                     {
                         "framework": "vitest",
                         "file": str(Path(value["file"]).relative_to(ROOT)),
-                        "node_id": value["file"] + ":" + value["name"],
+                        "node_id": str(Path(value["file"]).relative_to(ROOT))
+                        + ":"
+                        + value["name"],
                         "title": value["name"],
                         "ids": sorted(identifiers(value["name"])),
                     }
