@@ -279,6 +279,15 @@ and publishers across separate brokers.
 ## Results, review and downloads
 
 Apply `make migrate` as `infraarch_owner` before starting this backend version.
+The backend checks its Alembic revision before startup recovery and in
+`/api/health`. Migration 0014 grants the app role SELECT-only access to the
+revision table. A missing/older/unreadable schema blocks normal API requests
+with HTTP 503 `database_schema_mismatch`: run `make migrate`, then restart the
+backend. A newer/unknown/divergent revision requires matching code; never
+blindly downgrade. Health and the built UI remain available to explain the
+problem. Health reports `schema.current_revision`, `expected_revision`,
+`compatible`, `state` and `restart_required`; it never migrates automatically.
+
 Migration `0003_review_retry_started_at` adds the nullable retry timestamp;
 existing packages stay unchanged with a NULL marker.
 

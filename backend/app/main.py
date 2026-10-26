@@ -36,6 +36,7 @@ from app.core.lesson_runtime import LessonRuntime
 from app.core.lessons import LessonError
 from app.core.logging import configure_logging
 from app.core.safety import PublicDataSafety
+from app.core.schema_gate import DatabaseSchemaMiddleware, SchemaGate
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
@@ -63,6 +64,7 @@ def create_app(
         configured.database_url.get_secret_value(), echo=False
     )
     session_factory = make_session_factory(app_engine)
+    schema_gate = SchemaGate(app_engine)
     broker = InMemoryBroker(configured.broker_queue_size)
     event_log = EventLog(session_factory, broker, safety=PublicDataSafety(configured))
     writer = PipelineStateWriter(session_factory, event_log)
@@ -103,36 +105,39 @@ def create_app(
         for tool, details in scanner_info.items():
             if not details["available"]:
                 logger.warning("%s is not installed", tool)
-        async with session_factory() as session:
-            interrupted = await RunRepository(session).list_interrupted()
-        for run_id in interrupted:
-            try:
-                await writer.run_transition(
-                    run_id,
-                    RunStatus.FAILED,
-                    message="interrupted by server restart",
-                    error_message="interrupted by server restart",
-                )
-            except Exception:
-                # A concurrent recovery or database outage is surfaced in logs.
-                import logging
+        if await schema_gate.startup():
+            async with session_factory() as session:
+                interrupted = await RunRepository(session).list_interrupted()
+            for run_id in interrupted:
+                try:
+                    await writer.run_transition(
+                        run_id,
+                        RunStatus.FAILED,
+                        message="interrupted by server restart",
+                        error_message="interrupted by server restart",
+                    )
+                except Exception:
+                    # A concurrent recovery or database outage is surfaced in logs.
+                    import logging
 
-                logging.getLogger(__name__).exception(
-                    "recovery failed for run %s", run_id
-                )
-        async with session_factory() as session:
-            review_retries = await PackageRepository(session).list_review_retries()
-        for run_id, variant in review_retries:
-            try:
-                await writer.abort_review_retry(
-                    run_id, variant, reason="review retry interrupted by server restart"
-                )
-            except Exception:
-                logger.exception(
-                    "review retry recovery failed for run %s variant %s",
-                    run_id,
-                    variant,
-                )
+                    logging.getLogger(__name__).exception(
+                        "recovery failed for run %s", run_id
+                    )
+            async with session_factory() as session:
+                review_retries = await PackageRepository(session).list_review_retries()
+            for run_id, variant in review_retries:
+                try:
+                    await writer.abort_review_retry(
+                        run_id,
+                        variant,
+                        reason="review retry interrupted by server restart",
+                    )
+                except Exception:
+                    logger.exception(
+                        "review retry recovery failed for run %s variant %s",
+                        run_id,
+                        variant,
+                    )
         try:
             yield
         finally:
@@ -142,6 +147,8 @@ def create_app(
 
     app = FastAPI(lifespan=lifespan)
     app.state.engine = app_engine
+    app.state.schema_gate = schema_gate
+    app.add_middleware(DatabaseSchemaMiddleware)
     app.state.broker = broker
     app.state.event_log = event_log
     app.state.writer = writer

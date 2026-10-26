@@ -1,6 +1,5 @@
-"""Database health endpoint; LLM credentials are optional in Phase 0."""
+"""Connectivity and read-only migration compatibility; never migrate here."""
 
-import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
@@ -9,10 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.api.deps import get_engine
 from app.core.config import Settings, get_settings
-from app.db.session import database_is_available
+from app.core.schema_gate import SchemaGate
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
 
 
 @router.get("/api/health")
@@ -21,29 +19,26 @@ async def health(
     engine: Annotated[AsyncEngine, Depends(get_engine)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> JSONResponse:
-    configured = settings.llm_api_key is not None
-    if not await database_is_available(engine):
-        logger.warning("database health check failed")
-        return JSONResponse(
-            status_code=503,
-            content={
-                "status": "degraded",
-                "database": "unavailable",
-                "llm_configured": configured,
-                "runner_capacity": request.app.state.runner.capacity,
-                "scanners": request.app.state.scanners,
-                "validators": request.app.state.validators,
-                "provider_mirror_present": request.app.state.provider_mirror_present,
-            },
-        )
+    gate: SchemaGate = request.app.state.schema_gate
+    status = await gate.refresh(engine)
+    ready = status.compatible and not gate.restart_required
     return JSONResponse(
+        status_code=200 if ready else 503,
         content={
-            "status": "ok",
-            "database": "ok",
-            "llm_configured": configured,
+            "status": "ok" if ready else "degraded",
+            "database": "unavailable" if status.state == "unavailable" else "ok",
+            "schema": {
+                "current_revision": status.current,
+                "expected_revision": status.expected,
+                "compatible": status.compatible,
+                "state": status.state,
+                "restart_required": gate.restart_required,
+            },
+            **({} if ready else gate.error(status)),
+            "llm_configured": settings.llm_api_key is not None,
             "runner_capacity": request.app.state.runner.capacity,
             "scanners": request.app.state.scanners,
             "validators": request.app.state.validators,
             "provider_mirror_present": request.app.state.provider_mirror_present,
-        }
+        },
     )

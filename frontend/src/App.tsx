@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router';
 import { AccountMenu } from './components/AccountMenu';
-import { errorMessage } from './api/client';
+import { ApiError, errorMessage } from './api/client';
 import { retryHydration } from './lib/preferences';
 import { Icon } from './components/Icon';
 import { SettingsScreen } from './screens/SettingsScreen';
@@ -26,7 +26,7 @@ function Access({children,local,onLocal}:{children:React.ReactNode;local:boolean
  if(!status)return <p role="status">Checking session…</p>;
  if(((status.setup_required&&!local)||status.auth_required)&&!status.authenticated)return <LoginGate setup={status.setup_required} allowLocal={!status.auth_required} onLocal={onLocal}/>;
  if(status.user&&(!preferences.ready||getPreferenceOwner()!==status.user.id))return <p role="status">Loading saved preferences…</p>;
- return <>{status.mode==='local'&&<p className="notice" role="status">No authentication (local mode)</p>}{preferences.loadError&&location.pathname!=='/recent'?<div className="notice" role="alert"><p>Saved preferences could not be loaded. Showing this account’s cached settings.</p><button onClick={()=>void retryHydration()}>Retry</button></div>:null}{children}</>;
+ return <>{status.mode==='local'&&<p className="notice" role="status">No authentication (local mode)</p>}{preferences.loadError&&location.pathname!=='/recent'?<div className="notice" role="alert"><p>{preferences.loadError instanceof ApiError && preferences.loadError.code==='database_schema_mismatch'?errorMessage(preferences.loadError):'Saved preferences could not be loaded. Showing this account’s cached settings.'}</p><button onClick={()=>void retryHydration()}>Retry</button></div>:null}{children}</>;
 }
 function Shell() {
     const location = useLocation();

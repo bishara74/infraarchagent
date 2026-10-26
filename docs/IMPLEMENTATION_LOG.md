@@ -27,6 +27,32 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 9m section 3 — Fail closed on incompatible schemas
+
+**Summary:** Check Alembic compatibility before startup recovery, gate normal
+API dependencies, retain health/UI diagnostics and show actionable schema
+errors at the app/preference boundary. Never migrate automatically.
+
+**Requirements addressed:** NFR-01.
+
+**Files:** db/schema.py, core/schema_gate.py, migrations/0014_schema_version_read;
+main.py, api/health.py; test_phase9m_schema.py; frontend App and tests; README,
+D-61 and this log.
+
+**Decisions:** Exact match, including the author's chosen ahead-schema block.
+The original app role cannot SELECT alembic_version; a new migration grants
+only that read privilege. Unreadable historical revisions are disclosed rather
+than guessed. Recovery after migration requires a restart. See D-61.
+
+**Tests:** Schema and existing health tests: 8 passed, 0 failed/skipped (12.18s),
+using a disposable PostgreSQL 16 instance and normal application grants.
+Frontend App suite: 7 passed, 0 failed/skipped (2.85s); frontend lint/types pass.
+The first checks exposed raw connection-refused handling and an asynchronous
+UI assertion; both corrected. Full finish results follow in section 6.
+
+**Known gaps / follow-ups:** Remaining request-safety/UI/filter sections and
+full verification. Existing schema data and historical migrations are untouched.
+
 ## 2026-10-26 — Phase 9m section 2 — Repair safe duplicate Terraform blocks
 
 **Summary:** Add module-atomic resource/data consolidation before the existing

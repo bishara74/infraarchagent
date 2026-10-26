@@ -2709,6 +2709,18 @@ the existing repair report and generation measurement event. No expression is
 evaluated to decide equality. This changes generated packages: future benchmark
 rounds are not byte-comparable with earlier rounds for affected packages.
 
+Section 3 (NFR-01): connectivity alone did not prove schema compatibility.
+The app derives the expected head from Alembic and checks before recovery and
+on public health requests. Exact revision equality is required: older, newer,
+unknown, unversioned, missing, unreadable and divergent revisions fail closed.
+The author chose to block ahead schemas. Normal API calls receive a safe 503;
+static UI/health remain available, and the mismatch is logged once per process.
+A migration followed by restart is required to complete skipped startup
+recovery. Migration 0014 grants SELECT only on alembic_version; historical
+migrations/grants are not rewritten. Pre-0014 app connections cannot read the
+revision, so the honest current value is unreadable with make-migrate guidance.
+No automatic migration or new application data column is introduced.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

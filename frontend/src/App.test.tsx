@@ -59,3 +59,21 @@ it('FR-UI-03 query-only navigation preserves control focus and screen changes fo
  render(<App/>);const request=screen.getByRole('link',{name:'New request'});await userEvent.click(request);expect(request).toHaveFocus();
  await userEvent.click(screen.getByRole('link',{name:'Recent runs'}));expect(screen.getByRole('main')).toHaveFocus();window.history.replaceState(null,'','/');
 });
+
+it('NFR-01 schema mismatch is actionable at the app boundary',async()=>{
+ const {ApiError}=await import('./api/client');
+ vi.mocked(api.session).mockRejectedValue(new ApiError(503,'database_schema_mismatch','Database schema is at 0012, code expects 0014 — run `make migrate`, then restart the server.'));
+ render(<App/>);
+ expect(await screen.findByText(/Database schema is at 0012/)).toHaveTextContent('run `make migrate`');
+ expect(screen.queryByRole('heading',{name:'Log in'})).toBeNull();
+});
+
+it('NFR-01 preference hydration preserves the schema repair message',async()=>{
+ const {ApiError}=await import('./api/client');
+ const status={auth_required:true,authenticated:true,mode:'account' as const,user:{id:'schema-regression',username:'reviewer',role:'reviewer' as const}};
+ setSessionStatus(status);vi.mocked(api.session).mockResolvedValue(status);
+ vi.spyOn(api,'request').mockRejectedValue(new ApiError(503,'database_schema_mismatch','Database schema is behind — run `make migrate`, then restart the server.'));
+ render(<App/>);
+ expect(await screen.findByText('Database schema is behind — run `make migrate`, then restart the server.')).toBeVisible();
+ expect(screen.queryByText(/Saved preferences could not be loaded/)).toBeNull();
+});
