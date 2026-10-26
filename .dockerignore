@@ -1,0 +1,27 @@
+# Deny by default: secrets, local configuration, history, evidence and caches
+# never enter either build context. Runtime mirrors are read-only mounts.
+**
+!backend/
+!backend/pyproject.toml
+!backend/requirements.lock
+!backend/alembic.ini
+!backend/app/
+!backend/app/**
+!backend/scripts/
+!backend/scripts/**
+!frontend/
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/index.html
+!frontend/vite.config.ts
+!frontend/tsconfig.json
+!frontend/tsconfig.node.json
+!frontend/src/
+!frontend/src/**
+!docker/
+!docker/frontend/
+!docker/frontend/default.conf
+**/__pycache__/**
+**/*.pyc
+**/.env*
+**/*.jsonl

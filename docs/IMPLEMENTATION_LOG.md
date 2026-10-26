@@ -27,6 +27,33 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 10 section 2 — Container recipes
+
+**Summary:** Add exact-tag backend/frontend Dockerfiles, secret-excluding build
+context, same-origin unbuffered nginx and a separate full-stack Compose recipe.
+
+**Requirements addressed:** NFR-01, NFR-04, FR-P-04.
+
+**Files:** backend/Dockerfile, frontend/Dockerfile, .dockerignore,
+docker/frontend/default.conf, docker-compose.full.yml, docs/containers.md,
+unit/test_phase10_containers.py, static evidence, README and this log.
+
+**Decisions:** Non-root final users; single backend worker; app credentials in
+backend, owner only in the explicit migration service; read-only provider/schema
+mirror mounts. Trivy 0.69.3 and Terraform 1.16.4 archives are checksum-verified;
+Checkov 3.3.21 has a separate environment. Setuptools 80.9.0 pins the already
+required build backend; no application dependency is added. Optional validators
+remain honest skips. First-admin setup uses the existing local/header bootstrap
+inside the backend container, without weakening proxy/authentication rules.
+
+**Tests:** 3 static contract tests passed, 0 failed/skipped. Installed hadolint
+on both Dockerfiles: exit 0, no diagnostics. Compose config --no-interpolate
+with --env-file /dev/null: exit 0. Results in section2-static* evidence.
+
+**Known gaps / follow-ups:** No images built/pulled, no machine provisioned,
+no Docker runtime/deployment proof. Author records image digests and executes
+build/migration/health/stub/browser checks. NFR-04 remains unverified.
+
 ## 2026-10-26 — Phase 10 section 1 — Clean-deployment kit
 
 **Summary:** Add author-only Ubuntu 24.04 prerequisite/clone/deployment drivers,

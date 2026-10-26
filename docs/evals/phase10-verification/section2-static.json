@@ -1,0 +1,26 @@
+[
+  {
+    "command": [
+      "hadolint",
+      "backend/Dockerfile",
+      "frontend/Dockerfile"
+    ],
+    "exit_code": 0,
+    "output": ""
+  },
+  {
+    "command": [
+      "docker",
+      "compose",
+      "--env-file",
+      "/dev/null",
+      "-f",
+      "docker-compose.full.yml",
+      "config",
+      "--no-interpolate",
+      "--quiet"
+    ],
+    "exit_code": 0,
+    "output": ""
+  }
+]

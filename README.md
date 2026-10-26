@@ -47,6 +47,11 @@ The [empty evidence template](docs/evals/phase10-clean-deployment/TEMPLATE.md)
 remains **unverified** until the author commits actual clean-machine results.
 The scripts' default plan mode performs no installation or network work.
 
+The [container recipe](docs/containers.md) provides pinned backend/frontend images
+and an isolated full-stack Compose file. Build/run commands are for the author;
+static checks do not establish image availability or deployment success. Runtime
+keys stay outside build layers and provider/schema mirrors are read-only mounts.
+
 ## Local setup
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
