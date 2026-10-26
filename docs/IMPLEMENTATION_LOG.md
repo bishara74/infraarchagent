@@ -27,6 +27,36 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 10 section 5 — Reviewed evidence index
+
+**Summary:** Publish the single-page requirement/use-case verdict register with
+linked evidence, test types and qualified deviation findings. Validate exact
+59-ID coverage and forbid premature PR-03/NFR-04 upgrades.
+
+**Requirements addressed:** all 59 specification requirement/use-case IDs,
+especially PR-03, NFR-04 and NFR-02.
+
+**Files:** scripts/phase10_evidence.py, unit/test_phase10_evidence.py,
+docs/evals/EVIDENCE.md, phase10-requirements.json, final three-framework
+traceability snapshot, TC mapping correction, fresh local performance evidence,
+D-62 and this log.
+
+**Decisions:** 46 met, 11 partly met, 1 not met, 1 unverified. PR-03 retains the
+approved target and fails it; NFR-04 awaits author clean-deployment results.
+Collection and annotations never determine verdicts. PR-04's latest local ASGI
+measurement is qualified separately from historic/model cohorts. See D-62/OQ-11.
+
+**Tests:** index unit tests: 5 passed, 0 failed. Final index plus deployment
+checks: 8 passed, 0 failed. Final traceability collection: 59 IDs, 0 uncovered,
+0 invalid annotations, 0 collection failures (collection only). `make test-perf`:
+6 passed, 0 failed, 0 skipped, 2,667 deselected; local 10 MiB ASGI download
+1.284 s. Full-suite execution counts are recorded in the closing verification
+entry, separate from this status review.
+
+**Known gaps / follow-ups:** proposed requirement amendments await approval;
+clean deployment, real container execution and Windows browser portability remain
+unverified. Historical benchmark findings retain their revision/method limits.
+
 ## 2026-10-26 — Phase 10 section 4 — Specification alignment register
 
 **Summary:** Record the superseded single-user non-goal, inventory final API/data

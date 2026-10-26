@@ -2867,6 +2867,9 @@ PR-03 is **not met** under its approved 1.5× isolated-baseline target; an
 unadopted proposal cannot turn the verdict into a pass. NFR-02 remains partly met
 because ordinary role swaps do not remove recovery/telemetry coupling (D-55).
 [The evidence index](evals/EVIDENCE.md) separates status from test linkage.
+Its reviewed 59-ID register records 46 met, 11 partly met, 1 not met and
+1 unverified; proposed IDs do not enter those counts. The final collection
+links all 59 IDs without implying that collection establishes a passing verdict.
 
 Features added through author decisions but absent as standalone specification
 requirements are listed in [the proposed amendment register](phase10-proposed-requirements.md).

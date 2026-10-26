@@ -1,0 +1,931 @@
+{
+  "schema_version": 1,
+  "approved_pr03_target": null,
+  "author_clean_deployment_evidence": null,
+  "scope": "Met denotes demonstrated behavior under the linked evidence and accepted design amendments; partly met denotes a literal scope or evidence limitation. Execution counts are separate from collection. Performance findings apply to the recorded revisions/cohorts, not every future model call. No cloud deployment has been verified.",
+  "rows": [
+    {
+      "id": "FR-A-01",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9k_architect.py",
+        "backend/tests/integration/test_phase9k_preflight.py"
+      ],
+      "deviations": [
+        "D-10",
+        "D-59"
+      ],
+      "finding": "Typed AWS service/dependency/network/storage plans are validated; real quality remains scenario-dependent."
+    },
+    {
+      "id": "FR-A-02",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/unit/test_architect.py",
+        "backend/tests/unit/test_eval_architect.py"
+      ],
+      "deviations": [],
+      "finding": "Required artifact types are explicit and structurally checked."
+    },
+    {
+      "id": "FR-A-03",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/unit/test_architect.py",
+        "backend/tests/unit/test_eval_architect.py"
+      ],
+      "deviations": [
+        "CL-05"
+      ],
+      "finding": "Ambiguity notes and correction are tested; valid input replaces the nine-character spec example."
+    },
+    {
+      "id": "FR-A-04",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9_provider_surfaces.py",
+        "backend/tests/integration/test_pipeline_orchestrator.py"
+      ],
+      "deviations": [],
+      "finding": "Bounded retries and the 150-second Architect budget are tested."
+    },
+    {
+      "id": "FR-A-05",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9l_transport.py",
+        "backend/tests/unit/test_generator_prompt.py"
+      ],
+      "deviations": [
+        "D-60"
+      ],
+      "finding": "Generators receive the plan rather than raw input; optional advisory lessons have separate governed provenance."
+    },
+    {
+      "id": "FR-G-01",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_orchestrator.py",
+        "backend/tests/unit/test_agent_factory.py"
+      ],
+      "deviations": [],
+      "finding": "Exactly three variant generators launch concurrently from the shared plan."
+    },
+    {
+      "id": "FR-G-02",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9c_events.py",
+        "backend/tests/integration/test_phase9f_generation_recovery.py"
+      ],
+      "deviations": [
+        "D-12",
+        "D-43"
+      ],
+      "finding": "Missing required artifact types stop packages before scanning."
+    },
+    {
+      "id": "FR-G-03",
+      "status": "partly met",
+      "test_types": [
+        "pytest",
+        "real original corpus"
+      ],
+      "evidence": [
+        "docs/evals/phase10-alignment/generator-rates.json",
+        "backend/tests/unit/test_directive_checks.py"
+      ],
+      "deviations": [
+        "D-13",
+        "D-62"
+      ],
+      "finding": "Original real corpus: explicit micro class 2/4; two have no literal class. Free Tier eligibility is not established."
+    },
+    {
+      "id": "FR-G-04",
+      "status": "partly met",
+      "test_types": [
+        "pytest",
+        "real original corpus"
+      ],
+      "evidence": [
+        "docs/evals/phase10-alignment/generator-rates.json",
+        "backend/tests/unit/test_directive_checks.py"
+      ],
+      "deviations": [
+        "D-13",
+        "D-62"
+      ],
+      "finding": "Original real corpus: literal Multi-AZ 3/4, autoscaling 3/4, both 2/4; directives are not guarantees."
+    },
+    {
+      "id": "FR-G-05",
+      "status": "partly met",
+      "test_types": [
+        "pytest",
+        "real original corpus"
+      ],
+      "evidence": [
+        "docs/evals/phase10-alignment/generator-rates.json",
+        "backend/tests/integration/test_security_agent.py"
+      ],
+      "deviations": [
+        "D-13",
+        "D-22",
+        "D-62"
+      ],
+      "finding": "Restrictive guidance exists, but zero first-scan Checkov HIGH/CRITICAL was 0/4 in the measured original security corpus."
+    },
+    {
+      "id": "FR-G-06",
+      "status": "partly met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9c_events.py",
+        "backend/tests/integration/test_pipeline_orchestrator.py"
+      ],
+      "deviations": [
+        "D-43"
+      ],
+      "finding": "Shared generator budget is bounded; valid late synchronous finalization can still be retained with an overrun flag."
+    },
+    {
+      "id": "FR-G-07",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9c_events.py",
+        "backend/tests/integration/test_pipeline_results.py"
+      ],
+      "deviations": [],
+      "finding": "Generated packages are persisted before the security stage."
+    },
+    {
+      "id": "FR-I-01",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_api.py",
+        "backend/tests/unit/test_input_rules.py"
+      ],
+      "deviations": [
+        "CL-04"
+      ],
+      "finding": "UTF-8/Unicode input bounds and HTTP 400 are tested; stripping/validation order follows CL-04."
+    },
+    {
+      "id": "FR-I-02",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_api.py",
+        "backend/tests/unit/test_architect.py"
+      ],
+      "deviations": [
+        "CL-04"
+      ],
+      "finding": "Infrastructure-intent rejection uses HTTP 422 after length validation (CL-04)."
+    },
+    {
+      "id": "FR-I-03",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_api.py"
+      ],
+      "deviations": [],
+      "finding": "Run persistence precedes Architect invocation."
+    },
+    {
+      "id": "FR-I-04",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9g_profiles.py",
+        "backend/tests/integration/test_pipeline_api.py"
+      ],
+      "deviations": [
+        "D-33",
+        "D-52"
+      ],
+      "finding": "Provider/model/iteration configuration and independent defaults are tested."
+    },
+    {
+      "id": "FR-P-01",
+      "status": "partly met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_orchestrator.py",
+        "backend/tests/unit/test_pipeline_demo_stub.py"
+      ],
+      "deviations": [
+        "D-19"
+      ],
+      "finding": "Ordinary stage transitions are timestamped; state/event commits are separate, leaving a hard-crash audit gap."
+    },
+    {
+      "id": "FR-P-02",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_orchestrator.py"
+      ],
+      "deviations": [],
+      "finding": "Explicitly synchronized success and failed-last-generator cases prove security waits for the barrier."
+    },
+    {
+      "id": "FR-P-03",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_canary.py",
+        "backend/tests/integration/test_pipeline_api.py"
+      ],
+      "deviations": [],
+      "finding": "Architect failure halts; generator failures preserve available variants."
+    },
+    {
+      "id": "FR-P-04",
+      "status": "partly met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_events.py",
+        "backend/tests/integration/test_phase9f_generation_recovery.py"
+      ],
+      "deviations": [
+        "D-01",
+        "D-19",
+        "OQ-04"
+      ],
+      "finding": "Replay/live SSE ordering is tested in one process; a crash between state and event commits can omit a transition."
+    },
+    {
+      "id": "FR-S-01",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_security_agent.py",
+        "backend/tests/unit/test_eval_security.py"
+      ],
+      "deviations": [
+        "D-31"
+      ],
+      "finding": "Concurrent Checkov/Trivy/Terraform scanning replaces tfsec under accepted D-31."
+    },
+    {
+      "id": "FR-S-02",
+      "status": "partly met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9f_automatic.py",
+        "backend/tests/integration/test_phase9f_fixer_model.py"
+      ],
+      "deviations": [
+        "D-22"
+      ],
+      "finding": "Automatic remediation targets blocking findings; LOW/unknown and explicit variant exemptions remain advisory."
+    },
+    {
+      "id": "FR-S-03",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9e_continuation.py",
+        "backend/tests/integration/test_phase9e_loop_grounding.py"
+      ],
+      "deviations": [
+        "D-44",
+        "D-45"
+      ],
+      "finding": "Scan/fix/rescan and allowance exhaustion are tested; author-approved default is four passes."
+    },
+    {
+      "id": "FR-S-04",
+      "status": "partly met",
+      "test_types": [
+        "pytest",
+        "vitest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9e_continuation.py",
+        "backend/tests/integration/test_phase9f_a2_deadlines.py"
+      ],
+      "deviations": [
+        "D-22",
+        "D-23"
+      ],
+      "finding": "Blocking findings are retained, but advisory samples, session history and embedded diffs are bounded with omission counts."
+    },
+    {
+      "id": "FR-S-05",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9e_continuation.py",
+        "backend/tests/integration/test_pipeline_review.py"
+      ],
+      "deviations": [],
+      "finding": "Exhausted remediation proceeds to validation and exposes unresolved findings."
+    },
+    {
+      "id": "FR-S-06",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_security_agent.py",
+        "backend/tests/unit/test_security_diff.py"
+      ],
+      "deviations": [
+        "D-23"
+      ],
+      "finding": "Cumulative original-to-current diffs cover changed/added/deleted files and absent final newlines."
+    },
+    {
+      "id": "FR-S-07",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_automatic_validation_repair.py",
+        "backend/tests/integration/test_phase9l_transport.py"
+      ],
+      "deviations": [
+        "D-06",
+        "D-47"
+      ],
+      "finding": "Strict clean scan plus valid validation gives checks_passed; exhausted/failed/unavailable validation requires review."
+    },
+    {
+      "id": "FR-S-08",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9g_labels.py",
+        "backend/tests/integration/test_phase9g_profiles.py"
+      ],
+      "deviations": [
+        "D-47"
+      ],
+      "finding": "Approval creates engineer_approved without rescan and retains failed-check evidence."
+    },
+    {
+      "id": "FR-S-09",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_automatic_validation_repair.py",
+        "backend/tests/integration/test_phase9e_continuation.py"
+      ],
+      "deviations": [
+        "D-37",
+        "D-38"
+      ],
+      "finding": "Retry resets the budget, carries feedback/validation targets and preserves the original audit baseline."
+    },
+    {
+      "id": "FR-S-10",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9f_seed_http.py",
+        "backend/tests/integration/test_phase9g_labels.py"
+      ],
+      "deviations": [
+        "D-47"
+      ],
+      "finding": "Rejection creates a labelled downloadable package with its recorded reason."
+    },
+    {
+      "id": "FR-UI-01",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9h_preferences.py",
+        "backend/tests/integration/test_phase9j_metadata.py"
+      ],
+      "deviations": [],
+      "finding": "Input controls, validation and the active-run submit guard are covered in components and browser flows."
+    },
+    {
+      "id": "FR-UI-02",
+      "status": "met",
+      "test_types": [
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "frontend/e2e/review-flow.spec.ts",
+        "frontend/e2e/round2.spec.ts"
+      ],
+      "deviations": [
+        "D-40"
+      ],
+      "finding": "SSE-driven stage badges, sequence markers and live logs update without polling."
+    },
+    {
+      "id": "FR-UI-03",
+      "status": "met",
+      "test_types": [
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "frontend/e2e/phase9m-gates.spec.ts",
+        "frontend/e2e/review-flow.spec.ts"
+      ],
+      "deviations": [
+        "D-39",
+        "D-58"
+      ],
+      "finding": "Comparison shows variants/failures; URL-addressable inspection supplies file navigation."
+    },
+    {
+      "id": "FR-UI-04",
+      "status": "met",
+      "test_types": [
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "frontend/e2e/review-flow.spec.ts",
+        "frontend/e2e/round2.spec.ts"
+      ],
+      "deviations": [
+        "D-39",
+        "D-58"
+      ],
+      "finding": "Unified diff additions/removals use markers and distinct colours; raw/format-aware views preserve source bytes."
+    },
+    {
+      "id": "FR-UI-05",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/unit/test_phase9i_profiles.py",
+        "frontend/e2e/review-flow.spec.ts"
+      ],
+      "deviations": [
+        "D-35",
+        "D-39"
+      ],
+      "finding": "Passed/failed/skipped validation and resolved/unresolved findings have distinct labels/styles and file links."
+    },
+    {
+      "id": "FR-UI-06",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9_seed.py",
+        "backend/tests/integration/test_phase9g_auth.py"
+      ],
+      "deviations": [
+        "D-47",
+        "D-58"
+      ],
+      "finding": "Labelled individual/bundle downloads enforce server gates and preserve generated files."
+    },
+    {
+      "id": "FR-UI-07",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_phase9h_accounts.py",
+        "backend/tests/integration/test_phase9j_accounts.py"
+      ],
+      "deviations": [
+        "D-47",
+        "D-61"
+      ],
+      "finding": "Settled approve/reject controls are hidden; primary download and compact decision provenance are restored."
+    },
+    {
+      "id": "FR-V-01",
+      "status": "partly met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_demo_scenario.py",
+        "backend/tests/unit/test_eval_validation.py"
+      ],
+      "deviations": [
+        "D-35"
+      ],
+      "finding": "Static references are checked, but dynamic/unresolved cases and server/cluster-dependent artifact checks have documented limits."
+    },
+    {
+      "id": "FR-V-02",
+      "status": "partly met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/unit/test_eval_validation.py",
+        "backend/tests/unit/test_validation_naming.py"
+      ],
+      "deviations": [
+        "D-35",
+        "OQ-10"
+      ],
+      "finding": "Naming checks are conservative heuristics/warnings; deployment-role semantics remain unresolved."
+    },
+    {
+      "id": "FR-V-03",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_automatic_validation_repair.py",
+        "backend/tests/integration/test_phase9e_loop_grounding.py"
+      ],
+      "deviations": [
+        "D-35"
+      ],
+      "finding": "Real offline Terraform validate uses pinned mirrored providers; required-tool unavailability does not count as valid."
+    },
+    {
+      "id": "FR-V-04",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_automatic_validation_repair.py",
+        "backend/tests/integration/test_phase9f_generation_recovery.py"
+      ],
+      "deviations": [
+        "D-35"
+      ],
+      "finding": "Versioned report, counts, failures and omission metadata are persisted and shown with distinct statuses."
+    },
+    {
+      "id": "FR-V-05",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_validator_agent.py",
+        "backend/tests/unit/test_agent_factory.py"
+      ],
+      "deviations": [
+        "D-06",
+        "D-47"
+      ],
+      "finding": "Validation failures/errors remain visible and require a decision before download."
+    },
+    {
+      "id": "NFR-01",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_automatic_validation_repair.py",
+        "backend/tests/integration/test_canary.py"
+      ],
+      "deviations": [
+        "D-42",
+        "D-49\u201353",
+        "D-60",
+        "D-61"
+      ],
+      "finding": "Secret/canary, auth, encrypted-credential, path, schema and injection boundaries are tested; heuristic/shared-host limits remain documented."
+    },
+    {
+      "id": "NFR-02",
+      "status": "partly met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_orchestrator.py"
+      ],
+      "deviations": [
+        "D-55"
+      ],
+      "finding": "Six role swaps prove ordinary dispatch seams; concrete recovery and private generator telemetry remain coupled."
+    },
+    {
+      "id": "NFR-03",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/unit/test_config.py",
+        "backend/tests/unit/test_llm_base.py"
+      ],
+      "deviations": [
+        "D-07"
+      ],
+      "finding": "Stub and mocked provider adapters exercise the two-method contract without agent edits."
+    },
+    {
+      "id": "NFR-04",
+      "status": "unverified",
+      "test_types": [
+        "static kit tests",
+        "author deployment pending"
+      ],
+      "evidence": [
+        "docs/evals/phase10-clean-deployment/TEMPLATE.md",
+        "docs/deployment.md"
+      ],
+      "deviations": [
+        "D-31",
+        "D-35",
+        "D-62"
+      ],
+      "finding": "Recipes/static checks exist; no author clean Ubuntu plus Windows Chrome/Firefox/Edge execution evidence is committed."
+    },
+    {
+      "id": "PR-01",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "real benchmark"
+      ],
+      "evidence": [
+        "docs/evals/phase9-final-report/report.md",
+        "docs/evals/phase9-bench-real-20261020T010134093069Z/summary.md"
+      ],
+      "deviations": [
+        "D-43",
+        "D-55"
+      ],
+      "finding": "Two matched real ten-run sets have medians 162.39s/164.27s; API settlement is the documented UI-availability proxy."
+    },
+    {
+      "id": "PR-02",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright",
+        "browser timing"
+      ],
+      "evidence": [
+        "docs/evals/phase9-pr02-20261013T182241730100Z/summary.md",
+        "backend/tests/integration/test_pipeline_sse.py"
+      ],
+      "deviations": [
+        "D-40"
+      ],
+      "finding": "Recorded live server-event-to-DOM measurements meet 1000ms; evidence is host/revision-specific."
+    },
+    {
+      "id": "PR-03",
+      "status": "not met",
+      "test_types": [
+        "pytest",
+        "real benchmark"
+      ],
+      "evidence": [
+        "docs/evals/phase9-final-report/report.md",
+        "docs/evals/phase9-bench-real-20261020T010134093069Z/summary.md"
+      ],
+      "deviations": [
+        "D-43",
+        "D-55"
+      ],
+      "finding": "Both matched final sets fail the approved <=1.5x isolated-baseline target; no revised target is approved."
+    },
+    {
+      "id": "PR-04",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "download timing"
+      ],
+      "evidence": [
+        "docs/evals/phase9l-pr04/summary.md",
+        "backend/tests/integration/test_phase9_seed.py",
+        "docs/evals/phase9-backend-perf-20261026T115901464252Z/results.json"
+      ],
+      "deviations": [
+        "D-55",
+        "D-60"
+      ],
+      "finding": "Post-fix ASGI near-10MB measurements pass the 2s bound; client/method and historical failures are disclosed. Phase 10 isolated local stub rerun: 10 MiB ASGI download in 1.284 s; not browser/WAN throughput."
+    },
+    {
+      "id": "PR-05",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "real benchmark"
+      ],
+      "evidence": [
+        "docs/evals/phase9-final-report/report.md",
+        "docs/evals/phase9-bench-real-20261020T010134093069Z/summary.md"
+      ],
+      "deviations": [
+        "D-43",
+        "D-46",
+        "D-55"
+      ],
+      "finding": "Both matched final sets record PASS; earlier A/A2 failures and cooperative/late-finalization limits remain visible."
+    },
+    {
+      "id": "UC-01",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_api.py",
+        "frontend/e2e/review-flow.spec.ts"
+      ],
+      "deviations": [],
+      "finding": "Submission, persistence, validation errors and progress navigation are exercised."
+    },
+    {
+      "id": "UC-02",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_api.py",
+        "backend/tests/integration/test_pipeline_orchestrator.py"
+      ],
+      "deviations": [],
+      "finding": "Live progress, failed-agent messages and partial settlement are exercised."
+    },
+    {
+      "id": "UC-03",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_orchestrator.py",
+        "backend/tests/integration/test_pipeline_results.py"
+      ],
+      "deviations": [],
+      "finding": "Available/missing variants and inspection navigation are exercised."
+    },
+    {
+      "id": "UC-04",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_security_agent.py",
+        "backend/tests/unit/test_security_diff.py"
+      ],
+      "deviations": [
+        "D-39"
+      ],
+      "finding": "Security fix annotations, cumulative diffs and unresolved findings are exercised."
+    },
+    {
+      "id": "UC-05",
+      "status": "met",
+      "test_types": [
+        "vitest",
+        "playwright"
+      ],
+      "evidence": [
+        "frontend/e2e/review-flow.spec.ts",
+        "frontend/src/components/review.test.tsx"
+      ],
+      "deviations": [
+        "D-35"
+      ],
+      "finding": "Validation summary/status/file navigation has component and browser coverage."
+    },
+    {
+      "id": "UC-06",
+      "status": "met",
+      "test_types": [
+        "pytest",
+        "playwright"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_download.py",
+        "frontend/e2e/review-flow.spec.ts"
+      ],
+      "deviations": [],
+      "finding": "Labelled ZIP content, failure handling and complete browser download are covered."
+    },
+    {
+      "id": "UC-07",
+      "status": "met",
+      "test_types": [
+        "pytest"
+      ],
+      "evidence": [
+        "backend/tests/integration/test_pipeline_orchestrator.py"
+      ],
+      "deviations": [],
+      "finding": "Fatal Architect/total-generator failure and partial-success alternatives are covered."
+    },
+    {
+      "id": "UC-08",
+      "status": "met",
+      "test_types": [
+        "playwright"
+      ],
+      "evidence": [
+        "frontend/e2e/phase10-review.spec.ts",
+        "frontend/e2e/review-flow.spec.ts"
+      ],
+      "deviations": [
+        "D-47"
+      ],
+      "finding": "Approve/reject/retry, pending gates, retained evidence and settled downloads are exercised."
+    }
+  ]
+}
