@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-26 — Phase 10 section 1 — Clean-deployment kit
+
+**Summary:** Add author-only Ubuntu 24.04 prerequisite/clone/deployment drivers,
+private restart state and a Windows Chrome/Firefox/Edge acceptance checklist.
+Leave a clearly unverified evidence template for author results.
+
+**Requirements addressed:** NFR-04, NFR-01.
+
+**Files:** tools/deployment/{clean-ubuntu.sh,install-prerequisites.sh,
+clean_deploy.py,private-run.py}; docs/deployment.md, clean-deployment template,
+unit/test_phase10_deployment.py, Makefile lint coverage, README and this log.
+
+**Decisions:** Runtime keys/passwords are generated locally and never printed;
+private mode-0600 runtime JSON/logs stay outside the repository and evidence.
+Trivy 0.69.3, Terraform 1.16.4 and Node 24.21.0 downloads verify release checksums;
+Checkov is 3.3.21. Existing optional validators remain separate. D-31/D-35
+substitutions remain explicit. Author-run provisioning is distinct from local
+static testing; NFR-04 remains unverified. No new specification open question.
+
+**Tests:** Shell syntax checks passed for both scripts. Deployment plan and
+synthetic loopback-HTTP contract tests: 3 passed, 0 failed/skipped. No installs,
+downloads, remote services or clean deployment were executed. Full finish checks
+are recorded at Phase 10 closure; recipes are included in lint coverage.
+
+**Known gaps / follow-ups:** Author must execute the exact-revision checklist in
+a clean Ubuntu distribution, fill browser/version/outcome evidence and review it.
+Container deployment is separately documented in section 2.
+
 ## 2026-10-26 — Phase 10 section 0 / 0b / 0c — Direct admin lessons and settled review
 
 **Summary:** Activate passing admin lessons in the proposal transaction; preserve

@@ -37,6 +37,16 @@ reaches `pending_review` through the existing Option C rules. See
 [`docs/design-deviations.md`](docs/design-deviations.md) for where the
 implementation differs from the thesis design.
 
+## Clean deployment
+
+For a fresh Ubuntu 24.04 environment, use the author-run
+[deployment kit and browser checklist](docs/deployment.md). It pins prerequisites,
+clones a full revision, generates private keys locally without printing them,
+provisions PostgreSQL/migrations/mirrors, builds the UI and checks a stub run.
+The [empty evidence template](docs/evals/phase10-clean-deployment/TEMPLATE.md)
+remains **unverified** until the author commits actual clean-machine results.
+The scripts' default plan mode performs no installation or network work.
+
 ## Local setup
 
 Prerequisites: Python 3.11 or newer, Docker with Compose, and an available
