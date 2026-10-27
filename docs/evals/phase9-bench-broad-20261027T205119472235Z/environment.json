@@ -1,0 +1,1421 @@
+{
+  "recorded_at": "2026-10-27T20:51:19.475479+00:00",
+  "mode": "real",
+  "provider": "openai",
+  "model": "openai/gpt-oss-120b:nitro",
+  "fixing_model": "openai/gpt-oss-120b:nitro",
+  "cpu_model": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+  "cpu_count": 8,
+  "ram_bytes": 8163885056,
+  "os": "Linux",
+  "os_version": "#1 SMP PREEMPT_DYNAMIC Tue Oct  6 19:13:07 UTC 2026",
+  "kernel": "6.18.54.1-microsoft-standard-WSL2",
+  "wsl": true,
+  "python": "3.12.3",
+  "node": "v24.21.0",
+  "git_commit": "895c2cdf09ca01e1659e6cff93473dc9a271daa4",
+  "git_tracked_dirty": false,
+  "python_packages": {
+    "fastapi": "0.141.1",
+    "httpx": "0.28.1",
+    "openai": "3.19.2",
+    "anthropic": "1.8.0",
+    "pytest": "9.1.1"
+  },
+  "frontend_packages": {
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/space-grotesk": "5.3.0",
+    "@vscode/codicons": "0.0.46-24",
+    "diff": "9.0.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router": "8.4.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.63.0",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@types/node": "24.19.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "eslint": "10.11.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.12.0",
+    "jsdom": "30.1.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vite": "8.3.1",
+    "vitest": "5.0.2"
+  },
+  "tools": {
+    "checkov": "3.3.21",
+    "trivy": "Version: 0.69.3",
+    "terraform": "Terraform v1.16.4",
+    "helm": null,
+    "hadolint": "Haskell Dockerfile Linter 2.15.1",
+    "promtool": "promtool, version 3.15.0 (branch: HEAD, revision: 5241a27fe3c6983549fccc32f6e65917408c63cd)",
+    "ansible-lint": "ansible-lint 26.9.0 using ansible-core:2.21.5 ansible-compat:26.9.0 ruamel-yaml:0.19.1"
+  },
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "registration_commit": "7884c2f251c02737e02c04a4b3bd109e440f60ce",
+  "runs_per_scenario": 2,
+  "planned_runs": 20,
+  "broad_smoke": false,
+  "generator_settings": {
+    "max_output_tokens": 16000,
+    "structured_output": "json_schema",
+    "attempt_timeout_seconds": 140.0,
+    "completion_timeout_seconds": 150.0,
+    "generator_budget_seconds": 150.0,
+    "llm_max_attempts": 3,
+    "max_package_attempts": 3,
+    "fix_attempt_timeout_seconds": 45.0,
+    "security_iteration_timeout_seconds": 60.0,
+    "security_deadline_seconds": 240.0,
+    "security_fix_max_resources": 2,
+    "security_fix_max_findings": 12,
+    "security_partial_max_groups": 6
+  },
+  "explicit_architect_model": null,
+  "architect_thinking": null,
+  "provider_preferences": {
+    "generator_cost": "Cerebras",
+    "generator_performance": "Cerebras",
+    "generator_security": "Cerebras",
+    "fixer": "Cerebras"
+  },
+  "provider_status_force": false,
+  "benchmark_preflight": {
+    "selections": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "thinking_mode": "low",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "thinking_mode": "low",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "thinking_mode": "low",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "thinking_mode": "low",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "thinking_mode": "low",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "snapshot": {
+      "source": "https://openrouter.ai/api/v1",
+      "captured_at": "2026-10-24T21:54:12.048822+00:00",
+      "sha256": "1acd556a66bc3ce5114fe41e7c89e682c0472f1f478c725f985447f0165e28d5"
+    }
+  },
+  "provider_status": [
+    {
+      "model": "openai/gpt-oss-120b:nitro",
+      "preferred_provider": "cerebras/fp16",
+      "status": "ok",
+      "endpoints": [
+        {
+          "name": "Cerebras | openai/gpt-oss-120b",
+          "context_length": 131072,
+          "pricing": {
+            "prompt": "0.00000035",
+            "completion": "0.00000075",
+            "input_cache_read": "0.00000035",
+            "discount": 0
+          },
+          "provider_name": "Cerebras",
+          "tag": "cerebras/fp16",
+          "max_completion_tokens": 40960,
+          "max_prompt_tokens": null,
+          "supported_parameters": [
+            "reasoning",
+            "include_reasoning",
+            "max_tokens",
+            "temperature",
+            "top_p",
+            "stop",
+            "seed",
+            "logprobs",
+            "top_logprobs",
+            "tools",
+            "tool_choice",
+            "response_format",
+            "structured_outputs",
+            "frequency_penalty",
+            "presence_penalty",
+            "logit_bias",
+            "reasoning_effort"
+          ],
+          "status": 0,
+          "uptime_last_30m": 100,
+          "uptime_last_5m": 100,
+          "uptime_last_1d": 100
+        }
+      ],
+      "checked_at": "2026-10-27T20:51:23.535016+00:00"
+    }
+  ],
+  "experiment_cost": null,
+  "recommended_architect_model": "anthropic/claude-sonnet-5.5",
+  "recommendation_advisory": true,
+  "provider_aliases": {
+    "claudeonaws": "claudeplatformonaws",
+    "azure/global": "azure",
+    "amazonbedrock": "amazonbedrock",
+    "anthropic": "anthropic",
+    "googlevertex/global": "google",
+    "amazonbedrock/euwest1": "amazonbedrock",
+    "googlevertex/useast5": "google",
+    "amazonbedrock/global": "amazonbedrock",
+    "amazonbedrock/us": "amazonbedrock",
+    "googlevertex/europe": "google",
+    "azure/us": "azure",
+    "googlevertex/us": "google",
+    "amazonbedrock/useast1": "amazonbedrock",
+    "nearai/fp4": "nearai",
+    "venice/int4": "venice",
+    "coreweave/fp4": "coreweave",
+    "dekallm/bf16": "dekallm",
+    "akashml/bf16": "akashml",
+    "deepinfra/bf16": "deepinfra",
+    "crusoe/bf16": "crusoe",
+    "mancer/fp8": "mancer2",
+    "novita/fp4": "novita",
+    "digitalocean": "digitalocean",
+    "baseten/fp4/us": "baseten",
+    "baseten/fp4": "baseten",
+    "parasail/fp4": "parasail",
+    "sambanova": "sambanova",
+    "nebius/fp4": "nebius",
+    "siliconflow/fp8": "siliconflow",
+    "phala": "phala",
+    "together": "together",
+    "groq": "groq",
+    "mara": "mara",
+    "cerebras/fp16": "cerebras"
+  },
+  "resolved_agent_selections": {
+    "4500d38d-2a86-47f3-a4a5-cb96763609b6": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "c7d8cb87-d1b3-4fc1-a206-ea116e63f86c": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "a2adf369-600c-4472-960f-d32ae39e0790": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "1404d80a-5bbd-472f-9cd8-7b257919f3d6": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "000ef09a-6b46-4a10-a12f-ab79f1a26819": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "7d80a315-89bf-41a5-8d90-24dcc810d59d": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "e0d8daa4-5cf6-4cc8-8fc5-70ae908082cf": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "b06075e4-6640-4f0b-9190-7353d3c352c0": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "be25c51a-aeb9-4bf1-bd57-5f0764f8076d": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "08a1e2ec-e980-4469-b366-fadd47c0339c": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "da17a68a-8f4a-4908-a8df-f8eb4059ff42": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "dee698ac-6a81-4ee6-b688-7bc69362d7c4": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "ba8f6dd1-e278-4c7b-9de2-6fd3be74b4cf": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "338b530a-9712-48db-b33c-c1d518eed66e": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "113a47f2-5c92-4d8e-88af-08977eca0d7f": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "2a69d77d-3e8c-48bd-9fe9-65746b54bb1b": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "897fb4bb-1f6d-4bdd-bf75-a5a9bb9237c7": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "3dae2cb1-be93-44cf-b0c9-00dcb92105f7": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "9373ec16-fcbe-48d0-bbe5-3ccae6f424cd": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    },
+    "435f5bc8-e68f-4798-8a4a-384d13bf200b": {
+      "architect": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": []
+      },
+      "generator_cost": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_performance": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "generator_security": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      },
+      "fixer": {
+        "model": "openai/gpt-oss-120b:nitro",
+        "provider": "openai",
+        "thinking_mode": "low",
+        "configured_thinking": "low",
+        "request_style": "legacy",
+        "reasoning_capable": null,
+        "reasoning_capability_source": "unprobed",
+        "provider_order": [
+          "cerebras/fp16"
+        ]
+      }
+    }
+  }
+}

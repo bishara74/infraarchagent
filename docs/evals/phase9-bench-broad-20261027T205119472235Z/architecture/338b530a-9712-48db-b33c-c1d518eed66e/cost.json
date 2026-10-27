@@ -1,0 +1,75 @@
+{
+  "run_id": "338b530a-9712-48db-b33c-c1d518eed66e",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 7,
+  "complexity": 4,
+  "round": 2,
+  "sequence": 14,
+  "variant": "cost",
+  "plan_sha256": "3879dd0522fcb9ab21cbe5cda9851661744eb37c1df29e681be39e376b0b6e27",
+  "original_files_sha256": "57be8b5167d60a463edfbde20b83b67d07dab1c721e8eee1686a72c0e3872101",
+  "retained_files_sha256": "3597f0fea7e985a0821a644022851b8413912bd54de486afce08ec88a7a6d72f",
+  "plan": {
+    "classification": "absent",
+    "resources": [],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 165,
+        "source_sha256": "531ed92d704a8d99be27637efcc66b648a1f26f4e7055a9b29d7e309f066de57"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb_access",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 329,
+        "source_sha256": "531ed92d704a8d99be27637efcc66b648a1f26f4e7055a9b29d7e309f066de57"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 143,
+        "source_sha256": "0a7e77e89304b8f5301a7e03ab670e0db3d93e1e2a87913a0e2c6067f95bad5f"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb_access",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 316,
+        "source_sha256": "0a7e77e89304b8f5301a7e03ab670e0db3d93e1e2a87913a0e2c6067f95bad5f"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": true
+}

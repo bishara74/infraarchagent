@@ -1,0 +1,55 @@
+{
+  "run_id": "be25c51a-aeb9-4bf1-bd57-5f0764f8076d",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 9,
+  "complexity": 5,
+  "round": 1,
+  "sequence": 9,
+  "variant": "security",
+  "plan_sha256": "38f38bad0bc0c9ddafbe61dd55073347a2d86cb63e97c93b590c0e4dfa03cc43",
+  "original_files_sha256": "b2c108cd60f9a715c46c892602e580417701b53ad74fc857c3b174f6319caf7f",
+  "retained_files_sha256": "278103aed9825c99c7a0d26ad9c25456e40a00b57fdfb0140ffc0e0f9170c983",
+  "plan": {
+    "classification": "absent",
+    "resources": [],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.public_alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 147,
+        "source_sha256": "adf48c1e378b236e9fdeee3c589e73cf46bf2914ecc7a1b43a5ad12cc578dfcf"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.public_alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 150,
+        "source_sha256": "e9a695b69e22fe258963678119fc290e17e97a719b83b3341a2966d2ee43cb03"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": true
+}
