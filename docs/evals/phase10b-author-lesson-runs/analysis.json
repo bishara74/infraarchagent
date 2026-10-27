@@ -1,0 +1,1957 @@
+{
+  "schema_version": 1,
+  "runs": [
+    {
+      "run": "run1",
+      "file": "run1-no-lessons.json",
+      "plan_sha256": "892e542bb27facb0a26739f51a775122e90c6c5b3515bcc4ff8fe625fbe7e1d8",
+      "request_sha256": "8bbcd07e1546ea2273df9806981d1d013bfc007c2d9080b358e54c6d6494e003",
+      "set_version": 0,
+      "service_names": [
+        "api-service",
+        "alb",
+        "rds-db",
+        "cloudwatch-logs",
+        "autoscaling"
+      ],
+      "public_services": [
+        "alb"
+      ],
+      "private_services": [
+        "api-service",
+        "rds-db"
+      ],
+      "storage_entries": 1
+    },
+    {
+      "run": "run2",
+      "file": "run2-lesson-v1.json",
+      "plan_sha256": "5f364a194c4dc7b1098f3e0acf4d65285f534d2699110da7cd95eb82280dda3c",
+      "request_sha256": "8bbcd07e1546ea2273df9806981d1d013bfc007c2d9080b358e54c6d6494e003",
+      "set_version": 1,
+      "service_names": [
+        "api-fargate",
+        "api-alb",
+        "api-rds",
+        "api-ecr",
+        "api-cloudwatch"
+      ],
+      "public_services": [
+        "api-alb"
+      ],
+      "private_services": [
+        "api-fargate",
+        "api-rds",
+        "api-ecr"
+      ],
+      "storage_entries": 1
+    },
+    {
+      "run": "run3",
+      "file": "run3-lessons-v2.json",
+      "plan_sha256": "102ec27f37a024d235138d3b2de71df3d21478be036c201b9c12ada201ad3504",
+      "request_sha256": "8bbcd07e1546ea2273df9806981d1d013bfc007c2d9080b358e54c6d6494e003",
+      "set_version": 2,
+      "service_names": [
+        "app-service",
+        "load-balancer",
+        "database",
+        "secret-manager",
+        "log-group"
+      ],
+      "public_services": [
+        "load-balancer"
+      ],
+      "private_services": [
+        "app-service",
+        "database",
+        "secret-manager",
+        "log-group"
+      ],
+      "storage_entries": 1
+    },
+    {
+      "run": "run4",
+      "file": "run4-lessons-v5.json",
+      "plan_sha256": "c4d7970e7b81a0f10d937b74802e4f44f32cbb0d9b40ecc9ac34d6e07f699325",
+      "request_sha256": "8bbcd07e1546ea2273df9806981d1d013bfc007c2d9080b358e54c6d6494e003",
+      "set_version": 5,
+      "service_names": [
+        "vpc-main",
+        "subnet-a",
+        "subnet-b",
+        "natgw",
+        "alb",
+        "acm-cert",
+        "ecr-repo",
+        "ecs-cluster",
+        "api-service",
+        "postgres-db",
+        "db-secret",
+        "log-group"
+      ],
+      "public_services": [
+        "alb"
+      ],
+      "private_services": [
+        "api-service",
+        "postgres-db",
+        "db-secret",
+        "log-group"
+      ],
+      "storage_entries": 1
+    }
+  ],
+  "rows": [
+    {
+      "run": "run1",
+      "variant": "cost",
+      "lessons": {
+        "1": "not_applicable",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 0,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 9,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          },
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": "omitted",
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 0,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": true,
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "not_followed",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run1",
+      "variant": "performance",
+      "lessons": {
+        "1": "not_applicable",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 0,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 1,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          },
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": "omitted",
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 0,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 1,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          },
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": "omitted",
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run1",
+      "variant": "security",
+      "lessons": {
+        "1": "not_applicable",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private_assoc",
+            "aws_route_table_association.public_assoc",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private_assoc",
+            "aws_route_table_association.public_assoc",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run2",
+      "variant": "cost",
+      "lessons": {
+        "1": "followed",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 1,
+          "proven_nat_routes": 1,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [
+          true
+        ],
+        "az_identities": [
+          "data.aws_availability_zones.available:0"
+        ],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 1,
+          "proven_nat_routes": 1,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [
+          true
+        ],
+        "az_identities": [
+          "data.aws_availability_zones.available:0"
+        ],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run2",
+      "variant": "performance",
+      "lessons": {
+        "1": "unknown",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_eip.nat",
+            "aws_nat_gateway.nat",
+            "aws_route.nat",
+            "aws_route_table.private",
+            "aws_route_table_association.private",
+            "aws_route_table_association.public",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 1,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          },
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": "omitted",
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_eip.nat",
+            "aws_nat_gateway.nat",
+            "aws_route.nat",
+            "aws_route_table.private",
+            "aws_route_table_association.private",
+            "aws_route_table_association.public",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 1,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          },
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": "omitted",
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run2",
+      "variant": "security",
+      "lessons": {
+        "1": "unknown",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private",
+            "aws_route_table_association.public",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 5,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          },
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": "omitted",
+            "access_logs": false,
+            "access_logs_enabled": false
+          },
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": "omitted",
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private",
+            "aws_route_table_association.public",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.api_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run3",
+      "variant": "cost",
+      "lessons": {
+        "1": "unknown",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private_assoc",
+            "aws_route_table_association.public_assoc",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.app_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private_assoc",
+            "aws_route_table_association.public_assoc",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.app_alb",
+            "file_path": "terraform/main.tf",
+            "internal": true,
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "not_followed",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "checks_passed"
+    },
+    {
+      "run": "run3",
+      "variant": "performance",
+      "lessons": {
+        "1": "unknown",
+        "2": "not_followed",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private_assoc",
+            "aws_route_table_association.public_assoc",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 0,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": [
+            "aws_route_table_association.private_assoc",
+            "aws_route_table_association.public_assoc",
+            "aws_subnet.private",
+            "aws_subnet.public"
+          ]
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run3",
+      "variant": "security",
+      "lessons": {
+        "1": "unknown",
+        "2": "not_applicable",
+        "3": "not_applicable"
+      },
+      "original": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.app_alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "followed",
+        "public_subnet_evidence": [
+          true,
+          true
+        ],
+        "az_identities": [
+          "data.aws_availability_zones.available:0",
+          "data.aws_availability_zones.available:1"
+        ],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "unknown",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": true,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.app_alb",
+            "file_path": "terraform/main.tf",
+            "internal": true,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "not_followed",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run4",
+      "variant": "cost",
+      "lessons": {
+        "1": "followed",
+        "2": "not_applicable",
+        "3": "unknown"
+      },
+      "original": {
+        "outbound": "followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 2,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [
+          true
+        ],
+        "az_identities": [
+          null
+        ],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 2,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "unknown",
+        "public_subnet_evidence": [
+          true
+        ],
+        "az_identities": [
+          null
+        ],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    },
+    {
+      "run": "run4",
+      "variant": "performance",
+      "lessons": {
+        "1": "not_followed",
+        "2": "followed",
+        "3": "followed"
+      },
+      "original": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "followed",
+        "public_subnet_evidence": [
+          true,
+          true
+        ],
+        "az_identities": [
+          "data.aws_availability_zones.available:0",
+          "data.aws_availability_zones.available:1"
+        ],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": true,
+            "access_logs": true,
+            "access_logs_enabled": true
+          }
+        ],
+        "public_lb_two_az": "not_followed",
+        "public_subnet_evidence": [],
+        "az_identities": [],
+        "parse_errors": 0
+      },
+      "status": "checks_passed"
+    },
+    {
+      "run": "run4",
+      "variant": "security",
+      "lessons": {
+        "1": "not_followed",
+        "2": "not_applicable",
+        "3": "not_followed"
+      },
+      "original": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "not_followed",
+        "public_subnet_evidence": [
+          false
+        ],
+        "az_identities": [
+          "data.aws_availability_zones.available:0"
+        ],
+        "parse_errors": 0
+      },
+      "final": {
+        "outbound": "not_followed",
+        "outbound_evidence": {
+          "nat_gateways": 1,
+          "vpc_endpoints": 0,
+          "endpoint_services": {
+            "ecr.api": 0,
+            "ecr.dkr": 0,
+            "logs": 0,
+            "secretsmanager": 0
+          },
+          "task_subnets": 2,
+          "proven_nat_routes": 0,
+          "resolution_unknown": false,
+          "unresolved_instances": []
+        },
+        "logging_and_no_duplicates": "not_followed",
+        "duplicate_resource_blocks": 0,
+        "load_balancers": [
+          {
+            "resource": "aws_lb.alb",
+            "file_path": "terraform/main.tf",
+            "internal": false,
+            "access_logs": false,
+            "access_logs_enabled": false
+          }
+        ],
+        "public_lb_two_az": "not_followed",
+        "public_subnet_evidence": [
+          false
+        ],
+        "az_identities": [
+          "data.aws_availability_zones.available:0"
+        ],
+        "parse_errors": 0
+      },
+      "status": "pending_review"
+    }
+  ],
+  "calls": [
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "3ae86097-2b76-43d3-aa4e-c29190192073",
+      "role": "architect",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "26b33a03-7ae7-4e5b-a7ad-8aff6e9e186b",
+      "role": "generator_cost",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "9ed6243c-881b-4fdd-aaac-558f5108f6c8",
+      "role": "generator_performance",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "00db435a-75b3-4d54-81da-accd2b1c011d",
+      "role": "generator_security",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "0786a2b5-44ff-44c0-af1c-c6492d3332cb",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "961c55b8-9770-442f-890c-70a7c362585c",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "468469ce-86a3-4708-9214-293868f66cb4",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "2cfa8fa9-d279-4283-bb4c-b37349c40a3b",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "2e0173fd-4e7a-4501-a7d3-ee7fa680f68f",
+      "role": "fixer",
+      "outcome": "cancelled",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "33278d30-7e91-40e0-a49b-7efa0bd2402e",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "2688327f-76b4-4458-84be-d391c44fc7d8",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "83db0e37-05fc-4676-8dc2-13bd1da714a9",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "a0cfd016-7984-44bf-a1b1-73521fbe56f4",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "7de7db68-6b19-4968-9769-b6fa304e636f",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "8ece8a0c-10ce-4503-9416-16f8a856cb14",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "b430340f-bda2-4e29-a407-cf8051d02ae5",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "d2223c0d-0a73-4654-9097-2b88ad6e8446",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "d6e94e6b-8d60-4c80-ac99-deb986a40604",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run1-no-lessons.json",
+      "call_id": "6987c8b9-9952-4d1a-b0c3-d51804399492",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "8c1bfbc6-1e63-402a-a2a0-ecb5903dcfa6",
+      "role": "architect",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "82691e8d-db9b-4f68-bbe8-a1ef53554c11",
+      "role": "generator_cost",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55"
+      ],
+      "block_hash": "c08a0ca7485a7364bff4e765afdaf956ddaf6a6e99c9d418e79dd5adad28e7d5",
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "7ae5994d-068b-4676-a0f7-703e3229c505",
+      "role": "generator_performance",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55"
+      ],
+      "block_hash": "c08a0ca7485a7364bff4e765afdaf956ddaf6a6e99c9d418e79dd5adad28e7d5",
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "b2c630ac-659f-4b17-993f-83edbc6c07cb",
+      "role": "generator_security",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55"
+      ],
+      "block_hash": "c08a0ca7485a7364bff4e765afdaf956ddaf6a6e99c9d418e79dd5adad28e7d5",
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "2804d79e-5055-4b96-b856-16138ed9604f",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "dc2399ef-9d12-46a7-840e-e53d290fde33",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "5d3c422a-cb1d-47d2-9095-c741b48c82ad",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "b00f1fa8-dc2e-4529-803e-e7c8b1bce941",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "4fb5c1c4-cc9c-4d03-b0a4-51abd70c3412",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "dc719bba-a2dd-44fa-b7ac-f8b198212338",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "5485e9fa-a5d7-4725-81d2-457388fa696b",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "844dab00-0f72-4252-8480-750a3070d74a",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "3e0aeaac-7ae9-4d61-b0d3-0c05a24e6ffd",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "6248cf95-3f40-45a8-be93-d599567620ac",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "eab2ea8c-52b1-492f-8e8c-de15ff05dd63",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "962e1214-5c67-4e4e-8cf6-d7f732011fc9",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "0d94bce2-c0cf-43ac-b85b-ba4144d15a2f",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "5bbfeb9b-860a-4e26-a87f-845120785041",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "15ed994a-fcde-4cd3-b1ac-cc731f583564",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run2-lesson-v1.json",
+      "call_id": "41c564e2-845d-4dce-81d2-3eea70888d81",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "db022dd1-53e2-4684-809c-9b6c68bb34af",
+      "role": "architect",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "74fc8220-7822-418e-bede-39cfa21d3716",
+      "role": "generator_cost",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55"
+      ],
+      "block_hash": "c08a0ca7485a7364bff4e765afdaf956ddaf6a6e99c9d418e79dd5adad28e7d5",
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "c0036e68-a3d0-4502-931a-4e5e9386f96b",
+      "role": "generator_performance",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "481c1dfb-b12f-4905-9531-3cd0881f2c38",
+        "2207f568-4798-43e9-b9f0-5647c98d5e55"
+      ],
+      "block_hash": "2f2303e9e32b80f086ae564875090655676342f6363b2b78329a71c83b5b0751",
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "b22f90f1-8b76-4ac5-9411-7e5a8318f947",
+      "role": "generator_security",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55"
+      ],
+      "block_hash": "c08a0ca7485a7364bff4e765afdaf956ddaf6a6e99c9d418e79dd5adad28e7d5",
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "16b87004-79a7-4d41-99d6-bf1880f6e279",
+      "role": "generator_security",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55"
+      ],
+      "block_hash": "c08a0ca7485a7364bff4e765afdaf956ddaf6a6e99c9d418e79dd5adad28e7d5",
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "c122b975-fc2c-4249-ab00-db15b291e624",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "7cc7b7c8-fa54-4489-966d-8512ef70b361",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "25e52807-61ac-4369-ab99-784be6ee4a57",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "7554dc18-da98-482d-b299-d99815147a6e",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "b72fcad6-55cf-437a-86d4-13681a940678",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "2a3d04de-5f36-4da3-a0ba-ce9342ed3fb1",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "84a8c94c-246a-4c47-92ff-5795690ed0c7",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "5cf5fb9f-b1d4-484e-b1c8-a049afa0ecc2",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "4bdcc257-ca7a-467a-831e-aab2db408fc8",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "3068ebeb-c0c1-46e0-b94c-ca598033fcb0",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "8ffc4e59-c7e7-4b57-9858-d36c8345effc",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "bb0e438a-44b9-4a34-b864-910ab112ff10",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "e2b5c42c-ffcb-4dcc-b784-41685cfacfda",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "4db69b2c-de1e-4263-8358-0bf21a40c7cd",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "8165d0cb-f705-4232-a786-36e82480aaef",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "127abdbb-c7db-4ab1-9a59-c9073bb1460a",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "a7c827e2-f345-4807-adf7-8c3bd6ffe106",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run3-lessons-v2.json",
+      "call_id": "71dc9614-1213-4199-aad6-aff3ed545617",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "81258db0-c8e5-4e58-b3d0-8ebbaad82b1c",
+      "role": "architect",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "571c747c-6624-43a2-b3f8-d1d919b66fc0",
+      "role": "generator_security",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55",
+        "bc5efd80-0f2b-402b-bbf6-26111038f38e"
+      ],
+      "block_hash": "b7e17a133e0c671ad9dd610a25fff7ee87d64bb52f57f6356a05282ca2464b49",
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "c94d3a72-5eb2-42ca-a514-95a52e2ab6ca",
+      "role": "generator_cost",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "2207f568-4798-43e9-b9f0-5647c98d5e55",
+        "bc5efd80-0f2b-402b-bbf6-26111038f38e"
+      ],
+      "block_hash": "b7e17a133e0c671ad9dd610a25fff7ee87d64bb52f57f6356a05282ca2464b49",
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "98c28591-090d-4c18-85d6-9672b62f91f0",
+      "role": "generator_performance",
+      "outcome": "success",
+      "enabled": true,
+      "lesson_ids": [
+        "481c1dfb-b12f-4905-9531-3cd0881f2c38",
+        "2207f568-4798-43e9-b9f0-5647c98d5e55",
+        "bc5efd80-0f2b-402b-bbf6-26111038f38e"
+      ],
+      "block_hash": "b60da7e06abfebbc079ffc2f7c639e7e6c56f362e8a8044b0f8986198a6e98dc",
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "3028b261-cbdb-4168-a64e-69e7e9b22e6e",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "8f18281f-6c34-47d7-9b50-50f141c497eb",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "6313930d-747f-44dc-bc77-01107f9773f9",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "0d3cf118-2e47-42a4-bc81-8dc8628197b0",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "d0a5d6b8-7836-4ae2-9760-aeac3956638d",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "8b6b5d1d-9ba0-42bb-af1d-ffa9961a15e8",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "8368fa23-9992-4bfe-b796-a340097a7e48",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "5ca99942-22e4-4569-9ff3-c93d8a6109a3",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "e12a1765-c422-43fb-a9c0-1ba79721a29e",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "a522c9c6-1450-4333-b5c7-7c378cd8eaf9",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "5cbb7ad8-234c-431b-907a-7d6f891ccde6",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "97f6cf13-1ec7-4f53-b9b4-6f8e8cac8ebb",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    },
+    {
+      "file": "run4-lessons-v5.json",
+      "call_id": "988df488-be9d-4375-8281-15f8a9077495",
+      "role": "fixer",
+      "outcome": "success",
+      "enabled": false,
+      "lesson_ids": [],
+      "block_hash": null,
+      "verified": true
+    }
+  ],
+  "telemetry_issues": [],
+  "method": "Static configured network subgraph, exact original/retained maps, bounded resolver, no variable-default deployment assumptions. Distinct literal AZs or indices into the same AWS AZ-name data source are configured diversity only. Logging requires enabled access_logs and no duplicate resource blocks. Followed does not prove runtime startup or deployment."
+}

@@ -2504,6 +2504,19 @@ baseline. No scanner rule, profile, threshold or readiness exception is added.
 
 ### D-60 — Human-curated advisory lessons and injection defense (Phase 9l)
 
+Phase 10b author demonstration (analysis only): four zero-finding result snapshots
+contain 79 distinct model attempts, ten lesson-bearing Generator calls, and zero
+role/set/block-hash mismatches. Architect (four) and Fixer (62) calls have no
+recorded lesson use. The request text is identical; all four plans differ.
+Original instruction following is mixed: lesson 1 has two followed, two not
+followed and five unknown scoped variants; lesson 2 is not followed by run-3
+performance (logs absent) and followed by run-4 performance; lesson 3 is followed
+by run-4 performance, not followed by security, and unknown for cost. The table,
+network evidence, logs/duplicate side effects and original/final distinctions are
+in `docs/evals/phase10b-author-lesson-runs/`. NAT declarations do not prove routes;
+dynamic/default-dependent counts remain unknown. One run/configuration demonstrates
+the mechanism only, not a measured effect or causal improvement.
+
 Phase 10b provenance clarification: the author's run 4 correctly used the older
 active self-approved copy. The author reports the first approval at 2026-10-26
 03:03 UTC; a duplicate admin-direct copy activated at 23:01:35 UTC and retired
@@ -2894,6 +2907,17 @@ requirements are listed in [the proposed amendment register](phase10-proposed-re
 Those IDs are proposals only, never new test markers or implicit spec edits.
 
 ### D-63 — Remediation preserves planned exposure (Phase 10b)
+
+Section 7: commit the four author snapshots only after scanning all source and
+analysis files with zero findings. A 12-row table separates scoped lesson
+instruction following in Generator originals from final retained files. Ten
+lesson-bearing calls match exact renderer hashes/IDs; no Architect/Fixer injection
+is recorded. Two original variants prove NAT/default-route chains; two later
+variants lack a required route, and five scoped variants remain unknown. Run-4
+performance logs and configured two-AZ public LB follow their scoped instructions;
+its task outbound path still does not. No causal lesson effect, model quality
+improvement or runtime success is claimed. All four plans differ despite identical
+request text. Raw snapshots and per-call/plan/input hashes preserve provenance.
 
 Section 6: the author resolved the alleged run-4 provenance bug as an older
 active self-approved copy plus a later retired admin-direct duplicate (D-60).

@@ -27,6 +27,35 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 7 — Inspect author lesson effects
+
+**Summary:** Commit four zero-finding author snapshots and deterministic original/
+final lesson, network, duplicate/logging and scoped telemetry analysis.
+
+**Requirements addressed:** FR-A-05, FR-S-02, FR-S-07, FR-P-04, NFR-01.
+
+**Files:** scripts/phase10b_lessons.py, unit/test_phase10b_lessons_analysis.py,
+phase10b-author-lesson-runs/ (four raw snapshots, analysis, manifests and scan),
+D-60/D-63, Chapter 6 notes, README and this log.
+
+**Decisions:** A 12-row matrix distinguishes followed, not followed, not applicable
+and unknown. Exact request hashes match; four plan hashes differ. 79 attempts /
+ten lesson-bearing Generator calls / zero scope/hash mismatches. NAT presence
+alone is insufficient; routes/configured AZs are explicit. Network-only analysis
+isolates unrelated duplicates without source edits or variable-default deployment
+assumptions. No inference or causal effect claim.
+
+**Tests:** Analysis: 10 passed, 0 failed, 0 skipped, including exact recomputation,
+corrupt provenance and positive/negative/unknown network fixtures. Four sources
+scan clean; the complete source/analysis folder has zero findings/errors before
+commitment. Ruff passes. Scoped outbound: 2 followed / 2 not followed / 5 unknown;
+remaining 3 not applicable. Lesson 2: 1 followed / 1 not followed. Lesson 3:
+1 followed / 1 not followed / 1 unknown. Original/final changes stay separate.
+
+**Known gaps / follow-ups:** Static configured diversity is not available capacity
+or deployment. Single runs and differing plans preclude a measured lesson effect.
+Unknown bindings are not silently converted into successes or failures.
+
 ## 2026-10-27 — Phase 10b section 6 — Verify approval provenance compatibility
 
 **Summary:** Retain correct new approval writers and prove manifest/archive/event

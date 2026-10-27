@@ -508,3 +508,24 @@ The new guard preserves supported exposure changes and returns conflicting fixes
 to engineer review. Other plan semantics, dynamic values and cloud reachability
 remain bounded or unverified. FR-S-07 is qualified as partly met; the current
 59-ID register is 45 met, 12 partly met, one not met, one unverified.
+
+
+### Phase 10b — Author lesson demonstration
+
+The [12-row original-output analysis](../evals/phase10b-author-lesson-runs/README.md)
+uses four zero-finding snapshots: 79 model attempts, ten lesson-bearing Generator
+calls, zero role/set/block-hash mismatches, no recorded Architect/Fixer lesson use.
+The request is identical but all four plans differ. Scoped instruction judgments
+are: outbound two followed / two not followed / five unknown; logging/duplicates
+run-3 performance not followed and run-4 performance followed; public two-AZ LB
+run-4 performance followed, security not followed, cost unknown. Three values per
+run/variant are shown even when a lesson is absent or not scoped (not applicable).
+
+Run-2 performance had duplicated LB access-log configuration; run 3 removed the
+duplicate but also omitted logs. Run 4 performance restored logs in one LB and
+configured two public AZs, while its tasks lacked a default NAT route. Run-4
+security's NAT subnet lacked a default IGW route. Other route/count bindings are
+unknown; no variable default is assumed to be a deployment value. The retained
+run-3 cost/security and run-4 performance internal flips are separate Fixer
+changes; two received checks_passed. One run per configuration is a demonstration
+of provenance and scope, not a measured or causal lesson effect.

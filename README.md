@@ -2121,3 +2121,9 @@ cd backend
 Only hash-verified cached snapshots supplement committed projections; raw source
 is not exported. Historical missing profiles remain unavailable. The confirmed
 pooled broad adjustment is 42/120, with an uncertainty range of 41–42/120.
+
+
+The [author lesson demonstration](docs/evals/phase10b-author-lesson-runs/README.md)
+separates original Generator instruction following from Fixer changes. Reproduce
+its scan-first analysis offline with `cd backend && .venv/bin/python -m scripts.phase10b_lessons`.
+One run per configuration and differing plans do not establish a measured lesson effect.
