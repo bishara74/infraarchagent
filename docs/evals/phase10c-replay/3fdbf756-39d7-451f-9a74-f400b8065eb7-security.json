@@ -1,0 +1,46 @@
+{
+  "declarations_syntax": {},
+  "old_refusal": {
+    "category": "unsafe_file_input",
+    "tool": "terraform"
+  },
+  "original_sha256": "6f07d07edde1162cf353df2f3c34902405b66d3670673923d14d617d0b28bf35",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "6f07d07edde1162cf353df2f3c34902405b66d3670673923d14d617d0b28bf35",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_dynamodb_table.api_table",
+        "rule_id": "AWS-0024"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "",
+        "rule_id": "TERRAFORM_FILE_INPUT"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "3c22edd1a677bac83df72a20c8706b002fa8ec257c64b054c2b00325ba860a15",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "file_input_blocked",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "error"
+  },
+  "retained_sha256": "3c22edd1a677bac83df72a20c8706b002fa8ec257c64b054c2b00325ba860a15",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "3fdbf756-39d7-451f-9a74-f400b8065eb7",
+  "scenario": 3,
+  "security_reconstruction": "not_applicable",
+  "stored_status": "scan_error",
+  "variant": "security"
+}

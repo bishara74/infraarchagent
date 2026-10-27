@@ -1,0 +1,87 @@
+{
+  "declarations_syntax": {},
+  "old_refusal": {
+    "category": "unsafe_file_input",
+    "tool": "terraform"
+  },
+  "original_sha256": "247292b0e9e997b2a3e986993c20e5b81387118fe0461a28661a5104af641b69",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "53bad1d4100ddcd13a1082ee7b151cd1d740abbadfbac6d2c9456f84e084bb70",
+    "declarations": [
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "api_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "aws_region"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "dynamodb_table_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "lambda_function_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "lambda_policy_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "lambda_role_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "lambda_zip_path"
+      }
+    ],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_apigatewayv2_stage.prod",
+        "rule_id": "AWS-0001"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_dynamodb_table.api_table",
+        "rule_id": "AWS-0024"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "",
+        "rule_id": "TERRAFORM_FILE_INPUT"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "de7ef63287b3df83faafeb0eb586b775202cc4969b7a1542f5bf187077a4f52e",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "file_input_blocked",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "error"
+  },
+  "retained_sha256": "de7ef63287b3df83faafeb0eb586b775202cc4969b7a1542f5bf187077a4f52e",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "3fdbf756-39d7-451f-9a74-f400b8065eb7",
+  "scenario": 3,
+  "security_reconstruction": "not_applicable",
+  "stored_status": "scan_error",
+  "variant": "performance"
+}

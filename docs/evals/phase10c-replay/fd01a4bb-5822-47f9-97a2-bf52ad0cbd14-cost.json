@@ -1,0 +1,84 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "20727f04b27fd64b4ef14ab41dda3fc785baf64431380f7fb2c1aa205ff018f1",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "61133599fccb9a133b4dafcd87aec980c74a63a4c36bd40427375dbb628959f5",
+    "declarations": [
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "admin_cidr"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_instance_class"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_username"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "instance_type"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "key_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "private_subnets"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "region"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "vpc_cidr"
+      }
+    ],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 48,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "files_sha256": "cd7feb4064c958f3ec9f10a2a76ae7522eefae8b056df40f993164c63057c60a",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 1,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "cd7feb4064c958f3ec9f10a2a76ae7522eefae8b056df40f993164c63057c60a",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "fd01a4bb-5822-47f9-97a2-bf52ad0cbd14",
+  "scenario": 5,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "cost"
+}

@@ -1,0 +1,69 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "46ed3cea9b38a9e08257e6b39b18595881303765e7793d12620dfa6537b93d02",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "46ed3cea9b38a9e08257e6b39b18595881303765e7793d12620dfa6537b93d02",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.this",
+        "rule_id": "CKV_AWS_58"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.this",
+        "rule_id": "CKV_AWS_38"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.this",
+        "rule_id": "CKV_AWS_39"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.this",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.this",
+        "rule_id": "AWS-0040"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.this",
+        "rule_id": "AWS-0041"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      }
+    ],
+    "files_sha256": "4697c74c9e23fe345be5823a5efb8b2d78cca8e760fc96e09c1c1fe300b770de",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 1,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "4697c74c9e23fe345be5823a5efb8b2d78cca8e760fc96e09c1c1fe300b770de",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "f2834e66-2618-434a-b5c7-ae44bed633fe",
+  "scenario": 8,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "performance"
+}

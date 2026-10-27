@@ -1,0 +1,165 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "eb29f711c5bae2240c112e2861896c471757003583dc07cea8973a867f0c445f",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "6880c9ceefbb2c31eb4a585071412917deda4826d885755f3af1a005888c13ec",
+    "declarations": [
+      {
+        "after_hash": "7f80e3a2bfab961b0b0736c742ef818f439743c4b02f809e4f22df4a0071e45f",
+        "before_hash": "d5003e481e844954178e5add7a10ba776e534dde6d23e399f10c2705a395057a",
+        "file": "terraform/main.tf",
+        "kind": "duplicate_block",
+        "line": 250,
+        "name": "resource.aws_lb.alb",
+        "origin": "generated"
+      }
+    ],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.alb",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_58"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_38"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_39"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_11"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.tg",
+        "rule_id": "CKV_AWS_378"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV2_AWS_20"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_145"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0040"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0041"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "AWS-0090"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "AWS-0132"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "AWS-0178"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 1,
+        "message": "Dashboard requires panels"
+      }
+    ],
+    "files_sha256": "13822063c861203cfc761ec2c122e7c0aa1f217edb159f42aaa0237a9053c74a",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 2,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "13822063c861203cfc761ec2c122e7c0aa1f217edb159f42aaa0237a9053c74a",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "71e2a030-6551-49c5-961b-8a0e20bcebea",
+  "scenario": 10,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "cost"
+}

@@ -1,0 +1,199 @@
+[
+  {
+    "iteration": 0,
+    "action": "catalogue",
+    "conflicts": [
+      {
+        "service": "ec2-private",
+        "resource": "aws_instance.private_ec2",
+        "file_path": "terraform/main.tf",
+        "property": "exposure",
+        "expected": "private",
+        "assessment": "unknown",
+        "related_resources": [
+          "aws_eip.nat_eip",
+          "aws_instance.private_ec2",
+          "aws_internet_gateway.igw",
+          "aws_nat_gateway.nat",
+          "aws_route_table.private_rt",
+          "aws_route_table.public_rt",
+          "aws_route_table_association.private_assoc",
+          "aws_route_table_association.public_assoc",
+          "aws_subnet.private",
+          "aws_subnet.public",
+          "aws_vpc.main"
+        ],
+        "targeted_findings": [
+          {
+            "rule_id": "CKV_AWS_130",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "CKV2_AWS_12",
+            "resource": "aws_vpc.main",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "AWS-0164",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          }
+        ],
+        "rule_ids": [
+          "AWS-0104",
+          "AWS-0164",
+          "CKV2_AWS_12",
+          "CKV_AWS_130"
+        ]
+      }
+    ]
+  },
+  {
+    "iteration": 1,
+    "action": "catalogue",
+    "conflicts": [
+      {
+        "service": "ec2-private",
+        "resource": "aws_instance.private_ec2",
+        "file_path": "terraform/main.tf",
+        "property": "exposure",
+        "expected": "private",
+        "assessment": "unknown",
+        "related_resources": [
+          "aws_eip.nat_eip",
+          "aws_instance.private_ec2",
+          "aws_internet_gateway.igw",
+          "aws_nat_gateway.nat",
+          "aws_route_table.private_rt",
+          "aws_route_table.public_rt",
+          "aws_route_table_association.private_assoc",
+          "aws_route_table_association.public_assoc",
+          "aws_subnet.private",
+          "aws_subnet.public",
+          "aws_vpc.main"
+        ],
+        "targeted_findings": [
+          {
+            "rule_id": "CKV_AWS_130",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "CKV2_AWS_12",
+            "resource": "aws_vpc.main",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "AWS-0164",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          }
+        ],
+        "rule_ids": [
+          "AWS-0164",
+          "CKV2_AWS_12",
+          "CKV_AWS_130"
+        ]
+      }
+    ]
+  },
+  {
+    "iteration": 2,
+    "action": "catalogue",
+    "conflicts": [
+      {
+        "service": "ec2-private",
+        "resource": "aws_instance.private_ec2",
+        "file_path": "terraform/main.tf",
+        "property": "exposure",
+        "expected": "private",
+        "assessment": "unknown",
+        "related_resources": [
+          "aws_eip.nat_eip",
+          "aws_instance.private_ec2",
+          "aws_internet_gateway.igw",
+          "aws_nat_gateway.nat",
+          "aws_route_table.private_rt",
+          "aws_route_table.public_rt",
+          "aws_route_table_association.private_assoc",
+          "aws_route_table_association.public_assoc",
+          "aws_subnet.private",
+          "aws_subnet.public",
+          "aws_vpc.main"
+        ],
+        "targeted_findings": [
+          {
+            "rule_id": "CKV_AWS_130",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "CKV2_AWS_12",
+            "resource": "aws_vpc.main",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "AWS-0164",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          }
+        ],
+        "rule_ids": [
+          "AWS-0164",
+          "CKV2_AWS_12",
+          "CKV_AWS_130"
+        ]
+      }
+    ]
+  },
+  {
+    "iteration": 3,
+    "action": "catalogue",
+    "conflicts": [
+      {
+        "service": "ec2-private",
+        "resource": "aws_instance.private_ec2",
+        "file_path": "terraform/main.tf",
+        "property": "exposure",
+        "expected": "private",
+        "assessment": "unknown",
+        "related_resources": [
+          "aws_eip.nat_eip",
+          "aws_instance.private_ec2",
+          "aws_internet_gateway.igw",
+          "aws_nat_gateway.nat",
+          "aws_route_table.private_rt",
+          "aws_route_table.public_rt",
+          "aws_route_table_association.private_assoc",
+          "aws_route_table_association.public_assoc",
+          "aws_subnet.private",
+          "aws_subnet.public",
+          "aws_vpc.main"
+        ],
+        "targeted_findings": [
+          {
+            "rule_id": "CKV_AWS_130",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "CKV2_AWS_12",
+            "resource": "aws_vpc.main",
+            "file_path": "terraform/main.tf"
+          },
+          {
+            "rule_id": "AWS-0164",
+            "resource": "aws_subnet.public",
+            "file_path": "terraform/main.tf"
+          }
+        ],
+        "rule_ids": [
+          "AWS-0164",
+          "CKV2_AWS_12",
+          "CKV_AWS_130"
+        ]
+      }
+    ]
+  }
+]

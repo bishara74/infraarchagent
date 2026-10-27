@@ -1,0 +1,63 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "af08c217ca049569e8fd2b9909a83ec2b841ac1782fbed030ff20d4979b5024c",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "3a6bc143cae42fab1b1a444434f009d8ec9e5e65459e84e7d440a0b6d5d270dc",
+    "declarations": [
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "alb_certificate_arn"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "container_image"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "region"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "vpc_cidr"
+      }
+    ],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "16d2462ab293921dd2583385e2a0e2a85ef9c400c807f67d6857b14b129499e6",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "valid"
+  },
+  "retained_sha256": "16d2462ab293921dd2583385e2a0e2a85ef9c400c807f67d6857b14b129499e6",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "bc0cd1e0-816e-44d2-911b-88f5cafc7f58",
+  "scenario": 6,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "cost"
+}

@@ -2135,3 +2135,37 @@ limits. For bounded frontend concurrency, use `VITEST_MAX_WORKERS=2 make fronten
 Generate current traceability into a fresh absolute path with
 `make traceability TRACEABILITY_ARGS="--output-dir /absolute/path/to/fresh-report"`;
 generate the evidence index with `cd backend && .venv/bin/python -m scripts.phase10_evidence`.
+
+### Phase 10c offline regression replay
+
+The final-round diagnosis is in
+[`docs/evals/phase10c-diagnosis/README.md`](docs/evals/phase10c-diagnosis/README.md).
+The exposure guard compares changes to possible service paths. An unsupported
+service name does not make unrelated policies or logging resources part of its
+binding, and an unchanged pre-existing exposure mismatch is not a new regression.
+Unknown changed exposure remains guarded; this does not certify deployment.
+
+Refused Terraform file inputs are reported as critical `TERRAFORM_FILE_INPUT`
+findings with `terraform: file_input_blocked`. Dynamic and outside-package reads
+still never launch Terraform. Existing validation/readiness rules keep these
+packages in `pending_review`, with the validation limitation and blocking finding
+visible. Other tool failures retain their existing error handling.
+
+With the author's 20 results-API exports in `.cache/broad-final-results/`, run the
+following from the repository root, choosing a fresh evidence destination:
+
+```bash
+INFRAARCH_TEST_BOOTSTRAP=1 \
+PYTHONPATH="$PWD/backend/tests/bootstrap:$PWD/backend" \
+backend/.venv/bin/python -m scripts.phase10c_replay \
+  --snapshots "$PWD/.cache/broad-final-results" \
+  --output-dir "$PWD/docs/evals/phase10c-replay-$(date -u +%Y%m%dT%H%M%SZ)"
+```
+
+This reads no dotenv or credentials, makes no LLM calls, uses installed offline
+tools/provider mirrors, verifies the committed plan/file hashes, and leaves raw
+exports and observation caches uncommitted. Paired proposals use the same recorded
+baseline; they do not simulate a new model trajectory or establish a pass rate.
+Missing rejected Fixer bodies and unrecorded post-security patches remain explicit
+replay limits. Finish verification is recorded separately in
+[`docs/evals/phase10c-verification/README.md`](docs/evals/phase10c-verification/README.md).

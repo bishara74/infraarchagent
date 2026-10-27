@@ -1,0 +1,52 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "1d9d687eea279a44f167268e410a0d9e05f424af3a1dc2ed2671a55cfc4867de",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "1d9d687eea279a44f167268e410a0d9e05f424af3a1dc2ed2671a55cfc4867de",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_11"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "AWS-0178"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "da94fd48bd49d0f543ed1962a6c6dc3a927119a4b8104b19fa2f892245ed1c18",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "valid"
+  },
+  "retained_sha256": "da94fd48bd49d0f543ed1962a6c6dc3a927119a4b8104b19fa2f892245ed1c18",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "f20ea1e7-75cf-4584-a29f-f91137433ac6",
+  "scenario": 4,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "performance"
+}

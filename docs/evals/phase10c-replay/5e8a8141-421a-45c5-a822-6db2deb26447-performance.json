@@ -1,0 +1,132 @@
+{
+  "declarations_syntax": {
+    "mapping values are not allowed here\n  in \"<unicode string>\", line 26, column 16:\n            creates: /usr/local/bin/aws\n                   ^": 1
+  },
+  "original_sha256": "4958f2c9bf1facf9079fb165721dd80fed9ec70c1478e2956b65b271c5b737d0",
+  "original_syntax": {
+    "mapping values are not allowed here\n  in \"<unicode string>\", line 26, column 16:\n            creates: /usr/local/bin/aws\n                   ^": 1
+  },
+  "repairs": {
+    "candidate_sha256": "4958f2c9bf1facf9079fb165721dd80fed9ec70c1478e2956b65b271c5b737d0",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_58"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_38"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "CKV_AWS_39"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0040"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks",
+        "rule_id": "AWS-0041"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_allow_all",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 6,
+        "message": "ansible-lint optional lint failed"
+      },
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 18,
+        "message": "ansible-lint optional lint failed"
+      },
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 23,
+        "message": "ansible-lint optional lint failed"
+      },
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 6,
+        "message": "Dashboard requires panels"
+      }
+    ],
+    "files_sha256": "f3c9650a1884240052c77a191fac4ac36acf3b143a481410c6ea7d89870e2925",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 5,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "f3c9650a1884240052c77a191fac4ac36acf3b143a481410c6ea7d89870e2925",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "5e8a8141-421a-45c5-a822-6db2deb26447",
+  "scenario": 10,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "performance"
+}

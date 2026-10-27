@@ -27,6 +27,69 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10c section 3 — Replay and verify the scoped regression fixes
+
+**Summary:** Add a reproducible offline replay CLI and source-free paired native
+observations for all 60 final-round packages. Verify the corrected guard and
+explicit refused-file finding through all required suites without new inference.
+
+**Requirements addressed:** FR-S-01, FR-S-02, FR-S-03, FR-S-06, FR-S-07,
+FR-V-03, FR-V-04, FR-P-04, PR-04, NFR-01, NFR-02.
+
+**Files:** backend/scripts/phase10c_replay.py; new
+backend/tests/unit/test_phase10c_replay.py; docs/evals/phase10c-replay/,
+phase10c-verification/ and phase10c-traceability/; README replay command; D-64
+and this log. Raw exports and observation caches remain uncommitted.
+
+**Decisions:** D-64 distinguishes guard clearance, acceptance and conditional
+open-finding resolution. Replay validates all 180 canonical source/plan hashes,
+reconstructs 56 complete security baselines and explicitly excludes one missing
+post-security patch; three refused first scans have no iterations. Among 322
+available proposal occurrences, guard rejections fall 213→8; 205 occurrences /
+143 distinct proposals across 23 packages clear the guard. Existing gates accept
+169 occurrences / 117 distinct proposals, while 36 retain new-blocker rejections.
+Eight exposure-path/unknown rejections remain; 109 recorded retained changes
+acquire no new rejection. Accepted paired proposals conditionally resolve 89
+frozen open blocking identities across nine rules, not an exclusive historical
+causal count or a new pass rate. All 76 malformed-string diagnostics remain in
+one original/repaired/retained package. All three old file-input refusals
+reproduce, then become critical blocking findings with validation still error.
+The existing review path is verified without changing readiness or executing
+dynamic reads. Prompt remains v8; no dependency, migration or policy edits.
+
+Correction to section 1: historical helm:null does not establish unavailability;
+the generic probe's --version flag is unsupported. The explicit installed probe
+reports Helm v4.3.0+gbec5b06, used in this replay. No install/version-probe edit,
+and no rewrite of committed diagnosis evidence. Paired scans use current offline
+tools and warm observations, not historical runtime deadlines or a cumulative
+new Fixer trajectory. All 5,996 protected tracked evidence/spec files and 192
+protected browser files preserve exact bytes; the generated index is identical.
+
+**Tests:** make test: 2,791 passed, 0 failed/skipped, six perf deselected,
+634.61s. Includes ten new exact-diff/input-scope checks, all three historical
+ALB database rollbacks and the refused-read pending-review integration.
+make lint: exit 0, Ruff/format (48 scripts / 410 app-and-test files), mypy 189
+sources, ESLint and both TypeScript configurations. make frontend-test: 467
+passed, 46 files; make test-e2e: 35 passed, 9.3m; no failures/skips.
+make test-perf: six passed, 0 failed/skipped, 2,791 deselected, 24.36s; measured
+10 MB download 0.87565s with the unchanged two-second limit, after other task
+workloads stopped. Traceability generation: 59 IDs, zero uncovered/invalid
+annotations/collection failures. Evidence-index generation: 45 met / 12 partly
+met / one not met / one unverified, byte-identical canonical index.
+make secret-scan: exit 0, zero findings/errors across working files and all
+refs/reflogs; results retained in phase10c-verification/secret-scan/.
+Two early stdlib-only operator wrappers emitted a system-Python bootstrap
+missing-pydantic warning; actual verification children used the existing venv
+and completed successfully. No application or test fix was needed for it.
+
+**Known gaps / follow-ups:** Rejected Fixer candidate bodies and one accepted
+post-security patch are absent. Static exposure analysis stays bounded and
+unknown exposure paths remain closed. Native retained validation remains
+26 valid / 29 invalid / five errors; this is not a package pass count. No new
+specification open question. Author must run the documented fixed-configuration
+20-slot real benchmark to measure a new pass rate; Codex made no real model
+calls, read no dotenv/credentials, performed no installs and did not push.
+
 ## 2026-10-27 — Phase 10c section 2 — Scope exposure changes and report refused reads
 
 **Summary:** Restrict unsupported bindings to named network roots, preserve

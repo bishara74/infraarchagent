@@ -1,0 +1,82 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "52334a5d6e9484162691b3e937607d9948259fe9ad07047d69a194dac62b52e1",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "52334a5d6e9484162691b3e937607d9948259fe9ad07047d69a194dac62b52e1",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.database",
+        "rule_id": "CKV_AWS_354"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_11"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "AWS-0178"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "e9c53da507fb9561bf023df985ec05e1ae63b793cdc02b96e92a06a9b418b148",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "valid"
+  },
+  "retained_sha256": "e9c53da507fb9561bf023df985ec05e1ae63b793cdc02b96e92a06a9b418b148",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "54ecfdc9-c439-4b3b-8ada-e14e39188532",
+  "scenario": 9,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "performance"
+}

@@ -1,0 +1,84 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "92be881753ba4e436553c8353debac9cc8e17e8d5e2264ec4a0e05448497e32f",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "92be881753ba4e436553c8353debac9cc8e17e8d5e2264ec4a0e05448497e32f",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.ec2_sg",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.ec2_sg",
+        "rule_id": "CKV_AWS_24"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_11"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.ec2_sg",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.ec2_sg",
+        "rule_id": "AWS-0107"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "AWS-0178"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 78,
+        "message": "Unsupported argument"
+      }
+    ],
+    "files_sha256": "92be881753ba4e436553c8353debac9cc8e17e8d5e2264ec4a0e05448497e32f",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 1,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "92be881753ba4e436553c8353debac9cc8e17e8d5e2264ec4a0e05448497e32f",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "f20ea1e7-75cf-4584-a29f-f91137433ac6",
+  "scenario": 4,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "cost"
+}

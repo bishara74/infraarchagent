@@ -1,0 +1,150 @@
+{
+  "declarations_syntax": {
+    "Expecting ',' delimiter: line 1 column 190 (char 189)": 1
+  },
+  "original_sha256": "ef8522d5f97c68b926f86f72b8c5e24fee5219bab163d30a92f58f0aaf64f230",
+  "original_syntax": {
+    "Expecting ',' delimiter: line 1 column 190 (char 189)": 1,
+    "Invalid single-argument block definition": 1
+  },
+  "repairs": {
+    "candidate_sha256": "2c7db701c5841c6f38d4fd671acf73c1d7cecc1601f5fb977afcd2285bed4932",
+    "declarations": [],
+    "normalizations": 11
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_58"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_38"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_39"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_11"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_144"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_145"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0040"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0041"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_allow_all",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "AWS-0132"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "AWS-0178"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 1,
+        "message": "Dashboard requires panels"
+      }
+    ],
+    "files_sha256": "98982e8ebaf54b63245e1240abb8a8973b1e6317949bb1e248776174cdce5bb0",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 2,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "98982e8ebaf54b63245e1240abb8a8973b1e6317949bb1e248776174cdce5bb0",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "5e8a8141-421a-45c5-a822-6db2deb26447",
+  "scenario": 10,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "security"
+}

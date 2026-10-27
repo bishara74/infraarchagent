@@ -1,0 +1,94 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "8ac09cf51d4afd90d4ab7272b2cc5d5be71000de8e04b03a43acf8936a765354",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "8ac09cf51d4afd90d4ab7272b2cc5d5be71000de8e04b03a43acf8936a765354",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"public-a\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_58"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_38"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_39"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"public-b\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0040"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0041"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.eks_cluster",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"public-a\"]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"public-b\"]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)"
+      }
+    ],
+    "files_sha256": "8fe5d0772fd18d2530efc36fc36dc18e291d559e5af261032e50327a265194fe",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 1,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "8fe5d0772fd18d2530efc36fc36dc18e291d559e5af261032e50327a265194fe",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "f2834e66-2618-434a-b5c7-ae44bed633fe",
+  "scenario": 8,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "security"
+}

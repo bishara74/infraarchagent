@@ -1,0 +1,65 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "69a000a7efcda01e85dc96890b60edd1409a35af814d1134f968825486836e8e",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "69a000a7efcda01e85dc96890b60edd1409a35af814d1134f968825486836e8e",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.static_website",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0010"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0011"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket_server_side_encryption_configuration.static_website",
+        "rule_id": "AWS-0132"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 69,
+        "message": "Terraform configuration diagnostic"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 72,
+        "message": "Unsupported block type"
+      }
+    ],
+    "files_sha256": "76770ac33767b2642e6c3b92bf03881d24370661c4a270f7cdb3c71659ebd001",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 2,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "76770ac33767b2642e6c3b92bf03881d24370661c4a270f7cdb3c71659ebd001",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "e722a370-517e-4839-999e-bf0c80de0449",
+  "scenario": 2,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "cost"
+}

@@ -1,0 +1,169 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "238fc9e2f589fd54a28759f6e7c8ea3df6e383cd3d5d188d524ebac46ced8471",
+  "original_syntax": {
+    "Invalid single-argument block definition": 1
+  },
+  "repairs": {
+    "candidate_sha256": "9a72c14604eb0741db98dbfea3c57c07ab6352a9418e733c1e9f718d3a07ec8a",
+    "declarations": [
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "aws_region"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "azs"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "backend_image"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_instance_class"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_password"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_username"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "ec2_ami"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "grafana_instance_type"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "nginx_instance_type"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "prometheus_instance_type"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "tls_certificate_arn"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "vpc_cidr"
+      }
+    ],
+    "normalizations": 6
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.nginx",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.backend",
+        "rule_id": "CKV_AWS_378"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx",
+        "rule_id": "CKV2_AWS_20"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.nginx",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.backend",
+        "rule_id": "AWS-0104"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 69,
+        "message": "Terraform configuration diagnostic"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 110,
+        "message": "Terraform configuration diagnostic"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 127,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "files_sha256": "ac9aa21e39b4b6728426378596f72f432400afe966789d56bcc57bfe4d5824df",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 3,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "ac9aa21e39b4b6728426378596f72f432400afe966789d56bcc57bfe4d5824df",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "a65e16be-6001-4304-af23-63c1c2b33de2",
+  "scenario": 9,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "performance"
+}

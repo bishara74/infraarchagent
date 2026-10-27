@@ -3111,6 +3111,62 @@ errors without changing migrations or app grants. Two subsequent synthetic
 ambiguity tests pass with the guard subset (46 passed). Full finish and native
 replay evidence follow in section 3. No new specification open question.
 
+#### Phase 10c section 3 — native paired replay and finish verification
+
+The [new replay report](evals/phase10c-replay/README.md) and
+[verification report](evals/phase10c-verification/README.md) preserve the frozen
+benchmark and diagnosis evidence. The reproducible offline CLI validates all
+180 source-map/plan hashes before using the author's uncommitted exports. It
+reverses complete security-session diffs and applies retained iteration diffs
+with exact context checks, regenerates recorded deterministic proposals, and
+compares the old and new guards. Missing rejected Fixer bodies and the one
+missing accepted post-security patch remain explicit limits. No model candidate
+is invented, and no real provider is called.
+
+Guard-cleared proposals receive paired native scanner/Terraform observations
+and existing acceptance checks; deterministic validation proposals also need the
+existing validation improvement. Identical observations are cached against
+source/plan/variant/runtime hashes. Proposal occurrences and distinct proposals
+are reported separately. Removed frozen open-finding identities are conditional
+on an accepted paired proposal, not an exclusive historical causal count or
+simultaneous resolution in a new remediation trajectory. Current installed tools
+and warm observations do not reproduce historical wall-clock deadlines. No new
+pass rate or deployment claim follows from this replay.
+
+Correction to the section-1 availability statement above and in the frozen
+report/log: a null historical Helm version does not establish unavailability.
+The generic probe invokes unsupported `helm --version`; the explicit installed
+probe reports `v4.3.0+gbec5b06`. This replay uses and records the existing Helm
+installation. No install or unrelated version-probe code change was made, and
+the committed section-1 evidence is not rewritten.
+
+All 60 retained packages were scanned and validated offline; 56 security
+baselines reconstruct exactly, three refused first scans have no iterations,
+and one post-security patch is unavailable. The 322 available proposal
+occurrences include 213 old guard rejections; eight remain rejected. The 205
+cleared occurrences represent 143 distinct proposals across 23 packages.
+Existing gates accept 169 occurrences (117 distinct); 36 remain rejected for
+new blocking findings. Four catalogue occurrences retain an unknown EC2
+exposure rejection, and four EIP validation proposals remain guarded. None of
+109 recorded retained changes acquires a new rejection. The accepted pairs
+conditionally remove 89 frozen open blocking identities across nine rules;
+this is not an exclusive historical guard-only count or a projected pass rate.
+
+All 76 multi-line diagnostics remain in the same original/repaired/retained
+package. Each of the three old scan errors reproduces the runner refusal; the
+new scanner completes with a critical file-input finding while validation
+remains error. Regression tests preserve all three historical ALB rollbacks and
+exercise the existing pending-review/non-downloadable path. Full backend:
+2,791 passed (six perf deselected); frontend: 467 passed; browser: 35 passed;
+performance: six passed, 24.36s, measured download 0.87565s. Full lint passes;
+traceability has 59 IDs with no uncovered/invalid/collection failures. Evidence
+index remains 45 met / 12 partly met / 1 not met / 1 unverified. All 5,996
+protected evidence/spec files retain exact bytes. No new specification open
+question, readiness change, dependency or policy change is introduced. The new
+verification report supplies the author's fixed-configuration real rerun command.
+Final make secret-scan exits 0 with zero findings/errors across the working tree
+and all refs/reflogs, excluding dotenv/cache paths before retrieval.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

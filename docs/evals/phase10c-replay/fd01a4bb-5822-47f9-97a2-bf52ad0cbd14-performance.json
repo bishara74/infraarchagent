@@ -1,0 +1,80 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "4711be291b3ce51d24c59c3d7fe1e1ffa84b40209c81e42744c816d4f5b91769",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "4711be291b3ce51d24c59c3d7fe1e1ffa84b40209c81e42744c816d4f5b91769",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.app_sg",
+        "rule_id": "CKV_AWS_24"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "AWS-0090"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.app_sg",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.rds_sg",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.app_sg",
+        "rule_id": "AWS-0107"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/variables.tf",
+        "line_start": 24,
+        "message": "Terraform configuration diagnostic"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/variables.tf",
+        "line_start": 25,
+        "message": "Terraform configuration diagnostic"
+      }
+    ],
+    "files_sha256": "09130afd560e783974c14762b8cc6c2318dbe63a8172c0bcb075c6ee0b2214cc",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 2,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "09130afd560e783974c14762b8cc6c2318dbe63a8172c0bcb075c6ee0b2214cc",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "fd01a4bb-5822-47f9-97a2-bf52ad0cbd14",
+  "scenario": 5,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "performance"
+}

@@ -1,0 +1,93 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "9b5e4e8b26af645080edecdfcec35662caedba4cd1627b63e60df1dc6bcc1a90",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "1f73001915f0aeee542589caefa247371b0bdd7571664a3cddce1a9da634afe6",
+    "declarations": [
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "ami_id"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "aws_region"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "instance_type"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "private_subnet_cidr"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "project_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "public_subnet_cidr"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "vpc_cidr"
+      }
+    ],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_11"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "AWS-0178"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "1ef37f7c9f294df6741b4f19503dab2672f795dde11deb1ae2a424fedd4a3caa",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "valid"
+  },
+  "retained_sha256": "1ef37f7c9f294df6741b4f19503dab2672f795dde11deb1ae2a424fedd4a3caa",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "f20ea1e7-75cf-4584-a29f-f91137433ac6",
+  "scenario": 4,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "security"
+}

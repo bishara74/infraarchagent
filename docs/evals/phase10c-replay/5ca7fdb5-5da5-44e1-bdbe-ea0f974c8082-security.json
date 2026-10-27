@@ -1,0 +1,87 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "157c0d9004a087537121c62618edc339f5aeebb703cc3cda8fec4cd2bc424bb1",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "157c0d9004a087537121c62618edc339f5aeebb703cc3cda8fec4cd2bc424bb1",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.webapp-deployment",
+        "rule_id": "CKV_K8S_11"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.webapp-deployment",
+        "rule_id": "CKV_K8S_13"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.webapp-deployment",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0117"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "7d6beba42646277fff823ff6f1ab2a5ea5f47ed8487b189454083d4df6eb4bf9",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "valid"
+  },
+  "retained_sha256": "7d6beba42646277fff823ff6f1ab2a5ea5f47ed8487b189454083d4df6eb4bf9",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "5ca7fdb5-5da5-44e1-bdbe-ea0f974c8082",
+  "scenario": 8,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "security"
+}

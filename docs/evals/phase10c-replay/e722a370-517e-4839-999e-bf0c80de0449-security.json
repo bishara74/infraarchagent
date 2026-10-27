@@ -1,0 +1,75 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "b5f9e60114469db8e8c2cf5adf33d9ca03a89f4aa32abeb4cc2d723121fbbd2d",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "b5f9e60114469db8e8c2cf5adf33d9ca03a89f4aa32abeb4cc2d723121fbbd2d",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.website",
+        "rule_id": "CKV_AWS_144"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log",
+        "rule_id": "CKV_AWS_144"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0010"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0011"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.log",
+        "rule_id": "AWS-0090"
+      }
+    ],
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 157,
+        "message": "Terraform configuration diagnostic"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 159,
+        "message": "Unsupported block type"
+      }
+    ],
+    "files_sha256": "a0cb9720a48a675e3cf7141e1dee7297aef7ae15fc545ead96fed86d8e7b8dca",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 2,
+    "validation_result": "invalid"
+  },
+  "retained_sha256": "a0cb9720a48a675e3cf7141e1dee7297aef7ae15fc545ead96fed86d8e7b8dca",
+  "retained_syntax": {},
+  "round": 2,
+  "run_id": "e722a370-517e-4839-999e-bf0c80de0449",
+  "scenario": 2,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "security"
+}

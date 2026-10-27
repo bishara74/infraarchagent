@@ -1,0 +1,106 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "068e7cb7755c4f253c6c42f952dfd222e67c21e449a2150c68663291f6d0cc7b",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "4a58604b5f6c593ec4978e0bd654ed685250d4a2cf4346e61a95c8cbd6f0ab3a",
+    "declarations": [
+      {
+        "after_hash": "52cada0021c1a0b54d0086c7323455ab04533d8268f6687f05505c228a31ee58",
+        "before_hash": "de0d1f781795d9759fe13d5ed66bde293aed2a1a39313a1772f8752b16e3c34b",
+        "file": "terraform/main.tf",
+        "kind": "duplicate_block",
+        "line": 163,
+        "name": "resource.aws_flow_log.vpc_logs",
+        "origin": "generated"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "ami_id"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "aws_region"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_instance_class"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_name"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_password"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_storage_gb"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "db_username"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "instance_type"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "postgres_version"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "private_subnet_cidrs"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "public_subnet_cidrs"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "root_volume_size"
+      },
+      {
+        "file": "terraform/variables.tf",
+        "kind": "missing_variable",
+        "name": "vpc_cidr"
+      }
+    ],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [],
+    "failed_checks": [],
+    "files_sha256": "2e291b88b8c6f3536692e6c0354b9c6fa738c25d7fdb01e0b764f33f4b6dd298",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "valid"
+  },
+  "retained_sha256": "2e291b88b8c6f3536692e6c0354b9c6fa738c25d7fdb01e0b764f33f4b6dd298",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "c5f34525-c392-49e2-b57d-dcd5a8f1116b",
+  "scenario": 5,
+  "security_reconstruction": "complete",
+  "stored_status": "checks_passed",
+  "variant": "performance"
+}

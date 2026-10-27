@@ -1,0 +1,67 @@
+{
+  "declarations_syntax": {},
+  "original_sha256": "567b0fc2c0e7bb5ab1415f6044d66985c9024411168c2936ccc549ae4b52a0f6",
+  "original_syntax": {},
+  "repairs": {
+    "candidate_sha256": "567b0fc2c0e7bb5ab1415f6044d66985c9024411168c2936ccc549ae4b52a0f6",
+    "declarations": [],
+    "normalizations": 0
+  },
+  "retained_native": {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1a\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.alb_sg",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1b\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1a\"]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1b\"]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "failed_checks": [],
+    "files_sha256": "f2b2aa26d331ee8fb8ae5472f1816a92eac3fbbeb8e70f1e5907fc91690db447",
+    "scan_error": null,
+    "tool_status": {
+      "checkov": "ok",
+      "terraform": "ok",
+      "trivy": "ok"
+    },
+    "validation_failed": 0,
+    "validation_result": "valid"
+  },
+  "retained_sha256": "f2b2aa26d331ee8fb8ae5472f1816a92eac3fbbeb8e70f1e5907fc91690db447",
+  "retained_syntax": {},
+  "round": 1,
+  "run_id": "bc0cd1e0-816e-44d2-911b-88f5cafc7f58",
+  "scenario": 6,
+  "security_reconstruction": "complete",
+  "stored_status": "pending_review",
+  "variant": "performance"
+}
