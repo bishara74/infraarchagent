@@ -1973,7 +1973,14 @@ Round 3 browser evidence: [gallery](docs/evals/phase9j-ui/round3/README.md).
 
 ## Curated lessons (Phase 9l; Phase 10 approval policy)
 
-Apply migrations through 0015 with `make migrate`. Lessons are off by default. Using them
+Phase 10b adds an explicitly selected **Fixer** role. **All Generators** never
+includes the Fixer. Fixer lessons use the same filter, eight-entry/2,000-character
+renderer, immutable provenance, enable gates and benchmark bypass. They share
+the Fixer's network advisory context; deterministic exposure preservation, scanners
+and validation remain authoritative. No lesson may authorize a plan-conflicting
+exposure change. Fixer prompt version 8 includes the plan network section.
+
+Apply migrations through 0016 with `make migrate`, then restart. Lessons are off by default. Using them
 requires both `LESSONS_ENABLED=true` in the backend process environment and the
 named administrator's runtime switch. The switch starts off; it cannot override
 a false server setting. Shared-key benchmark requests always omit lessons.

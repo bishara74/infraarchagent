@@ -242,6 +242,7 @@ class View:
             result[canonical(key)] = body
             # Resolve dependency *identity* recursively, never deployment inputs.
             expressions = re.findall(r"\b(?:local|var)\.[\w-]+", canonical(body))
+            reference_values = [body]
             dependencies: set[str] = set()
             while expressions:
                 expression = expressions.pop()
@@ -269,6 +270,7 @@ class View:
                             else []
                         )
                     for definition in definitions:
+                        reference_values.append(definition)
                         result[canonical((item.module, expression))] = definition
                         expressions.extend(
                             re.findall(
@@ -284,7 +286,9 @@ class View:
                             result[canonical((item.module, doc.path, kind))] = doc.data[
                                 kind
                             ]
-            for address in re.findall(r"\baws_[\w]+\.[\w-]+", canonical(body)):
+            for address in re.findall(
+                r"\baws_[\w]+\.[\w-]+", canonical(reference_values)
+            ):
                 linked = self.resources.get((item.module, address))
                 if linked and linked.type in SUPPORT:
                     pending.append((linked, SUPPORT[linked.type]))
@@ -432,6 +436,60 @@ class View:
             pass
         return "unknown"
 
+    def subnet_intent(self, subnet: Resource) -> str:
+        package = self.graph.package
+        intent = subnet_intent(package, subnet)
+        if intent != "public":
+            return intent
+        tables = [
+            package.resolve(subnet.module, r.body.get("route_table_id"))
+            for r in package.resources
+            if r.module == subnet.module
+            and r.type == "aws_route_table_association"
+            and package.resolve(subnet.module, r.body.get("subnet_id")) == subnet
+        ]
+        if not tables:
+            vpc = package.resolve(subnet.module, subnet.body.get("vpc_id"))
+            tables = [
+                package.resolve(subnet.module, r.body.get("route_table_id"))
+                for r in package.resources
+                if r.module == subnet.module
+                and r.type == "aws_main_route_table_association"
+                and package.resolve(subnet.module, r.body.get("vpc_id")) == vpc
+                and vpc is not None
+            ]
+        if len(tables) != 1 or tables[0] is None:
+            return "unresolvable"
+        table = tables[0]
+        routes = objects(table.body.get("route", [])) + [
+            r.body
+            for r in package.resources
+            if r.module == subnet.module
+            and r.type == "aws_route"
+            and package.resolve(subnet.module, r.body.get("route_table_id")) == table
+        ]
+        for route in routes:
+            if not any(
+                route.get(k) == v
+                for k, v in (
+                    ("cidr_block", "0.0.0.0/0"),
+                    ("destination_cidr_block", "0.0.0.0/0"),
+                    ("ipv6_cidr_block", "::/0"),
+                    ("destination_ipv6_cidr_block", "::/0"),
+                )
+            ):
+                continue
+            igw = package.resolve(subnet.module, route.get("gateway_id"))
+            if igw and igw.type == "aws_internet_gateway":
+                vpc = package.resolve(subnet.module, subnet.body.get("vpc_id"))
+                if (
+                    vpc is not None
+                    and package.resolve(subnet.module, igw.body.get("vpc_id")) == vpc
+                    and package.resolve(subnet.module, table.body.get("vpc_id")) == vpc
+                ):
+                    return "public"
+        return "unresolvable"
+
     def placement(self, resource: Resource) -> str:
         try:
             values = [self.value(resource, k) for k in PLACEMENT if k in resource.body]
@@ -467,7 +525,7 @@ class View:
                     )
             if not subnets or any(s is None for s in subnets):
                 return "unknown"
-            intents = {subnet_intent(self.graph.package, s) for s in subnets if s}
+            intents = {self.subnet_intent(s) for s in subnets if s}
             return (
                 next(iter(intents))
                 if len(intents) == 1 and "unresolvable" not in intents

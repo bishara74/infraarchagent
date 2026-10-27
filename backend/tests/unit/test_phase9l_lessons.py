@@ -55,7 +55,7 @@ def test_invalid_text_is_never_silently_cleaned(text):
 @pytest.mark.parametrize(
     "extra",
     [
-        {"scope_role": "fixer"},
+        {"scope_role": "unknown"},
         {"applies_to": ["arbitrary"]},
         {"category": "arbitrary"},
         {"unexpected": True},

@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.domain.review_categories import ReviewCategory
 
 LessonRole = Literal[
+    "fixer",
     "architect",
     "generator_cost",
     "generator_performance",

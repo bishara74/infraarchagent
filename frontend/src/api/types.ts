@@ -73,7 +73,7 @@ export interface FeedbackInsightsData {
   rejected_total:number;blocking_snapshot_available:number;blocking_snapshot_unavailable:number;
 }
 
-export type LessonRole='architect'|'generator_cost'|'generator_performance'|'generator_security'|'all_generators';
+export type LessonRole='fixer'|'architect'|'generator_cost'|'generator_performance'|'generator_security'|'all_generators';
 export type LessonTag='load_balancer'|'database'|'storage'|'network'|'kubernetes'|'cost'|'logging';
 export interface LessonFilterResult {version:string;passed:boolean;reasons:{id:string;message:string}[]}
 export interface LessonInput {scope_role:LessonRole;applies_to:LessonTag[];category:ReviewCategory;text:string}

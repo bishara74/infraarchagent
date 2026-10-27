@@ -57,7 +57,7 @@ async def test_corpus_survivors_require_human_approval_before_any_hook(db_engine
         await close(clients)
 
 
-async def prepared(db_engines, *, self_approved=False, role="architect"):
+async def prepared(db_engines, *, self_approved=False, role="architect", text=None):
     app, run, users, clients = await workspace(
         db_engines, lessons_admin_direct_activation=self_approved
     )
@@ -65,7 +65,11 @@ async def prepared(db_engines, *, self_approved=False, role="architect"):
     source = await decision(
         app, run, users[actor], reason="RAW_REASON_MUST_NEVER_REACH_A_MODEL"
     )
-    row = (await proposal(clients[actor], source, scope_role=role)).json()
+    row = (
+        await proposal(
+            clients[actor], source, scope_role=role, **({"text": text} if text else {})
+        )
+    ).json()
     path = f"/api/lessons/{row['id']}"
     if not self_approved:
         assert (await clients[0].post(path + "/approve", json={})).status_code == 200

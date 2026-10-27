@@ -27,6 +27,38 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 2b — Explicit optional Fixer lessons
+
+**Summary:** Add an explicitly selected Fixer role, additive role-constraint
+migration, factory binding and nonce-context insertion through the existing
+lesson runtime. All Generators stays Generator-only.
+
+**Requirements addressed:** FR-S-02, FR-S-07, FR-A-05, FR-P-04, NFR-01/02.
+
+**Files:** agents/factory.py, core/lesson_runtime.py, domain/lessons.py and
+fixer_context.py; migration 0016; frontend types, role labels and form test;
+integration/test_phase10b_lessons.py, legacy transport helper and scope tests;
+plan-conformance dependency/default-route hardening and regression; README,
+D-60/D-63 and this log.
+
+**Decisions:** Reuse limits, filters, versioned sets, governance, provenance,
+benchmark bypass and sticky revocation. Explicit conflicting lesson preferences
+cannot override the guard. Trusted correction suffixes preserve context insertion.
+Native select, typography, tokens, focus and layout remain the existing design.
+
+**Tests:** Scope/wire regression subset: 101 passed. Final lesson/guard/transport
+subset: 42 passed, 0 failed, 0 skipped. Frontend lint passes; 464 frontend tests
+pass across 45 files with VITEST_MAX_WORKERS=2. Ruff and mypy pass (189 files).
+Initial integration checks had four fixture failures (factory seam and stub wire
+shape), corrected before the passing reruns. The unrestricted frontend run had
+local timing failures; bounded workers remove contention. No production timeout
+or test expectation was relaxed. A new assertion's invalid Testing Library option
+was corrected before the passing frontend lint.
+
+**Known gaps / follow-ups:** Semantic lesson manipulation remains possible;
+scanners, guard, validation and readiness remain authoritative. Full finish checks
+and browser evidence follow later. No historical lesson data is rewritten.
+
 ## 2026-10-27 — Phase 10b section 2 — Give the Fixer network intent
 
 **Summary:** Advance the Fixer prompt from version 7 to 8 with structured public,

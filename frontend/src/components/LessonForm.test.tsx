@@ -54,3 +54,11 @@ it('FR-UI-07 offers an empty optional proposal only for the authenticated decisi
   view.rerender(<LessonProposalAction item={{...item,review_decision:{...item.review_decision!,user_id:'someone-else'}}}/>);
   expect(screen.queryByLabelText('Lesson text')).toBeNull();
 });
+
+it('FR-S-02 Fixer scope requires an explicit selection and All Generators remains separate',()=>{
+  form();const role=screen.getByLabelText('Lesson role');
+  expect(role).toHaveValue('architect');
+  expect(screen.getByRole('option',{name:/^Fixer$/})).toBeInTheDocument();
+  fireEvent.change(role,{target:{value:'fixer'}});expect(role).toHaveValue('fixer');
+  fireEvent.change(role,{target:{value:'all_generators'}});expect(role).toHaveValue('all_generators');
+});

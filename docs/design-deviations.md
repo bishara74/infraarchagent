@@ -2504,6 +2504,14 @@ baseline. No scanner rule, profile, threshold or readiness exception is added.
 
 ### D-60 — Human-curated advisory lessons and injection defense (Phase 9l)
 
+**Phase 10b section 2b adds an explicit Fixer scope (D-63).** This supersedes
+the historical no-Fixer-injection statement below. All Generators remains
+Generator-only. Approved Fixer text uses the same renderer/limits/filter/versioned
+set, durable per-attempt use, revocation and benchmark bypass. It is inserted
+inside the nonce-delimited network advisory block, including corrective attempts.
+The deterministic exposure guard cannot be overridden by advisory text.
+Semantic manipulation remains a residual risk; no filter change is claimed.
+
 **Phase 10 author decision supersedes the self-approval flow below.** Admins are
 trusted operators who can already change server configuration. A structurally
 valid, filter-v2-passing admin proposal activates immediately in its proposal
@@ -2876,6 +2884,16 @@ requirements are listed in [the proposed amendment register](phase10-proposed-re
 Those IDs are proposals only, never new test markers or implicit spec edits.
 
 ### D-63 — Remediation preserves planned exposure (Phase 10b)
+
+Section 2b: additive migration 0016 permits explicitly selected `fixer` lessons.
+Factory binding uses the existing optional pre-transport runtime; an empty scope
+has no hook and preserves version-8 golden request bytes. Advisory insertion
+precedes durable authorization, uses the trusted final nonce block, and tolerates
+fixed corrective diagnostics after it. Scope, limits, filter, governance, sticky
+kill switch and benchmark bypass are unchanged. The added injection surface
+cannot override candidate acceptance. Tests include a conflicting approved
+preference and a model response attempting an internal flip. Transitive local
+network dependencies and default-IGW/VPC evidence are guarded conservatively.
 
 Section 1 (FR-S-02/03/07, FR-A-05, NFR-02): scanner improvements cannot
 justify changing an explicit public/private network requirement. A deterministic

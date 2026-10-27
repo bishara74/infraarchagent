@@ -190,6 +190,8 @@ class AgentFactory:
                 adapter.policy,
                 scenario=self.settings.pipeline_demo_scenario,
             )
+        if self.lesson_runtime is not None:
+            self.lesson_runtime.bind(adapter, run_config, "fixer")
         return SecurityAgent(
             self.scanner,
             FixAgent(

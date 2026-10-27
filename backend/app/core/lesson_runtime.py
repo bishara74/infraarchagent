@@ -1,8 +1,8 @@
 """Single-process lesson dispatch ownership and sticky revocation.
 
-The normal disabled path has no installed hook. Only eligible Architect and
-Generator adapters register one; the kill switch detaches it synchronously
-under the same short gate used to authorize an outbound transport task.
+The normal disabled path has no installed hook. Only explicitly eligible
+Architect, Generator and Fixer adapters register one; the kill switch detaches
+it synchronously under the same short gate used to authorize an outbound transport task.
 """
 
 import asyncio
@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.repositories.lessons import LessonRepository
 from app.domain.enums import AgentName, AgentState
+from app.domain.fixer_context import with_fixer_lessons
 from app.domain.lessons import content_hash, render_lessons
 from app.domain.run_config import RunConfig
 from app.events.log import EventLog
@@ -109,6 +110,11 @@ class LessonRuntime:
                     "self_approved": any(row["self_approved"] for row in used_rows),
                     "reason": "used",
                 }
+                decorated = (
+                    with_fixer_lessons(prompt, block)
+                    if role == "fixer"
+                    else prompt + "\n" + block
+                )
                 await self.events.append(
                     run_id,
                     AgentName.ORCHESTRATOR,
@@ -122,7 +128,7 @@ class LessonRuntime:
                         "lessons": usage,
                     },
                 )
-                return prompt + "\n" + block, usage
+                return decorated, usage
             except asyncio.CancelledError:
                 raise
             except Exception:

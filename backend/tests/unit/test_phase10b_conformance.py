@@ -257,3 +257,18 @@ async def test_combined_and_partial_guards_keep_finding_and_unrelated_fix():
     assert data["resource"]["aws_s3_bucket"]["data"]["force_destroy"] is False
     assert any(r["reason"] == "plan_conformance_regression" for r in records)
     assert final.violations  # The scanner's original finding remains authoritative.
+
+
+def test_subnet_dependency_through_local_is_not_invisible():
+    before = {
+        "terraform/main.tf": "locals { subnet = aws_subnet.edge.id }\n"
+        'resource "aws_lb" "edge" {\n internal = false\n subnets = [local.subnet]\n}\n'
+        'resource "aws_subnet" "edge" { cidr_block = "10.0.1.0/24" }\n'
+    }
+    after = {
+        p: s.replace("10.0.1.0/24", "10.0.2.0/24").replace(
+            'cidr_block = "10.0.2.0/24"', "vpc_id = var.other_vpc"
+        )
+        for p, s in before.items()
+    }
+    assert plan_regressions(plan(), before, after)
