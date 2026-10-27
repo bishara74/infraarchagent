@@ -185,6 +185,16 @@ def fields(resource: Resource, names: set[str]) -> dict[str, Any]:
     }
 
 
+def named(resource: Resource, name: str) -> bool:
+    return label(name) in {
+        label(resource.name),
+        label(str(resource.body.get("name", ""))),
+        label(str(resource.body.get("tags", {}).get("Name", "")))
+        if isinstance(resource.body.get("tags"), dict)
+        else "",
+    }
+
+
 class View:
     def __init__(self, files: dict[str, str]):
         self.graph = Instances(files)
@@ -194,18 +204,7 @@ class View:
 
     def bind(self, name: str, types: set[str], unique: bool) -> Resource | None:
         candidates = [r for r in self.resources.values() if r.type in types]
-        matches = [
-            r
-            for r in candidates
-            if label(name)
-            in {
-                label(r.name),
-                label(str(r.body.get("name", ""))),
-                label(str(r.body.get("tags", {}).get("Name", "")))
-                if isinstance(r.body.get("tags"), dict)
-                else "",
-            }
-        ]
+        matches = [r for r in candidates if named(r, name)]
         return (
             matches[0]
             if len(matches) == 1
@@ -238,7 +237,28 @@ class View:
             if key in seen:
                 continue
             seen.add(key)
-            body = fields(item, selected)
+            body = fields(
+                item,
+                selected | SUPPORT.get(item.type, set())
+                if key == (resource.module, resource.address)
+                else selected,
+            )
+            if item.type == "aws_subnet" and not (
+                names == EXPOSURE
+                and resource.type
+                in {"aws_instance", "aws_launch_template", "aws_launch_configuration"}
+            ):
+                # EC2 auto-addressing is not subnet routing or an ECS/EKS/LB
+                # endpoint control. Keep it on possible EC2 exposure paths.
+                body.pop("map_public_ip_on_launch", None)
+            if (
+                key == (resource.module, resource.address)
+                and names == EXPOSURE
+                and resource.type == "aws_instance"
+                and "associate_public_ip_address" not in resource.body
+                and "subnet_id" in resource.body
+            ):
+                body["subnet_id"] = resource.body["subnet_id"]
             result[canonical(key)] = body
             # Resolve dependency *identity* recursively, never deployment inputs.
             expressions = re.findall(r"\b(?:local|var)\.[\w-]+", canonical(body))
@@ -535,17 +555,69 @@ class View:
             return "unknown"
 
 
-def unresolved_projection(view: View, types: set[str]) -> dict[str, Any]:
-    """An unbound service cannot authorize a changed possible network dependency."""
-    selected = EXPOSURE | PLACEMENT | INGRESS
-    return {
-        canonical((r.module, r.address)): view.projection(
-            r, selected | SUPPORT.get(r.type, set())
+def changed_path(
+    old: View,
+    new: View,
+    original: Resource,
+    updated: Resource,
+    selected: set[str],
+) -> bool:
+    if old.projection(original, selected) == new.projection(updated, selected):
+        return False
+    if selected in (EXPOSURE, PLACEMENT):
+        previous = (
+            old.exposure(original) if selected == EXPOSURE else old.placement(original)
         )
-        for r in view.resources.values()
-        if r.type in types
-        or (not types and (r.type in NETWORK_TYPES or fields(r, selected)))
-    }
+        actual = (
+            new.exposure(updated) if selected == EXPOSURE else new.placement(updated)
+        )
+        # Equal unknowns prove nothing about changed expressions/dependencies.
+        if previous != "unknown" and previous == actual:
+            return False
+    return True
+
+
+def unresolved_changed(old: View, new: View, types: set[str], name: str) -> bool:
+    """Compare possible service roots, never arbitrary policy-bearing resources.
+
+    Known ambiguous types keep every compatible root. An unsupported type has
+    no type-wide binding: only an exact named network resource supplies a path.
+    An absent binding is not a package-wide veto or a conformance certificate.
+    """
+
+    def possible(resource: Resource) -> bool:
+        return resource.type in types or (
+            not types
+            and named(resource, name)
+            and (
+                resource.type in NETWORK_TYPES
+                or bool(
+                    resource.body.keys()
+                    & (PLACEMENT | INGRESS | (EXPOSURE - {"policy", "enabled"}))
+                )
+            )
+        )
+
+    roots = {key for key, resource in old.resources.items() if possible(resource)}
+    # A new unrelated logging/support resource cannot become the binding of an
+    # existing ambiguous service. References from existing roots still traverse
+    # new attachments. With no baseline roots, keep new possible bindings closed.
+    no_baseline_roots = not roots
+    roots.update(
+        key
+        for key, resource in new.resources.items()
+        if possible(resource) and (no_baseline_roots or named(resource, name))
+    )
+    for key in roots:
+        original, updated = old.resources.get(key), new.resources.get(key)
+        if original is None or updated is None:
+            return True
+        if any(
+            changed_path(old, new, original, updated, selected)
+            for selected in (EXPOSURE, PLACEMENT, INGRESS)
+        ):
+            return True
+    return False
 
 
 def plan_regressions(
@@ -627,9 +699,7 @@ def plan_regressions(
             )
 
         if original is None or updated is None:
-            changed = unresolved_projection(old, types) != unresolved_projection(
-                new, types
-            )
+            changed = unresolved_changed(old, new, types, service.name)
             if changed:
                 record("service_binding", original is None)
             continue
@@ -639,7 +709,7 @@ def plan_regressions(
             ("ingress", INGRESS),
         ]:
             a, b = old.projection(original, selected), new.projection(updated, selected)
-            if a == b:
+            if a == b or not changed_path(old, new, original, updated, selected):
                 continue
             related = sorted(
                 {

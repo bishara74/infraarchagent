@@ -27,6 +27,42 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10c section 2 — Scope exposure changes and report refused reads
+
+**Summary:** Restrict unsupported bindings to named network roots, preserve
+ambiguous existing dependency paths, and stop treating unchanged known plan
+mismatches as new regressions. Report a substantiated Terraform file-input refusal
+as a critical blocking finding so existing state rules can require review.
+
+**Requirements addressed:** FR-S-01, FR-S-02, FR-S-06, FR-S-07, FR-V-03, NFR-01.
+
+**Files:** security/plan_conformance.py, scanners/scan.py; new
+unit/test_phase10c_conformance.py, unit/test_phase10c_file_inputs.py and
+integration/test_phase10c_file_input_review.py; D-64 and this log.
+
+**Decisions:** The author accepted the diagnosis first. Unsupported missing
+bindings are not conformance certificates or package-wide vetoes. Changed unknown
+expressions and relevant dependencies remain closed, including implicit EC2 IP
+inheritance. The process-boundary refusal stays intact; scanner representation
+uses TERRAFORM_FILE_INPUT / CRITICAL and existing blocking/readiness rules.
+No string rewrites, prompt-version change, dependency, migration, policy or
+threshold edits. README setup/environment/commands are unchanged in this section.
+
+**Tests:** Final make lint exit 0 (Ruff/format, mypy 189 app sources, frontend
+ESLint/TypeScript). Focused guard, file-input, 9m and real-database historical
+rollback/validation/review suite: 97 passed, 0 failed/skipped (18.54s). Existing
+real-scanner/conformance/database subset: 61 passed (56.56s); final guard subset
+with two added ambiguity cases: 46 passed (5.46s). Earlier focused run: 95 passed.
+Initial synthetic cluster migration failed on the omitted infraarch_readonly
+role: 47 tests passed / 3 setup errors; provisioned the existing role, with no
+migration or application privilege change. Two style-only line-length failures
+were corrected before final successful lint.
+
+**Known gaps / follow-ups:** Section 3 must replay reconstructable final-round
+candidates and complete all finish commands. Rejected Fixer bodies remain absent;
+no new pass-rate claim. Keep dynamic reads blocked and all three historical
+public-LB flips rejected. No new specification open question.
+
 ## 2026-10-27 — Phase 10c section 1 — Diagnose final-round regression before fixes
 
 **Summary:** Trace every retained multi-line-string occurrence to one missing

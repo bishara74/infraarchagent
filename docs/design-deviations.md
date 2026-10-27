@@ -3075,6 +3075,42 @@ dependency or schema. No new specification open question is introduced. Full
 finish verification remains for section 3; section-1 lint passes and 72 existing
 offline regressions pass (three database-loop cases deselected).
 
+#### Phase 10c section 2 — scoped change guard and explicit refused-input finding
+
+The author accepted section 1 before these code changes. Unsupported service
+labels now select only exact named network-resource candidates, including
+resources with explicit network configuration; generic `policy`/`enabled` fields
+cannot establish a network binding. Known ambiguous types retain every possible
+baseline root and its dependency path. Unrelated newly added resources do not
+become bindings of existing ambiguous services; new attachments from an existing
+root remain guarded. A missing binding is not positive plan conformance.
+
+A known exposure or placement value that stays the same is not a new regression,
+even when it already disagrees with the plan. Changed unknown expressions and
+network dependencies still fail closed. Subnet EC2 auto-addressing defaults are
+separate from routing and ECS/EKS/LB exposure. Implicit EC2 address inheritance
+retains a guarded subnet dependency; explicit EC2 addresses remain authoritative.
+No file content is rewritten by this change and Fixer prompt version stays 8.
+
+The runner still refuses all unsafe/uninspectable Terraform file reads before
+launch. When the scanner receives that specific refusal and independently
+reproduces the input-guard check, it emits `TERRAFORM_FILE_INPUT` with CRITICAL
+severity and `terraform: file_input_blocked` tool status. Existing severity policy
+makes this blocking for every variant/profile. Other tool errors, including an
+unsubstantiated refusal, retain their error handling. There is no path evaluation,
+new read permission, scanner-policy change or readiness transition change.
+The existing SCAN_EXHAUSTED + VALIDATION_ERROR path leads to pending_review;
+download remains unavailable. The original file-input validation error is kept.
+
+Final focused verification: 97 passed, 0 failed/skipped (18.54s), including all
+three real-database ALB rollback fixtures and a refused-read pending-review
+integration. The existing scanner subset separately passes 61 checks (56.56s).
+Full make lint passes. Initial test-cluster bootstrap lacked the existing
+infraarch_readonly role; provisioning that synthetic role fixed three setup
+errors without changing migrations or app grants. Two subsequent synthetic
+ambiguity tests pass with the guard subset (46 passed). Full finish and native
+replay evidence follow in section 3. No new specification open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

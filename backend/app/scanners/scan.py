@@ -8,7 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from app.core.telemetry import execution_started, invocation, scope, tags, timed
-from app.domain.enums import Variant
+from app.domain.enums import Severity, Variant
 from app.domain.models import Violation
 from app.domain.paths import validate_file_map
 from app.scanners.checkov_parser import CheckovPathError, parse_checkov
@@ -109,7 +109,43 @@ class Scanner:
             )
             violations: list[Violation] = []
             syntax_limited = False
+            file_input_blocked = False
             for name, output in zip(names, outputs, strict=True):
+                if (
+                    isinstance(output, ToolFailure)
+                    and name == "terraform"
+                    and output.category == "unsafe_file_input"
+                ):
+                    from app.validation.documents import PackageDocuments
+                    from app.validation.terraform import file_input_guard
+
+                    refused = file_input_guard(root, PackageDocuments.parse(files))
+                    if not refused:
+                        raise output
+                    file_input_blocked = True
+                    for check in refused:
+                        path = check.file_path or next(
+                            p
+                            for p in sorted(files)
+                            if p.endswith((".tf", ".tf.json", ".tfvars"))
+                        )
+                        violations.append(
+                            Violation(
+                                tool="terraform",
+                                rule_id="TERRAFORM_FILE_INPUT",
+                                severity=Severity.CRITICAL,
+                                file_path=path,
+                                resource="",
+                                line_start=check.line_start,
+                                title="Terraform file input blocked",
+                                message=(
+                                    "Terraform evaluation was refused because a file "
+                                    "input cannot be proved to remain "
+                                    "inside the package."
+                                ),
+                            )
+                        )
+                    continue
                 if isinstance(output, ToolFailure):
                     raise output
                 if isinstance(output, BaseException):
@@ -139,7 +175,11 @@ class Scanner:
                 {
                     "checkov": "ok",
                     "trivy": "ok",
-                    "terraform": "syntax_limited" if syntax_limited else "ok",
+                    "terraform": "file_input_blocked"
+                    if file_input_blocked
+                    else "syntax_limited"
+                    if syntax_limited
+                    else "ok",
                 },
                 syntax_limited=syntax_limited,
             )
