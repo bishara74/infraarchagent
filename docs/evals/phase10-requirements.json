@@ -72,7 +72,8 @@
         "backend/tests/unit/test_generator_prompt.py"
       ],
       "deviations": [
-        "D-60"
+        "D-60",
+        "D-63"
       ],
       "finding": "Generators receive the plan rather than raw input; optional advisory lessons have separate governed provenance."
     },
@@ -325,12 +326,14 @@
       ],
       "evidence": [
         "backend/tests/integration/test_phase9f_automatic.py",
-        "backend/tests/integration/test_phase9f_fixer_model.py"
+        "backend/tests/integration/test_phase9f_fixer_model.py",
+        "docs/evals/phase10b-exposure-audit/README.md"
       ],
       "deviations": [
-        "D-22"
+        "D-22",
+        "D-63"
       ],
-      "finding": "Automatic remediation targets blocking findings; LOW/unknown and explicit variant exemptions remain advisory."
+      "finding": "Automatic remediation targets blocking findings; LOW/unknown and explicit variant exemptions remain advisory. Planned exposure conflicts are rolled back and left for review; the exposure guard has bounded static coverage."
     },
     {
       "id": "FR-S-03",
@@ -344,7 +347,8 @@
       ],
       "deviations": [
         "D-44",
-        "D-45"
+        "D-45",
+        "D-63"
       ],
       "finding": "Scan/fix/rescan and allowance exhaustion are tested; author-approved default is four passes."
     },
@@ -395,19 +399,21 @@
     },
     {
       "id": "FR-S-07",
-      "status": "met",
+      "status": "partly met",
       "test_types": [
         "pytest"
       ],
       "evidence": [
         "backend/tests/integration/test_automatic_validation_repair.py",
-        "backend/tests/integration/test_phase9l_transport.py"
+        "backend/tests/integration/test_phase9l_transport.py",
+        "docs/evals/phase10b-exposure-audit/README.md"
       ],
       "deviations": [
         "D-06",
-        "D-47"
+        "D-47",
+        "D-63"
       ],
-      "finding": "Strict clean scan plus valid validation gives checks_passed; exhausted/failed/unavailable validation requires review."
+      "finding": "Strict clean scan plus valid validation still controls checks_passed. Historical scan-clean packages could contradict planned exposure; Phase 10b guards supported exposure changes, while unresolved or unsupported semantics and deployment reachability remain unproven."
     },
     {
       "id": "FR-S-08",
@@ -536,7 +542,8 @@
       ],
       "deviations": [
         "D-35",
-        "D-39"
+        "D-39",
+        "D-63"
       ],
       "finding": "Passed/failed/skipped validation and resolved/unresolved findings have distinct labels/styles and file links."
     },
@@ -683,7 +690,8 @@
         "backend/tests/integration/test_pipeline_orchestrator.py"
       ],
       "deviations": [
-        "D-55"
+        "D-55",
+        "D-63"
       ],
       "finding": "Six role swaps prove ordinary dispatch seams; concrete recovery and private generator telemetry remain coupled."
     },

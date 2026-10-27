@@ -485,3 +485,26 @@ describe the OWASP LLM01 threat boundary, immutable human approval, layered
 corpus counts, disabled-request compatibility and retained provenance. This
 phase verifies controls with local mocked inference; it adds no evidence that
 lessons improve generated outputs and does not change the experiments above.
+
+
+## Phase 10b — Exposure preservation counter-audit
+
+The [new immutable-input counter-audit](../evals/phase10b-exposure-audit/README.md)
+separates scanner cleanliness from functional exposure. Across 998 packages in
+33 folders, 312 have source or committed exposure projections; 703 outcomes are
+unknown under the audit definition. Three plan-public LBs changed from public
+originals to internal retained configurations. One was a passing broad-baseline
+cost package under all three profiles. That round changes 24/60 to 23/60; the
+pooled baseline changes from 43/120 (35.8%) to 42/120 (35.0%) on confirmed cases.
+A separate passing package has unresolved original exposure, so the bounded
+corrected result is 41–42/120 (34.2–35.0%). Do not silently assume it was public.
+The affected Architect experiment/smoke packages already failed; 24/56 remains.
+Final sets retain 7/40 and 8/41 strict/v1 passes with no confirmed plan-public
+flips; historical v2 data is absent. Earlier broad/stub/source gaps are explicit.
+
+These are static configured-property observations, not deployment tests or
+causal model comparisons. Historical folders, labels and profiles are unchanged.
+The new guard preserves supported exposure changes and returns conflicting fixes
+to engineer review. Other plan semantics, dynamic values and cloud reachability
+remain bounded or unverified. FR-S-07 is qualified as partly met; the current
+59-ID register is 45 met, 12 partly met, one not met, one unverified.

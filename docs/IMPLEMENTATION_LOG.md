@@ -27,6 +27,37 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 4 — Audit retained LB exposure
+
+**Summary:** Publish a fresh source-free counter-audit of every committed benchmark
+folder, leaving historical source folders, labels, profiles and rates unchanged.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-A-05, NFR-01/02.
+
+**Files:** scripts/phase10b_audit.py, unit/test_phase10b_audit.py,
+phase10b-exposure-audit/ (README, package projections, rates and input manifest),
+current evidence register/index, Chapter 6 notes, README, D-63 and log.
+
+**Decisions:** 998 packages / 33 folders; 312 have exposure projections; 703
+outcomes unknown. Three confirmed regressions, one previously passing under all
+profiles. Confirmed broad baseline: 43/120 → 42/120; one unresolved passing
+original leaves a 41–42/120 range. Architect full round stays 24/56. Final sets
+stay 7/40 and 8/41 strict/v1, without historical v2. Forty-one cache hashes match
+committed records. Frozen A3/B profiles supplement only matching old quality;
+legacy raw labels compare to raw snapshots before normalization. No rescan/LLM.
+FR-S-07 is qualified as partly met: current register 45 met / 12 partly met /
+1 not met / 1 unverified. This does not change scanner/readiness policy.
+
+**Tests:** Reporter/index subset: 8 passed, 0 failed, 0 skipped. Reporter initial
+subset: 3 passed. Projection scan: 0 findings. Ruff passes. Full finish checks
+follow. An initial cache comparison correctly stopped on a legacy label-schema
+difference; exact raw-label equality plus unchanged hash/identity/findings checks
+resolves representation without changing any historical record.
+
+**Known gaps / follow-ups:** Missing/ambiguous original exposure remains unknown,
+including one baseline pass. Old source gaps are explicit, never silently zero.
+Raw cache source is not exported; data describes static configuration only.
+
 ## 2026-10-27 — Phase 10b section 3 — Explain retained exposure findings
 
 **Summary:** Project exact current plan-conflict evidence into results and show

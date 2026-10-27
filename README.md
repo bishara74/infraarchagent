@@ -2104,3 +2104,20 @@ from statically reviewed, author-only setup/online commands.
 [Clean-deployment troubleshooting](docs/deployment.md#troubleshooting) includes
 evidence collection and private restart instructions. Author tag/push commands
 are in the changelog; no release tag is created by this task.
+
+
+### Phase 10b exposure counter-audit
+
+The [separate report](docs/evals/phase10b-exposure-audit/README.md) preserves
+historical evidence and distinguishes confirmed regressions from unknown source
+coverage. Reproduce it offline into a fresh directory using the evidence revision
+recorded in its input-manifest.json:
+
+```bash
+cd backend
+.venv/bin/python -m scripts.phase10b_audit --revision <recorded-revision> --output-dir docs/evals/<fresh-directory>
+```
+
+Only hash-verified cached snapshots supplement committed projections; raw source
+is not exported. Historical missing profiles remain unavailable. The confirmed
+pooled broad adjustment is 42/120, with an uncertainty range of 41–42/120.

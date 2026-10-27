@@ -2885,6 +2885,28 @@ Those IDs are proposals only, never new test markers or implicit spec edits.
 
 ### D-63 — Remediation preserves planned exposure (Phase 10b)
 
+Section 4 — historical counter-audit: the new source-free report at
+`docs/evals/phase10b-exposure-audit/` covers 998 packages in 33 benchmark
+folders, with exposure projections for 312 and 703 unknown outcomes (including
+686 without projections). Three public-to-internal regressions are confirmed.
+One broad-baseline cost package passed every profile: that round changes 24/60
+to 23/60; the pooled baseline's confirmed-only adjustment is 43/120 → 42/120.
+One additional passing baseline package has unresolved original exposure, leaving
+a corrected range of 41–42/120 (34.2–35.0%), not an invented exact result.
+The affected Architect full-round and smoke packages already failed; full-round
+passes stay 24/56. Both final sets have zero confirmed plan-public flips, keeping
+7/40 and 8/41 strict/v1 passes; v2 was not recorded. Historical folders, policies
+and labels are unchanged. Forty-one raw snapshot hashes match committed inputs;
+legacy raw labels are accepted only when they match exactly. Recorded frozen
+A3/B reclassification supplies only the historical profiles it actually measured.
+
+FR-S-07's stronger functional interpretation is now partly met; FR-S-02 and
+NFR-02 remain partly met. The reviewed 59-ID index becomes 45 met, 12 partly met,
+1 not met, 1 unverified. Scan/validation semantics remain implemented, while the
+new bounded exposure guard does not establish complete plan conformance or
+successful deployment. Earlier reported scanner pass rates remain historical;
+they must not be presented as functional deployment success.
+
 Section 3: results add typed `plan_conflicts` and a `plan_conformance_conflict`
 review reason. Only exact still-open rule/resource/path evidence is projected;
 later resolution clears the current notice without rewriting rejected attempts.
