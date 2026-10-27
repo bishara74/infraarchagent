@@ -535,6 +535,19 @@ class View:
             return "unknown"
 
 
+def unresolved_projection(view: View, types: set[str]) -> dict[str, Any]:
+    """An unbound service cannot authorize a changed possible network dependency."""
+    selected = EXPOSURE | PLACEMENT | INGRESS
+    return {
+        canonical((r.module, r.address)): view.projection(
+            r, selected | SUPPORT.get(r.type, set())
+        )
+        for r in view.resources.values()
+        if r.type in types
+        or (not types and (r.type in NETWORK_TYPES or fields(r, selected)))
+    }
+
+
 def plan_regressions(
     plan: DeploymentPlan,
     before: dict[str, str],
@@ -595,7 +608,7 @@ def plan_regressions(
                             "file_path": v.file_path,
                         }
                         for v in targeted
-                        if v.resource
+                        if v.resource.split("[", 1)[0]
                         in [
                             resource.address if resource else "unresolved",
                             *(related_resources or []),
@@ -605,32 +618,17 @@ def plan_regressions(
                         {
                             v.rule_id
                             for v in targeted
-                            if resource is None or v.file_path == resource.path
+                            if resource is None
+                            or v.file_path == resource.path
+                            or v.resource.split("[", 1)[0] in (related_resources or [])
                         }
                     ),
                 }
             )
 
         if original is None or updated is None:
-            relevant = [
-                r
-                for view in (old, new)
-                for r in view.resources.values()
-                if r.type in types
-            ]
-            changed = any(
-                fields(
-                    old.resources[(r.module, r.address)],
-                    EXPOSURE | PLACEMENT | INGRESS | SUPPORT.get(r.type, set()),
-                )
-                != fields(
-                    new.resources[(r.module, r.address)],
-                    EXPOSURE | PLACEMENT | INGRESS | SUPPORT.get(r.type, set()),
-                )
-                if (r.module, r.address) in old.resources
-                and (r.module, r.address) in new.resources
-                else True
-                for r in relevant
+            changed = unresolved_projection(old, types) != unresolved_projection(
+                new, types
             )
             if changed:
                 record("service_binding", original is None)

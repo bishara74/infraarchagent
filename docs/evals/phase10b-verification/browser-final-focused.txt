@@ -1,0 +1,24 @@
+
+> infraarchagent-frontend@0.1.0 test:e2e
+> playwright test phase10b-exposure.spec.ts
+
+[WebServer] INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+[WebServer] INFO  [alembic.runtime.migration] Will assume transactional DDL.
+[WebServer] INFO:     Started server process [77459]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:18142 (Press CTRL+C to quit)
+[WebServer] (node:77748) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:77785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] INFO app.llm.base provider=stub model=stub attempt=1 outcome=success category=success http_status=none exception_class=none reasoning_effort=unset latency=0.008 input_tokens=10 output_tokens=10 cached_input_tokens=None prompt_chars=129 system_chars=5198 retry_after=none rate_limit_headers=none
+[WebServer] INFO app.llm.base provider=stub model=stub attempt=1 outcome=success category=success http_status=none exception_class=none reasoning_effort=unset latency=0.000 input_tokens=10 output_tokens=10 cached_input_tokens=None prompt_chars=531 system_chars=10034 retry_after=none rate_limit_headers=none
+[WebServer] INFO app.llm.base provider=stub model=stub attempt=1 outcome=success category=success http_status=none exception_class=none reasoning_effort=unset latency=0.004 input_tokens=10 output_tokens=10 cached_input_tokens=None prompt_chars=531 system_chars=10305 retry_after=none rate_limit_headers=none
+[WebServer] INFO app.llm.base provider=stub model=stub attempt=1 outcome=success category=success http_status=none exception_class=none reasoning_effort=unset latency=0.000 input_tokens=10 output_tokens=10 cached_input_tokens=None prompt_chars=531 system_chars=10141 retry_after=none rate_limit_headers=none
+  ✓  1 e2e/phase10b-exposure.spec.ts:5:1 › FR-S-07 FR-UI-03 FR-UI-05 FR-UI-07 retained plan-conflicting finding is visible in overview, Findings and Review (28.7s)
+
+  1 passed (47.0s)

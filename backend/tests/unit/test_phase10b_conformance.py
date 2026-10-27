@@ -272,3 +272,91 @@ def test_subnet_dependency_through_local_is_not_invisible():
         for p, s in before.items()
     }
     assert plan_regressions(plan(), before, after)
+
+
+def test_ambiguous_binding_rejects_changed_network_dependency_only():
+    def package(port, secure=False):
+        return {
+            "terraform/main.tf.json": json.dumps(
+                {
+                    "resource": {
+                        "aws_lb": {
+                            "one": {
+                                "internal": False,
+                                "security_groups": ["${aws_security_group.edge.id}"],
+                                "drop_invalid_header_fields": secure,
+                            },
+                            "two": {"internal": False},
+                        },
+                        "aws_security_group": {
+                            "edge": {
+                                "ingress": [
+                                    {
+                                        "from_port": port,
+                                        "to_port": port,
+                                        "protocol": "tcp",
+                                        "cidr_blocks": ["0.0.0.0/0"],
+                                    }
+                                ]
+                            }
+                        },
+                    }
+                }
+            )
+        }
+
+    assert (
+        plan_regressions(plan(), package(443), package(80))[0]["assessment"]
+        == "unknown"
+    )
+    assert not plan_regressions(plan(), package(443), package(443, True))
+
+
+def test_unsupported_service_cannot_silently_accept_exposure_change():
+    assert (
+        plan_regressions(plan(kind="edgeproxy"), files(), files({"internal": True}))[0][
+            "assessment"
+        ]
+        == "unknown"
+    )
+    assert not plan_regressions(
+        plan(kind="edgeproxy"),
+        files(),
+        files({"internal": False, "drop_invalid_header_fields": True}),
+    )
+
+
+async def test_provisional_syntax_fixer_cannot_change_unverified_exposure():
+    from app.agents.generation_syntax import recover_generation_syntax
+    from app.agents.security.fix import FixProposal
+
+    original = {
+        "terraform/main.tf": 'resource "aws_lb" "edge" {\n'
+        ' internal = false\n name = "unfinished\n}\n'
+    }
+    repaired = 'resource "aws_lb" "edge" {\n internal = false\n name = "fixed"\n}\n'
+
+    class Fixer:
+        async def propose(self, **kwargs):
+            return FixProposal(
+                kwargs["path"], True, None, repaired.replace("false", "true"), {}, ()
+            )
+
+    async def regenerate(feedback):
+        return {"terraform/main.tf": repaired}
+
+    files, report = await recover_generation_syntax(
+        original,
+        plan(),
+        Fixer(),
+        AgentBudget(30),
+        redact=lambda x: x,
+        regenerate=regenerate,
+    )
+    assert files["terraform/main.tf"] == repaired
+    assert report["path"] == "regeneration"
+    assert all(
+        a["reason"] == "plan_conformance_regression"
+        for r in report["rounds"]
+        for a in r["actions"]
+    )

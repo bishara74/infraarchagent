@@ -2,6 +2,7 @@ import {render,screen} from '@testing-library/react';
 import {expect,it} from 'vitest';
 import pending from '../test/fixtures/pending-results.json';
 import type {PackageResult,PlanConflict} from '../api/types';
+import {ReportPanel} from './ReportPanel';
 import {PlanConformanceNotice} from './PlanConformanceNotice';
 const conflict:PlanConflict={service:'edge',resource:'aws_lb.edge',property:'exposure',expected:'public',assessment:'regression',rule_id:'AWS-0053',file_path:'terraform/main.tf'};
 it('FR-S-07 FR-UI-05 explains current public, private and unknown conflicts without inventing legacy evidence',()=>{
@@ -18,4 +19,12 @@ it('FR-UI-05 only annotates the exact finding linked by the backend',()=>{
  const item={...pending.packages[0],plan_conflicts:[conflict]} as PackageResult;
  const view=render(<PlanConformanceNotice item={item} finding={{...conflict,rule_id:'OTHER'}}/>);expect(view.container).toBeEmptyDOMElement();
  view.rerender(<PlanConformanceNotice item={item} finding={{...conflict}}/>);expect(screen.getByText(/Kept open/)).toBeVisible();
+});
+
+it('FR-S-07 FR-UI-05 reports a rolled-back proposal as unresolved and not applied',()=>{
+ const item={...pending.packages[0],plan_conflicts:[conflict],security_report:{sessions:[{kind:'automated',iterations:[{fixes:[{file:conflict.file_path,accepted:true,retained:false,rule_ids:[conflict.rule_id]}]}]}],final:{outcome:'exhausted',remaining_blocking:[conflict]}}} as PackageResult;
+ render(<ReportPanel item={item} section="security" onFile={()=>undefined}/>);
+ expect(screen.getByText('0 fixes applied · exhausted')).toBeVisible();
+ expect(screen.queryByText('resolved',{exact:true})).toBeNull();
+ expect(screen.getAllByText('unresolved',{exact:true})).toHaveLength(2);
 });

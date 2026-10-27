@@ -27,6 +27,50 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b completion — Verify guarded remediation and evidence
+
+**Summary:** Complete guard coverage for provisional syntax repair and unknown
+service dependencies, exact indexed/supporting-resource conflict attribution,
+and honest retained-fix presentation. Generate current verification, traceability
+and evidence-index reports after the eight numbered-section commits.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-A-05, FR-P-04,
+FR-UI-03, FR-UI-05, FR-UI-07, NFR-01, NFR-02, PR-04.
+
+**Files:** generation_syntax.py, plan_conformance.py, domain/review.py,
+reportView.ts, ReportPanel.tsx, phase10b component/browser/unit tests,
+pipeline demo/results contract tests, phase10_evidence.py and its tests;
+phase10b-verification/, phase10b-traceability/, fresh task-owned performance/scan
+reports, EVIDENCE.md, D-63, README and this log.
+
+**Decisions:** Guard every Fixer acceptance surface, preserving malformed-baseline
+uncertainty without blocking unrelated valid edits. Match indexed resource IDs
+and supporting resources without broad rule-only annotations. Treat explicit
+retained=false as an unapplied proposal in UI; legacy reports keep their fallback.
+D-63 retains static-analysis limits. Current index is 45 met / 12 partly met /
+1 not met / 1 unverified. Historical evidence stays unchanged; 94 browser captures
+are restored byte-for-byte, fresh images stored in this task's report. No installs,
+external network/LLM calls, dotenv reads, real credentials or pushes.
+
+**Tests:** `make lint` passes (Ruff/format/mypy 189 app files, ESLint/TypeScript).
+`make test`: 2,739 passed, 0 failed/skipped, 6 deselected; final focused checks:
+30 passed including three later additions. `make frontend-test`: 467 passed,
+0 failed/skipped in 46 files with two workers. `make test-e2e`: 35 passed plus
+one final rollback-display/browser check passed. `make test-perf`: 6 passed,
+0 failed/skipped, 2,742 deselected; PR-04 local 10 MiB transfer 1.055 s within
+unchanged 2 s bound. Traceability: 59 IDs, 0 uncovered/invalid annotations/
+collection failures, 2,748 backend tests collected. Initial full backend
+2,725 passed/1 obsolete equality failed; fixed assertion checks new disabled
+Fixer provenance. Initial frontend 457 passed/7 timing failures; bounded workers
+pass without timeout changes. `make secret-scan`: final 0 findings, 0 scan errors across working files and
+all existing refs/reflogs. Both disposable task-owned test clusters stopped. Protected source checks: 58 unchanged;
+historical baseline evidence: 5,672 files unchanged under Git normalization.
+
+**Known gaps / follow-ups:** 703 audit exposure outcomes unknown; pooled corrected
+baseline range 41–42/120. Static exposure preservation is not complete functional
+conformance/deployment. Four differing author plans and single runs do not measure
+a causal lesson effect. Live deployment migration is the author's next step.
+
 ## 2026-10-27 — Phase 10b section 7 — Inspect author lesson effects
 
 **Summary:** Commit four zero-finding author snapshots and deterministic original/

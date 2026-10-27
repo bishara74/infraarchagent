@@ -2127,3 +2127,11 @@ The [author lesson demonstration](docs/evals/phase10b-author-lesson-runs/README.
 separates original Generator instruction following from Fixer changes. Reproduce
 its scan-first analysis offline with `cd backend && .venv/bin/python -m scripts.phase10b_lessons`.
 One run per configuration and differing plans do not establish a measured lesson effect.
+
+
+Phase 10b's [verification record](docs/evals/phase10b-verification/README.md)
+contains the actual backend/frontend/browser/performance counts and reproduction
+limits. For bounded frontend concurrency, use `VITEST_MAX_WORKERS=2 make frontend-test`.
+Generate current traceability into a fresh absolute path with
+`make traceability TRACEABILITY_ARGS="--output-dir /absolute/path/to/fresh-report"`;
+generate the evidence index with `cd backend && .venv/bin/python -m scripts.phase10_evidence`.

@@ -61,3 +61,25 @@ def test_other_resource_or_rule_never_inherits_plan_conflict():
     security["final"]["remaining_blocking"][0]["resource"] = "aws_lb.other"
     assert open_plan_conflicts(security) == []
     assert open_plan_conflicts(None) == []
+
+
+def test_counted_finding_keeps_its_exact_identity_in_projection():
+    security = report()
+    security["final"]["remaining_blocking"][0]["resource"] = "aws_lb.edge[0]"
+    result = open_plan_conflicts(security)
+    assert result[0]["resource"] == "aws_lb.edge[0]"
+
+
+def test_related_target_in_another_file_is_exactly_linked():
+    security = report()
+    finding = security["final"]["remaining_blocking"][0]
+    finding.update(
+        resource="aws_security_group.edge", file_path="terraform/security.tf"
+    )
+    conflict = security["sessions"][0]["iterations"][0]["verification"][
+        "plan_conformance"
+    ][0]
+    conflict.update(
+        related_resources=["aws_security_group.edge"], targeted_findings=[dict(finding)]
+    )
+    assert open_plan_conflicts(security)[0]["file_path"] == "terraform/security.tf"

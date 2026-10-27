@@ -46,10 +46,11 @@ def render(data: dict) -> str:
         data["scope"],
         "",
         (
-            "Execution results: [Phase 10 verification]"
+            "Execution results: [Phase 10b verification]"
+            "(phase10b-verification/README.md); prior [Phase 10 verification]"
             "(phase10-verification/README.md). "
             "Test linkage: [three-framework collection]"
-            "(phase10-traceability-final/traceability.md), "
+            "(phase10b-traceability/traceability.md), "
             "[TC mapping](../requirement-test-map.md). "
             "An annotation or collection count is not a passing test "
             "or a status decision."

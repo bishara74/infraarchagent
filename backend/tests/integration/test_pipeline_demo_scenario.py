@@ -51,7 +51,17 @@ async def test_review_demo_retries_to_ready_and_preserves_audit(db_engines, tmp_
         assert retry.status_code == 202
         await asyncio.gather(*app.state.runner.tasks.values())
         after = (await client.get(url)).json()
-        assert after["run"] == before["run"]
+        assert {k: v for k, v in after["run"].items() if k != "lessons"} == {
+            k: v for k, v in before["run"].items() if k != "lessons"
+        }
+        previous_calls = {c["call_id"]: c for c in before["run"]["lessons"]["calls"]}
+        current_calls = {c["call_id"]: c for c in after["run"]["lessons"]["calls"]}
+        assert all(current_calls[key] == value for key, value in previous_calls.items())
+        new_calls = [c for key, c in current_calls.items() if key not in previous_calls]
+        assert new_calls and all(
+            c["role"] == "fixer" and not c["enabled"] for c in new_calls
+        )
+        assert after["run"]["lessons"]["used_lesson_ids"] == []
         assert after["packages"][:2] == before["packages"][:2]
         fixed = after["packages"][2]
         assert fixed["status"] == "checks_passed"

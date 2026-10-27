@@ -2908,6 +2908,16 @@ Those IDs are proposals only, never new test markers or implicit spec edits.
 
 ### D-63 — Remediation preserves planned exposure (Phase 10b)
 
+Completion checks also guard provisional generation syntax repairs, ambiguous and
+unsupported service dependency changes, and exact indexed/supporting-resource
+finding attribution. UI applied counts use explicit retained status, with a
+legacy fallback, so a rejected accepted proposal is not displayed as resolved.
+Final verification: 2,739 backend tests passed plus 30 final focused checks;
+467 frontend, 35 browser plus one final browser regression, and 6 performance
+tests passed. Lint and 59-ID traceability pass; final secret scan has zero findings/errors. The [verification record](evals/phase10b-verification/README.md)
+records exact run boundaries, initial failures, secret scan, unchanged protected
+sources and preservation of historical captures. No new open question is added.
+
 Section 7: commit the four author snapshots only after scanning all source and
 analysis files with zero findings. A 12-row table separates scoped lesson
 instruction following in Generator originals from final retained files. Ten

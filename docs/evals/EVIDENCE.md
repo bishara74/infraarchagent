@@ -4,7 +4,7 @@
 
 Met denotes demonstrated behavior under the linked evidence and accepted design amendments; partly met denotes a literal scope or evidence limitation. Execution counts are separate from collection. Performance findings apply to the recorded revisions/cohorts, not every future model call. No cloud deployment has been verified.
 
-Execution results: [Phase 10 verification](phase10-verification/README.md). Test linkage: [three-framework collection](phase10-traceability-final/traceability.md), [TC mapping](../requirement-test-map.md). An annotation or collection count is not a passing test or a status decision.
+Execution results: [Phase 10b verification](phase10b-verification/README.md); prior [Phase 10 verification](phase10-verification/README.md). Test linkage: [three-framework collection](phase10b-traceability/traceability.md), [TC mapping](../requirement-test-map.md). An annotation or collection count is not a passing test or a status decision.
 
 | ID | Status | Test types | Evidence | Deviations / qualification |
 |---|---|---|---|---|

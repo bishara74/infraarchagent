@@ -78,7 +78,8 @@ def open_plan_conflicts(
                 )
                 or (
                     resource != "unresolved"
-                    and finding.get("resource") not in [resource, *related]
+                    and str(finding.get("resource", "")).split("[", 1)[0]
+                    not in [resource, *related]
                 )
                 or conflict.get("expected") not in {"public", "private"}
                 or conflict.get("assessment") not in {"regression", "unknown"}

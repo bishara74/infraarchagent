@@ -40,3 +40,10 @@ def test_index_rejects_missing_evidence_and_premature_acceptance(change):
         next(row for row in data["rows"] if row["id"] == identity)["status"] = "met"
     with pytest.raises(ValueError):
         validate(data, requirements, ROOT)
+
+
+def test_current_index_distinguishes_new_verification_from_prior_execution():
+    text = render(register())
+    assert "(phase10b-verification/README.md)" in text
+    assert "(phase10-verification/README.md)" in text
+    assert "(phase10b-traceability/traceability.md)" in text

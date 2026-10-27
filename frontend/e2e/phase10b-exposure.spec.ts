@@ -7,11 +7,13 @@ test('FR-S-07 FR-UI-03 FR-UI-05 FR-UI-07 retained plan-conflicting finding is vi
  const item=snapshot.packages.find(row=>row.variant==='security')!;
  item.plan_conflicts=[{service:'edge',resource:'aws_lb.edge',property:'exposure',expected:'public',assessment:'regression',rule_id:'AWS-0053',file_path:'terraform/main.tf'}];
  item.review_reasons.push('plan_conformance_conflict');
- item.security_report={sessions:[],final:{outcome:'exhausted',remaining_blocking:[{rule_id:'AWS-0053',resource:'aws_lb.edge',file_path:'terraform/main.tf',severity:'HIGH',message:'Load balancer is exposed to the internet'}]}};
+ item.security_report={sessions:[{kind:'automated',iterations:[{fixes:[{file:'terraform/main.tf',accepted:true,retained:false,rule_ids:['AWS-0053']}]}]}],final:{outcome:'exhausted',remaining_blocking:[{rule_id:'AWS-0053',resource:'aws_lb.edge',file_path:'terraform/main.tf',severity:'HIGH',message:'Load balancer is exposed to the internet'}]}};
  await page.route(`**/api/pipeline/${id}/results`,route=>route.fulfill({json:snapshot}));
  const explanation="Kept open: required by the plan's internet exposure.";
  await page.goto(`/runs/${id}/compare`);await expect(page.getByRole('article',{name:'security variant'}).getByText(explanation,{exact:true})).toBeVisible();
  await page.goto(`/runs/${id}/packages/security?tab=findings`);await expect(page.getByText(explanation,{exact:true})).toBeVisible();
+ await expect(page.getByText('0 fixes applied · exhausted')).toBeVisible();
+ await expect(page.getByText('resolved',{exact:true})).toHaveCount(0);
  await page.getByRole('tab',{name:'Review',exact:true}).click();await expect(page.getByText(explanation,{exact:true})).toBeVisible();
  await expect(page.getByRole('heading',{name:'Pending review',exact:true})).toBeVisible();
  await page.setViewportSize({width:1280,height:800});
