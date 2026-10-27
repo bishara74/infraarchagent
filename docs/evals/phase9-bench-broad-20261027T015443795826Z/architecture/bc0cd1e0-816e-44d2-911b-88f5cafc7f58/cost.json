@@ -1,0 +1,62 @@
+{
+  "run_id": "bc0cd1e0-816e-44d2-911b-88f5cafc7f58",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 6,
+  "complexity": 4,
+  "round": 1,
+  "sequence": 6,
+  "variant": "cost",
+  "plan_sha256": "097363efd2fba8d930b854ae8894c5f5eb66f6dcec38953f27e91b15008b543d",
+  "original_files_sha256": "af08c217ca049569e8fd2b9909a83ec2b841ac1782fbed030ff20d4979b5024c",
+  "retained_files_sha256": "16d2462ab293921dd2583385e2a0e2a85ef9c400c807f67d6857b14b129499e6",
+  "plan": {
+    "classification": "public",
+    "resources": [
+      {
+        "service": "alb",
+        "aws_service": "alb",
+        "classification": "public",
+        "evidence": "network.public_services/private_services"
+      }
+    ],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 113,
+        "source_sha256": "34023419f8e20cd2a1c52ab298428665bc90aa43f2e809aa31e09535b1061fd8"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 115,
+        "source_sha256": "6c16c21c51742a232dd5aeacf00351532c7541f6d3933340a806d8da3164732c"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": false
+}

@@ -1,0 +1,82 @@
+{
+  "run_id": "5ca7fdb5-5da5-44e1-bdbe-ea0f974c8082",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 8,
+  "complexity": 4,
+  "round": 1,
+  "sequence": 8,
+  "variant": "performance",
+  "plan_sha256": "1cb4a8e002591ac7b22402b00ad02ff4c3d283826f371547aab48764b7d6079d",
+  "original_files_sha256": "873dfa3a8e78c98cf92be1be36241666b755b788056fa9ad1f7485ef268c9438",
+  "retained_files_sha256": "560b605464dae8540934a9230a5193a0986ff53a9cbfadcbaf1e9af3305c828d",
+  "plan": {
+    "classification": "public",
+    "resources": [
+      {
+        "service": "alb",
+        "aws_service": "alb",
+        "classification": "public",
+        "evidence": "network.public_services/private_services"
+      }
+    ],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 202,
+        "source_sha256": "6ca2b779ee398bad48586b162933fcdb11f56c2b67412ff8ec6c4cbdaec9ff73"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb_logs_cfg",
+        "classification": "public",
+        "internal": false,
+        "defaulted": true,
+        "default_source": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/r/lb.html.markdown",
+        "line": 274,
+        "source_sha256": "6ca2b779ee398bad48586b162933fcdb11f56c2b67412ff8ec6c4cbdaec9ff73"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 202,
+        "source_sha256": "c369c2f78be58010759230bcf4eaf94d0be2d8f5fc3d022ff71ab9f619402e72"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb_logs_cfg",
+        "classification": "public",
+        "internal": false,
+        "defaulted": true,
+        "default_source": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/r/lb.html.markdown",
+        "line": 274,
+        "source_sha256": "c369c2f78be58010759230bcf4eaf94d0be2d8f5fc3d022ff71ab9f619402e72"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": false
+}
