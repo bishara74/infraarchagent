@@ -1,0 +1,72 @@
+{
+  "run_id": "fe1d5aca-4a99-4c4d-b50a-4d4f252b244f",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 6,
+  "complexity": 4,
+  "round": 2,
+  "sequence": 15,
+  "variant": "cost",
+  "plan_sha256": "caae3f4c1a26fda46d3fd8d13e7ac106b1423ccca0eafdd455645a3d1eecc764",
+  "original_files_sha256": "105b32f3af73a31d9885dc62e6656272484b8f588dcb630084f20387ce65d66f",
+  "retained_files_sha256": "e7fadc6f38a985177ab5c5af5814bd9b14690b7083b2bc4dfd65d44e6d6a9a6a",
+  "plan": {
+    "classification": "public",
+    "resources": [
+      {
+        "service": "alb",
+        "aws_service": "alb",
+        "classification": "public",
+        "evidence": "network.public_services/private_services"
+      }
+    ],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 111,
+        "source_sha256": "83f250c3fc0beb4acb8509792d562ca61a7745a7d7e27f7e1ee57b5ef8f71529"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb_logging",
+        "classification": "public",
+        "internal": false,
+        "defaulted": true,
+        "default_source": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/r/lb.html.markdown",
+        "line": 256,
+        "source_sha256": "83f250c3fc0beb4acb8509792d562ca61a7745a7d7e27f7e1ee57b5ef8f71529"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": false,
+        "default_source": null,
+        "line": 113,
+        "source_sha256": "c74c8d10f3a5a6f114ad5dc6b729d36e954f126fe804df2f8bc7819daed5ed45"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": false
+}
