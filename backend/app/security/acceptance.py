@@ -20,6 +20,7 @@ from app.domain.plan import DeploymentPlan
 from app.domain.validation import ValidationCheck
 from app.scanners.scan import Scanner, ScanResult
 from app.security.plan_conformance import plan_regressions
+from app.security.verification_scope import same_unavailability
 from app.validation.documents import PackageDocuments, blocks, code_text
 from app.validation.gate import patch_syntax_failure
 from app.validation.preservation import removes_security_controls
@@ -157,15 +158,29 @@ class CandidateGuard:
         )
         previous, count = failure_count(checks), failure_count(after)
         changed_terraform = terraform_files(before) != terraform_files(candidate)
+        observed_before = sum(
+            c.check_id == "terraform.validate" and c.status == "failed" for c in checks
+        )
+        observed_after = sum(
+            c.check_id == "terraform.validate" and c.status == "failed" for c in after
+        )
+        unchanged_unavailability = (
+            changed_terraform
+            and previous is None
+            and count is None
+            and same_unavailability(before, candidate, checks, after)
+        )
+        if unchanged_unavailability:
+            self.record["unchanged_terraform_unavailability"] = sorted(
+                {c.skip_reason for c in after if c.skip_reason}
+            )
         reason = (
             "terraform_regression"
-            if changed_terraform
-            and count is not None
-            and previous is not None
-            and count > previous
+            if changed_terraform and observed_after > observed_before
             else "terraform_verification_unavailable"
             if changed_terraform
             and (count is None or (previous is None and count != 0))
+            and not unchanged_unavailability
             else None
         )
         if self.budget.expired() and reason:

@@ -27,6 +27,38 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10d section 2 — Scope refusals and preserve reason evidence
+
+**Summary:** Preserve recorded reason codes and permit unchanged unavailable
+Terraform evaluations to proceed through remaining gates. Correct NAT-related
+EC2 projection coupling while preserving D-63 ingress and exposure rejection.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-V-03, FR-V-04,
+FR-P-04, NFR-01, NFR-02.
+
+**Files:** security/acceptance.py, verification_scope.py, plan_conformance.py;
+agents/security/verification.py; phase9d_quality.py and phase9e_metrics.py;
+three new phase10d unit test files; phase10d-verification section-2 logs;
+D-65 and this log.
+
+**Decisions:** Fingerprint complete file expressions, transitive definitions and
+configuration without resolving values or opening paths. Changed/added refusals
+stay closed; identical refusals retain their blocker and validation result.
+Compare observable failures even during partial unavailability. Scope NAT EIPs
+and subnet addressing to actual EC2 dependencies. No D-63 ingress relaxation,
+profile/scanner/readiness/dependency/schema change or real model call.
+
+**Tests:** Final focused subset 86 passed, zero failed/skipped, including the
+three historical ALB database-loop replays and refused-input pending-review test.
+make lint passes (190 mypy sources). Initial new subset: 76 passed, two failed;
+corrected the syntax fixture and missing local dependency indexing. Direct-file
+mypy invocation also exposed expected configuration-plugin invocation differences;
+canonical make lint verifies the final app under its configured plugin.
+
+**Known gaps / follow-ups:** Full verification and rerun replay belong to section
+3. Unavailable evaluation is not proof of validity; file-input findings/errors
+remain. No new specification open question. Raw snapshots/caches stay uncommitted.
+
 ## 2026-10-27 — Phase 10d section 1 — Freeze the accepted diagnosis
 
 **Summary:** Record the author-accepted read-only diagnosis before application

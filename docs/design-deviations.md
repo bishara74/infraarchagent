@@ -3192,6 +3192,38 @@ recoverable-pass counts. No historical outcome is rewritten. Full verification
 follows in section 3; section-1 lint and 110 offline tests pass (three database
 cases deselected). No new specification open question or dependency.
 
+#### Phase 10d section 2 — preserve reasons and scope unavailable checks
+
+The author's accepted correction preserves every syntactically valid internal
+reason code, including future codes, through quality and measurement projections;
+source text and arbitrary metadata remain redacted/excluded. Empty rejection
+lists on accepted iterations remain valid. No historical export is regenerated.
+
+CandidateGuard now compares unavailable cause/module identities and fingerprints
+all file-call expressions plus transitive variable/local/data/resource definitions,
+module/provider configuration and tfvars, without opening or evaluating an input.
+It ignores line shifts, detects added calls behind the first refusal, and fails
+closed when context changes or cannot be inspected. Equal unchanged refusals
+continue through the existing gates for whole candidates and partial groups.
+Observable Terraform failures may not increase. Literal outside-package refusals
+receive the same treatment while their failed checks remain. Critical input
+findings and final invalid/error/download rules are unchanged. Private comparison
+values never enter public metadata; only safe skip codes are recorded.
+
+Unattached NAT EIPs no longer appear as EC2 attachments. Public subnet address
+inheritance reached through NAT egress is excluded when the actual instance
+subnet is known; unresolved ownership remains conservative. Actual addressing,
+subnet/route changes, attached/dynamic EIPs and the D-63 ingress guard remain
+protected. There is no profile, scanner rule, deadline, dependency, schema,
+public API or readiness change.
+
+Focused final verification: 86 passed, zero failed/skipped, including real-database
+historical ALB rollbacks and the refused-read review test. Full lint passes.
+Initial focused checks found two new-test failures (76 passed): syntax was
+rejected earlier by preservation, and local dependencies were not indexed.
+The syntax fixture now isolates the syntax gate; local/data indexing is corrected.
+Full suites and paired observations follow in section 3. No new open question.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

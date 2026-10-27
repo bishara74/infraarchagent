@@ -1,5 +1,6 @@
 """Strict, source-free Phase 9e descriptive measurements and summaries."""
 
+import re
 from collections import Counter
 
 from scripts.phase9_report import statistics_for
@@ -15,21 +16,15 @@ STAGES = {
     "final_security_scan",
     "security_iteration_verification",
 }
-REASONS = {
-    "terraform_regression",
-    "terraform_verification_unavailable",
-    "new_blocking_findings",
-    "iteration_deadline",
-    "invalid_patch",
-    "no_improvement",
-    "verification_unavailable",
-    "improved",
-    "deadline",
-    "round_limit",
-    "no_targets",
-    "invalid_syntax",
-    "reference_regression",
-}
+
+
+def reason_code(value: object) -> str | None:
+    """Preserve new internal reason codes without admitting arbitrary metadata."""
+    return (
+        value
+        if isinstance(value, str) and re.fullmatch(r"[a-z][a-z0-9_]{0,99}", value)
+        else None
+    )
 
 
 def measurement(raw: object) -> dict | None:
@@ -88,11 +83,11 @@ def measurement(raw: object) -> dict | None:
         "deadline",
     }:
         result["outcome"] = outcome
-    if raw.get("reason") in REASONS:
-        result["reason"] = raw["reason"]
+    if reason := reason_code(raw.get("reason")):
+        result["reason"] = reason
     if isinstance(raw.get("reasons"), list):
         result["reasons"] = sorted(
-            {r for r in raw["reasons"] if isinstance(r, str) and r in REASONS}
+            {reason for r in raw["reasons"] if (reason := reason_code(r)) is not None}
         )
     return result
 

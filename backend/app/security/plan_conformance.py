@@ -231,6 +231,14 @@ class View:
         result: dict[str, Any] = {}
         pending = [(resource, names)]
         seen: set[tuple[str, str]] = set()
+        # Auto-addressing belongs to the instance's own subnet, never to a
+        # public subnet reached through its NAT egress route.
+        address_subnet = (
+            self.graph.package.resolve(resource.module, resource.body.get("subnet_id"))
+            if resource.type
+            in {"aws_instance", "aws_launch_template", "aws_launch_configuration"}
+            else None
+        )
         while pending:
             item, selected = pending.pop()
             key = item.module, item.address
@@ -247,6 +255,7 @@ class View:
                 names == EXPOSURE
                 and resource.type
                 in {"aws_instance", "aws_launch_template", "aws_launch_configuration"}
+                and (address_subnet is None or item == address_subnet)
             ):
                 # EC2 auto-addressing is not subnet routing or an ECS/EKS/LB
                 # endpoint control. Keep it on possible EC2 exposure paths.
@@ -320,6 +329,11 @@ class View:
                     continue
                 for linked in self.resources.values():
                     if linked.module == item.module and linked.type == kind:
+                        if kind == "aws_eip" and not any(
+                            linked.body.get(field) is not None
+                            for field in ("instance", "network_interface")
+                        ):
+                            continue
                         raw = str(linked.body.get(owner_field, ""))
                         if item.address in re.findall(
                             r"\baws_[\w]+\.[\w-]+", raw

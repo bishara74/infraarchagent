@@ -14,7 +14,7 @@ from app.security.profiles import PROFILE_IDS, assess
 from scripts.phase9_common import ROOT, write_json
 from scripts.phase9_report import statistics_for
 from scripts.phase9c_metrics import number
-from scripts.phase9e_metrics import REASONS, measurement, measurement_summary
+from scripts.phase9e_metrics import measurement, measurement_summary, reason_code
 from scripts.phase9f_metrics import (
     snapshot as phase9f_snapshot,
 )
@@ -161,19 +161,9 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
             "outcome": r.get("outcome")
             if r.get("outcome") in {"accepted", "rejected", "stopped"}
             else "unknown",
-            "reason": r.get("reason")
-            if r.get("reason")
-            in {
-                "improved",
-                "no_improvement",
-                "new_blocking_findings",
-                "invalid_patch",
-                "verification_unavailable",
-                "deadline",
-                "round_limit",
-                "no_targets",
-            }
-            else "unknown",
+            "reason": safe_text(
+                reason_code(r.get("reason")) or "unknown", redactor, 100
+            ),
             "error_classes": [
                 safe_text(c, redactor)
                 for c in r.get("error_classes", [])
@@ -276,9 +266,9 @@ def quality_snapshot(package: dict, redactor: RedactingFilter) -> dict:
                         if isinstance(c, str)
                     ],
                     "reasons": [
-                        r
+                        safe_text(reason, redactor, 100)
                         for r in v.get("reasons", [])
-                        if isinstance(r, str) and r in REASONS
+                        if (reason := reason_code(r)) is not None
                     ],
                 }
                 for iteration in security_iterations(package.get("security_report"))

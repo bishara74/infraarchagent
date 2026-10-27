@@ -36,7 +36,11 @@ class TerraformVerifier:
 
 
 def failure_count(checks: list[ValidationCheck]) -> int | None:
-    if any(c.status == "skipped" for c in checks):
+    if any(
+        c.status == "skipped"
+        or (c.check_id == "terraform.file_input" and c.status == "failed")
+        for c in checks
+    ):
         return None
     return sum(
         c.check_id == "terraform.validate" and c.status == "failed" for c in checks
