@@ -577,6 +577,7 @@ def plan_regressions(
             resource: Resource | None = original or updated,
             service_name: str = service.name,
             intent: str = expected,
+            related_resources: list[str] | None = None,
         ) -> None:
             results.append(
                 {
@@ -586,6 +587,20 @@ def plan_regressions(
                     "property": prop,
                     "expected": intent,
                     "assessment": "unknown" if unknown else "regression",
+                    "related_resources": related_resources or [],
+                    "targeted_findings": [
+                        {
+                            "rule_id": v.rule_id,
+                            "resource": v.resource,
+                            "file_path": v.file_path,
+                        }
+                        for v in targeted
+                        if v.resource
+                        in [
+                            resource.address if resource else "unresolved",
+                            *(related_resources or []),
+                        ]
+                    ],
                     "rule_ids": sorted(
                         {
                             v.rule_id
@@ -628,19 +643,32 @@ def plan_regressions(
             a, b = old.projection(original, selected), new.projection(updated, selected)
             if a == b:
                 continue
+            related = sorted(
+                {
+                    json.loads(key)[1]
+                    for key in a.keys() | b.keys()
+                    if key.startswith("[")
+                    and len(json.loads(key)) >= 2
+                    and str(json.loads(key)[1]).startswith("aws_")
+                }
+            )
             if prop == "exposure":
                 actual = new.exposure(updated)
                 if actual != expected:
-                    record(prop, actual == "unknown")
+                    record(prop, actual == "unknown", related_resources=related)
             elif prop == "subnets":
                 actual = new.placement(updated)
                 if actual != expected:
-                    record(prop, actual == "unknown")
+                    record(prop, actual == "unknown", related_resources=related)
             elif plan.network.ingress:
                 # Existing ingress is a conservative lower bound when natural-
                 # language rules cannot be uniquely bound. Additions are safe
                 # only for public services; private exposure never broadens.
                 preserved = all(k in b and v == b[k] for k, v in a.items())
                 if not preserved or expected == "private":
-                    record(prop, any("${" in canonical(v) for v in b.values()))
+                    record(
+                        prop,
+                        any("${" in canonical(v) for v in b.values()),
+                        related_resources=related,
+                    )
     return results

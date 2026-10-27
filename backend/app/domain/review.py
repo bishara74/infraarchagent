@@ -37,6 +37,66 @@ def security_final(report: Mapping[str, Any] | None) -> Mapping[str, Any]:
     return sessions[-1].get("final", {}) if sessions else {}
 
 
+def open_plan_conflicts(
+    security_report: Mapping[str, Any] | None,
+    validation_report: Mapping[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Project recorded guard rejections only onto still-open exact findings."""
+    final = security_final(security_report)
+    conflicts = list(final.get("plan_conflicts", []))
+    for iteration in security_iterations(security_report):
+        conflicts.extend(
+            (iteration.get("verification") or {}).get("plan_conformance", [])
+        )
+    for round_ in ((validation_report or {}).get("remediation") or {}).get(
+        "rounds", []
+    ):
+        conflicts.extend(round_.get("plan_conformance", []))
+    result: dict[tuple[str, ...], dict[str, Any]] = {}
+    for finding in final.get("remaining_blocking", []):
+        for conflict in conflicts:
+            if not isinstance(conflict, dict):
+                continue
+            resource = conflict.get("resource", "")
+            related = conflict.get("related_resources", [])
+            targeted = conflict.get("targeted_findings")
+            if targeted and not any(
+                all(
+                    t.get(k) == finding.get(k)
+                    for k in ("rule_id", "resource", "file_path")
+                )
+                for t in targeted
+            ):
+                continue
+            if (
+                finding.get("rule_id")
+                not in conflict.get("rule_ids", [conflict.get("rule_id")])
+                or (
+                    not targeted
+                    and conflict.get("file_path")
+                    not in {None, finding.get("file_path")}
+                )
+                or (
+                    resource != "unresolved"
+                    and finding.get("resource") not in [resource, *related]
+                )
+                or conflict.get("expected") not in {"public", "private"}
+                or conflict.get("assessment") not in {"regression", "unknown"}
+            ):
+                continue
+            row = {
+                k: str(conflict.get(k, ""))
+                for k in ("service", "property", "expected", "assessment")
+            }
+            row.update(
+                rule_id=finding["rule_id"],
+                resource=finding["resource"],
+                file_path=finding.get("file_path"),
+            )
+            result[tuple(str(row[k]) for k in row)] = row
+    return list(result.values())
+
+
 def retry_targets(
     files: Mapping[str, str],
     security_report: Mapping[str, Any] | None,
@@ -72,12 +132,15 @@ def package_presentation(
     error: str | None,
 ) -> dict[str, Any]:
     reasons = []
+    conflicts = open_plan_conflicts(security_report, validation_report)
     if status in {
         PackageStatus.PENDING_REVIEW,
         PackageStatus.ENGINEER_APPROVED,
         PackageStatus.REJECTED,
     }:
         final = security_final(security_report)
+        if conflicts:
+            reasons.append("plan_conformance_conflict")
         if final.get("remaining_blocking") or final.get("outcome") == "exhausted":
             reasons.append("unresolved_security_findings")
         result = (validation_report or {}).get("summary", {}).get("result")
@@ -105,5 +168,6 @@ def package_presentation(
         if run_status in TERMINAL_RUNS
         else [],
         "review_reasons": reasons,
+        "plan_conflicts": conflicts,
         "retry_targets": retry_targets(files, security_report, validation_report),
     }

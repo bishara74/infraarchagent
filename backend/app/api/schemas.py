@@ -34,7 +34,18 @@ class RunResult(StrictResponse):
     error_message: str | None
 
 
+class PlanConflict(StrictResponse):
+    service: str
+    resource: str
+    property: str
+    expected: Literal["public", "private"]
+    assessment: Literal["regression", "unknown"]
+    rule_id: str
+    file_path: str | None
+
+
 class PackageResult(StrictResponse):
+    plan_conflicts: list[PlanConflict] = Field(default_factory=list)
     """A variant that produced files; generation failures are missing_variants."""
 
     variant: Variant
@@ -58,6 +69,7 @@ class PackageResult(StrictResponse):
     retry_in_progress: bool
     review_reasons: list[
         Literal[
+            "plan_conformance_conflict",
             "unresolved_security_findings",
             "validation_failed",
             "validation_error",

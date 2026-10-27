@@ -2885,6 +2885,14 @@ Those IDs are proposals only, never new test markers or implicit spec edits.
 
 ### D-63 — Remediation preserves planned exposure (Phase 10b)
 
+Section 3: results add typed `plan_conflicts` and a `plan_conformance_conflict`
+review reason. Only exact still-open rule/resource/path evidence is projected;
+later resolution clears the current notice without rewriting rejected attempts.
+Findings, Review and overview use existing typography/tokens and server-derived
+evidence. Unknown exposure and private intent have distinct explanations. A
+compact notice preserves visible review actions at 1280×800. Profiles, blocker
+classification, state rules and thresholds are unchanged.
+
 Section 2b: additive migration 0016 permits explicitly selected `fixer` lessons.
 Factory binding uses the existing optional pre-transport runtime; an empty scope
 has no hook and preserves version-8 golden request bytes. Advisory insertion

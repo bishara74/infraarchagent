@@ -6,7 +6,7 @@ export type PackageStatus = 'generating' | 'generated' | 'failed' | 'scanning' |
 export type AgentName = 'orchestrator' | 'architect' | 'generator_cost' | 'generator_performance' | 'generator_security' | 'security' | 'validator';
 export type AgentState = 'pending' | 'running' | 'completed' | 'failed';
 export type EventKind = 'run_status' | 'agent_state' | 'plan_created' | 'package_status' | 'package_generated' | 'stage_notice';
-export type ReviewReason = 'unresolved_security_findings' | 'validation_failed' | 'validation_error' | 'retry_aborted';
+export type ReviewReason = 'plan_conformance_conflict' | 'unresolved_security_findings' | 'validation_failed' | 'validation_error' | 'retry_aborted';
 
 export interface DeploymentPlan {
   cloud_provider: 'aws';
@@ -26,7 +26,9 @@ export interface RunResult {
   end_time: string | null; provider: Provider; model: string | null;
   max_iterations: number; error_message: string | null;
 }
+export interface PlanConflict {service:string;resource:string;property:string;expected:'public'|'private';assessment:'regression'|'unknown';rule_id:string;file_path:string|null}
 export interface PackageResult {
+  plan_conflicts?:PlanConflict[];
   variant: Variant; status: PackageStatus; iteration_count: number;
   error: string | null; files: Record<string, string>;
   original_files: Record<string, string> | null;

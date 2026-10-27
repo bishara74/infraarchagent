@@ -27,6 +27,34 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 3 — Explain retained exposure findings
+
+**Summary:** Project exact current plan-conflict evidence into results and show
+why the finding remains open in overview, Findings and Review.
+
+**Requirements addressed:** FR-S-07, FR-UI-03, FR-UI-05, FR-UI-07, FR-P-04.
+
+**Files:** domain/review.py, API schemas, security report/proposal attribution,
+plan-conformance metadata; frontend types, PlanConformanceNotice, report/review/
+overview integration and compact token-based styling; backend review/API tests,
+component tests and phase10b-exposure browser flow; D-63 and this log.
+
+**Decisions:** Additive typed projection; exact currently open findings only.
+No scanner exemption or readiness-rule change. The browser fixture is explicitly
+synthetic; mocked results verify presentation, separate from backend guard tests.
+
+**Tests:** Backend subset: 42 passed, 0 failed, 0 skipped. Frontend: 466 passed
+across 46 files; frontend lint passes. New browser flow: 1 passed, including
+1280×800 action visibility; screenshot reviewed in phase10b-verification/ui/.
+Ruff and mypy pass (189 app files). Initial API subset: 26 passed, 1 failed due
+to its exact field inventory; updated for the deliberately additive typed field.
+A report annotation resolved inferred heterogeneous-dictionary mypy errors.
+
+**Known gaps / follow-ups:** Current explanations are limited to recorded guard
+rejections linked to still-open findings. Old reports do not invent this evidence.
+The unrestricted frontend attempt in section 2b was 457 passed / 7 failed across
+39 passed / 6 failed files; the bounded-worker rerun passed without timeout changes.
+
 ## 2026-10-27 — Phase 10b section 2b — Explicit optional Fixer lessons
 
 **Summary:** Add an explicitly selected Fixer role, additive role-constraint

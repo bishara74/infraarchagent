@@ -29,7 +29,7 @@ from app.core.safety import PublicDataSafety
 from app.db.repositories.packages import PackageRepository
 from app.domain.enums import AgentName, AgentState, PackageStatus, Severity, Variant
 from app.domain.models import IaCPackage, Violation
-from app.domain.review import retry_targets, security_final
+from app.domain.review import open_plan_conflicts, retry_targets, security_final
 from app.domain.states import remediation_budget_decision
 from app.domain.validation import ValidationCheck
 from app.events.kinds import stage_notice_payload
@@ -588,6 +588,14 @@ class SecurityAgent:
             plan=ctx.plan,
             targeted=[v for entries in targets.values() for v in entries],
         )
+        guard.targeted = [
+            v
+            for v in guard.targeted
+            if any(
+                f.get("file") == v.file_path and v.rule_id in f.get("rule_ids", [])
+                for f in fixes
+            )
+        ]
         guard.check_cache[ValidationWorkspace.fingerprint(terraform_files(files))] = (
             before
         )
@@ -1294,7 +1302,7 @@ class SecurityAgent:
         terraform_count = (
             first_counts["terraform"] if first_counts is not None else None
         )
-        session_report = {
+        session_report: dict[str, Any] = {
             "kind": kind,
             "started_at": started_at,
             "feedback_present": bool(feedback),
@@ -1325,6 +1333,7 @@ class SecurityAgent:
                 ),
             },
         }
+        session_report["final"]["plan_conflicts"] = open_plan_conflicts(session_report)
         session_report["diff"], session_report["diff_omitted_chars"] = _capped_diff(
             package_diff(session_start_files, files)
         )

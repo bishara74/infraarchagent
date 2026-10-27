@@ -165,6 +165,7 @@ async def test_results_exact_fields_order_and_strict_openapi(db_engines):
             "review_feedback",
             "review_decision",
             "profile_assessments",
+        "plan_conflicts",
             "readiness_label",
             "downloadable",
             "review_available",
