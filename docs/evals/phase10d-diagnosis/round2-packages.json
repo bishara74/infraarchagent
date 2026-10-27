@@ -1,0 +1,2402 @@
+[
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23",
+    "scenario": 1,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.backup",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.backup",
+        "rule_id": "CKV_AWS_145"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.backup",
+        "rule_id": "AWS-0132"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 4,
+      "group_kept": 5,
+      "group_reason_guards_passed": 5,
+      "group_reason_new_blocking_findings": 3,
+      "group_reason_terraform_regression": 1,
+      "reason_new_blocking_findings": 3,
+      "reason_terraform_regression": 1,
+      "security_rolled_back": 4
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23",
+    "scenario": 1,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "group_discarded": 2,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_new_blocking_findings": 1,
+      "group_reason_terraform_regression": 1,
+      "reason_terraform_regression": 1,
+      "security_accepted": 1,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "7b0493ba-e06b-4b1c-9f1e-18d1df8b7d23",
+    "scenario": 1,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_applied": 4,
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "repair_rejected": 3,
+      "security_accepted": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 108,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 110,
+        "message": "Unsupported block type",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "da8bc90b-31d5-44d6-bf01-e149ee3b362c",
+    "scenario": 2,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.website_bucket",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0010"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0011"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0013"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 1,
+      "group_discarded": 4,
+      "group_kept": 1,
+      "group_reason_guards_passed": 1,
+      "group_reason_new_blocking_findings": 3,
+      "group_reason_terraform_regression": 1,
+      "reason_new_blocking_findings": 3,
+      "reason_terraform_regression": 1,
+      "repair_accepted": 1,
+      "repair_rejected": 2,
+      "repair_stopped": 1,
+      "security_rolled_back": 4
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 55,
+        "message": "Unsupported block type",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "da8bc90b-31d5-44d6-bf01-e149ee3b362c",
+    "scenario": 2,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 3,
+      "fix_proposed": 3,
+      "fix_retained": 2,
+      "group_discarded": 3,
+      "group_kept": 3,
+      "group_reason_guards_passed": 3,
+      "group_reason_iteration_deadline": 1,
+      "group_reason_terraform_regression": 3,
+      "group_unevaluated": 1,
+      "reason_iteration_deadline": 1,
+      "reason_terraform_regression": 2,
+      "repair_accepted": 2,
+      "repair_stopped": 1,
+      "security_accepted": 1,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "da8bc90b-31d5-44d6-bf01-e149ee3b362c",
+    "scenario": 2,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "1c410860-15e7-495e-8567-50debdd8d438",
+    "scenario": 3,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_applied": 6,
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "repair_rejected": 3,
+      "security_accepted": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 45,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "1c410860-15e7-495e-8567-50debdd8d438",
+    "scenario": 3,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "1c410860-15e7-495e-8567-50debdd8d438",
+    "scenario": 3,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "repair_accepted": 1,
+      "repair_rejected": 2,
+      "repair_stopped": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 127,
+        "message": "Unsupported argument",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 128,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "67345bcd-26be-493f-89fa-abfeed909159",
+    "scenario": 4,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_applied": 5,
+      "repair_rejected": 3,
+      "security_accepted": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 62,
+        "message": "Unsupported argument",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "67345bcd-26be-493f-89fa-abfeed909159",
+    "scenario": 4,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_applied": 6,
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "group_discarded": 1,
+      "group_kept": 1,
+      "group_reason_guards_passed": 1,
+      "group_reason_iteration_deadline": 1,
+      "group_reason_terraform_regression": 1,
+      "group_unevaluated": 1,
+      "reason_iteration_deadline": 1,
+      "reason_terraform_regression": 1,
+      "repair_rejected": 3,
+      "security_accepted": 1,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 79,
+        "message": "Unsupported argument",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "67345bcd-26be-493f-89fa-abfeed909159",
+    "scenario": 4,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_applied": 8,
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "security_accepted": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "3f908f47-88ef-41a9-82e5-11a9c2301141",
+    "scenario": 5,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_applied": 11,
+      "deterministic_rejected": 3,
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "repair_rejected": 3,
+      "security_accepted": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 1,
+        "message": "Cycle",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "3f908f47-88ef-41a9-82e5-11a9c2301141",
+    "scenario": 5,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_applied": 10,
+      "fix_patch_accepted": 3,
+      "fix_proposed": 3,
+      "fix_retained": 2,
+      "group_discarded": 1,
+      "group_reason_terraform_regression": 1,
+      "reason_terraform_regression": 1,
+      "repair_accepted": 1,
+      "repair_rejected": 1,
+      "security_accepted": 2,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "3f908f47-88ef-41a9-82e5-11a9c2301141",
+    "scenario": 5,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 3,
+      "group_discarded": 3,
+      "group_kept": 3,
+      "group_reason_guards_passed": 3,
+      "group_reason_new_blocking_findings": 2,
+      "group_reason_terraform_regression": 1,
+      "reason_new_blocking_findings": 3,
+      "security_accepted": 1,
+      "security_rolled_back": 3
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "eeaba55a-cb17-46a9-89b4-8d015263e414",
+    "scenario": 6,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_applied": 14,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 1,
+      "group_discarded": 3,
+      "group_reason_new_blocking_findings": 3,
+      "reason_new_blocking_findings": 3,
+      "security_accepted": 1,
+      "security_rolled_back": 3
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "eeaba55a-cb17-46a9-89b4-8d015263e414",
+    "scenario": 6,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 3,
+      "group_reason_new_blocking_findings": 2,
+      "group_reason_terraform_regression": 1,
+      "reason_new_blocking_findings": 1,
+      "reason_terraform_regression": 1,
+      "repair_accepted": 1,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "eeaba55a-cb17-46a9-89b4-8d015263e414",
+    "scenario": 6,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "fix_patch_accepted": 5,
+      "fix_proposed": 5,
+      "fix_retained": 4,
+      "group_discarded": 2,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_new_blocking_findings": 1,
+      "group_reason_reference_regression": 1,
+      "reason_new_blocking_findings": 1,
+      "reason_reference_regression": 1,
+      "repair_accepted": 1,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "d3a112fe-ff76-4c33-812f-9d997b210f74",
+    "scenario": 7,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_rejected": 1,
+      "fix_patch_accepted": 5,
+      "fix_proposed": 5,
+      "fix_retained": 5,
+      "group_discarded": 2,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_new_blocking_findings": 1,
+      "group_reason_terraform_regression": 1,
+      "reason_new_blocking_findings": 1,
+      "reason_terraform_regression": 1,
+      "repair_accepted": 1,
+      "repair_stopped": 1,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "d3a112fe-ff76-4c33-812f-9d997b210f74",
+    "scenario": 7,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 5,
+      "fix_retained": 3,
+      "group_discarded": 1,
+      "group_reason_security_control_removed": 1,
+      "reason_security_control_removed": 1,
+      "security_accepted": 3,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "d3a112fe-ff76-4c33-812f-9d997b210f74",
+    "scenario": 7,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_rejected": 9,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 1,
+      "group_reason_new_blocking_findings": 1,
+      "reason_iteration_deadline": 1,
+      "reason_new_blocking_findings": 1,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "cda319c1-6b38-4534-96aa-ca36b37795de",
+    "scenario": 8,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0052"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "AWS-0090"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "counts": {
+      "deterministic_rejected": 9,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 2,
+      "group_reason_terraform_regression": 2,
+      "reason_terraform_regression": 2,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 274,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "cda319c1-6b38-4534-96aa-ca36b37795de",
+    "scenario": 8,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_rejected": 9,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 4,
+      "group_discarded": 1,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_iteration_deadline": 2,
+      "group_reason_terraform_regression": 1,
+      "group_unevaluated": 2,
+      "reason_iteration_deadline": 2,
+      "reason_new_blocking_findings": 2,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "cda319c1-6b38-4534-96aa-ca36b37795de",
+    "scenario": 8,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "repair_rejected": 2,
+      "security_accepted": 2
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "93c30ed8-db20-44ba-b701-054f8f6e15b4",
+    "scenario": 9,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354"
+      }
+    ],
+    "counts": {
+      "deterministic_rejected": 1,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 3,
+      "group_discarded": 1,
+      "group_reason_terraform_regression": 1,
+      "reason_terraform_regression": 1,
+      "repair_rejected": 3,
+      "security_accepted": 3,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 327,
+        "message": "Unsupported argument",
+        "origin": "unknown"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "93c30ed8-db20-44ba-b701-054f8f6e15b4",
+    "scenario": 9,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1a\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.alb_sg",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_354"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_16"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_293"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_129"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_118"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_353"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1b\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0077"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0080"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.alb_sg",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.ecs_sg",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.rds_sg",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1a\"]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"us-east-1b\"]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "AWS-0177"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 2,
+      "fix_proposed": 4,
+      "fix_retained": 0,
+      "group_discarded": 2,
+      "group_reason_terraform_regression": 2,
+      "reason_terraform_regression": 2,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 14,
+        "message": "ansible-lint optional lint failed",
+        "origin": "generated"
+      },
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 14,
+        "message": "ansible-lint optional lint failed",
+        "origin": "generated"
+      },
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 47,
+        "message": "ansible-lint optional lint failed",
+        "origin": "generated"
+      },
+      {
+        "check_id": "ansible-lint.lint",
+        "file_path": "ansible/playbook.yaml",
+        "line_start": 49,
+        "message": "ansible-lint optional lint failed",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 306,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "93c30ed8-db20-44ba-b701-054f8f6e15b4",
+    "scenario": 9,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0039"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_rejected": 9,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 4,
+      "repair_rejected": 3,
+      "security_accepted": 4
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 139,
+        "message": "Terraform configuration diagnostic",
+        "origin": "unknown"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "9a277d2d-e667-4a06-9f21-f369f64786d4",
+    "scenario": 10,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_skipped": 3,
+      "fix_patch_accepted": 6,
+      "fix_proposed": 7,
+      "fix_retained": 4,
+      "reason_iteration_deadline": 1,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_no_change": 1,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 114,
+        "message": "Unsupported argument",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 315,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 1,
+    "run_id": "9a277d2d-e667-4a06-9f21-f369f64786d4",
+    "scenario": 10,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_rejected": 2,
+      "fix_patch_accepted": 6,
+      "fix_proposed": 7,
+      "fix_retained": 4,
+      "group_reason_iteration_deadline": 1,
+      "group_unevaluated": 1,
+      "reason_iteration_deadline": 1,
+      "reason_terraform_regression": 1,
+      "repair_accepted": 1,
+      "security_accepted": 3,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 1,
+    "run_id": "9a277d2d-e667-4a06-9f21-f369f64786d4",
+    "scenario": 10,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_58"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_38"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "CKV_AWS_39"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.eks_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0040"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.cluster",
+        "rule_id": "AWS-0041"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.eks_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.eks_node_sg",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group.postgres_sg",
+        "rule_id": "AWS-0104"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 5,
+      "fix_patch_accepted": 7,
+      "fix_proposed": 7,
+      "fix_retained": 4,
+      "group_discarded": 2,
+      "group_kept": 3,
+      "group_reason_guards_passed": 3,
+      "group_reason_iteration_deadline": 1,
+      "group_reason_terraform_regression": 2,
+      "group_unevaluated": 1,
+      "reason_iteration_deadline": 1,
+      "reason_terraform_regression": 3,
+      "repair_accepted": 1,
+      "repair_rejected": 1,
+      "security_accepted": 1,
+      "security_rolled_back": 3
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "8d9ef032-7f22-426b-9b73-fbe63647c663",
+    "scenario": 10,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "AWS-0090"
+      }
+    ],
+    "counts": {
+      "deterministic_rejected": 16,
+      "fix_patch_accepted": 6,
+      "fix_proposed": 6,
+      "fix_retained": 6,
+      "group_discarded": 1,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_terraform_regression": 1,
+      "reason_terraform_regression": 1,
+      "repair_rejected": 3,
+      "security_accepted": 3,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 5,
+        "message": "Dashboard requires panels",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "8d9ef032-7f22-426b-9b73-fbe63647c663",
+    "scenario": 10,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_144"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_alb_listener.https",
+        "rule_id": "CKV_AWS_103"
+      },
+      {
+        "file_path": "k8s/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0125"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_alb.eks_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "AWS-0090"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_rejected": 13,
+      "fix_patch_accepted": 6,
+      "fix_proposed": 6,
+      "fix_retained": 4,
+      "group_discarded": 1,
+      "group_reason_iteration_deadline": 1,
+      "group_reason_new_blocking_findings": 1,
+      "group_unevaluated": 1,
+      "reason_iteration_deadline": 2,
+      "reason_new_blocking_findings": 1,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 5,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 302,
+        "message": "Unsupported argument",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "8d9ef032-7f22-426b-9b73-fbe63647c663",
+    "scenario": 10,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.allow_ssh",
+        "rule_id": "CKV_AWS_24"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.allow_http",
+        "rule_id": "CKV_AWS_260"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_2"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_target_group.app_tg",
+        "rule_id": "CKV_AWS_378"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV2_AWS_20"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "CKV_AWS_103"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb_listener.http",
+        "rule_id": "AWS-0054"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.egress_all",
+        "rule_id": "AWS-0104"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_security_group_rule.allow_ssh",
+        "rule_id": "AWS-0107"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[1]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "counts": {
+      "deterministic_rejected": 12,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 0,
+      "group_discarded": 4,
+      "group_reason_security_control_removed": 4,
+      "reason_security_control_removed": 4,
+      "repair_rejected": 3,
+      "security_rolled_back": 4
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/ecs-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "grafana.panels",
+        "file_path": "monitoring/grafana/dashboard.json",
+        "line_start": 7,
+        "message": "Dashboard requires panels",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 306,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "d08be9f7-dc06-4d8a-a7dc-649fd495b96f",
+    "scenario": 9,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.app_logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.app_logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.app_logs",
+        "rule_id": "AWS-0090"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.1.0/24\"]",
+        "rule_id": "AWS-0164"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[\"10.0.2.0/24\"]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "counts": {
+      "deterministic_applied": 1,
+      "deterministic_rejected": 9,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 0,
+      "group_discarded": 4,
+      "group_reason_security_control_removed": 4,
+      "reason_security_control_removed": 4,
+      "repair_rejected": 3,
+      "security_rolled_back": 4
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/ecs-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 101,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "d08be9f7-dc06-4d8a-a7dc-649fd495b96f",
+    "scenario": 9,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.postgres",
+        "rule_id": "CKV_AWS_157"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_144"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.logs",
+        "rule_id": "AWS-0090"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_applied": 1,
+      "deterministic_rejected": 9,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 3,
+      "group_discarded": 3,
+      "group_kept": 3,
+      "group_reason_guards_passed": 3,
+      "group_reason_terraform_regression": 3,
+      "reason_terraform_regression": 3,
+      "repair_rejected": 3,
+      "security_accepted": 1,
+      "security_rolled_back": 3
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/ecs-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "promtool.lint",
+        "file_path": "monitoring/prometheus/prometheus.yaml",
+        "line_start": 7,
+        "message": "promtool optional lint failed",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "d08be9f7-dc06-4d8a-a7dc-649fd495b96f",
+    "scenario": 9,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "Deployment.default.web-deployment",
+        "rule_id": "CKV_K8S_14"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0013"
+      },
+      {
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "resource": "",
+        "rule_id": "KSV-0117"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 6,
+      "fix_proposed": 8,
+      "fix_retained": 3,
+      "group_discarded": 1,
+      "group_reason_iteration_deadline": 4,
+      "group_reason_terraform_regression": 1,
+      "group_unevaluated": 4,
+      "reason_terraform_regression": 2,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "e9c9567c-b94a-4281-9107-410c9650348a",
+    "scenario": 8,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.vpc",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_eks_cluster.eks-cluster",
+        "rule_id": "AWS-0039"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_rejected": 9,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 2,
+      "group_reason_new_blocking_findings": 2,
+      "reason_new_blocking_findings": 2,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "helm.lint",
+        "file_path": "helm/eks-cluster/templates/workloads.yaml",
+        "line_start": 4,
+        "message": "helm optional lint failed (undefined_named_template)",
+        "origin": "generated"
+      },
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 176,
+        "message": "Terraform configuration diagnostic",
+        "origin": "unknown"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "e9c9567c-b94a-4281-9107-410c9650348a",
+    "scenario": 8,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_vpc.main",
+        "rule_id": "CKV2_AWS_12"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 7,
+      "fix_proposed": 7,
+      "fix_retained": 4,
+      "group_discarded": 2,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_iteration_deadline": 1,
+      "group_reason_new_blocking_findings": 2,
+      "group_unevaluated": 1,
+      "reason_iteration_deadline": 2,
+      "reason_new_blocking_findings": 2,
+      "security_accepted": 1,
+      "security_rolled_back": 3
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "e9c9567c-b94a-4281-9107-410c9650348a",
+    "scenario": 8,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_lb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 5,
+      "fix_proposed": 5,
+      "fix_retained": 4,
+      "group_discarded": 2,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_new_blocking_findings": 2,
+      "reason_new_blocking_findings": 2,
+      "repair_accepted": 1,
+      "repair_rejected": 1,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "c1fa2eef-8460-440e-8742-3fc06d34b519",
+    "scenario": 7,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_elasticache_cluster.redis",
+        "rule_id": "AWS-0050"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "fix_patch_accepted": 6,
+      "fix_proposed": 6,
+      "fix_retained": 4,
+      "reason_iteration_deadline": 1,
+      "security_accepted": 3,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "c1fa2eef-8460-440e-8742-3fc06d34b519",
+    "scenario": 7,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_db_instance.database",
+        "rule_id": "CKV_AWS_157"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 4,
+      "group_discarded": 1,
+      "group_kept": 1,
+      "group_reason_guards_passed": 1,
+      "group_reason_terraform_regression": 1,
+      "reason_iteration_deadline": 1,
+      "reason_terraform_regression": 1,
+      "repair_rejected": 3,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 267,
+        "message": "Unsupported argument",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "c1fa2eef-8460-440e-8742-3fc06d34b519",
+    "scenario": 7,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "security"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public",
+        "rule_id": "CKV_AWS_130"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_subnet.public[0]",
+        "rule_id": "AWS-0164"
+      }
+    ],
+    "counts": {
+      "deterministic_applied": 10,
+      "fix_patch_accepted": 3,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 2,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_new_blocking_findings": 2,
+      "reason_new_blocking_findings": 2,
+      "security_accepted": 1,
+      "security_no_change": 1,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "69217b2c-061b-4c15-a364-37d1c2bb220b",
+    "scenario": 6,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "CKV_AWS_91"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 2,
+      "group_reason_new_blocking_findings": 2,
+      "reason_new_blocking_findings": 2,
+      "security_accepted": 2,
+      "security_rolled_back": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "69217b2c-061b-4c15-a364-37d1c2bb220b",
+    "scenario": 6,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_144"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "CKV_AWS_21"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "rule_id": "AWS-0053"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.alb_logs",
+        "rule_id": "AWS-0090"
+      }
+    ],
+    "counts": {
+      "deterministic_accepted": 1,
+      "fix_patch_accepted": 2,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "security_accepted": 2,
+      "security_no_change": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "69217b2c-061b-4c15-a364-37d1c2bb220b",
+    "scenario": 6,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "security_accepted": 2
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "a62094cd-8a5a-42c5-9970-c583a56c1129",
+    "scenario": 5,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_applied": 12,
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "group_discarded": 1,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_terraform_regression": 1,
+      "reason_terraform_regression": 1,
+      "security_accepted": 1,
+      "security_rolled_back": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "a62094cd-8a5a-42c5-9970-c583a56c1129",
+    "scenario": 5,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_accepted": 1,
+      "deterministic_applied": 2,
+      "fix_patch_accepted": 2,
+      "fix_proposed": 3,
+      "fix_retained": 2,
+      "security_accepted": 3
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "a62094cd-8a5a-42c5-9970-c583a56c1129",
+    "scenario": 5,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "repair_rejected": 3,
+      "security_accepted": 1
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 65,
+        "message": "Unsupported argument",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "0452eefa-601d-4cd3-8934-d23d13c5b5cb",
+    "scenario": 4,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "repair_accepted": 1,
+      "repair_rejected": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "0452eefa-601d-4cd3-8934-d23d13c5b5cb",
+    "scenario": 4,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_applied": 5,
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "0452eefa-601d-4cd3-8934-d23d13c5b5cb",
+    "scenario": 4,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "repair_accepted": 1,
+      "repair_rejected": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "f46d7016-5b7d-4e38-bee2-3ca0bfe8df07",
+    "scenario": 3,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "f46d7016-5b7d-4e38-bee2-3ca0bfe8df07",
+    "scenario": 3,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {},
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "f46d7016-5b7d-4e38-bee2-3ca0bfe8df07",
+    "scenario": 3,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "c566276f-6530-4b68-9c10-ddf0e2ea11bc",
+    "scenario": 2,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_s3_bucket.website",
+        "rule_id": "CKV_AWS_18"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0010"
+      },
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_cloudfront_distribution.cdn",
+        "rule_id": "AWS-0011"
+      }
+    ],
+    "counts": {
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 4,
+      "group_kept": 2,
+      "group_reason_guards_passed": 2,
+      "group_reason_new_blocking_findings": 4,
+      "reason_new_blocking_findings": 4,
+      "repair_accepted": 1,
+      "security_rolled_back": 4
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "c566276f-6530-4b68-9c10-ddf0e2ea11bc",
+    "scenario": 2,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 2,
+      "fix_proposed": 2,
+      "fix_retained": 2,
+      "repair_rejected": 3,
+      "security_accepted": 2
+    },
+    "failed_checks": [
+      {
+        "check_id": "terraform.validate",
+        "file_path": "terraform/main.tf",
+        "line_start": 21,
+        "message": "Terraform configuration diagnostic",
+        "origin": "generated"
+      }
+    ],
+    "gate": "invalid",
+    "round": 2,
+    "run_id": "c566276f-6530-4b68-9c10-ddf0e2ea11bc",
+    "scenario": 2,
+    "status": "pending_review",
+    "validation": "invalid",
+    "variant": "security"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "deterministic_applied": 4,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "8e7ace81-03e9-4fcf-9258-a326211fb0d9",
+    "scenario": 1,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "cost"
+  },
+  {
+    "blockers": [],
+    "counts": {
+      "fix_patch_accepted": 1,
+      "fix_proposed": 1,
+      "fix_retained": 1,
+      "security_accepted": 1
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "8e7ace81-03e9-4fcf-9258-a326211fb0d9",
+    "scenario": 1,
+    "status": "checks_passed",
+    "validation": "valid",
+    "variant": "performance"
+  },
+  {
+    "blockers": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_iam_policy_document.kms_policy",
+        "rule_id": "CKV_AWS_111"
+      }
+    ],
+    "counts": {
+      "deterministic_applied": 4,
+      "fix_patch_accepted": 4,
+      "fix_proposed": 4,
+      "fix_retained": 2,
+      "group_discarded": 4,
+      "group_kept": 4,
+      "group_reason_guards_passed": 4,
+      "group_reason_iteration_deadline": 2,
+      "group_reason_new_blocking_findings": 2,
+      "group_reason_terraform_regression": 2,
+      "group_unevaluated": 2,
+      "reason_iteration_deadline": 2,
+      "reason_new_blocking_findings": 1,
+      "reason_terraform_regression": 3,
+      "security_rolled_back": 4
+    },
+    "failed_checks": [],
+    "gate": "valid",
+    "round": 2,
+    "run_id": "8e7ace81-03e9-4fcf-9258-a326211fb0d9",
+    "scenario": 1,
+    "status": "pending_review",
+    "validation": "valid",
+    "variant": "security"
+  }
+]

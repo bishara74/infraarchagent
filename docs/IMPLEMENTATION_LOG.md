@@ -27,6 +27,35 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10d section 1 — Freeze the accepted diagnosis
+
+**Summary:** Record the author-accepted read-only diagnosis before application
+changes, including reproducible source-free inventories and exact reason paths.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-V-03, FR-V-04,
+FR-P-04, NFR-01, NFR-02.
+
+**Files:** scripts/phase10d_diagnosis.py, docs/evals/phase10d-diagnosis/, D-65,
+and this log. Setup and environment remain unchanged.
+
+**Decisions:** Separate attempts from error-class counts: 52/65 empty exports,
+15/33 unknown repairs, 17 unavailable iterations in five packages. All 177
+rerun canonical hashes match. Record 33 unavailable group discards, 12 atomic
+supporting-resource refusals and 16 rejected EIP repairs. Matched low-complexity
+outcomes are ten losses/two gains, not exclusive causal attribution. D-65 records
+model variance, seven historical passing unsafe-input packages and missing bodies.
+
+**Tests:** make lint passes; existing offline tests 110 passed, zero failed/skipped,
+three database-loop variants deselected. Earlier diagnosis script execution
+found absent round-2 architecture projections before writing evidence; it now
+records older raw hashes separately and mandates all rerun canonical matches.
+Initial script lint found three long strings, corrected before final verification.
+Full suites and new paired replay are reserved for section 3.
+
+**Known gaps / follow-ups:** Rejected Fixer bodies and one post-security patch
+are missing. No application, scanner/profile/threshold, dependency or schema
+change, dotenv/real-key read, install, external network or real inference.
+
 ## 2026-10-27 — Phase 10c section 3 — Replay and verify the scoped regression fixes
 
 **Summary:** Add a reproducible offline replay CLI and source-free paired native

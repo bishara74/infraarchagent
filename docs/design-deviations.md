@@ -3167,6 +3167,31 @@ verification report supplies the author's fixed-configuration real rerun command
 Final make secret-scan exits 0 with zero findings/errors across the working tree
 and all refs/reflogs, excluding dotenv/cache paths before retrieval.
 
+### D-65 — Remaining simple-scenario regression (Phase 10d)
+
+Section 1 (FR-S-02/03/07, FR-V-03/04, FR-P-04, NFR-01/02): the author
+accepted the [diagnosis](evals/phase10d-diagnosis/README.md) before fixes.
+All 177 rerun canonical hashes match. Empty rollback exports are 52 iterations
+(46 conformance, six preservation), weighted to 65 error-class counts. Unknown
+repair exports are 15 conformance rejections weighted to 33 counts. Raw reasons
+are present; obsolete export allowlists lose them.
+
+Seventeen unavailable rollbacks in five packages reject 33 partial groups and
+12 whole supporting-resource candidates despite an unchanged dynamic file hash.
+Six scenario-4 packages record 16 rejected EIP migrations: reverse projection
+incorrectly attaches NAT EIPs to EC2, and NAT traversal mixes public-subnet
+addressing into private-instance exposure. Five isolated retained migrations
+remove one Terraform failure each, introduce no blockers and leave blocker
+counts 2/0/0/4/0 unchanged. D-63 ingress preservation remains deliberate.
+
+Levels 1–3 are 18/30 -> 10/30 against round 2, with ten matched losses and two
+gains. All plans and 59 originals differ; seven old passing low-complexity
+packages contain reads now refused by the mandatory guard. Missing Fixer bodies,
+one absent post-security patch and model variance prevent exclusive causal or
+recoverable-pass counts. No historical outcome is rewritten. Full verification
+follows in section 3; section-1 lint and 110 offline tests pass (three database
+cases deselected). No new specification open question or dependency.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
