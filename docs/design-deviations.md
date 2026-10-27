@@ -2504,6 +2504,16 @@ baseline. No scanner rule, profile, threshold or readiness exception is added.
 
 ### D-60 — Human-curated advisory lessons and injection defense (Phase 9l)
 
+Phase 10b provenance clarification: the author's run 4 correctly used the older
+active self-approved copy. The author reports the first approval at 2026-10-26
+03:03 UTC; a duplicate admin-direct copy activated at 23:01:35 UTC and retired
+at 23:02:33 UTC. No publication defect is established and the correct new-run
+approval writers are retained. Migration 0015 deliberately leaves legacy
+`approval_actor` null. Lesson details join `approved_by` to the current User row
+for the displayed approver; that is not an immutable approval-time name snapshot.
+New direct/reviewed approvals freeze user ID/name at approval. Tests rename the
+user to prove old null snapshots and new immutable identities are not rewritten.
+
 **Phase 10b section 2b adds an explicit Fixer scope (D-63).** This supersedes
 the historical no-Fixer-injection statement below. All Generators remains
 Generator-only. Approved Fixer text uses the same renderer/limits/filter/versioned
@@ -2884,6 +2894,14 @@ requirements are listed in [the proposed amendment register](phase10-proposed-re
 Those IDs are proposals only, never new test markers or implicit spec edits.
 
 ### D-63 — Remediation preserves planned exposure (Phase 10b)
+
+Section 6: the author resolved the alleged run-4 provenance bug as an older
+active self-approved copy plus a later retired admin-direct duplicate (D-60).
+Correct production writers remain unchanged. End-to-end PostgreSQL tests cover
+admin-direct and reviewer/admin-approved manifest/archive/audit identity, plus a
+synthetic imported legacy row with a null immutable actor. Renaming the user
+changes the joined detail display but cannot change either the new approval-time
+snapshot or the historical legacy null. No historical row/set/event is backfilled.
 
 Section 5: three fixed synthetic copies preserve the original and retained
 structures of run-3 cost/security and run-4 performance. Account identifiers are

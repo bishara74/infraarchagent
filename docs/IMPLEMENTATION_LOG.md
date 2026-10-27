@@ -27,6 +27,30 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 6 — Verify approval provenance compatibility
+
+**Summary:** Retain correct new approval writers and prove manifest/archive/event
+identity plus honest legacy null behavior end to end.
+
+**Requirements addressed:** NFR-01, FR-P-04, FR-UI-07.
+
+**Files:** integration/test_phase10b_provenance.py, D-60/D-63 and this log.
+
+**Decisions:** The author clarified that run 4 used the pre-Phase-10 active
+self-approved lesson; its later admin-direct duplicate was retired. No publication
+bug is asserted or speculative production fix applied. Legacy approval_actor is
+null by migration design; the visible approver is a current user join. Synthetic
+owner-only fixture import changes no app grants or immutable trigger rules.
+
+**Tests:** Provenance integration: 3 passed, 0 failed, 0 skipped. New direct and
+reviewed approval actors match results, ZIP manifests and governance events. A
+username change proves that legacy nulls and modern approval snapshots remain
+immutable. Ruff passes.
+
+**Known gaps / follow-ups:** The supplied author history explains duplicate
+lifecycle; this session did not inspect or modify the author's database. No
+approval-time name is reconstructed from today's user record.
+
 ## 2026-10-27 — Phase 10b section 5 — Replay author exposure regressions
 
 **Summary:** Add fixed synthetic copies of the three affected author packages and
