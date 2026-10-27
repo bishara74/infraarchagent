@@ -27,6 +27,52 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10c section 1 — Diagnose final-round regression before fixes
+
+**Summary:** Trace every retained multi-line-string occurrence to one missing
+Generator-original quote; identify broad guard projections and unchanged-state
+rechecks rejecting unrelated repairs; explain all three first-scan refusals.
+Publish per-package classifications and qualified matched-slot attribution.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-V-03, FR-V-04,
+FR-P-04, NFR-01, NFR-02.
+
+**Files:** new docs/evals/phase10c-diagnosis/ source-free report, per-package/rule
+CSV/JSON, all 76 occurrence locations, stage counts, native/duplicate observations,
+deterministic rejection projections and input hashes; D-64 and this log.
+No implementation/test/prompt edits. Raw .cache exports remain uncommitted.
+
+**Decisions:** D-64 records confirmed causes separately from missing candidate
+evidence. Forty current guard-conflict packages contain 24 with reproduced false
+positives and 16 unknown/ambiguous classifications; other attempts in the first
+group can still be legitimate/unknown. The 400 annotated open findings do not
+establish an exclusive guard-only count. Published 24→7 is 18 matched-slot losses
+minus one gain; all 20 plans/60 originals differ, preventing a causal allocation.
+No prompt-v9/string-repair change or unsafe dynamic-read bypass is justified.
+No new specification open question; README setup/commands/environment unchanged.
+
+**Tests:** make lint exit 0: Ruff/format 47 scripts and 406 app/test files,
+mypy 189 sources, frontend ESLint and both TypeScript checks pass. Existing
+offline conformance/10b fixture, duplicate and tool-input subset: 72 passed,
+0 failed/skipped, 3 database-loop cases deselected (18.24s). Final snapshots:
+180 canonical hash checks match; older raw exports: 40/40 manifest hashes match.
+Native Terraform fmt: 248 source snapshots (108 original/140 retained); the same
+76 multi-line errors in the one original/retained main.tf. Five duplicate repairs
+match all before/after hashes. All 208 reconstructed deterministic guard
+rejections reproduce across 24 packages; no post-change acceptance is claimed.
+make secret-scan: exit 0, 0 findings, 0 scan errors across working files and
+all existing refs/reflogs; result/environment retained with diagnosis evidence.
+
+**Known gaps / follow-ups:** Stop at the requested pre-code diagnosis boundary.
+Rejected Fixer candidate bodies are not retained; one accepted post-security
+repair lacks a patch, preventing that exact baseline reconstruction. Helm is
+unavailable; catalogue replay covers guard-relevant Terraform portions, without
+claiming full recorded Helm/pod candidate byte identity. No exclusive
+guard-only finding count or rerun pass-rate estimate. Full make test/frontend/E2E/
+performance/traceability/evidence-index finish checks remain for section 3.
+Sections 2–3 must preserve the three historical public-LB flip rollbacks, all
+unchanged security/validation gates and file-input safety refusals.
+
 ## 2026-10-27 — Phase 10b completion — Verify guarded remediation and evidence
 
 **Summary:** Complete guard coverage for provisional syntax repair and unknown

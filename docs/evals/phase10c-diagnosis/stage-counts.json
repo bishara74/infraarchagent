@@ -1,0 +1,682 @@
+{
+  "cohorts": {
+    "final": {
+      "deterministic_records": 262,
+      "final_blockers": 481,
+      "final_multiline": 76,
+      "final_validation": {
+        "error": 5,
+        "invalid": 29,
+        "valid": 26
+      },
+      "generation_gate": {
+        "error": 5,
+        "invalid": 31,
+        "valid": 24
+      },
+      "packages": 60,
+      "remaining_rules": {
+        "AWS-0001": 1,
+        "AWS-0010": 4,
+        "AWS-0011": 4,
+        "AWS-0024": 2,
+        "AWS-0029": 1,
+        "AWS-0039": 10,
+        "AWS-0040": 9,
+        "AWS-0041": 9,
+        "AWS-0045": 1,
+        "AWS-0050": 1,
+        "AWS-0051": 1,
+        "AWS-0052": 3,
+        "AWS-0053": 21,
+        "AWS-0054": 8,
+        "AWS-0090": 9,
+        "AWS-0104": 17,
+        "AWS-0107": 3,
+        "AWS-0132": 7,
+        "AWS-0164": 42,
+        "AWS-0178": 16,
+        "CKV2_AWS_11": 16,
+        "CKV2_AWS_12": 17,
+        "CKV2_AWS_20": 8,
+        "CKV_AWS_103": 8,
+        "CKV_AWS_130": 43,
+        "CKV_AWS_144": 9,
+        "CKV_AWS_145": 6,
+        "CKV_AWS_157": 6,
+        "CKV_AWS_18": 11,
+        "CKV_AWS_2": 8,
+        "CKV_AWS_21": 9,
+        "CKV_AWS_24": 3,
+        "CKV_AWS_260": 13,
+        "CKV_AWS_354": 11,
+        "CKV_AWS_378": 10,
+        "CKV_AWS_38": 9,
+        "CKV_AWS_39": 9,
+        "CKV_AWS_58": 10,
+        "CKV_AWS_91": 20,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 2,
+        "KSV-0125": 2,
+        "TERRAFORM_SYNTAX": 78
+      },
+      "security_decisions": {
+        "accepted": 37,
+        "no_change": 9,
+        "rolled_back": 162,
+        "stopped": 1
+      },
+      "security_reasons": {
+        "iteration_deadline": 7,
+        "new_blocking_findings": 14,
+        "plan_conformance_regression": 132,
+        "security_control_removed": 1,
+        "terraform_regression": 6,
+        "terraform_verification_unavailable": 8
+      },
+      "status": {
+        "checks_passed": 7,
+        "pending_review": 50,
+        "scan_error": 3
+      },
+      "validation_repairs": [
+        {
+          "count": 10,
+          "outcome": "accepted",
+          "reason": "improved"
+        },
+        {
+          "count": 8,
+          "outcome": "rejected",
+          "reason": "invalid_patch"
+        },
+        {
+          "count": 17,
+          "outcome": "rejected",
+          "reason": "new_blocking_findings"
+        },
+        {
+          "count": 30,
+          "outcome": "rejected",
+          "reason": "no_improvement"
+        },
+        {
+          "count": 29,
+          "outcome": "rejected",
+          "reason": "plan_conformance_regression"
+        },
+        {
+          "count": 2,
+          "outcome": "stopped",
+          "reason": "round_limit"
+        }
+      ]
+    },
+    "round1": {
+      "deterministic_records": 301,
+      "final_blockers": 111,
+      "final_multiline": 0,
+      "final_validation": {
+        "error": 2,
+        "invalid": 23,
+        "valid": 35
+      },
+      "generation_gate": {
+        "error": 2,
+        "invalid": 25,
+        "valid": 33
+      },
+      "packages": 60,
+      "remaining_rules": {
+        "AWS-0001": 1,
+        "AWS-0024": 2,
+        "AWS-0039": 2,
+        "AWS-0040": 1,
+        "AWS-0041": 1,
+        "AWS-0045": 1,
+        "AWS-0050": 1,
+        "AWS-0051": 1,
+        "AWS-0052": 1,
+        "AWS-0053": 18,
+        "AWS-0054": 2,
+        "AWS-0090": 4,
+        "AWS-0104": 6,
+        "AWS-0164": 6,
+        "CKV2_AWS_12": 4,
+        "CKV2_AWS_20": 2,
+        "CKV_AWS_103": 2,
+        "CKV_AWS_130": 9,
+        "CKV_AWS_144": 2,
+        "CKV_AWS_157": 5,
+        "CKV_AWS_18": 3,
+        "CKV_AWS_2": 2,
+        "CKV_AWS_21": 4,
+        "CKV_AWS_260": 4,
+        "CKV_AWS_354": 1,
+        "CKV_AWS_378": 2,
+        "CKV_AWS_38": 1,
+        "CKV_AWS_39": 1,
+        "CKV_AWS_58": 1,
+        "CKV_AWS_91": 17,
+        "KSV-0117": 1,
+        "KSV-0125": 3
+      },
+      "security_decisions": {
+        "accepted": 81,
+        "no_change": 1,
+        "rolled_back": 81
+      },
+      "security_reasons": {
+        "iteration_deadline": 21,
+        "new_blocking_findings": 28,
+        "reference_regression": 3,
+        "security_control_removed": 9,
+        "terraform_regression": 20,
+        "terraform_verification_unavailable": 8
+      },
+      "status": {
+        "checks_passed": 24,
+        "pending_review": 36
+      },
+      "validation_repairs": [
+        {
+          "count": 8,
+          "outcome": "accepted",
+          "reason": "improved"
+        },
+        {
+          "count": 16,
+          "outcome": "rejected",
+          "reason": "invalid_patch"
+        },
+        {
+          "count": 22,
+          "outcome": "rejected",
+          "reason": "new_blocking_findings"
+        },
+        {
+          "count": 32,
+          "outcome": "rejected",
+          "reason": "no_improvement"
+        },
+        {
+          "count": 1,
+          "outcome": "stopped",
+          "reason": "round_limit"
+        }
+      ]
+    },
+    "round2": {
+      "deterministic_records": 237,
+      "final_blockers": 152,
+      "final_multiline": 0,
+      "final_validation": {
+        "invalid": 23,
+        "valid": 37
+      },
+      "generation_gate": {
+        "invalid": 31,
+        "valid": 29
+      },
+      "packages": 60,
+      "remaining_rules": {
+        "AWS-0010": 2,
+        "AWS-0011": 2,
+        "AWS-0013": 1,
+        "AWS-0039": 3,
+        "AWS-0040": 1,
+        "AWS-0041": 1,
+        "AWS-0050": 1,
+        "AWS-0052": 1,
+        "AWS-0053": 23,
+        "AWS-0054": 1,
+        "AWS-0077": 1,
+        "AWS-0080": 1,
+        "AWS-0090": 6,
+        "AWS-0104": 6,
+        "AWS-0107": 1,
+        "AWS-0132": 1,
+        "AWS-0164": 10,
+        "AWS-0177": 1,
+        "CKV2_AWS_12": 8,
+        "CKV2_AWS_20": 1,
+        "CKV_AWS_103": 2,
+        "CKV_AWS_111": 1,
+        "CKV_AWS_118": 1,
+        "CKV_AWS_129": 1,
+        "CKV_AWS_130": 12,
+        "CKV_AWS_144": 3,
+        "CKV_AWS_145": 1,
+        "CKV_AWS_157": 5,
+        "CKV_AWS_16": 1,
+        "CKV_AWS_18": 8,
+        "CKV_AWS_2": 1,
+        "CKV_AWS_21": 6,
+        "CKV_AWS_24": 1,
+        "CKV_AWS_260": 2,
+        "CKV_AWS_293": 1,
+        "CKV_AWS_353": 1,
+        "CKV_AWS_354": 2,
+        "CKV_AWS_378": 1,
+        "CKV_AWS_38": 1,
+        "CKV_AWS_39": 1,
+        "CKV_AWS_58": 1,
+        "CKV_AWS_91": 20,
+        "CKV_K8S_14": 1,
+        "KSV-0013": 1,
+        "KSV-0117": 1,
+        "KSV-0125": 4
+      },
+      "security_decisions": {
+        "accepted": 89,
+        "no_change": 4,
+        "rolled_back": 79
+      },
+      "security_reasons": {
+        "iteration_deadline": 16,
+        "new_blocking_findings": 34,
+        "reference_regression": 1,
+        "security_control_removed": 9,
+        "terraform_regression": 29
+      },
+      "status": {
+        "checks_passed": 19,
+        "pending_review": 41
+      },
+      "validation_repairs": [
+        {
+          "count": 14,
+          "outcome": "accepted",
+          "reason": "improved"
+        },
+        {
+          "count": 8,
+          "outcome": "rejected",
+          "reason": "invalid_patch"
+        },
+        {
+          "count": 25,
+          "outcome": "rejected",
+          "reason": "new_blocking_findings"
+        },
+        {
+          "count": 41,
+          "outcome": "rejected",
+          "reason": "no_improvement"
+        },
+        {
+          "count": 4,
+          "outcome": "stopped",
+          "reason": "round_limit"
+        }
+      ]
+    },
+    "sonnet": {
+      "deterministic_records": 203,
+      "final_blockers": 300,
+      "final_multiline": 0,
+      "final_validation": {
+        "error": 2,
+        "invalid": 18,
+        "valid": 36
+      },
+      "generation_gate": {
+        "deadline": 2,
+        "error": 2,
+        "invalid": 24,
+        "valid": 28
+      },
+      "packages": 56,
+      "remaining_rules": {
+        "AWS-0024": 1,
+        "AWS-0030": 4,
+        "AWS-0031": 6,
+        "AWS-0035": 4,
+        "AWS-0039": 6,
+        "AWS-0040": 5,
+        "AWS-0041": 5,
+        "AWS-0050": 4,
+        "AWS-0052": 7,
+        "AWS-0053": 27,
+        "AWS-0054": 2,
+        "AWS-0065": 1,
+        "AWS-0090": 14,
+        "AWS-0104": 12,
+        "AWS-0130": 5,
+        "AWS-0132": 3,
+        "AWS-0164": 21,
+        "AWS-0178": 1,
+        "CKV2_AWS_11": 1,
+        "CKV2_AWS_12": 9,
+        "CKV2_AWS_20": 2,
+        "CKV_AWS_103": 2,
+        "CKV_AWS_130": 24,
+        "CKV_AWS_144": 11,
+        "CKV_AWS_145": 3,
+        "CKV_AWS_157": 4,
+        "CKV_AWS_18": 10,
+        "CKV_AWS_2": 2,
+        "CKV_AWS_21": 15,
+        "CKV_AWS_260": 4,
+        "CKV_AWS_354": 2,
+        "CKV_AWS_378": 6,
+        "CKV_AWS_38": 6,
+        "CKV_AWS_39": 6,
+        "CKV_AWS_58": 5,
+        "CKV_AWS_91": 17,
+        "CKV_K8S_10": 1,
+        "CKV_K8S_11": 1,
+        "CKV_K8S_12": 1,
+        "CKV_K8S_13": 1,
+        "CKV_K8S_14": 5,
+        "CKV_K8S_20": 1,
+        "CKV_K8S_23": 1,
+        "CKV_K8S_40": 1,
+        "DS-0002": 3,
+        "DS-0017": 1,
+        "KSV-0001": 2,
+        "KSV-0012": 2,
+        "KSV-0013": 5,
+        "KSV-0014": 2,
+        "KSV-0104": 2,
+        "KSV-0117": 3,
+        "KSV-0118": 4,
+        "KSV-0125": 4,
+        "TERRAFORM_SYNTAX": 3
+      },
+      "security_decisions": {
+        "accepted": 70,
+        "no_change": 4,
+        "rolled_back": 95,
+        "stopped": 1
+      },
+      "security_reasons": {
+        "iteration_deadline": 64,
+        "new_blocking_findings": 13,
+        "reference_regression": 4,
+        "terraform_regression": 19,
+        "terraform_verification_unavailable": 4
+      },
+      "status": {
+        "checks_passed": 24,
+        "pending_review": 32
+      },
+      "validation_repairs": [
+        {
+          "count": 19,
+          "outcome": "accepted",
+          "reason": "improved"
+        },
+        {
+          "count": 11,
+          "outcome": "rejected",
+          "reason": "invalid_patch"
+        },
+        {
+          "count": 6,
+          "outcome": "rejected",
+          "reason": "new_blocking_findings"
+        },
+        {
+          "count": 30,
+          "outcome": "rejected",
+          "reason": "no_improvement"
+        },
+        {
+          "count": 1,
+          "outcome": "rejected",
+          "reason": "verification_unavailable"
+        },
+        {
+          "count": 7,
+          "outcome": "stopped",
+          "reason": "deadline"
+        },
+        {
+          "count": 5,
+          "outcome": "stopped",
+          "reason": "round_limit"
+        }
+      ]
+    }
+  },
+  "implementation_revision": "727d7fd",
+  "matched_slots": {
+    "round1": {
+      "gained": [
+        {
+          "round": 1,
+          "scenario": 5,
+          "variant": "performance"
+        }
+      ],
+      "loss_counts": {
+        "guard_and_validation": 10,
+        "guard_valid": 4,
+        "other_security": 1,
+        "other_validation": 1,
+        "scan_error": 2
+      },
+      "lost": [
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 4,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 4,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 4,
+          "variant": "performance"
+        },
+        {
+          "bucket": "scan_error",
+          "round": 2,
+          "scenario": 3,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_valid",
+          "round": 2,
+          "scenario": 3,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 1,
+          "scenario": 9,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 2,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 2,
+          "variant": "performance"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 1,
+          "scenario": 4,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_valid",
+          "round": 1,
+          "scenario": 4,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_valid",
+          "round": 1,
+          "scenario": 4,
+          "variant": "performance"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 1,
+          "scenario": 8,
+          "variant": "cost"
+        },
+        {
+          "bucket": "other_validation",
+          "round": 1,
+          "scenario": 5,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_valid",
+          "round": 2,
+          "scenario": 1,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 9,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 5,
+          "variant": "performance"
+        },
+        {
+          "bucket": "other_security",
+          "round": 1,
+          "scenario": 2,
+          "variant": "cost"
+        },
+        {
+          "bucket": "scan_error",
+          "round": 1,
+          "scenario": 3,
+          "variant": "security"
+        }
+      ]
+    },
+    "round2": {
+      "gained": [
+        {
+          "round": 1,
+          "scenario": 1,
+          "variant": "performance"
+        },
+        {
+          "round": 1,
+          "scenario": 5,
+          "variant": "performance"
+        }
+      ],
+      "loss_counts": {
+        "guard_and_validation": 5,
+        "guard_valid": 2,
+        "other_validation": 5,
+        "scan_error": 2
+      },
+      "lost": [
+        {
+          "bucket": "other_validation",
+          "round": 1,
+          "scenario": 2,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 4,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 4,
+          "variant": "performance"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 1,
+          "scenario": 9,
+          "variant": "cost"
+        },
+        {
+          "bucket": "scan_error",
+          "round": 2,
+          "scenario": 3,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_valid",
+          "round": 2,
+          "scenario": 3,
+          "variant": "security"
+        },
+        {
+          "bucket": "other_validation",
+          "round": 2,
+          "scenario": 3,
+          "variant": "performance"
+        },
+        {
+          "bucket": "other_validation",
+          "round": 1,
+          "scenario": 3,
+          "variant": "cost"
+        },
+        {
+          "bucket": "scan_error",
+          "round": 1,
+          "scenario": 3,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 2,
+          "variant": "cost"
+        },
+        {
+          "bucket": "other_validation",
+          "round": 1,
+          "scenario": 5,
+          "variant": "cost"
+        },
+        {
+          "bucket": "other_validation",
+          "round": 2,
+          "scenario": 5,
+          "variant": "cost"
+        },
+        {
+          "bucket": "guard_valid",
+          "round": 2,
+          "scenario": 5,
+          "variant": "security"
+        },
+        {
+          "bucket": "guard_and_validation",
+          "round": 2,
+          "scenario": 5,
+          "variant": "performance"
+        }
+      ]
+    }
+  },
+  "schema_version": 1
+}

@@ -1,0 +1,47 @@
+{
+  "scope": "Section 1 diagnosis; implementation unchanged",
+  "lint": {
+    "command": "make lint",
+    "exit_code": 0,
+    "ruff_script_files": 47,
+    "ruff_app_test_files": 406,
+    "mypy_sources": 189,
+    "frontend": "ESLint and both TypeScript checks passed"
+  },
+  "offline_regressions": {
+    "cwd": "backend",
+    "command": "INFRAARCH_TEST_BOOTSTRAP=1 PYTHONPATH=tests/bootstrap:. .venv/bin/python -m pytest -q tests/unit/test_phase10b_conformance.py tests/unit/test_phase9m_duplicates.py tests/unit/test_phase9m_tool_inputs.py tests/integration/test_phase10b_replay.py -k 'not actual_security_loop'",
+    "passed": 72,
+    "failed": 0,
+    "skipped": 0,
+    "deselected": 3,
+    "seconds": 18.24
+  },
+  "deferred_to_section3": [
+    "make test",
+    "make frontend-test",
+    "make test-e2e",
+    "make test-perf",
+    "traceability",
+    "evidence-index generation"
+  ],
+  "report_assertions": {
+    "json_parsed": 9,
+    "guard_csv_rows": 40,
+    "false_positive_present": 24,
+    "unknown_or_ambiguous": 16,
+    "multiline_occurrences": 76,
+    "reproduced_deterministic_guard_rejections": 208
+  },
+  "secret_scan": {
+    "command": "make secret-scan",
+    "exit_code": 0,
+    "findings": 0,
+    "scan_errors": 0,
+    "scope": "working files and all refs/reflogs; dotenv and cache excluded"
+  },
+  "limits": {
+    "helm_available": false,
+    "catalogue_reconstruction": "Terraform guard-relevant portions; full Helm pod candidate byte identity is not claimed"
+  }
+}

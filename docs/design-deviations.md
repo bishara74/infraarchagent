@@ -3017,6 +3017,64 @@ conflicting findings for engineer review. Nine frozen complete mocked request
 bodies cover three response formats and three repair kinds; they establish wiring,
 not real-provider reliability. Architect/Generator prompts remain unchanged.
 
+### D-64 — Final-round regression diagnosis (Phase 10c section 1)
+
+FR-S-02/03/07, FR-V-03/04, FR-P-04 and NFR-01/02: the
+[section-1 report](evals/phase10c-diagnosis/README.md) diagnoses the frozen final
+broad round before implementation changes. Twenty author-exported API snapshots
+remain uncommitted in `.cache/broad-final-results/`. All 180 final per-package
+plan/original/retained canonical-hash checks match committed projections; the 40
+older raw exports match their committed audit source hashes. Historical evidence
+folders and specification files are unchanged.
+
+All 76 invalid-multi-line-string diagnostics and 78 TERRAFORM_SYNTAX blockers
+come from one Generator-original missing quote at scenario 10/repetition 1/cost,
+main.tf:225. Its main.tf stays byte-identical through retention. Five other
+packages' duplicate-block repairs replay with exact recorded before/after hashes.
+No escape-decoding writeback or prompt-v8 string-corruption cause is established;
+no prompt version or declaration-repair change is justified by this evidence.
+
+Forty packages have a current guard-conflict notice. Reconstructing complete
+security baselines reproduces 208 deterministic guard rejections in 24 packages,
+including unrelated logging/encryption and safe defaults. Helm is unavailable;
+atomic catalogue replay establishes the Terraform guard behavior without claiming
+full Helm/pod candidate byte identity. Empty service-type
+bindings compare broadly named policy/network fields across unrelated resources;
+bound dependency changes also recheck unchanged pre-existing plan mismatches.
+These are proven false-positive rejection causes. The remaining 16 packages stay
+unknown/ambiguous because rejected Fixer bodies are not retained or changes touch
+an exposure path. Packages with a proved false positive can contain other valid
+or uncertain rejections. Recorded regression labels alone do not prove exposure
+flips. All three complete 10b public-LB flip fixture candidates remain rejected.
+
+The 400 still-open findings annotated by the guard are not 400 proven exclusive
+guard-caused failures: rejection precedes the other gates, and counterfactual
+candidate scans are missing. The exclusive count is unknown. One package also
+has an accepted post-security repair without a stored patch, preventing exact
+security-baseline reconstruction. The report preserves these limits rather than
+claiming a projected pass rate.
+
+All three scan errors are dynamic filebase64sha256(var.lambda_zip_path) inputs
+refused before Terraform launches on the first security scan. Validation had
+already recorded uninspectable_file_input. This is expanded 9m safety coverage,
+not scanner crashes; it does not authorize executing unknown file reads. Two
+other serverless validation errors concern an absent mirrored archive provider.
+
+The published 24→7 comparison consists of 18 matched-slot losses and one gain:
+14 guard-associated losses (ten also invalid), two scan-error losses, one other
+validation loss and one other security loss. The malformed-string slot was
+already failing. All 20 plans and all 60 Generator originals differ from each
+earlier round, so exact causal pass-loss allocation and model variance remain
+unresolved. The earlier D-63 correction of one published baseline pass remains
+explicit; no historical result is rewritten.
+
+Section 2 should narrow the guard to changes that can affect a planned exposure
+path while retaining fail-closed handling on that path. This section changes no
+implementation, prompt, profile, scanner/blocking rule, readiness threshold,
+dependency or schema. No new specification open question is introduced. Full
+finish verification remains for section 3; section-1 lint passes and 72 existing
+offline regressions pass (three database-loop cases deselected).
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked
