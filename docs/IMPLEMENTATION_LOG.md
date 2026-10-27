@@ -27,6 +27,31 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10b section 5 — Replay author exposure regressions
+
+**Summary:** Add fixed synthetic copies of the three affected author packages and
+exercise whole-candidate rejection and the persisted security/readiness loop.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-A-05, NFR-01.
+
+**Files:** fixtures/phase10b-author-exposure.json,
+integration/test_phase10b_replay.py, D-63 and this log.
+
+**Decisions:** Source hashes and variants are retained; account identifiers are
+synthetic. Full original/final maps establish the observed regression. Scripted
+Fixer attempts isolate the actual flip; a recorded validator result isolates the
+readiness predicate. No inference, external service or cloud execution.
+
+**Tests:** Author replay plus reporter subset: 9 passed, 0 failed, 0 skipped
+(six replay cases plus three reporter cases). Fresh author folder scan: four
+files, 0 findings; synthetic fixture scan: 0 findings. Ruff passes. Initial replay
+had three passing comparison cases and three failures because its recorded
+ValidationCheck omitted a required message; corrected before the passing rerun.
+
+**Known gaps / follow-ups:** Native deployment validity is not measured by the
+recorded validator. The existing HCL/JSON and partial-group tests cover independent
+acceptance boundaries. Full finish verification follows.
+
 ## 2026-10-27 — Phase 10b section 4 — Audit retained LB exposure
 
 **Summary:** Publish a fresh source-free counter-audit of every committed benchmark

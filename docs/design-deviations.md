@@ -2885,6 +2885,15 @@ Those IDs are proposals only, never new test markers or implicit spec edits.
 
 ### D-63 — Remediation preserves planned exposure (Phase 10b)
 
+Section 5: three fixed synthetic copies preserve the original and retained
+structures of run-3 cost/security and run-4 performance. Account identifiers are
+synthetic; source paths/hashes and original labels identify the author evidence.
+The full retained candidates are rejected. Actual SecurityAgent replay attempts
+only the observed internal flip, keeps the public baseline/finding, and reaches
+pending_review through recorded valid validation and unchanged state rules.
+The replay validates guard/state/report behavior, not the packages' cloud runtime
+or native deployment validity. Source/fixture secret scans report zero findings.
+
 Section 4 — historical counter-audit: the new source-free report at
 `docs/evals/phase10b-exposure-audit/` covers 998 packages in 33 benchmark
 folders, with exposure projections for 312 and 703 unknown outcomes (including
