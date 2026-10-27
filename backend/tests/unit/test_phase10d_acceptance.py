@@ -282,3 +282,131 @@ async def test_unchanged_literal_refusal_remains_blocking_but_allows_hardening()
         for c in result.checks
     )
     assert result.scan.violations[0].rule_id == "TERRAFORM_FILE_INPUT"
+
+
+@pytest.mark.parametrize("change", ["resource_dependency", "iteration_domain"])
+async def test_file_input_resource_and_instance_context_changes_stay_closed(change):
+    before = files()
+    if change == "resource_dependency":
+        before["terraform/main.tf"] = (
+            before["terraform/main.tf"].replace(
+                "var.lambda_zip_path", "random_id.archive.hex"
+            )
+            + '\nresource "random_id" "archive" { byte_length = 4 }\n'
+        )
+        after = {
+            **before,
+            "terraform/main.tf": before["terraform/main.tf"].replace(
+                "byte_length = 4", "byte_length = 8"
+            ),
+        }
+    else:
+        before["terraform/main.tf"] = before["terraform/main.tf"].replace(
+            'resource "aws_lambda_function" "backup" {',
+            'resource "aws_lambda_function" "backup" {\n count = 1',
+        )
+        after = {
+            **before,
+            "terraform/main.tf": before["terraform/main.tf"].replace(
+                "count = 1", "count = 2"
+            ),
+        }
+    guard = setup()
+    result = await guard.evaluate(
+        before,
+        after,
+        await guard.checks(before),
+        await guard.scanner.scan(before, Variant.SECURITY),
+    )
+    assert result.reason == "terraform_verification_unavailable"
+
+
+async def test_changed_variable_used_by_input_iteration_domain_is_related():
+    before = files()
+    before["terraform/main.tf"] = before["terraform/main.tf"].replace(
+        'resource "aws_lambda_function" "backup" {',
+        'resource "aws_lambda_function" "backup" {\n count = var.replicas',
+    )
+    before["terraform/variables.tf"] += 'variable "replicas" { default = 1 }\n'
+    after = {
+        **before,
+        "terraform/variables.tf": before["terraform/variables.tf"].replace(
+            "default = 1", "default = 2"
+        ),
+    }
+    guard = setup()
+    result = await guard.evaluate(
+        before,
+        after,
+        await guard.checks(before),
+        await guard.scanner.scan(before, Variant.SECURITY),
+    )
+    assert result.reason == "terraform_verification_unavailable"
+
+
+@pytest.mark.parametrize("kind", ["encryption", "logging"])
+@pytest.mark.parametrize("partial", [False, True])
+async def test_scenario1_s3_controls_survive_unchanged_lambda_refusal(kind, partial):
+    before = files()
+    before["terraform/main.tf"] += """
+resource "aws_s3_bucket" "backup" {
+  bucket = "synthetic-backups"
+}
+resource "aws_s3_bucket" "logs" {
+  bucket = "synthetic-backup-logs"
+}
+"""
+    if kind == "encryption":
+        before["terraform/main.tf"] += """
+resource "aws_s3_bucket_server_side_encryption_configuration" "backup" {
+  bucket = aws_s3_bucket.backup.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+"""
+        proposed = before["terraform/main.tf"].replace(
+            'sse_algorithm = "AES256"',
+            'sse_algorithm = "aws:kms"\n'
+            "      kms_master_key_id = aws_kms_key.backup_key.arn",
+        )
+    else:
+        proposed = (
+            before["terraform/main.tf"]
+            + """
+resource "aws_s3_bucket_logging" "backup" {
+  bucket = aws_s3_bucket.backup.id
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "backups/"
+}
+"""
+        )
+    after = {**before, "terraform/main.tf": proposed}
+    guard = setup()
+    checks = await guard.checks(before)
+    scan = await guard.scanner.scan(before, Variant.SECURITY)
+    if partial:
+        records = []
+        retained, checks, scanned = await accept_groups(
+            guard,
+            before,
+            after,
+            checks,
+            scan,
+            6,
+            records,
+            RetainedCandidate(before, scan),
+        )
+        assert retained == after
+        assert all(r["status"] == "kept" for r in records)
+    else:
+        result = await guard.evaluate(before, after, checks, scan)
+        assert result.reason is None
+        checks, scanned = result.checks, result.scan
+    assert scanned.violations[0].rule_id == "TERRAFORM_FILE_INPUT"
+    assert (
+        ValidationReport.build(checks, terraform_required=True).summary.result
+        == "error"
+    )

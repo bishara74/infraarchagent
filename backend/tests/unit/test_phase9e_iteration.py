@@ -142,7 +142,7 @@ async def test_regression_restores_terraform_and_new_files_but_keeps_verified_ya
 
 @pytest.mark.parametrize(
     "before,after,accepted",
-    [(None, None, False), (None, 0, True), (1, 2, False), (1, 1, True)],
+    [(None, None, True), (None, 0, True), (1, 2, False), (1, 1, True)],
 )
 async def test_unknown_and_equal_counts(before, after, accepted):
     files, ctx, security, baseline, _, _ = setup((before, after))
@@ -159,6 +159,10 @@ async def test_unknown_and_equal_counts(before, after, accepted):
         validation_failures=[],
     )
     assert (kept["terraform/main.tf"] != files["terraform/main.tf"]) == accepted
+    if before is None and after is None:
+        assert record["reasons"] == []
+        assert record["unchanged_terraform_unavailability"] == ["not_installed"]
+        assert record["retained_failed"] is None
 
 
 async def test_new_blocker_rolls_back_whole_candidate():

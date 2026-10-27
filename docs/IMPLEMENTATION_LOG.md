@@ -27,6 +27,56 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-27 — Phase 10d section 3 — Replay and verify the remaining regression fixes
+
+**Summary:** Add paired offline replay over all 59 rerun packages, complete all
+required verification, preserve historical evidence and supply the single real
+round's complete author-only environment/commands on port 8765.
+
+**Requirements addressed:** FR-S-01, FR-S-02, FR-S-03, FR-S-06, FR-S-07,
+FR-V-03, FR-V-04, FR-P-04, PR-04, NFR-01, NFR-02.
+
+**Files:** phase10d_replay.py and its unit tests; verification_scope.py and
+acceptance context tests; legacy phase9e iteration expectation; README; D-65;
+phase10d-replay/, phase10d-verification/, phase10d-traceability-release/ and log.
+
+**Decisions:** All 177 rerun hashes match; 58 exact reconstructions and one
+missing post-security patch. Thirty occurrences / 14 distinct available pairs:
+26 / 13 accepted, four / one new-blocker rejection. Unavailable decisions 12→0,
+conformance 18→0, derived group discards 46→4 with 42 kept. Seven conditionally
+resolved identities; five input blockers remain. Export anomalies 52/65 empty
+and 15/33 unknown become zero. The 118 retained-diff guard observations gain no
+new rejection. Historical 17 unavailable iterations / 138 group discards and
+missing Fixer bodies remain separate; two EIP contexts do not match. No projected
+pass rate, cumulative trajectory, historical deadline or exclusive causality.
+
+**Tests:** Final make test 2,830 passed, zero failed/skipped, six perf deselected
+(691.48s); make frontend-test 467 passed; make test-e2e 35 passed (10.1m);
+make test-perf six passed, zero failed/skipped, 2,830 deselected (26.87s), 10 MB
+sample 1.291972345s under the unchanged two-second threshold. make lint passes
+(190 mypy sources). After the full suite, four portable S3 encryption/logging
+test-only cases were added; the expanded focused subset passes 50 with no
+application change. The full-suite count precedes those four additions. The
+release traceability was recollected afterward. Corrected iteration file ten
+passed. Traceability: 59 IDs, no uncovered/invalid/collection failures. Index:
+45 met / 12 partly met / one not met / one unverified. Secret-scan results are in
+the final verification report. All 6,340 protected evidence/spec bytes match;
+93 refreshed browser images are retained separately and historical bytes restored.
+
+Verification corrections: two new context probes failed / 18 deselected before
+resource/repetition dependency fingerprints were completed. Two preliminary runs
+were stopped; first complete backend run 2,829 passed / one obsolete assertion
+failed / six deselected. Updated identical-not_installed acceptance and preserved
+uncertainty assertions; final complete run passes. One typing conflict was fixed.
+An approval-review quota interruption executed no action; normal review resumed
+following the author's continue request. No safety approval bypass was used.
+
+**Known gaps / follow-ups:** Missing candidate bodies and model variance remain.
+No new open question, scanner/profile/prompt/readiness/dependency/schema change,
+real model call, dotenv/real-key read, install, external service or push. The
+single full real schedule is for the author to execute once; BUDGET=2 is a credit
+reserve, not a spend cap. Raw snapshots/caches stay uncommitted.
+
 ## 2026-10-27 — Phase 10d section 2 — Scope refusals and preserve reason evidence
 
 **Summary:** Preserve recorded reason codes and permit unchanged unavailable

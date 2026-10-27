@@ -13,10 +13,7 @@ FILE_FUNCTION = re.compile(
     r"\b(?:file|filebase64|templatefile|fileset|fileexists|filemd5|filesha1|"
     r"filesha256|filesha512|filebase64sha256|filebase64sha512)\s*\("
 )
-REFERENCE = re.compile(
-    r"\b(?:var\.[\w-]+|local\.[\w-]+|data\.[\w]+\.[\w-]+|"
-    r"module\.[\w-]+|aws_[\w]+\.[\w-]+)"
-)
+REFERENCE = re.compile(r"\b(?:data\.[\w]+\.[\w-]+|[a-zA-Z_][\w]*\.[\w-]+)")
 
 
 def unavailable_signature(
@@ -58,7 +55,8 @@ def unavailable_signature(
     )
     definitions: dict[tuple[str, str], list[Any]] = {}
     configuration: list[Any] = []
-    inputs = []
+    inputs: list[tuple[str, str]] = []
+    bindings: list[Any] = []
     for doc in documents.documents.values():
         module = str(PurePosixPath(doc.path).parent)
         if doc.path.endswith(".tfvars"):
@@ -86,19 +84,45 @@ def unavailable_signature(
             if isinstance(body, dict):
                 for name, value in body.items():
                     definitions.setdefault((module, "local." + name), []).append(value)
-        for _, value in walk(doc.data):
+        for location, value in walk(doc.data):
             if (
                 isinstance(value, str)
                 and re.search(r"(?<!\$)\$\{", value)
                 and FILE_FUNCTION.search(value)
             ):
                 inputs.append((module, value))
+                # Repetition changes the domain of an unchanged file argument.
+                ancestor = doc.data
+                context: list[Any] = []
+                for part in location:
+                    if isinstance(ancestor, dict):
+                        selected_context = {
+                            k: v
+                            for k, v in ancestor.items()
+                            if k in {"count", "for_each", "provider", "dynamic"}
+                        }
+                        if selected_context:
+                            context.append(selected_context)
+                    ancestor = ancestor[part]
+                context_labels = [part for part in location if isinstance(part, str)]
+                if re.search(r"\bself\.", value):
+                    if len(context_labels) < 3 or context_labels[0] != "resource":
+                        return None
+                    context.append(
+                        definitions.get((module, ".".join(context_labels[1:3])), [])
+                    )
+                bindings.append((module, value, context))
     if any(c.skip_reason == "uninspectable_file_input" for c in skipped) and not inputs:
         return None
     dependencies: dict[tuple[str, str], list[Any]] = {}
     pending = [
         (module, ref) for module, value in inputs for ref in REFERENCE.findall(value)
     ]
+    pending.extend(
+        (module, ref)
+        for module, _, context in bindings
+        for ref in REFERENCE.findall(json.dumps(context))
+    )
     while pending:
         module, name = pending.pop()
         key = (module, name)
@@ -116,6 +140,7 @@ def unavailable_signature(
             configuration, key=lambda v: json.dumps(v, sort_keys=True)
         ),
         "inputs": sorted(inputs),
+        "bindings": sorted(bindings, key=lambda v: json.dumps(v, sort_keys=True)),
         "dependencies": sorted(
             (module, name, body) for (module, name), body in dependencies.items()
         ),

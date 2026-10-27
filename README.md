@@ -2169,3 +2169,32 @@ baseline; they do not simulate a new model trajectory or establish a pass rate.
 Missing rejected Fixer bodies and unrecorded post-security patches remain explicit
 replay limits. Finish verification is recorded separately in
 [`docs/evals/phase10c-verification/README.md`](docs/evals/phase10c-verification/README.md).
+
+
+### Phase 10d offline rerun replay
+
+The accepted diagnosis is in
+[phase10d-diagnosis](docs/evals/phase10d-diagnosis/README.md).
+Quality exports retain recorded reason codes. An unchanged file-input refusal or
+unavailable Terraform evaluation permits independent changes through the remaining
+acceptance gates; it never proves validity or removes the refused-input blocker.
+Changed expressions/dependencies remain guarded. NAT EIPs without attachments and
+public-subnet addressing reached through NAT egress no longer affect private EC2
+exposure projections. D-63 ingress protection remains active.
+
+With the 20 author exports in `.cache/broad-final2-results/`, reproduce the paired
+observations using installed offline tools and a fresh destination:
+
+```bash
+INFRAARCH_TEST_BOOTSTRAP=1 \
+PYTHONPATH="$PWD/backend/tests/bootstrap:$PWD/backend" \
+backend/.venv/bin/python -m scripts.phase10d_replay \
+  --output-dir "$PWD/docs/evals/phase10d-replay-new"
+```
+
+The replay verifies 177 canonical hashes for 59 generated packages. Historical
+export counts, paired available candidates and derived partial groups have
+separate denominators. Missing rejected Fixer bodies remain unavailable; accepted
+pairs establish conditional finding resolutions, never a new pass rate.
+See [replay results](docs/evals/phase10d-replay/README.md) and
+[verification and the single author-run real round](docs/evals/phase10d-verification/README.md).

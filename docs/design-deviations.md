@@ -3224,6 +3224,46 @@ rejected earlier by preservation, and local dependencies were not indexed.
 The syntax fixture now isolates the syntax gate; local/data indexing is corrected.
 Full suites and paired observations follow in section 3. No new open question.
 
+#### Phase 10d section 3 — paired replay and final verification
+
+The [paired rerun replay](evals/phase10d-replay/README.md) observes all 59 retained
+packages and verifies 177 canonical hashes. Fifty-eight security sessions
+reconstruct exactly; one accepted post-security patch is unavailable. The 30
+available proposal occurrences are 14 distinct pairs: 26 occurrences / 13 pairs
+are accepted, four logging occurrences / one pair remain rejected for new
+blockers. Terraform-unavailable rejections fall 12→0 and conformance 18→0;
+derived partial-group discards fall 46→4 (42 kept). Accepted pairs conditionally
+remove seven frozen identities, while all five file-input blockers remain.
+No new conformance rejection appears among 118 retained-diff observations.
+
+Re-exporting every frozen raw report corrects 52 empty rollback attempts / 65
+error-class counts and 15 unknown repair attempts / 33 counts to zero. Historical
+17 unavailable iterations and 138 group discards remain a separate denominator.
+Missing focused/validation bodies, one post-security patch and two unmatched EIP
+contexts are explicit. File-hash matching does not establish an otherwise missing
+whole-package historical repair context. No pass rate, cumulative remediation,
+exclusive historical causal share or deployment success is inferred.
+
+Verification extended the refusal fingerprint to non-AWS resource references and
+input-owning repetition/provider/dynamic bindings, including their transitive
+definitions. Two failing synthetic probes established the gaps while the file
+read itself stayed blocked. A legacy test expecting rejection of identical
+not_installed checks was updated to the author's explicit new behavior, with
+assertions preserving unavailable status. No ingress, policy or readiness rule
+was relaxed. No new specification open question or dependency.
+
+Full backend 2,830 passed (six perf deselected). Four portable S3 test-only cases
+were subsequently added; the final focused subset passes 50, with application
+code unchanged. Final frontend 467, browser 35,
+performance six, all without failures/skips. Lint passes; traceability covers 59
+IDs with no uncovered/invalid/collection failures. The unchanged two-second
+10 MB bound measures 1.291972345s. The reviewed index remains 45 met / 12 partly
+met / one not met / one unverified. All 6,340 protected evidence/spec files retain
+exact bytes; 93 fresh captures are kept separately. The final secret scan and
+full command results are linked from the [verification report](evals/phase10d-verification/README.md).
+The author-run single full round uses port 8765 and no Architect override;
+Codex makes no real model call, reads no real credentials/dotenv and does not push.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

@@ -1,0 +1,9 @@
+cd backend && .venv/bin/alembic -x database=test upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+cd backend && .venv/bin/python -m scripts.run_verification pytest -q -m "not perf"
+........................................................................ [  2%]
+........................................................................ [  5%]
+........................................................................ [  7%]
+........................................................................ [ 10%]
+...................make: *** [Makefile:35: test] Terminated

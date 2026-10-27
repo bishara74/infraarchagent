@@ -1,0 +1,92 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_file_input_resource_and_instance_context_changes_stay_closed[resource_dependency] _
+
+change = 'resource_dependency'
+
+    @pytest.mark.parametrize("change", ["resource_dependency", "iteration_domain"])
+    async def test_file_input_resource_and_instance_context_changes_stay_closed(change):
+        before = files()
+        if change == "resource_dependency":
+            before["terraform/main.tf"] = (
+                before["terraform/main.tf"].replace(
+                    "var.lambda_zip_path", "random_id.archive.hex"
+                )
+                + '\nresource "random_id" "archive" { byte_length = 4 }\n'
+            )
+            after = {
+                **before,
+                "terraform/main.tf": before["terraform/main.tf"].replace(
+                    "byte_length = 4", "byte_length = 8"
+                ),
+            }
+        else:
+            before["terraform/main.tf"] = before["terraform/main.tf"].replace(
+                'resource "aws_lambda_function" "backup" {',
+                'resource "aws_lambda_function" "backup" {\n count = 1',
+            )
+            after = {
+                **before,
+                "terraform/main.tf": before["terraform/main.tf"].replace(
+                    "count = 1", "count = 2"
+                ),
+            }
+        guard = setup()
+        result = await guard.evaluate(
+            before,
+            after,
+            await guard.checks(before),
+            await guard.scanner.scan(before, Variant.SECURITY),
+        )
+>       assert result.reason == "terraform_verification_unavailable"
+E       AssertionError: assert None == 'terraform_verification_unavailable'
+E        +  where None = CandidateResult(reason=None, checks=[ValidationCheck(check_id='terraform.validate', category='terraform', tool='terraf...ng=True, advisory_reason=None)], tool_status={'terraform': 'file_input_blocked'}, syntax_limited=False), introduced=[]).reason
+
+backend/tests/unit/test_phase10d_acceptance.py:321: AssertionError
+_ test_file_input_resource_and_instance_context_changes_stay_closed[iteration_domain] _
+
+change = 'iteration_domain'
+
+    @pytest.mark.parametrize("change", ["resource_dependency", "iteration_domain"])
+    async def test_file_input_resource_and_instance_context_changes_stay_closed(change):
+        before = files()
+        if change == "resource_dependency":
+            before["terraform/main.tf"] = (
+                before["terraform/main.tf"].replace(
+                    "var.lambda_zip_path", "random_id.archive.hex"
+                )
+                + '\nresource "random_id" "archive" { byte_length = 4 }\n'
+            )
+            after = {
+                **before,
+                "terraform/main.tf": before["terraform/main.tf"].replace(
+                    "byte_length = 4", "byte_length = 8"
+                ),
+            }
+        else:
+            before["terraform/main.tf"] = before["terraform/main.tf"].replace(
+                'resource "aws_lambda_function" "backup" {',
+                'resource "aws_lambda_function" "backup" {\n count = 1',
+            )
+            after = {
+                **before,
+                "terraform/main.tf": before["terraform/main.tf"].replace(
+                    "count = 1", "count = 2"
+                ),
+            }
+        guard = setup()
+        result = await guard.evaluate(
+            before,
+            after,
+            await guard.checks(before),
+            await guard.scanner.scan(before, Variant.SECURITY),
+        )
+>       assert result.reason == "terraform_verification_unavailable"
+E       AssertionError: assert None == 'terraform_verification_unavailable'
+E        +  where None = CandidateResult(reason=None, checks=[ValidationCheck(check_id='terraform.validate', category='terraform', tool='terraf...ng=True, advisory_reason=None)], tool_status={'terraform': 'file_input_blocked'}, syntax_limited=False), introduced=[]).reason
+
+backend/tests/unit/test_phase10d_acceptance.py:321: AssertionError
+=========================== short test summary info ============================
+FAILED backend/tests/unit/test_phase10d_acceptance.py::test_file_input_resource_and_instance_context_changes_stay_closed[resource_dependency]
+FAILED backend/tests/unit/test_phase10d_acceptance.py::test_file_input_resource_and_instance_context_changes_stay_closed[iteration_domain]
+2 failed, 18 deselected in 0.94s
