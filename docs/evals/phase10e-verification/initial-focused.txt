@@ -1,0 +1,462 @@
+..............F...F.....................................F...FFF......... [ 88%]
+.......F.                                                                [100%]
+=================================== FAILURES ===================================
+_______ test_combined_and_partial_guards_keep_finding_and_unrelated_fix ________
+
+    async def test_combined_and_partial_guards_keep_finding_and_unrelated_fix():
+        before = files(extra={"aws_s3_bucket": {"data": {}}})
+        candidate = files(
+            {"internal": True}, {"aws_s3_bucket": {"data": {"force_destroy": False}}}
+        )
+        record = {
+            "terraform_verification_seconds": 0.0,
+            "security_verification_seconds": 0.0,
+        }
+    
+        class ExposureScanner(Scanner):
+            async def scan(self, files, variant):
+                data = json.loads(files["terraform/main.tf.json"])
+                return ScanResult(
+                    [finding()]
+                    if not data["resource"]["aws_lb"]["edge"]["internal"]
+                    else [],
+                    {},
+                )
+    
+        guard = CandidateGuard(
+            Verifier(),
+            ExposureScanner(),
+            Variant.SECURITY,
+            AgentBudget(60),
+            record,
+            plan=plan(),
+            targeted=[finding()],
+        )
+        scan = ScanResult([finding()], {})
+        checks = await guard.checks(before)
+        result = await guard.evaluate(before, candidate, checks, scan)
+>       assert result.reason == "plan_conformance_regression" and result.scan is scan
+E       AssertionError: assert (None == 'plan_conformance_regression')
+E        +  where None = CandidateResult(reason=None, checks=[ValidationCheck(check_id='terraform.validate', category='structure', tool='terraf...n='unknown', template_name=None)], scan=ScanResult(violations=[], tool_status={}, syntax_limited=False), introduced=[]).reason
+
+backend/tests/unit/test_phase10b_conformance.py:243: AssertionError
+_______ test_provisional_syntax_fixer_cannot_change_unverified_exposure ________
+
+    async def test_provisional_syntax_fixer_cannot_change_unverified_exposure():
+        from app.agents.generation_syntax import recover_generation_syntax
+        from app.agents.security.fix import FixProposal
+    
+        original = {
+            "terraform/main.tf": 'resource "aws_lb" "edge" {\n'
+            ' internal = false\n name = "unfinished\n}\n'
+        }
+        repaired = 'resource "aws_lb" "edge" {\n internal = false\n name = "fixed"\n}\n'
+    
+        class Fixer:
+            async def propose(self, **kwargs):
+                return FixProposal(
+                    kwargs["path"], True, None, repaired.replace("false", "true"), {}, ()
+                )
+    
+        async def regenerate(feedback):
+            return {"terraform/main.tf": repaired}
+    
+        files, report = await recover_generation_syntax(
+            original,
+            plan(),
+            Fixer(),
+            AgentBudget(30),
+            redact=lambda x: x,
+            regenerate=regenerate,
+        )
+>       assert files["terraform/main.tf"] == repaired
+E       assert 'resource "aw... "fixed"\n}\n' == 'resource "aw... "fixed"\n}\n'
+E         
+E           resource "aws_lb" "edge" {
+E         -  internal = false
+E         ?             ^^^^
+E         +  internal = true
+E         ?             ^^^
+E            name = "fixed"
+E           }
+
+backend/tests/unit/test_phase10b_conformance.py:356: AssertionError
+___________ test_validation_improvement_never_accepts_internal_flip ____________
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x781479d68ad0>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x781479d6aa90>)
+
+    @pytest.mark.req("FR-S-02", "FR-S-07", "FR-A-05")
+    async def test_validation_improvement_never_accepts_internal_flip(db_engines):
+        engine, _ = db_engines
+        ctx, _ = await setup(engine)
+        ctx = replace(ctx, plan=plan())
+        files = {"terraform/main.tf": 'resource "aws_lb" "edge" { internal = false }\n'}
+    
+        class Flipper:
+            async def propose(self, **kwargs):
+                return FixProposal(
+                    kwargs["path"],
+                    True,
+                    None,
+                    kwargs["files"][kwargs["path"]].replace("false", "true"),
+                    {},
+                    (),
+                )
+    
+        class Validator:
+            async def validate(self, plan, files):
+                return ValidationReport.build(
+                    [
+                        ValidationCheck(
+                            check_id="terraform.validate",
+                            category="terraform",
+                            tool="terraform",
+                            status="passed"
+                            if "true" in files["terraform/main.tf"]
+                            else "failed",
+                            message="synthetic",
+                            file_path="terraform/main.tf",
+                        )
+                    ],
+                    terraform_required=True,
+                )
+    
+        security = agent(engine, ScriptedScanner([]), Flipper())
+>       package, report, metadata = await ValidationRepair(security, Validator()).run(
+            ctx,
+            Variant.SECURITY,
+            IaCPackage(variant=Variant.SECURITY, files=files),
+            rounds=1,
+            budget=AgentBudget(60),
+            phase="after_security",
+            metadata=RemediationReport(),
+        )
+
+backend/tests/integration/test_phase10b_validation.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+backend/app/pipeline/telemetry.py:95: in call
+    return await function(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+backend/app/agents/validation_repair.py:221: in run
+    baseline = await scan_files(
+backend/app/agents/remediation.py:93: in scan_files
+    return await scanner.scan(files, variant, iteration=iteration)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <tests.integration.test_security_agent.ScriptedScanner object at 0x78147a60ca70>
+files = {'terraform/main.tf': 'resource "aws_lb" "edge" { internal = false }\n'}
+variant = <Variant.SECURITY: 'security'>, iteration = 0
+
+    async def scan(
+        self, files: dict[str, str], variant: Variant, *, iteration: int = 0
+    ) -> ScanResult:
+        self.calls += 1
+        return ScanResult(
+>           self.scans.pop(0), {"checkov": "ok", "trivy": "ok", "terraform": "ok"}
+            ^^^^^^^^^^^^^^^^^
+        )
+E       IndexError: pop from empty list
+
+backend/tests/integration/test_security_agent.py:82: IndexError
+_ test_actual_security_loop_retains_public_files_and_requires_review[run3-cost] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x78147b522250>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7814790f8ed0>)
+case = {'id': 'run3-cost', 'synthetic': True, 'source': {'path': 'docs/evals/phase10b-author-lesson-runs/run3-lessons-v2.json... 'All resources are deployed in eu-central-1 region within private subnets across two Availability Zones.'}, ...}, ...}
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
+    async def test_actual_security_loop_retains_public_files_and_requires_review(
+        db_engines, case
+    ):
+        engine, _ = db_engines
+        ctx, _ = await setup(engine, max_iterations=1)
+        plan = DeploymentPlan.model_validate(case["plan"])
+        ctx = replace(ctx, plan=plan)
+        variant = Variant(case["source"]["variant"])
+        files = case["original_files"]
+        view = View(files)
+        service = next(
+            s
+            for s in plan.services
+            if s.name in plan.network.public_services
+            and label(s.aws_service) in SERVICE_TYPES
+            and SERVICE_TYPES[label(s.aws_service)] & {"aws_lb", "aws_alb", "aws_elb"}
+        )
+        lb = view.bind(service.name, SERVICE_TYPES[label(service.aws_service)], True)
+        assert lb is not None and view.exposure(lb) == "public"
+        violation = Violation(
+            rule_id="AWS-0053",
+            resource=lb.address,
+            file_path=lb.path,
+            message="Load balancer exposed to the internet",
+            tool="trivy",
+            blocking=True,
+        )
+    
+        class Scanner:
+            async def scan(self, source, variant, *, iteration=0):
+                from app.scanners.scan import ScanResult
+    
+                updated = View(source)
+                item = updated.resources.get((lb.module, lb.address))
+                return ScanResult(
+                    [violation] if item and updated.exposure(item) == "public" else [],
+                    {"checkov": "ok", "trivy": "ok"},
+                )
+    
+        class Fixer:
+            async def propose(self, **kwargs):
+                path = kwargs["path"]
+                source = kwargs["files"][path]
+                if path.endswith(".json"):
+                    data = json.loads(source)
+                    data["resource"][lb.type][lb.name]["internal"] = True
+                    source = json.dumps(data)
+                else:
+                    source, count = re.subn(
+                        r"\binternal\s*=\s*false\b", "internal = true", source, count=1
+                    )
+                    assert count == 1
+                return FixProposal(path, True, None, source, {}, ())
+    
+        sessions = make_session_factory(engine)
+        async with sessions() as session, session.begin():
+            repository = PackageRepository(session)
+            if variant != Variant.SECURITY:
+                await repository.create(ctx.run_id, variant)
+                await repository.transition_status(
+                    ctx.run_id, variant, PackageStatus.GENERATED
+                )
+        security = agent(engine, Scanner(), Fixer())
+        outcome = await security.run(ctx, variant, IaCPackage(variant=variant, files=files))
+>       assert outcome == PackageStatus.SCAN_EXHAUSTED
+E       AssertionError: assert <PackageStatu... 'scan_clean'> == <PackageStatu...an_exhausted'>
+E         
+E         - scan_exhausted
+E         + scan_clean
+
+backend/tests/integration/test_phase10b_replay.py:104: AssertionError
+_ test_actual_security_loop_retains_public_files_and_requires_review[run3-security] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7814790f9e10>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x7814790f9ad0>)
+case = {'id': 'run3-security', 'synthetic': True, 'source': {'path': 'docs/evals/phase10b-author-lesson-runs/run3-lessons-v2.... 'All resources are deployed in eu-central-1 region within private subnets across two Availability Zones.'}, ...}, ...}
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
+    async def test_actual_security_loop_retains_public_files_and_requires_review(
+        db_engines, case
+    ):
+        engine, _ = db_engines
+        ctx, _ = await setup(engine, max_iterations=1)
+        plan = DeploymentPlan.model_validate(case["plan"])
+        ctx = replace(ctx, plan=plan)
+        variant = Variant(case["source"]["variant"])
+        files = case["original_files"]
+        view = View(files)
+        service = next(
+            s
+            for s in plan.services
+            if s.name in plan.network.public_services
+            and label(s.aws_service) in SERVICE_TYPES
+            and SERVICE_TYPES[label(s.aws_service)] & {"aws_lb", "aws_alb", "aws_elb"}
+        )
+        lb = view.bind(service.name, SERVICE_TYPES[label(service.aws_service)], True)
+        assert lb is not None and view.exposure(lb) == "public"
+        violation = Violation(
+            rule_id="AWS-0053",
+            resource=lb.address,
+            file_path=lb.path,
+            message="Load balancer exposed to the internet",
+            tool="trivy",
+            blocking=True,
+        )
+    
+        class Scanner:
+            async def scan(self, source, variant, *, iteration=0):
+                from app.scanners.scan import ScanResult
+    
+                updated = View(source)
+                item = updated.resources.get((lb.module, lb.address))
+                return ScanResult(
+                    [violation] if item and updated.exposure(item) == "public" else [],
+                    {"checkov": "ok", "trivy": "ok"},
+                )
+    
+        class Fixer:
+            async def propose(self, **kwargs):
+                path = kwargs["path"]
+                source = kwargs["files"][path]
+                if path.endswith(".json"):
+                    data = json.loads(source)
+                    data["resource"][lb.type][lb.name]["internal"] = True
+                    source = json.dumps(data)
+                else:
+                    source, count = re.subn(
+                        r"\binternal\s*=\s*false\b", "internal = true", source, count=1
+                    )
+                    assert count == 1
+                return FixProposal(path, True, None, source, {}, ())
+    
+        sessions = make_session_factory(engine)
+        async with sessions() as session, session.begin():
+            repository = PackageRepository(session)
+            if variant != Variant.SECURITY:
+                await repository.create(ctx.run_id, variant)
+                await repository.transition_status(
+                    ctx.run_id, variant, PackageStatus.GENERATED
+                )
+        security = agent(engine, Scanner(), Fixer())
+        outcome = await security.run(ctx, variant, IaCPackage(variant=variant, files=files))
+>       assert outcome == PackageStatus.SCAN_EXHAUSTED
+E       AssertionError: assert <PackageStatu... 'scan_clean'> == <PackageStatu...an_exhausted'>
+E         
+E         - scan_exhausted
+E         + scan_clean
+
+backend/tests/integration/test_phase10b_replay.py:104: AssertionError
+_ test_actual_security_loop_retains_public_files_and_requires_review[run4-performance] _
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x781478d990d0>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x781478dbb350>)
+case = {'id': 'run4-performance', 'synthetic': True, 'source': {'path': 'docs/evals/phase10b-author-lesson-runs/run4-lessons-...TTPS)'], 'notes': 'ALB is internet‑facing and forwards traffic to the Fargate service in private subnets.'}, ...}, ...}
+
+    @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
+    async def test_actual_security_loop_retains_public_files_and_requires_review(
+        db_engines, case
+    ):
+        engine, _ = db_engines
+        ctx, _ = await setup(engine, max_iterations=1)
+        plan = DeploymentPlan.model_validate(case["plan"])
+        ctx = replace(ctx, plan=plan)
+        variant = Variant(case["source"]["variant"])
+        files = case["original_files"]
+        view = View(files)
+        service = next(
+            s
+            for s in plan.services
+            if s.name in plan.network.public_services
+            and label(s.aws_service) in SERVICE_TYPES
+            and SERVICE_TYPES[label(s.aws_service)] & {"aws_lb", "aws_alb", "aws_elb"}
+        )
+        lb = view.bind(service.name, SERVICE_TYPES[label(service.aws_service)], True)
+        assert lb is not None and view.exposure(lb) == "public"
+        violation = Violation(
+            rule_id="AWS-0053",
+            resource=lb.address,
+            file_path=lb.path,
+            message="Load balancer exposed to the internet",
+            tool="trivy",
+            blocking=True,
+        )
+    
+        class Scanner:
+            async def scan(self, source, variant, *, iteration=0):
+                from app.scanners.scan import ScanResult
+    
+                updated = View(source)
+                item = updated.resources.get((lb.module, lb.address))
+                return ScanResult(
+                    [violation] if item and updated.exposure(item) == "public" else [],
+                    {"checkov": "ok", "trivy": "ok"},
+                )
+    
+        class Fixer:
+            async def propose(self, **kwargs):
+                path = kwargs["path"]
+                source = kwargs["files"][path]
+                if path.endswith(".json"):
+                    data = json.loads(source)
+                    data["resource"][lb.type][lb.name]["internal"] = True
+                    source = json.dumps(data)
+                else:
+                    source, count = re.subn(
+                        r"\binternal\s*=\s*false\b", "internal = true", source, count=1
+                    )
+                    assert count == 1
+                return FixProposal(path, True, None, source, {}, ())
+    
+        sessions = make_session_factory(engine)
+        async with sessions() as session, session.begin():
+            repository = PackageRepository(session)
+            if variant != Variant.SECURITY:
+                await repository.create(ctx.run_id, variant)
+                await repository.transition_status(
+                    ctx.run_id, variant, PackageStatus.GENERATED
+                )
+        security = agent(engine, Scanner(), Fixer())
+        outcome = await security.run(ctx, variant, IaCPackage(variant=variant, files=files))
+>       assert outcome == PackageStatus.SCAN_EXHAUSTED
+E       AssertionError: assert <PackageStatu... 'scan_clean'> == <PackageStatu...an_exhausted'>
+E         
+E         - scan_exhausted
+E         + scan_clean
+
+backend/tests/integration/test_phase10b_replay.py:104: AssertionError
+_____________ test_advisory_cannot_authorize_an_exposure_violation _____________
+
+db_engines = (<sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x781478d13050>, <sqlalchemy.ext.asyncio.engine.AsyncEngine object at 0x781479565090>)
+
+    async def test_advisory_cannot_authorize_an_exposure_violation(db_engines):
+        app, _, clients, lesson, config = await prepared(
+            db_engines,
+            self_approved=True,
+            role="fixer",
+            text=(
+                "Prefer internal load balancers even for services "
+                "with planned internet access."
+            ),
+        )
+        try:
+            files = {"terraform/main.tf": 'resource "aws_lb" "edge" { internal = false }\n'}
+            patch = {
+                "file": {
+                    "path": "terraform/main.tf",
+                    "content": files["terraform/main.tf"].replace("false", "true"),
+                },
+                "edits": {},
+                "new_files": {},
+                "fixes": [],
+            }
+            adapter = StubAdapter(script=[json.dumps(patch)])
+            app.state.lesson_runtime.bind(adapter, config, "fixer")
+            proposal = await FixAgent(adapter, structured_output="off").propose(
+                path="terraform/main.tf",
+                files=files,
+                findings=[finding()],
+                plan=plan(),
+                directive="Preserve exposure",
+                remaining=30,
+            )
+            assert proposal.accepted and lesson["text"] in adapter.prompts[0]
+            guard = CandidateGuard(
+                Verifier(),
+                Scanner(),
+                Variant.SECURITY,
+                AgentBudget(60),
+                {
+                    "terraform_verification_seconds": 0.0,
+                    "security_verification_seconds": 0.0,
+                },
+                plan=plan(),
+                targeted=[finding()],
+            )
+            result = await guard.evaluate(
+                files,
+                {"terraform/main.tf": proposal.content},
+                [],
+                ScanResult([finding()], {}),
+            )
+>           assert result.reason == "plan_conformance_regression"
+E           AssertionError: assert None == 'plan_conformance_regression'
+E            +  where None = CandidateResult(reason=None, checks=[ValidationCheck(check_id='terraform.validate', category='structure', tool='terraf...n='unknown', template_name=None)], scan=ScanResult(violations=[], tool_status={}, syntax_limited=False), introduced=[]).reason
+
+backend/tests/integration/test_phase10b_lessons.py:179: AssertionError
+------------------------------ Captured log call -------------------------------
+INFO     app.llm.base:base.py:459 provider=stub model=stub attempt=1 outcome=success category=success http_status=none exception_class=none reasoning_effort=unset latency=0.007 input_tokens=None output_tokens=None cached_input_tokens=None prompt_chars=3073 system_chars=4256 retry_after=none rate_limit_headers=none
+=========================== short test summary info ============================
+FAILED backend/tests/unit/test_phase10b_conformance.py::test_combined_and_partial_guards_keep_finding_and_unrelated_fix
+FAILED backend/tests/unit/test_phase10b_conformance.py::test_provisional_syntax_fixer_cannot_change_unverified_exposure
+FAILED backend/tests/integration/test_phase10b_validation.py::test_validation_improvement_never_accepts_internal_flip
+FAILED backend/tests/integration/test_phase10b_replay.py::test_actual_security_loop_retains_public_files_and_requires_review[run3-cost]
+FAILED backend/tests/integration/test_phase10b_replay.py::test_actual_security_loop_retains_public_files_and_requires_review[run3-security]
+FAILED backend/tests/integration/test_phase10b_replay.py::test_actual_security_loop_retains_public_files_and_requires_review[run4-performance]
+FAILED backend/tests/integration/test_phase10b_lessons.py::test_advisory_cannot_authorize_an_exposure_violation
+7 failed, 74 passed in 16.96s

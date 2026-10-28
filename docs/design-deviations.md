@@ -3269,9 +3269,9 @@ Codex makes no real model call, reads no real credentials/dotenv and does not pu
 Author decision, FR-S-02/03/07. This supersedes the candidate-blocking and
 fail-closed ambiguity behavior in D-63–D-65. Two post-10b–10d rounds each
 reached 11 passes: 22/116 (19%), versus the corrected pre-10b 42/120 (35%);
-the author supplied Fisher p ≈ 0.008. In the latest frozen round,
-`phase9-bench-broad-20261027T205119472235Z`, conformance is the most frequent
-rollback reason (about 66 error-class counts in 19 packages). The original
+the author supplied Fisher p ≈ 0.008. The supplied task rationale identifies conformance as the most frequent rollback
+reason in `phase9-bench-broad-20261027T205119472235Z` (about 66 counted
+error-class entries in 19 packages). The original
 counter-audit confirmed three public-exposure flips in 998 historical packages.
 These observations motivate the decision; they do not establish exclusive
 causality or predict a recovered pass rate.
@@ -3306,8 +3306,35 @@ Offline replay covers both author exports, broad-final2-results (59 packages,
 177 canonical hash matches) and broad-final3-results (57 packages, 171 matches).
 Recorded gate reasons, paired candidate decisions and final retained-file flags
 have separate denominators. Missing model candidate bodies and accepted
-post-security patches remain explicit. Results and real verification counts will
-be recorded in the fresh Phase 10e reports, without rewriting historical evidence.
+post-security patches remain explicit. The [replay report](evals/phase10e-replay/README.md) records 113 raw security
+iterations with a conformance reason (101 sole-conformance), 120 partial-group,
+34 validation-Fixer, 16 deterministic-validation and four catalogue rejections.
+These are separate counting units and not recovered fixes. Raw final3 exports
+have 62 reason-bearing iterations in 24 packages and 66 weighted error-class
+entries; the approximate supplied 19-package rationale is not reproduced by this
+raw inventory. No historical evidence is rewritten.
+
+All 116 frozen retained packages have zero confirmed final conflicts; 73 have
+information only. Thirty reconstructable candidate occurrences / 14 distinct
+pairs have 26 accepted and four new-blocker outcomes both before and after:
+Phase 10d already cleared conformance for these available deterministic cases.
+There are zero newly demonstrated guard-cleared candidates in this subset.
+Missing rejected model bodies (212 security and 146 validation records across
+all causes), two accepted post-security patches and two unmatched EIP contexts
+prevent a counterfactual remediation trajectory or a new pass-rate claim.
+
+[Final verification](evals/phase10e-verification/README.md): backend 2,861 passed
+(six perf deselected); final focused 118 and report-summary three passed;
+frontend 469, browser 36 and performance six passed, all without failures/skips.
+The full run includes final application code; two test-only additions were
+verified separately afterward. Lint passes for 192 mypy sources; traceability
+covers 59 IDs with zero collection/annotation/coverage errors. The evidence index
+remains 45 met / 12 partly met / one not met / one unverified. The unchanged
+PR-04 two-second bound measures 1.144051566006965s. Secret scan has zero findings
+and zero errors. All 6,661 protected evidence/spec files retain exact bytes;
+93 refreshed browser captures are retained separately. An initial 1280px layout
+failure led to an informational disclosure, without relaxing the viewport test.
+No new specification open question, dependency or migration is introduced.
 
 **The next author-run round is the final reported result regardless of outcome.**
 Run the fixed twenty-slot schedule once on port 8765 with the documented benchmark

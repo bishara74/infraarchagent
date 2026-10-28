@@ -1,0 +1,91 @@
+Replay final2 1/59 cost
+Replay final2 2/59 performance
+Replay final2 3/59 security
+Replay final2 4/59 cost
+Replay final2 5/59 performance
+Replay final2 6/59 security
+Replay final2 7/59 cost
+Replay final2 8/59 performance
+Replay final2 9/59 security
+Replay final2 10/59 cost
+Replay final2 11/59 performance
+Replay final2 12/59 security
+Replay final2 13/59 cost
+Replay final2 14/59 performance
+Replay final2 15/59 security
+Replay final2 16/59 cost
+Replay final2 17/59 performance
+Replay final2 18/59 security
+Replay final2 19/59 cost
+Replay final2 20/59 performance
+Replay final2 21/59 security
+Replay final2 22/59 cost
+Replay final2 23/59 performance
+Replay final2 24/59 security
+Replay final2 25/59 cost
+Replay final2 26/59 performance
+Replay final2 27/59 security
+Replay final2 28/59 cost
+Replay final2 29/59 performance
+Replay final2 30/59 security
+Replay final2 31/59 cost
+Replay final2 32/59 performance
+Replay final2 33/59 security
+Replay final2 34/59 cost
+Replay final2 35/59 security
+Replay final2 36/59 cost
+Replay final2 37/59 performance
+Replay final2 38/59 security
+Replay final2 39/59 cost
+Replay final2 40/59 performance
+Replay final2 41/59 security
+Replay final2 42/59 cost
+Replay final2 43/59 performance
+Replay final2 44/59 security
+Replay final2 45/59 cost
+Replay final2 46/59 performance
+Replay final2 47/59 security
+Replay final2 48/59 cost
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/scripts/phase10e_replay.py", line 118, in run
+    try:
+         
+  File "/home/bishara/code/infraarchagent/backend/scripts/phase10d_replay.py", line 393, in package
+    await self.candidate(
+  File "/home/bishara/code/infraarchagent/backend/scripts/phase10d_replay.py", line 131, in candidate
+    baseline = await observer.observe(before)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/scripts/phase10c_replay.py", line 182, in observe
+    report = await ValidationEngine(
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/app/validation/engine.py", line 137, in validate
+    async with asyncio.TaskGroup() as group:
+  File "/usr/lib/python3.12/asyncio/taskgroups.py", line 134, in __aexit__
+    raise propagate_cancellation_error
+  File "/usr/lib/python3.12/asyncio/taskgroups.py", line 110, in __aexit__
+    await self._on_completed_fut
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/bishara/code/infraarchagent/backend/scripts/phase10e_replay.py", line 198, in <module>
+    parser = argparse.ArgumentParser(description=__doc__)
+    ^^^^^^
+  File "/home/bishara/code/infraarchagent/backend/scripts/phase10e_replay.py", line 194, in main
+    return summary
+    ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt

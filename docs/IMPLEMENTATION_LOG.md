@@ -27,6 +27,62 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-28 — Phase 10e completion — Verify both replay cohorts and final handoff
+
+**Summary:** Complete all offline checks, the two-cohort replay and a fixed
+single-round author handoff. Preserve every historical evidence/specification byte.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, FR-P-04, NFR-01, PR-04.
+
+**Files:** scripts/phase10e_replay.py (explicit all-pair before/after counts) and
+its summary regression; docs/evals/phase10e-replay/, phase10e-verification/ and
+phase10e-traceability/; D-66 and this log. Application implementation is commit
+19be54c; no application changes followed the final full-suite start.
+
+**Decisions:** Both exports match all 348 canonical hashes for 116 packages.
+Retired conformance gates comprise 113 security reason-bearing iterations (101
+sole-conformance), 120 partial groups, 34 validation-Fixer rounds, 16 deterministic
+validation records and four catalogue records. These denominators are separate.
+Thirty reconstructable occurrences / 14 distinct pairs keep 26 accepted and four
+new-blocker outcomes before/after; prior Phase 10d fixes had already cleared
+conformance in this available subset. Zero newly demonstrated guard-cleared
+candidates, not a recovered-pass estimate. Final frozen retained-file flags:
+0/59 and 0/57; informational notes in 34 and 39. Missing rejected model bodies,
+two accepted post-security patches and two EIP contexts remain explicit. Raw
+latest reason-bearing packages are 24; the author's approximate 19-package
+rationale is retained as supplied and distinguished in the report. The next
+author-run round is the final reported result regardless of outcome.
+
+**Tests:** make test: 2,861 passed, zero failed/skipped, six perf deselected,
+742.44s. Final focused: 118 passed, zero failed/skipped, 23.48s, including all
+three retained ALB flips, review-retry original persistence, unchanged input
+refusal and canary redaction. Report-summary tests: three passed, 1.77s.
+Two test-only additions followed the full-suite collection; they pass in these
+focused runs. A report-only summary-field change was tested and regenerated from
+identical cached native observations with unchanged existing totals; an earlier
+aggregation-edit collection error is retained in its initial log.
+make frontend-test: 469 passed, zero failed/skipped, 46 files, 90.19s.
+make test-e2e: 36 passed, zero failed/skipped, 9.4m; initial 35 passed / one
+comparison-layout failure fixed with informational disclosure, not a relaxed
+assertion. make test-perf: six passed, zero failed/skipped, 2,863 deselected,
+28.09s. Measured 10 MB download 1.144051566006965s under unchanged two-second
+bound after other workloads stopped. make lint passes (51 scripts, 420 app/test
+files, 192 mypy sources, ESLint and both TypeScript checks). Traceability: 59 IDs,
+zero uncovered/invalid annotations/collection failures. Evidence index remains
+45 met / 12 partly met / one not met / one unverified and byte-identical.
+make secret-scan: zero findings, zero errors across working files and all refs/
+reflogs; final report linked from verification. All 6,661 protected files preserve
+exact bytes; 93 refreshed captures are stored separately. Preliminary console
+logs retain the earlier superseded assertions and interrupted runs; provisional
+report directories remain uncommitted in .cache/phase10e-preliminary.
+
+**Known gaps / follow-ups:** No pass-rate, exclusive recovery, historical deadline
+or deployment correctness claim. No new specification open question, dependency,
+migration, prompt/network-context/profile/scanner/threshold/input-refusal change,
+real model call, dotenv/real-key read, install, external service or push. The fixed
+author-only command uses port 8765, benchmark environment and no Architect override.
+**The next author-run round is the final reported result regardless of outcome.**
+
 ## 2026-10-28 — Phase 10e — Detect final exposure conflicts without rejecting repairs
 
 **Summary:** Remove conformance-only rejection from every candidate acceptance

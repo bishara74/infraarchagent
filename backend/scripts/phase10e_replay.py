@@ -150,6 +150,10 @@ async def run(output: Path, cache: Path) -> dict:
                 for r in rows
             ),
             "available_candidate_occurrences": len(replay.rows),
+            "available_candidate_decisions": {
+                side: dict(Counter(r.get(side, "unavailable") for r in replay.rows))
+                for side in ("before", "after")
+            },
             "distinct_candidate_pairs": len(
                 {(r["before_sha256"], r["candidate_sha256"]) for r in replay.rows}
             ),
@@ -190,6 +194,13 @@ async def run(output: Path, cache: Path) -> dict:
             "No pass-rate, causal recovery or historical deadline claim."
         ),
     }
+    summary["combined"]["available_candidate_decisions"] = {}
+    for side in ("before", "after"):
+        decisions: Counter = Counter()
+        for cohort_summary in summaries.values():
+            decisions.update(cohort_summary["available_candidate_decisions"][side])
+        summary["combined"]["available_candidate_decisions"][side] = dict(decisions)
+
     for key in (
         "recorded_rejections_removed_as_conformance_gates",
         "paired_after_decisions",

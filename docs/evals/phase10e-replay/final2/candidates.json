@@ -1,0 +1,3016 @@
+[
+  {
+    "action": "template:access_logs",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 0,
+    "removed_still_open": [
+      [
+        "CKV_AWS_18",
+        "aws_s3_bucket.backup_bucket",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "cost"
+  },
+  {
+    "action": "template:access_logs",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 1,
+    "removed_still_open": [
+      [
+        "CKV_AWS_18",
+        "aws_s3_bucket.backup_bucket",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "cost"
+  },
+  {
+    "action": "template:access_logs",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 2,
+    "removed_still_open": [
+      [
+        "CKV_AWS_18",
+        "aws_s3_bucket.backup_bucket",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "cost"
+  },
+  {
+    "action": "template:access_logs",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "d7f17c4e639118879bcf2b98b34a2f804635e401cfef2fbe2beee6376d2e023b",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.backup_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "0fd57345607b96d4c139345628c4125cff969ac546f030c1ec524d8aacbefed9",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 3,
+    "removed_still_open": [
+      [
+        "CKV_AWS_18",
+        "aws_s3_bucket.backup_bucket",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "cost"
+  },
+  {
+    "action": "template:kms",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.backup",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.log",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.backup",
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.log",
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:data.aws_partition.infraarch_security",
+          "terraform/security_support.tf:data.aws_region.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_alias.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_key.infraarch_security"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 0,
+    "removed_still_open": [
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.log",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.log",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "security"
+  },
+  {
+    "action": "template:kms",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.backup",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.log",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.backup",
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.log",
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:data.aws_partition.infraarch_security",
+          "terraform/security_support.tf:data.aws_region.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_alias.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_key.infraarch_security"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 1,
+    "removed_still_open": [
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.log",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.log",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "security"
+  },
+  {
+    "action": "template:kms",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.backup",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.log",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.backup",
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.log",
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:data.aws_partition.infraarch_security",
+          "terraform/security_support.tf:data.aws_region.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_alias.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_key.infraarch_security"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 2,
+    "removed_still_open": [
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.log",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.log",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "security"
+  },
+  {
+    "action": "template:kms",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_145"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.backup",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket_server_side_encryption_configuration.log",
+          "rule_id": "AWS-0132"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "accepted",
+    "before_sha256": "311fd8a57e8fff593784e61b031d84ab569ef10f62a0a17fa057b0f15d2978a7",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.log",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup",
+          "rule_id": "CKV_AWS_144"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "candidate_sha256": "5c49c995ccf08d0ab4670a663d106057550f648a52d67552aa29e729c275ff1a",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.backup",
+          "terraform/main.tf:resource.aws_s3_bucket_server_side_encryption_configuration.log",
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:data.aws_partition.infraarch_security",
+          "terraform/security_support.tf:data.aws_region.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_alias.infraarch_security",
+          "terraform/security_support.tf:resource.aws_kms_key.infraarch_security"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 3,
+    "removed_still_open": [
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "AWS-0132",
+        "aws_s3_bucket_server_side_encryption_configuration.log",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.backup",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_145",
+        "aws_s3_bucket.log",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "8728994d-b9ff-4442-87fe-a8683597f109",
+    "scenario": 1,
+    "variant": "security"
+  },
+  {
+    "action": "catalogue",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 71,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 73,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "e7b5b0502ce4350f5b9139d2f08264f84daf8aba0006ea72d71915a140e4a22a",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "candidate_sha256": "e7b5b0502ce4350f5b9139d2f08264f84daf8aba0006ea72d71915a140e4a22a",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_subnet.public"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 0,
+    "removed_still_open": [
+      [
+        "AWS-0164",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_130",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "catalogue",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 71,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "4aac4584b1a4e6aa207d88fbc7e8de7d8cb25c10591dadc5d6d87d8923a79956",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "4aac4584b1a4e6aa207d88fbc7e8de7d8cb25c10591dadc5d6d87d8923a79956",
+    "candidate": {
+      "blockers": [],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 73,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "edf10af317cf2de5ce8859f6c29b0fa9dd997a1c487e5d9da116b8cdd7181890",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "candidate_sha256": "edf10af317cf2de5ce8859f6c29b0fa9dd997a1c487e5d9da116b8cdd7181890",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_subnet.public"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 1,
+    "removed_still_open": [
+      [
+        "AWS-0164",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_130",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "catalogue",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 71,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "4aac4584b1a4e6aa207d88fbc7e8de7d8cb25c10591dadc5d6d87d8923a79956",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "4aac4584b1a4e6aa207d88fbc7e8de7d8cb25c10591dadc5d6d87d8923a79956",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 73,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "edf10af317cf2de5ce8859f6c29b0fa9dd997a1c487e5d9da116b8cdd7181890",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "candidate_sha256": "edf10af317cf2de5ce8859f6c29b0fa9dd997a1c487e5d9da116b8cdd7181890",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_subnet.public"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 2,
+    "removed_still_open": [
+      [
+        "AWS-0164",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_130",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "catalogue",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 71,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "4aac4584b1a4e6aa207d88fbc7e8de7d8cb25c10591dadc5d6d87d8923a79956",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "4aac4584b1a4e6aa207d88fbc7e8de7d8cb25c10591dadc5d6d87d8923a79956",
+    "cached_identical_pair": true,
+    "candidate": {
+      "blockers": [],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 73,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "edf10af317cf2de5ce8859f6c29b0fa9dd997a1c487e5d9da116b8cdd7181890",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "candidate_sha256": "edf10af317cf2de5ce8859f6c29b0fa9dd997a1c487e5d9da116b8cdd7181890",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_subnet.public"
+        ],
+        "index": 0
+      }
+    ],
+    "iteration": 3,
+    "removed_still_open": [
+      [
+        "AWS-0164",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ],
+      [
+        "CKV_AWS_130",
+        "aws_subnet.public",
+        "terraform/main.tf"
+      ]
+    ],
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 71,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "2f8b26cac19fc8c8da4670368c17d8aa7dc6b423d066d5b99f0018f773c41a95",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "2f8b26cac19fc8c8da4670368c17d8aa7dc6b423d066d5b99f0018f773c41a95",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 6,
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 71,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "2f8b26cac19fc8c8da4670368c17d8aa7dc6b423d066d5b99f0018f773c41a95",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "2f8b26cac19fc8c8da4670368c17d8aa7dc6b423d066d5b99f0018f773c41a95",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 7,
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 71,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "ca64bafcaf6536d52e0276f8aa1221982b01c3d959451d3e1f924704567df670",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "2f8b26cac19fc8c8da4670368c17d8aa7dc6b423d066d5b99f0018f773c41a95",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "2f8b26cac19fc8c8da4670368c17d8aa7dc6b423d066d5b99f0018f773c41a95",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 8,
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 76,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "c61210b3621d7d63189b827dbb2dcce06e3108b776c9c18bb73d583429347240",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "c61210b3621d7d63189b827dbb2dcce06e3108b776c9c18bb73d583429347240",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "5b11f9df648ad57bb717b92d4b6258f142b1d5c671f2ab02671e95365f4dccb5",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "5b11f9df648ad57bb717b92d4b6258f142b1d5c671f2ab02671e95365f4dccb5",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 1,
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "performance"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 78,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "905d1297344932f9241526bcd58cc31d1f5a5cbce8ae1f10cff297472c44b6b7",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "905d1297344932f9241526bcd58cc31d1f5a5cbce8ae1f10cff297472c44b6b7",
+    "candidate": {
+      "blockers": [],
+      "failed_checks": [],
+      "files_sha256": "112c5502a5ea10640a8edc923bfe1b256405c120377872f55c3b1f3b40a40f0b",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "112c5502a5ea10640a8edc923bfe1b256405c120377872f55c3b1f3b40a40f0b",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 2,
+    "round": 1,
+    "run_id": "3c9563c8-ca0c-4578-ad32-598d1bfc0186",
+    "scenario": 4,
+    "variant": "performance"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 55,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "78985e3f3d92410300b8cef28387a33e6d7a18122790946d2be9834b7d910b61",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "78985e3f3d92410300b8cef28387a33e6d7a18122790946d2be9834b7d910b61",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "6ed0601611530492c338896c07c7b9bb630e22d00f51f4a182db6ee3024b5dd6",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "6ed0601611530492c338896c07c7b9bb630e22d00f51f4a182db6ee3024b5dd6",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 0,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 55,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "78985e3f3d92410300b8cef28387a33e6d7a18122790946d2be9834b7d910b61",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "78985e3f3d92410300b8cef28387a33e6d7a18122790946d2be9834b7d910b61",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.vpc",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "6ed0601611530492c338896c07c7b9bb630e22d00f51f4a182db6ee3024b5dd6",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "6ed0601611530492c338896c07c7b9bb630e22d00f51f4a182db6ee3024b5dd6",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 1,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 57,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "2bc271344fe95749cf046e6e87114e666ee91bf38bb496fa921eaa6e75124088",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "2bc271344fe95749cf046e6e87114e666ee91bf38bb496fa921eaa6e75124088",
+    "candidate": {
+      "blockers": [],
+      "failed_checks": [],
+      "files_sha256": "d1e7496005d6e0ac35e6ab1b1f62e36ead5079b045199b3f906b8781fdd864fe",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "d1e7496005d6e0ac35e6ab1b1f62e36ead5079b045199b3f906b8781fdd864fe",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 2,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "cost"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_260"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_24"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0107"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 56,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "11a776307e25db1a25266d9cc9f9defbd60e80f0a7309d1d945ff5ace7f2ff38",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "11a776307e25db1a25266d9cc9f9defbd60e80f0a7309d1d945ff5ace7f2ff38",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_260"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_24"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0107"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "c7ac910515798276c4c4ba160707596083d363f759af925e402449ef4dcf310e",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "c7ac910515798276c4c4ba160707596083d363f759af925e402449ef4dcf310e",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 0,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "performance"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_260"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_24"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0107"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 56,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "11a776307e25db1a25266d9cc9f9defbd60e80f0a7309d1d945ff5ace7f2ff38",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "11a776307e25db1a25266d9cc9f9defbd60e80f0a7309d1d945ff5ace7f2ff38",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_260"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_24"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_11"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0107"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "AWS-0178"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "c7ac910515798276c4c4ba160707596083d363f759af925e402449ef4dcf310e",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "c7ac910515798276c4c4ba160707596083d363f759af925e402449ef4dcf310e",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 1,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "performance"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_260"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_24"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0107"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 56,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "8a299dfea879bb8ed295d4123b25ce6eb090a183b651881c2fe9980917decd7c",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "8a299dfea879bb8ed295d4123b25ce6eb090a183b651881c2fe9980917decd7c",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_260"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "CKV_AWS_24"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.instance_sg",
+          "rule_id": "AWS-0107"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "ae8d782a1a2e9eab6fbf4157e1bf384168b0fd4081d0c0dabd53bfee3bc1b0a2",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "ae8d782a1a2e9eab6fbf4157e1bf384168b0fd4081d0c0dabd53bfee3bc1b0a2",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat_eip"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 2,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "performance"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.flow_logs_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.ec2_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 77,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "fd9211485f39b5bbf92ac124a6cea488d0c045788c80b8a6d05d3e32d3e8ae19",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "fd9211485f39b5bbf92ac124a6cea488d0c045788c80b8a6d05d3e32d3e8ae19",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.flow_logs_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.ec2_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "24132798037b8b82bd9af59ff94ad27c13708d16bc548186b4cb6e5f04e98cf4",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "24132798037b8b82bd9af59ff94ad27c13708d16bc548186b4cb6e5f04e98cf4",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 8,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "security"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.flow_logs_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.ec2_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 77,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "fd9211485f39b5bbf92ac124a6cea488d0c045788c80b8a6d05d3e32d3e8ae19",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "fd9211485f39b5bbf92ac124a6cea488d0c045788c80b8a6d05d3e32d3e8ae19",
+    "candidate": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "CKV_AWS_130"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_vpc.main",
+          "rule_id": "CKV2_AWS_12"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_kms_key.flow_logs_key",
+          "rule_id": "AWS-0065"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_security_group.ec2_sg",
+          "rule_id": "AWS-0104"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_subnet.public",
+          "rule_id": "AWS-0164"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "24132798037b8b82bd9af59ff94ad27c13708d16bc548186b4cb6e5f04e98cf4",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "24132798037b8b82bd9af59ff94ad27c13708d16bc548186b4cb6e5f04e98cf4",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 9,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "security"
+  },
+  {
+    "action": "validation:eip_v6_domain",
+    "after": "accepted",
+    "baseline": {
+      "blockers": [],
+      "failed_checks": [
+        {
+          "check_id": "terraform.validate",
+          "file_path": "terraform/main.tf",
+          "line_start": 79,
+          "message": "Unsupported argument"
+        }
+      ],
+      "files_sha256": "8cc0208a77645110120ce4a2e929008eb9eb1d12d02ef28b4c1b3d72ec1f58df",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 1,
+      "validation_result": "invalid"
+    },
+    "before": "accepted",
+    "before_sha256": "8cc0208a77645110120ce4a2e929008eb9eb1d12d02ef28b4c1b3d72ec1f58df",
+    "candidate": {
+      "blockers": [],
+      "failed_checks": [],
+      "files_sha256": "a3432f5b7c042e5848c799b0a3986164749d741a6ac9e9b4cdb0adad11fa78d4",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "ok",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "valid"
+    },
+    "candidate_sha256": "a3432f5b7c042e5848c799b0a3986164749d741a6ac9e9b4cdb0adad11fa78d4",
+    "groups": [
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/main.tf:resource.aws_eip.nat"
+        ],
+        "index": 0
+      }
+    ],
+    "removed_still_open": [],
+    "repair_record": 10,
+    "round": 2,
+    "run_id": "a7d0fb2d-4639-44f5-b1e1-e1bf94b17ed8",
+    "scenario": 4,
+    "variant": "security"
+  },
+  {
+    "action": "template:access_logs",
+    "after": "new_blocking_findings",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "new_blocking_findings",
+    "before_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+    "candidate_sha256": "069cbcbd9661e9d3ffc5da7fc907a10db7ebc4bc373c6524b5a541dc93b6fab5",
+    "groups": [
+      {
+        "after": "discarded",
+        "after_reason": "new_blocking_findings",
+        "before": "discarded",
+        "before_reason": "new_blocking_findings",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 0,
+    "removed_still_open": [],
+    "round": 2,
+    "run_id": "826f97bd-5027-49dc-a257-1eef183d8124",
+    "scenario": 1,
+    "variant": "performance"
+  },
+  {
+    "action": "template:access_logs",
+    "after": "new_blocking_findings",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "new_blocking_findings",
+    "before_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+    "cached_identical_pair": true,
+    "candidate_sha256": "069cbcbd9661e9d3ffc5da7fc907a10db7ebc4bc373c6524b5a541dc93b6fab5",
+    "groups": [
+      {
+        "after": "discarded",
+        "after_reason": "new_blocking_findings",
+        "before": "discarded",
+        "before_reason": "new_blocking_findings",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 1,
+    "removed_still_open": [],
+    "round": 2,
+    "run_id": "826f97bd-5027-49dc-a257-1eef183d8124",
+    "scenario": 1,
+    "variant": "performance"
+  },
+  {
+    "action": "template:access_logs",
+    "after": "new_blocking_findings",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "new_blocking_findings",
+    "before_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+    "cached_identical_pair": true,
+    "candidate_sha256": "069cbcbd9661e9d3ffc5da7fc907a10db7ebc4bc373c6524b5a541dc93b6fab5",
+    "groups": [
+      {
+        "after": "discarded",
+        "after_reason": "new_blocking_findings",
+        "before": "discarded",
+        "before_reason": "new_blocking_findings",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 2,
+    "removed_still_open": [],
+    "round": 2,
+    "run_id": "826f97bd-5027-49dc-a257-1eef183d8124",
+    "scenario": 1,
+    "variant": "performance"
+  },
+  {
+    "action": "template:access_logs",
+    "after": "new_blocking_findings",
+    "baseline": {
+      "blockers": [
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "aws_s3_bucket.backup_bucket",
+          "rule_id": "CKV_AWS_18"
+        },
+        {
+          "file_path": "terraform/main.tf",
+          "resource": "",
+          "rule_id": "TERRAFORM_FILE_INPUT"
+        }
+      ],
+      "failed_checks": [],
+      "files_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+      "scan_error": null,
+      "tool_status": {
+        "checkov": "ok",
+        "terraform": "file_input_blocked",
+        "trivy": "ok"
+      },
+      "validation_failed": 0,
+      "validation_result": "error"
+    },
+    "before": "new_blocking_findings",
+    "before_sha256": "18ed06a2df34c88b856001792d7434e6577f1b35aa4c202540d13e6010e5a7fd",
+    "cached_identical_pair": true,
+    "candidate_sha256": "069cbcbd9661e9d3ffc5da7fc907a10db7ebc4bc373c6524b5a541dc93b6fab5",
+    "groups": [
+      {
+        "after": "discarded",
+        "after_reason": "new_blocking_findings",
+        "before": "discarded",
+        "before_reason": "new_blocking_findings",
+        "changes": [
+          "terraform/security_support.tf:data.aws_caller_identity.infraarch_security",
+          "terraform/security_support.tf:resource.aws_s3_bucket.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_logging.infraarch_backup_bucket",
+          "terraform/security_support.tf:resource.aws_s3_bucket_policy.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_public_access_block.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_server_side_encryption_configuration.infraarch_access_logs",
+          "terraform/security_support.tf:resource.aws_s3_bucket_versioning.infraarch_access_logs"
+        ],
+        "index": 0
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_partition.infraarch_security"
+        ],
+        "index": 1
+      },
+      {
+        "after": "kept",
+        "after_reason": "guards_passed",
+        "before": "kept",
+        "before_reason": "guards_passed",
+        "changes": [
+          "terraform/security_support.tf:data.aws_region.infraarch_security"
+        ],
+        "index": 2
+      }
+    ],
+    "iteration": 3,
+    "removed_still_open": [],
+    "round": 2,
+    "run_id": "826f97bd-5027-49dc-a257-1eef183d8124",
+    "scenario": 1,
+    "variant": "performance"
+  }
+]

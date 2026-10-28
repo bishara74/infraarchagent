@@ -1,0 +1,21 @@
+cd backend && .venv/bin/ruff check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+All checks passed!
+cd backend && .venv/bin/ruff format --check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+50 files already formatted
+cd backend && .venv/bin/ruff check app tests
+All checks passed!
+cd backend && .venv/bin/ruff format --check app tests
+419 files already formatted
+cd backend && .venv/bin/mypy app
+app/security/plan_conformance.py:785: error: Function is missing a type annotation  [no-untyped-def]
+app/security/plan_conformance.py:824: error: Call to untyped function "observation" in typed context  [no-untyped-call]
+app/security/plan_conformance.py:865: error: Call to untyped function "observation" in typed context  [no-untyped-call]
+app/security/plan_conformance.py:882: error: Call to untyped function "observation" in typed context  [no-untyped-call]
+app/security/plan_conformance.py:894: error: Call to untyped function "observation" in typed context  [no-untyped-call]
+app/security/plan_conformance.py:905: error: Missing type arguments for generic type "tuple"  [type-arg]
+app/security/plan_conformance.py:911: error: Missing type arguments for generic type "tuple"  [type-arg]
+app/security/plan_conformance.py:1022: error: Missing type arguments for generic type "tuple"  [type-arg]
+app/security/plan_conformance.py:1038: error: Argument 1 to "subnet_of" of "_BaseNetwork" has incompatible type "IPv4Network | IPv6Network"; expected "IPv4Network"  [arg-type]
+app/security/plan_conformance.py:1038: error: Argument 1 to "subnet_of" of "_BaseNetwork" has incompatible type "IPv4Network | IPv6Network"; expected "IPv6Network"  [arg-type]
+Found 10 errors in 1 file (checked 192 source files)
+make: *** [Makefile:45: lint] Error 1

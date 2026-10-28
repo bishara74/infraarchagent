@@ -1,0 +1,14 @@
+cd backend && .venv/bin/alembic -x database=test upgrade head
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+cd backend && .venv/bin/python -m scripts.run_verification pytest -q -m "not perf"
+........................................................................ [  2%]
+........................................................................ [  5%]
+........................................................................ [  7%]
+........................................................................ [ 10%]
+..............
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/usr/lib/python3.12/asyncio/runners.py:123: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+302 passed, 6 deselected in 566.73s (0:09:26)
+make: *** [Makefile:35: test] Error 2

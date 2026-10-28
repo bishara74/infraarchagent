@@ -1,0 +1,105 @@
+{
+  "cohorts": {
+    "final2": {
+      "available_candidate_decisions": {
+        "after": {
+          "accepted": 26,
+          "new_blocking_findings": 4
+        },
+        "before": {
+          "accepted": 26,
+          "new_blocking_findings": 4
+        }
+      },
+      "available_candidate_occurrences": 30,
+      "canonical_hash_checks": 177,
+      "distinct_candidate_pairs": 14,
+      "final_retained_packages_flagged": 0,
+      "final_retained_packages_with_information": 34,
+      "missing": {
+        "accepted_post_security_patch": 1,
+        "deterministic_context_hash_unmatched": 2,
+        "rejected_fixer_body": 114,
+        "rejected_validation_fixer_body": 83
+      },
+      "packages": 59,
+      "packages_with_security_conformance_reason": 21,
+      "paired_after_decisions": {},
+      "paired_guard_rejections_removed": 0,
+      "reconstruction": {
+        "complete": 58,
+        "post_security_patch_unavailable": 1
+      },
+      "recorded_rejections_removed_as_conformance_gates": {
+        "catalogue_rejections": 4,
+        "deterministic_repairs_rejections": 16,
+        "partial_groups_rejections": 58,
+        "rounds_rejections": 15,
+        "security_error_class_counts": 65,
+        "security_iterations_conformance_only": 46,
+        "security_iterations_with_conformance_reason": 51
+      }
+    },
+    "final3": {
+      "available_candidate_decisions": {
+        "after": {},
+        "before": {}
+      },
+      "available_candidate_occurrences": 0,
+      "canonical_hash_checks": 171,
+      "distinct_candidate_pairs": 0,
+      "final_retained_packages_flagged": 0,
+      "final_retained_packages_with_information": 39,
+      "missing": {
+        "accepted_post_security_patch": 1,
+        "rejected_fixer_body": 98,
+        "rejected_validation_fixer_body": 63
+      },
+      "packages": 57,
+      "packages_with_security_conformance_reason": 24,
+      "paired_after_decisions": {},
+      "paired_guard_rejections_removed": 0,
+      "reconstruction": {
+        "complete": 56,
+        "post_security_patch_unavailable": 1
+      },
+      "recorded_rejections_removed_as_conformance_gates": {
+        "partial_groups_rejections": 62,
+        "rounds_rejections": 19,
+        "security_error_class_counts": 66,
+        "security_iterations_conformance_only": 55,
+        "security_iterations_with_conformance_reason": 62
+      }
+    }
+  },
+  "combined": {
+    "available_candidate_decisions": {
+      "after": {
+        "accepted": 26,
+        "new_blocking_findings": 4
+      },
+      "before": {
+        "accepted": 26,
+        "new_blocking_findings": 4
+      }
+    },
+    "available_candidate_occurrences": 30,
+    "canonical_hash_checks": 348,
+    "final_retained_packages_flagged": 0,
+    "final_retained_packages_with_information": 73,
+    "packages": 116,
+    "packages_with_security_conformance_reason": 45,
+    "paired_after_decisions": {},
+    "paired_guard_rejections_removed": 0,
+    "recorded_rejections_removed_as_conformance_gates": {
+      "catalogue_rejections": 4,
+      "deterministic_repairs_rejections": 16,
+      "partial_groups_rejections": 120,
+      "rounds_rejections": 34,
+      "security_error_class_counts": 131,
+      "security_iterations_conformance_only": 101,
+      "security_iterations_with_conformance_reason": 113
+    }
+  },
+  "limitation": "Recorded rejection counts disappear as conformance gates, not necessarily as whole-candidate rollbacks: other gates still apply. Native paired observations cover reconstructable proposals only; rejected model bodies and accepted post-security patches can be absent. Final flags describe frozen retained files, not a counterfactual new remediation trajectory. No pass-rate, causal recovery or historical deadline claim."
+}
