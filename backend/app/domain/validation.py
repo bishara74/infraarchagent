@@ -13,6 +13,7 @@ from pydantic import (
     model_validator,
 )
 
+from app.domain.conformance import PlanConformanceAssessment
 from app.domain.enums import PackageStatus
 from app.domain.paths import validate_relative_path
 
@@ -222,6 +223,7 @@ def check_order(
 
 class ValidationReport(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
+    plan_conformance: PlanConformanceAssessment | None = None
     report_version: Literal[1] = 1
     tool_versions: dict[ValidationTool, str | None]
     terraform_required: bool = False

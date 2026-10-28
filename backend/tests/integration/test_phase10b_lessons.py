@@ -176,7 +176,12 @@ async def test_advisory_cannot_authorize_an_exposure_violation(db_engines):
             [],
             ScanResult([finding()], {}),
         )
-        assert result.reason == "plan_conformance_regression"
+        assert result.reason is None
+        from app.security.plan_conformance import assess_plan_conformance
+
+        assert assess_plan_conformance(
+            plan(), files, {"terraform/main.tf": proposal.content}
+        ).conflicts
     finally:
         await close(clients)
 

@@ -165,7 +165,10 @@ def remediation_budget_decision(
 
 
 def readiness_after_validation(
-    scan_outcome: PackageStatus, validation_outcome: PackageStatus
+    scan_outcome: PackageStatus,
+    validation_outcome: PackageStatus,
+    *,
+    plan_conformance_conflict: bool = False,
 ) -> PackageStatus:
     if scan_outcome not in {
         PackageStatus.SCAN_CLEAN,
@@ -177,7 +180,8 @@ def readiness_after_validation(
     }:
         raise ValueError("invalid scan or validation outcome")
     if (
-        scan_outcome == PackageStatus.SCAN_CLEAN
+        not plan_conformance_conflict
+        and scan_outcome == PackageStatus.SCAN_CLEAN
         and validation_outcome == PackageStatus.VALID
     ):
         return PackageStatus.CHECKS_PASSED

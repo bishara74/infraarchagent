@@ -263,7 +263,6 @@ async def accept_groups(
         try:
             with span("partial_group", action="partial_group") as observation:
                 record["evaluation_id"] = observation["id"]
-                conflict_start = len(guard.record.get("plan_conformance", []))
                 result = await guard.evaluate(retained, proposed, checks, scan)
             record["evaluation_completed"] = True
         except asyncio.CancelledError:
@@ -278,11 +277,6 @@ async def accept_groups(
             status="discarded" if result.reason else "kept",
             reason=result.reason or "guards_passed",
             introduced_findings=result.introduced,
-            plan_conformance=list(
-                guard.record.get("plan_conformance", [])[conflict_start:]
-            )
-            if result.reason == "plan_conformance_regression"
-            else [],
         )
         if not result.reason:
             retained, checks, scan = proposed, result.checks, result.scan

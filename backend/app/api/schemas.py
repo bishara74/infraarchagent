@@ -6,6 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.domain.conformance import PlanConflict
 from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
 from app.domain.plan import DeploymentPlan
 from app.domain.review_categories import (
@@ -32,16 +33,6 @@ class RunResult(StrictResponse):
     model: str | None
     max_iterations: int
     error_message: str | None
-
-
-class PlanConflict(StrictResponse):
-    service: str
-    resource: str
-    property: str
-    expected: Literal["public", "private"]
-    assessment: Literal["regression", "unknown"]
-    rule_id: str
-    file_path: str | None
 
 
 class PackageResult(StrictResponse):

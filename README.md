@@ -2198,3 +2198,30 @@ separate denominators. Missing rejected Fixer bodies remain unavailable; accepte
 pairs establish conditional finding resolutions, never a new pass rate.
 See [replay results](docs/evals/phase10d-replay/README.md) and
 [verification and the single author-run real round](docs/evals/phase10d-verification/README.md).
+
+
+### Phase 10e final retained-package conformance
+
+Remediation no longer rolls back candidates solely for plan conformance. After
+security and validation finish, confirmed changes to planned exposure require
+`pending_review` with `plan_conformance_conflict`, including packages with no
+remaining scanner finding. Ambiguous bindings produce information only. The
+Generator original remains the baseline on review retries. All other gates and
+Fixer prompt v8 remain unchanged; see D-66.
+
+Replay both exported final rounds offline, without model calls or downloads:
+
+```bash
+INFRAARCH_TEST_BOOTSTRAP=1 \
+PYTHONPATH="$PWD/backend/tests/bootstrap:$PWD/backend" \
+backend/.venv/bin/python -m scripts.phase10e_replay \
+  --output-dir "$PWD/docs/evals/phase10e-replay-new"
+```
+
+Inputs are `.cache/broad-final2-results/` and `.cache/broad-final3-results/`;
+canonical hashes must match their committed benchmark projections. Reports keep
+removed conformance gates, remaining acceptance decisions and final retained-file
+flags separate. They do not estimate a new pass rate. See
+[Phase 10e verification](docs/evals/phase10e-verification/README.md) and its
+[author command](docs/evals/phase10e-verification/RERUN.md).
+**The next author-run round is the final reported result regardless of outcome.**

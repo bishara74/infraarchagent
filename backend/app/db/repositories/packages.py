@@ -8,6 +8,7 @@ from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import GeneratedPackage
+from app.domain.conformance import PlanConformanceAssessment
 from app.domain.enums import PackageStatus, Variant
 from app.domain.paths import validate_file_map
 from app.domain.states import assert_package_transition, review_retry_abort_path
@@ -271,6 +272,15 @@ class PackageRepository:
         row.validation_report = validated.model_dump(mode="json")
         await self.session.flush()
         return row
+
+    async def save_plan_conformance(
+        self, row: GeneratedPackage, assessment: PlanConformanceAssessment
+    ) -> None:
+        """Attach final evidence without changing validation checks or summary."""
+        report = dict(row.validation_report or {})
+        report["plan_conformance"] = assessment.model_dump(mode="json")
+        row.validation_report = report
+        await self.session.flush()
 
     async def delete_expired(
         self, now: datetime, retention_days: int, dry_run: bool

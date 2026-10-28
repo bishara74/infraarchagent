@@ -13,7 +13,6 @@ from app.agents.generators.base import GeneratorError
 from app.agents.security.fix import FixAgent
 from app.domain.plan import DeploymentPlan
 from app.scanners.runner import ToolFailure
-from app.security.plan_conformance import plan_regressions
 from app.validation.preservation import CONTROL_FIELDS, removes_security_controls
 from app.validation.syntax import native_syntax, normalize_blocks
 
@@ -130,13 +129,6 @@ async def recover_generation_syntax(
                     if not proposal.accepted or proposal.content is None:
                         continue
                     candidate = {**current, path: proposal.content}
-                    conflicts = plan_regressions(plan, current, candidate)
-                    if conflicts:
-                        action.update(
-                            reason="plan_conformance_regression",
-                            plan_conformance=conflicts,
-                        )
-                        continue
                     if (
                         proposal.edits
                         or proposal.new_files

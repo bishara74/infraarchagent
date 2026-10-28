@@ -208,7 +208,7 @@ def test_other_endpoint_types(kind, resource, old, new):
     )
 
 
-async def test_combined_and_partial_guards_keep_finding_and_unrelated_fix():
+async def test_combined_and_partial_acceptance_defers_exposure_to_final_check():
     before = files(extra={"aws_s3_bucket": {"data": {}}})
     candidate = files(
         {"internal": True}, {"aws_s3_bucket": {"data": {"force_destroy": False}}}
@@ -240,7 +240,7 @@ async def test_combined_and_partial_guards_keep_finding_and_unrelated_fix():
     scan = ScanResult([finding()], {})
     checks = await guard.checks(before)
     result = await guard.evaluate(before, candidate, checks, scan)
-    assert result.reason == "plan_conformance_regression" and result.scan is scan
+    assert result.reason is None and not result.scan.violations
     records = []
     retained, _, final = await accept_groups(
         guard,
@@ -253,10 +253,13 @@ async def test_combined_and_partial_guards_keep_finding_and_unrelated_fix():
         RetainedCandidate(before, scan),
     )
     data = json.loads(retained["terraform/main.tf.json"])
-    assert data["resource"]["aws_lb"]["edge"]["internal"] is False
+    assert data["resource"]["aws_lb"]["edge"]["internal"] is True
     assert data["resource"]["aws_s3_bucket"]["data"]["force_destroy"] is False
-    assert any(r["reason"] == "plan_conformance_regression" for r in records)
-    assert final.violations  # The scanner's original finding remains authoritative.
+    assert all(r["status"] == "kept" for r in records)
+    assert not final.violations
+    from app.security.plan_conformance import assess_plan_conformance
+
+    assert assess_plan_conformance(plan(), before, retained).conflicts
 
 
 def test_subnet_dependency_through_local_is_not_invisible():
@@ -326,7 +329,7 @@ def test_unsupported_service_cannot_silently_accept_exposure_change():
     )
 
 
-async def test_provisional_syntax_fixer_cannot_change_unverified_exposure():
+async def test_provisional_syntax_fixer_has_no_conformance_rejection():
     from app.agents.generation_syntax import recover_generation_syntax
     from app.agents.security.fix import FixProposal
 
@@ -353,10 +356,10 @@ async def test_provisional_syntax_fixer_cannot_change_unverified_exposure():
         redact=lambda x: x,
         regenerate=regenerate,
     )
-    assert files["terraform/main.tf"] == repaired
-    assert report["path"] == "regeneration"
+    assert files["terraform/main.tf"] == repaired.replace("false", "true")
+    assert report["path"] == "syntax_round_1"
     assert all(
-        a["reason"] == "plan_conformance_regression"
+        a["reason"] != "plan_conformance_regression"
         for r in report["rounds"]
         for a in r["actions"]
     )

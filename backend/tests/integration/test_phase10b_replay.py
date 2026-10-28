@@ -15,9 +15,14 @@ from app.domain.enums import PackageStatus, RunStatus, Variant
 from app.domain.models import IaCPackage, Violation
 from app.domain.plan import DeploymentPlan
 from app.domain.review import package_presentation
-from app.domain.states import readiness_after_validation
 from app.domain.validation import ValidationCheck, ValidationReport
-from app.security.plan_conformance import SERVICE_TYPES, View, label, plan_regressions
+from app.pipeline.readiness import final_readiness
+from app.security.plan_conformance import (
+    SERVICE_TYPES,
+    View,
+    assess_plan_conformance,
+    label,
+)
 from tests.integration.test_security_agent import agent, setup
 
 CASES = json.loads(
@@ -27,17 +32,17 @@ pytestmark = pytest.mark.req("FR-S-02", "FR-S-03", "FR-S-07", "FR-A-05")
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
-def test_complete_retained_author_candidate_is_rejected(case):
+def test_complete_retained_author_candidate_has_final_conflict(case):
     plan = DeploymentPlan.model_validate(case["plan"])
     assert case["synthetic"]
-    conflicts = plan_regressions(plan, case["original_files"], case["candidate_files"])
-    assert any(
-        c["property"] == "exposure" and c["expected"] == "public" for c in conflicts
+    assessment = assess_plan_conformance(
+        plan, case["original_files"], case["candidate_files"]
     )
+    assert any(c.expected == "public" for c in assessment.conflicts)
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
-async def test_actual_security_loop_retains_public_files_and_requires_review(
+async def test_actual_security_loop_retains_flip_and_final_stage_requires_review(
     db_engines, case
 ):
     engine, _ = db_engines
@@ -101,17 +106,14 @@ async def test_actual_security_loop_retains_public_files_and_requires_review(
             )
     security = agent(engine, Scanner(), Fixer())
     outcome = await security.run(ctx, variant, IaCPackage(variant=variant, files=files))
-    assert outcome == PackageStatus.SCAN_EXHAUSTED
+    assert outcome == PackageStatus.SCAN_CLEAN
     async with sessions() as session:
         row = await PackageRepository(session).get(ctx.run_id, variant)
         assert (
             View(row.files).exposure(View(row.files).resources[(lb.module, lb.address)])
-            == "public"
+            == "private"
         )
-        assert (
-            row.security_report["final"]["remaining_blocking"][0]["rule_id"]
-            == "AWS-0053"
-        )
+        assert not row.security_report["final"]["remaining_blocking"]
         retained = IaCPackage(variant=variant, files=row.files)
 
     class Validator:
@@ -131,7 +133,7 @@ async def test_actual_security_loop_retains_public_files_and_requires_review(
             )
 
     validation = await ValidatorAgent(Validator(), sessions).run(ctx, variant, retained)
-    target = readiness_after_validation(outcome, validation)
+    target = await final_readiness(sessions, ctx, variant, outcome, validation)
     await ctx.writer.package_transition(
         ctx.run_id, variant, target, message="recorded replay readiness"
     )

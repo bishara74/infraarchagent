@@ -22,7 +22,7 @@ from app.domain.review import (
     security_final,
 )
 from app.domain.run_config import RunConfig
-from app.domain.states import readiness_after_validation
+from app.pipeline.readiness import final_readiness
 from app.pipeline.stages import StageContext
 from app.validation.workspace import ValidationWorkspace
 
@@ -280,7 +280,14 @@ class ReviewService:
             outcome = await self.runner.validation_stage.run(ctx, variant, package)
             if outcome == PackageStatus.VALIDATION_ERROR:
                 raise ReviewRetryScanError("validation could not complete")
-            target = readiness_after_validation(scan, outcome)
+            target = await final_readiness(
+                self.runner.session_factory,
+                ctx,
+                variant,
+                scan,
+                outcome,
+                safety=security.safety,
+            )
             await self.writer.package_transition(
                 run_id, variant, target, message=f"review retry package {target.value}"
             )

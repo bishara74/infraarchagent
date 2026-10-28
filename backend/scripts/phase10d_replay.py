@@ -223,6 +223,9 @@ class Replay:
             {**self.context, "action": action, **g} for g in row["groups"]
         )
 
+    async def retained_observation(self, files: dict) -> dict | None:
+        return projection(await self.observer.observe(files))
+
     async def package(self, item: dict) -> dict:
         p, observer = item["package"], self.observer
         observer.plan = DeploymentPlan.model_validate(item["plan"])
@@ -240,7 +243,7 @@ class Replay:
         workspace = ValidationWorkspace()
         try:
             with workspace.activate():
-                row["retained_native"] = projection(await observer.observe(p["files"]))
+                row["retained_native"] = await self.retained_observation(p["files"])
                 normalized, _ = normalize_blocks(p["original_files"])
                 declared, _ = await repair_declarations(normalized)
                 snapshots = [declared, normalized, p["original_files"], p["files"]]

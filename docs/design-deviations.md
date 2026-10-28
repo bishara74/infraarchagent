@@ -3264,6 +3264,56 @@ full command results are linked from the [verification report](evals/phase10d-ve
 The author-run single full round uses port 8765 and no Architect override;
 Codex makes no real model call, reads no real credentials/dotenv and does not push.
 
+### D-66 — Detect plan conflicts on final retained files (Phase 10e)
+
+Author decision, FR-S-02/03/07. This supersedes the candidate-blocking and
+fail-closed ambiguity behavior in D-63–D-65. Two post-10b–10d rounds each
+reached 11 passes: 22/116 (19%), versus the corrected pre-10b 42/120 (35%);
+the author supplied Fisher p ≈ 0.008. In the latest frozen round,
+`phase9-bench-broad-20261027T205119472235Z`, conformance is the most frequent
+rollback reason (about 66 error-class counts in 19 packages). The original
+counter-audit confirmed three public-exposure flips in 998 historical packages.
+These observations motivate the decision; they do not establish exclusive
+causality or predict a recovered pass rate.
+
+Candidate acceptance no longer rejects on `plan_conformance_regression`, including
+partial groups, catalogue/supporting proposals, deterministic validation repairs,
+validation Fixer repairs and provisional generation syntax repairs. Other gates,
+security-control preservation, deadlines and the 9m file-input refusal and its
+blocking finding remain unchanged. Fixer prompt v8 and its network context,
+scanner rules, profiles and thresholds remain unchanged.
+
+A shared final-readiness operation compares persisted retained files with the
+immutable Generator original and the plan after security and validation, on both
+initial completion and review retries. Confirmed exposure reversals, public-service
+placement changes to private-only subnets, and removal/narrowing of original
+required listener/ingress paths require pending_review even when scanners are
+clean and validation is valid. The existing reason is plan_conformance_conflict;
+evidence identifies service, resource and property independently of scanner
+findings. Each retry recomputes current evidence; it cannot reset the original.
+
+Bindings and resolved network semantics remain bounded static evidence, not full
+plan validation or deployment proof. Unknown/missing originals, ambiguous bindings
+and unresolved paths add information only. The original literal ingress paths
+serve as the preservation baseline when the plan declares ingress, following the
+bounded D-63 interpretation; natural-language ingress is not newly interpreted.
+Equivalent listener renaming/protocol strengthening and unrelated variable,
+logging, encryption or EIP-domain repairs are not exposure regressions. A private
+subnet's change alone cannot establish that a private endpoint became public.
+No new specification open question, dependency or migration is introduced.
+
+Offline replay covers both author exports, broad-final2-results (59 packages,
+177 canonical hash matches) and broad-final3-results (57 packages, 171 matches).
+Recorded gate reasons, paired candidate decisions and final retained-file flags
+have separate denominators. Missing model candidate bodies and accepted
+post-security patches remain explicit. Results and real verification counts will
+be recorded in the fresh Phase 10e reports, without rewriting historical evidence.
+
+**The next author-run round is the final reported result regardless of outcome.**
+Run the fixed twenty-slot schedule once on port 8765 with the documented benchmark
+environment and no Architect override. Do not tune or automatically rerun after
+inspecting its outcome. Codex performs no real-provider round.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

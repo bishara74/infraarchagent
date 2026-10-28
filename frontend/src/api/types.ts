@@ -26,7 +26,7 @@ export interface RunResult {
   end_time: string | null; provider: Provider; model: string | null;
   max_iterations: number; error_message: string | null;
 }
-export interface PlanConflict {service:string;resource:string;property:string;expected:'public'|'private';assessment:'regression'|'unknown';rule_id:string;file_path:string|null}
+export interface PlanConflict {service:string;resource:string;property:string;expected:'public'|'private';assessment:'regression'|'unknown';rule_id:string|null;file_path:string|null;message?:string|null}
 export interface PackageResult {
   plan_conflicts?:PlanConflict[];
   variant: Variant; status: PackageStatus; iteration_count: number;

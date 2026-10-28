@@ -1,14 +1,14 @@
 """D-63: bounded exposure preservation, independent of scanner policy.
 
-This is a change guard, not a deployment validator. Unknown unchanged exposure
-never proves conformance; edits to that exposure require positive evidence.
+D-66 uses final retained-file detection rather than candidate rejection.
+Unknown exposure is informational and never establishes deployment correctness.
 """
 
 import json
 import re
 from dataclasses import asdict, is_dataclass
 from pathlib import PurePosixPath
-from typing import Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
@@ -16,6 +16,9 @@ from app.security.instances import Instances, Ref, Unresolved
 from app.security.terraform import Resource, objects, subnet_intent
 from app.validation.documents import blocks
 from app.validation.provider_schema import provider_requirements
+
+if TYPE_CHECKING:
+    from app.domain.conformance import PlanConformanceAssessment
 
 LB = {"aws_lb", "aws_alb", "aws_elb"}
 SERVICE_TYPES = {
@@ -225,6 +228,12 @@ class View:
         if len(entries) != 1:
             raise Unresolved()
         return self.graph.get(entries[0], key, default)
+
+    def value_or_unknown(self, resource: Resource, key: str) -> str:
+        try:
+            return canonical(self.value(resource, key))
+        except (Unresolved, TypeError, ValueError, KeyError):
+            return "unknown"
 
     def projection(self, resource: Resource, names: set[str]) -> dict[str, Any]:
         """Follow configured references and reverse network attachments only."""
@@ -754,3 +763,315 @@ def plan_regressions(
                         related_resources=related,
                     )
     return results
+
+
+def assess_plan_conformance(
+    plan: DeploymentPlan,
+    original_files: dict[str, str] | None,
+    retained_files: dict[str, str],
+) -> "PlanConformanceAssessment":
+    """D-66: detect final regressions; uncertainty never rejects a repair.
+
+    The Generator original is the comparison baseline, including on retries.
+    The historical change detector remains available for offline comparisons;
+    it is no longer an acceptance gate.
+    """
+    from app.domain.conformance import PlanConflict, PlanConformanceAssessment
+
+    result = PlanConformanceAssessment()
+    old = View(original_files or {})
+    new = View(retained_files)
+
+    def observation(
+        service: str,
+        resource: Resource | None,
+        prop: str,
+        expected: Literal["public", "private"],
+        confirmed: bool,
+        detail: str,
+    ) -> None:
+        row = PlanConflict(
+            service=service,
+            resource=resource.address if resource else "unresolved",
+            file_path=resource.path if resource else None,
+            property=prop,
+            expected=expected,
+            assessment="regression" if confirmed else "unknown",
+            message=re.sub(
+                r"[\x00-\x1f\x7f]",
+                " ",
+                f"{service}: {resource.address if resource else 'unresolved'} "
+                f"{prop} — {detail}; plan requires {expected} exposure.",
+            )[:500],
+        )
+        (result.conflicts if confirmed else result.notes).append(row)
+
+    for service in plan.services:
+        expected: Literal["public", "private"] | None = (
+            "public"
+            if service.name in plan.network.public_services
+            else "private"
+            if service.name in plan.network.private_services
+            else None
+        )
+        if expected is None:
+            continue
+        types = SERVICE_TYPES.get(label(service.aws_service), set())
+        unique = (
+            sum(
+                bool(types & SERVICE_TYPES.get(label(s.aws_service), set()))
+                for s in plan.services
+            )
+            == 1
+        )
+        original = old.bind(service.name, types, unique)
+        updated = new.bind(service.name, types, unique)
+        if original is None or updated is None:
+            # No guessed identity, including renamed or ambiguous roots.
+            observation(
+                service.name,
+                updated or original,
+                "service_binding",
+                expected,
+                False,
+                "original or retained service binding is unavailable or ambiguous",
+            )
+            continue
+        for prop, selected in (("exposure", EXPOSURE), ("subnets", PLACEMENT)):
+            previous = (
+                old.exposure(original)
+                if prop == "exposure"
+                else old.placement(original)
+            )
+            actual = (
+                new.exposure(updated) if prop == "exposure" else new.placement(updated)
+            )
+            if (
+                prop == "exposure"
+                and updated.type == "aws_cloudfront_distribution"
+                and new.value_or_unknown(updated, "enabled") == "false"
+            ):
+                actual = "disabled"
+            before_projection = old.projection(original, selected)
+            after_projection = new.projection(updated, selected)
+            # EIP domain/vpc schema migration is not a placement change.
+            if selected == PLACEMENT:
+                for projection in (before_projection, after_projection):
+                    for key, body in projection.items():
+                        if key.startswith("[") and isinstance(body, dict):
+                            identity = json.loads(key)
+                            if len(identity) == 2 and str(identity[1]).startswith(
+                                "aws_eip."
+                            ):
+                                body.pop("domain", None)
+            if before_projection == after_projection:
+                continue
+            if previous == actual and actual != "unknown":
+                continue
+            if actual == expected:
+                continue
+            # A subnet's classification alone cannot prove a private service
+            # became public (for example an EC2 instance with no public IP).
+            if prop == "subnets" and expected == "private":
+                continue
+            confirmed = (
+                previous == expected
+                and actual in {"public", "private", "disabled"}
+                and actual != expected
+            )
+            if prop == "exposure":
+                changed = [
+                    k
+                    for k in sorted(EXPOSURE)
+                    if old.value_or_unknown(original, k)
+                    != new.value_or_unknown(updated, k)
+                ]
+                prop = ", ".join(changed) or "exposure"
+            observation(
+                service.name,
+                updated,
+                prop,
+                expected,
+                confirmed,
+                f"changed from {previous} to {actual}",
+            )
+        if expected == "public" and plan.network.ingress:
+            previous_paths, old_unknown = ingress_paths(old, original)
+            current_paths, new_unknown = ingress_paths(new, updated)
+            lost = [
+                p
+                for p in previous_paths
+                if not any(path_covers(q, p) for q in current_paths)
+            ]
+            if lost:
+                observation(
+                    service.name,
+                    updated,
+                    "listener/ingress",
+                    expected,
+                    any(p[0] not in new_unknown for p in lost),
+                    "original required listener or ingress path "
+                    "was removed or narrowed",
+                )
+            elif (old_unknown or new_unknown) and old.projection(
+                original, INGRESS
+            ) != new.projection(updated, INGRESS):
+                observation(
+                    service.name,
+                    updated,
+                    "listener/ingress",
+                    expected,
+                    False,
+                    "changed ingress path could not be verified",
+                )
+    return result
+
+
+IngressPath = tuple[str, str, int, int, str]
+
+
+def ingress_paths(view: View, root: Resource) -> tuple[list[IngressPath], set[str]]:
+    """Resolved configured ingress only; never infer semantics from plan prose.
+
+    Plan ingress makes original literal paths the bounded preservation baseline.
+    Equivalent renamed resources and broader replacement paths remain eligible.
+    """
+    paths: list[IngressPath] = []
+    unknown: set[str] = set()
+    projection = view.projection(root, INGRESS)
+    attached = [r for key, r in view.resources.items() if canonical(key) in projection]
+    for resource in attached:
+        keys = (
+            ["listener"]
+            if resource.type == "aws_elb"
+            else ["ingress"]
+            if resource.type in {"aws_security_group", "aws_default_security_group"}
+            else [None]
+            if resource.type
+            in {
+                "aws_lb_listener",
+                "aws_alb_listener",
+                "aws_security_group_rule",
+                "aws_vpc_security_group_ingress_rule",
+            }
+            else []
+        )
+        for key in keys:
+            listener = resource.type in {
+                "aws_lb_listener",
+                "aws_alb_listener",
+                "aws_elb",
+            }
+            kind = "listener" if listener else "ingress"
+            try:
+                bodies = (
+                    objects(view.value(resource, key, []))
+                    if key
+                    else [
+                        {
+                            k: view.value(resource, k)
+                            for k in {
+                                "type",
+                                "protocol",
+                                "ip_protocol",
+                                "port",
+                                "from_port",
+                                "to_port",
+                                "cidr_blocks",
+                                "ipv6_cidr_blocks",
+                                "cidr_ipv4",
+                                "cidr_ipv6",
+                                "source_security_group_id",
+                                "referenced_security_group_id",
+                            }
+                            if k in resource.body
+                        }
+                    ]
+                )
+                for body in bodies:
+                    if (
+                        resource.type == "aws_security_group_rule"
+                        and body.get("type") != "ingress"
+                    ):
+                        continue
+                    listener = resource.type in {
+                        "aws_lb_listener",
+                        "aws_alb_listener",
+                        "aws_elb",
+                    }
+                    protocol = str(
+                        body.get(
+                            "protocol",
+                            body.get("ip_protocol", body.get("lb_protocol", "tcp")),
+                        )
+                    ).lower()
+                    if listener and protocol in {"http", "https", "tls"}:
+                        protocol = "tcp"
+                    protocol = {"6": "tcp", "17": "udp"}.get(protocol, protocol)
+                    start = body.get("port", body.get("lb_port", body.get("from_port")))
+                    end = body.get("to_port", start)
+                    if protocol == "-1":
+                        start, end = 0, 65535
+                    if not isinstance(start, int) or not isinstance(end, int):
+                        unknown.add(kind)
+                        continue
+                    sources = (
+                        ["listener"]
+                        if listener
+                        else [
+                            *body.get("cidr_blocks", []),
+                            *body.get("ipv6_cidr_blocks", []),
+                            *[
+                                body[k]
+                                for k in (
+                                    "cidr_ipv4",
+                                    "cidr_ipv6",
+                                    "source_security_group_id",
+                                    "referenced_security_group_id",
+                                )
+                                if body.get(k)
+                            ],
+                        ]
+                    )
+                    if not sources:
+                        unknown.add(kind)
+                    for source in sources:
+                        if not isinstance(source, str) or "${" in source:
+                            unknown.add(kind)
+                        else:
+                            paths.append(
+                                (
+                                    "listener" if listener else "ingress",
+                                    protocol,
+                                    start,
+                                    end,
+                                    source,
+                                )
+                            )
+            except (Unresolved, TypeError, ValueError, KeyError):
+                unknown.add(kind)
+    return paths, unknown
+
+
+def path_covers(candidate: IngressPath, original: IngressPath) -> bool:
+    from ipaddress import ip_network
+
+    kind, protocol, start, end, source = original
+    if (
+        candidate[0] != kind
+        or candidate[1] not in {protocol, "-1"}
+        or candidate[2] > start
+        or candidate[3] < end
+    ):
+        return False
+    if candidate[4] == source:
+        return True
+    try:
+        old_network, new_network = ip_network(source), ip_network(candidate[4])
+        return (
+            old_network.version == new_network.version
+            and int(new_network.network_address) <= int(old_network.network_address)
+            and int(old_network.broadcast_address) <= int(new_network.broadcast_address)
+        )
+    except ValueError:
+        return False

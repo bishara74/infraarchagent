@@ -33,7 +33,7 @@ from app.domain.enums import (
 from app.domain.models import IaCPackage
 from app.domain.plan import DeploymentPlan
 from app.domain.run_config import RunConfig
-from app.domain.states import classify_run, readiness_after_validation
+from app.domain.states import classify_run
 from app.domain.validation import (
     DeterministicRepair,
     RemediationReport,
@@ -44,6 +44,7 @@ from app.events.kinds import (
     package_status_payload,
     plan_created_payload,
 )
+from app.pipeline.readiness import final_readiness
 from app.pipeline.stages import SecurityStage, StageContext, ValidationStage
 from app.pipeline.state import PipelineStateWriter
 from app.pipeline.telemetry import publish as publish_telemetry
@@ -802,7 +803,9 @@ class PipelineOrchestrator:
                 "validation stage failed for run %s variant %s", self.run_id, variant
             )
             validation = await self._stage_error(variant, validation=True)
-        target = readiness_after_validation(scan, validation)
+        target = await final_readiness(
+            self.session_factory, ctx, variant, scan, validation, safety=self.safety
+        )
         await self.writer.package_transition(
             self.run_id, variant, target, message=f"package {target.value}"
         )

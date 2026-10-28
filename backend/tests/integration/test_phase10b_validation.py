@@ -1,4 +1,4 @@
-"""FR-S-02/07: validation repair cannot bypass exposure preservation."""
+"""FR-S-02/07: validation improvements defer exposure review to the final stage."""
 
 from dataclasses import replace
 
@@ -15,7 +15,7 @@ from tests.unit.test_phase10b_conformance import plan
 
 
 @pytest.mark.req("FR-S-02", "FR-S-07", "FR-A-05")
-async def test_validation_improvement_never_accepts_internal_flip(db_engines):
+async def test_validation_improvement_retains_flip_for_final_assessment(db_engines):
     engine, _ = db_engines
     ctx, _ = await setup(engine)
     ctx = replace(ctx, plan=plan())
@@ -50,7 +50,7 @@ async def test_validation_improvement_never_accepts_internal_flip(db_engines):
                 terraform_required=True,
             )
 
-    security = agent(engine, ScriptedScanner([]), Flipper())
+    security = agent(engine, ScriptedScanner([[], []]), Flipper())
     package, report, metadata = await ValidationRepair(security, Validator()).run(
         ctx,
         Variant.SECURITY,
@@ -60,7 +60,10 @@ async def test_validation_improvement_never_accepts_internal_flip(db_engines):
         phase="after_security",
         metadata=RemediationReport(),
     )
-    assert package.files == files and report.summary.result == "invalid"
-    assert metadata.rounds[-1].reason == "plan_conformance_regression"
-    assert metadata.rounds[-1].plan_conformance[0]["property"] == "exposure"
-    assert security.scanner.calls == 0
+    assert package.files != files and report.summary.result == "valid"
+    assert metadata.rounds[-1].reason == "improved"
+    assert not metadata.rounds[-1].plan_conformance
+    assert security.scanner.calls == 2
+    from app.security.plan_conformance import assess_plan_conformance
+
+    assert assess_plan_conformance(ctx.plan, files, package.files).conflicts

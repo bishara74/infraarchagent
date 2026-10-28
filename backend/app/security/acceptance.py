@@ -19,7 +19,6 @@ from app.domain.models import Violation
 from app.domain.plan import DeploymentPlan
 from app.domain.validation import ValidationCheck
 from app.scanners.scan import Scanner, ScanResult
-from app.security.plan_conformance import plan_regressions
 from app.security.verification_scope import same_unavailability
 from app.validation.documents import PackageDocuments, blocks, code_text
 from app.validation.gate import patch_syntax_failure
@@ -90,11 +89,6 @@ class CandidateGuard:
             for p in before.keys() | candidate.keys()
             if before.get(p) != candidate.get(p)
         }
-        if self.plan is not None:
-            conflicts = plan_regressions(self.plan, before, candidate, self.targeted)
-            if conflicts:
-                self.record.setdefault("plan_conformance", []).extend(conflicts)
-                return CandidateResult("plan_conformance_regression", checks, scan, [])
         if removes_security_controls(before, candidate):
             return CandidateResult("security_control_removed", checks, scan, [])
         syntax_started = time.monotonic()

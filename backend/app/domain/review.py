@@ -42,6 +42,12 @@ def open_plan_conflicts(
     validation_report: Mapping[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Project recorded guard rejections only onto still-open exact findings."""
+    assessment = (validation_report or {}).get("plan_conformance")
+    if isinstance(assessment, Mapping):
+        return [
+            dict(row)
+            for row in [*assessment.get("conflicts", []), *assessment.get("notes", [])]
+        ]
     final = security_final(security_report)
     conflicts = list(final.get("plan_conflicts", []))
     for iteration in security_iterations(security_report):
@@ -140,7 +146,7 @@ def package_presentation(
         PackageStatus.REJECTED,
     }:
         final = security_final(security_report)
-        if conflicts:
+        if any(c.get("assessment") == "regression" for c in conflicts):
             reasons.append("plan_conformance_conflict")
         if final.get("remaining_blocking") or final.get("outcome") == "exhausted":
             reasons.append("unresolved_security_findings")

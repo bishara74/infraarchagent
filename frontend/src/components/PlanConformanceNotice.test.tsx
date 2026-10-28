@@ -1,4 +1,4 @@
-import {render,screen} from '@testing-library/react';
+import {fireEvent,render,screen} from '@testing-library/react';
 import {expect,it} from 'vitest';
 import pending from '../test/fixtures/pending-results.json';
 import type {PackageResult,PlanConflict} from '../api/types';
@@ -27,4 +27,24 @@ it('FR-S-07 FR-UI-05 reports a rolled-back proposal as unresolved and not applie
  expect(screen.getByText('0 fixes applied · exhausted')).toBeVisible();
  expect(screen.queryByText('resolved',{exact:true})).toBeNull();
  expect(screen.getAllByText('unresolved',{exact:true})).toHaveLength(2);
+});
+
+
+it('FR-S-07 explains final conflicts without a scanner finding and keeps uncertainty informational',()=>{
+ const finalConflict:PlanConflict={...conflict,rule_id:null,property:'internal',message:'edge: aws_lb.edge internal changed from public to private; plan requires public exposure.'};
+ const item={...pending.packages[0],plan_conflicts:[finalConflict],security_report:{final:{outcome:'clean',remaining_blocking:[]}}} as PackageResult;
+ const view=render(<PlanConformanceNotice item={item}/>);
+ expect(screen.getByText(/Plan conflict: edge: aws_lb.edge internal/)).toBeVisible();
+ expect(screen.queryByText(/Kept open/)).toBeNull();
+ view.rerender(<PlanConformanceNotice item={{...item,plan_conflicts:[{...finalConflict,assessment:'unknown',message:'edge: service binding is ambiguous.'}]}}/>);
+ expect(screen.getByText('Informational: edge: service binding is ambiguous.')).not.toBeVisible();
+ fireEvent.click(screen.getByText('Plan conformance information (1)'));
+ expect(screen.getByText('Informational: edge: service binding is ambiguous.')).toBeVisible();
+});
+
+it('FR-S-07 shows a final conflict in Findings even when the scanner is clean',()=>{
+ const item={...pending.packages[0],plan_conflicts:[{...conflict,rule_id:null,message:'edge: aws_lb.edge internal conflicts with planned public exposure.'}],security_report:{final:{outcome:'clean',remaining_blocking:[]}}} as PackageResult;
+ render(<ReportPanel item={item} section="security" onFile={()=>undefined}/>);
+ expect(screen.getByText(/Plan conflict: edge: aws_lb.edge internal/)).toBeVisible();
+ expect(screen.getByText('No security fixes or blocking findings recorded.')).toBeVisible();
 });

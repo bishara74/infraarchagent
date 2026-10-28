@@ -27,6 +27,51 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-28 — Phase 10e — Detect final exposure conflicts without rejecting repairs
+
+**Summary:** Remove conformance-only rejection from every candidate acceptance
+surface. Compare persisted final files with the immutable Generator original and
+plan before initial/retry readiness; require review only for confirmed regressions.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, NFR-01.
+
+**Files:** security/acceptance.py, partial.py, plan_conformance.py;
+agents/generation_syntax.py and validation_repair.py; domain/conformance.py,
+validation.py, review.py and states.py; pipeline/readiness.py, orchestrator.py and
+review.py; package repository and API schema; existing plan-conformance notice,
+report panel/types and tests; Phase 10e replay CLI and the Phase 10d default
+retained-observation extension; D-66 and README.
+
+**Decisions:** D-66 supersedes D-63–D-65 candidate rejection. Typed final evidence
+is stored in validation-report JSON without changing its checks/result; scanner
+outcomes stay independent. Confirmed retained flips produce pending_review even
+with a clean scan and valid validation. Ambiguous bindings and unknown originals
+produce information only. Literal listener/ingress preservation remains bounded;
+unrelated unknown rules cannot hide a provably removed listener. EIP-domain
+schema migration stays informationally silent. Fixer v8/network context, file-input
+refusal/blocker, remaining gates, profiles and thresholds are unchanged.
+
+**Tests:** Updated focused suite: 63 passed, zero failed/skipped. Expanded final
+unit subset: 25 passed, zero failed/skipped. Full frontend: 469 passed across
+46 files. Full make lint passes (192 mypy sources). Initial focused run had
+74 passed / seven superseded rollback assertions failed; those assertions now
+verify retained flips and final review. Initial browser run: 35 passed / one
+1280×800 layout failure (informational paragraphs moved actions below the
+viewport). Final informational notes use an accessible disclosure; confirmed
+conflicts remain visible. Final backend/browser runs, native paired replay,
+performance, secret scan and refreshed traceability follow in the completion
+entry with their actual results. Two preliminary backend runs were interrupted
+after 302 and 93 passes while final edge cases were completed; neither is a
+full-suite success claim. A synthetic canary test extends the new persisted
+assessment surface.
+
+**Known gaps / follow-ups:** Missing rejected model bodies and accepted
+post-security patches limit offline reconstruction. Frozen retained-file detection
+finds zero confirmed regressions in both cohorts, not a new pass-rate estimate.
+The next author-run round is the final reported result regardless of outcome.
+No new specification open question, dependency, migration, real model call,
+dotenv read, install, external service or push. Full completion evidence follows.
+
 ## 2026-10-27 — Phase 10d section 3 — Replay and verify the remaining regression fixes
 
 **Summary:** Add paired offline replay over all 59 rerun packages, complete all
