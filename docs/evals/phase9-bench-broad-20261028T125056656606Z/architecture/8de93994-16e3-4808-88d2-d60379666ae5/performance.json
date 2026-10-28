@@ -1,0 +1,62 @@
+{
+  "run_id": "8de93994-16e3-4808-88d2-d60379666ae5",
+  "benchmark_kind": "broad",
+  "scenario_sha256": "285bcb48c0d569bf06bd6b06d3a5cef52e28c0970ba6662ddc5380fafb6c288f",
+  "scenario_id": 6,
+  "complexity": 4,
+  "round": 2,
+  "sequence": 15,
+  "variant": "performance",
+  "plan_sha256": "686cb80bbd2fc54933cd925bd39fc227bbc4ae1b7762aabd7c650fd809d5774a",
+  "original_files_sha256": "a7d8693acde600db237a57bf0bf1e62bde49526b945bbcd01498149bb56e4021",
+  "retained_files_sha256": "b0e48ec176b707eea0b2277caf1146c09a5b677c6e6c6dbb2c179dec5d1a67d0",
+  "plan": {
+    "classification": "public",
+    "resources": [
+      {
+        "service": "app-alb",
+        "aws_service": "alb",
+        "classification": "public",
+        "evidence": "network.public_services/private_services"
+      }
+    ],
+    "reason": "explicit_lb_services_only"
+  },
+  "original": {
+    "classification": "public",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "classification": "public",
+        "internal": false,
+        "defaulted": true,
+        "default_source": "https://github.com/hashicorp/terraform-provider-aws/blob/v6.68.0/website/docs/r/lb.html.markdown",
+        "line": 133,
+        "source_sha256": "4762aa6e944b45afd715e218333a305b3b786cdab9ed28258bd01f1c1c568666"
+      }
+    ],
+    "has_public": true,
+    "has_internal": false,
+    "reason": "static_configuration_only"
+  },
+  "retained": {
+    "classification": "internal",
+    "resources": [
+      {
+        "file_path": "terraform/main.tf",
+        "resource": "aws_lb.app_alb",
+        "classification": "internal",
+        "internal": true,
+        "defaulted": false,
+        "default_source": null,
+        "line": 139,
+        "source_sha256": "916ccf5ee0609bca09c3046b29d23b782ddf75d3487f97c3d2187dc4577f1bdb"
+      }
+    ],
+    "has_public": false,
+    "has_internal": true,
+    "reason": "static_configuration_only"
+  },
+  "plan_retained_disagreement": true
+}
