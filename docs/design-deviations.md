@@ -1747,7 +1747,8 @@ attempt and reasoning coverage stays unknown.
 NFR-02 role-swap tests exercise the existing injection seams without peer or
 orchestrator edits. Concrete-class recovery checks and private generator runtime
 metadata remain explicit contract-review limitations; no unrestricted
-replaceability claim follows. NFR-04 clean deployment remains manual/unverified.
+replaceability claim follows. NFR-04 was manual/unverified at this Phase 9b
+checkpoint; the scoped Phase 10f completion is recorded under D-62.
 The isolated E2E server uses a larger fixture login allowance to avoid cumulative
 rate-limit timing dependence; production authentication policy is unchanged.
 
@@ -2891,15 +2892,23 @@ heuristics and SHA-256 input manifests. These older measurements do not estimate
 current model reliability or later broad/final-set generation. Later committed
 quality snapshots lack enough original source to silently fill those measures.
 
-NFR-04 is **unverified** until the author's actual clean-Ubuntu/browser evidence
-is committed. The kit and containers are statically checked recipes only; D-31's
-tfsec→Trivy substitution and D-35's validator coverage revision remain explicit.
+NFR-04 was unverified at Phase 10 preparation. Phase 10f closes it as **met
+for the recorded clean WSL/stub/browser scope**, from the committed
+[clean-deployment evidence](evals/nfr04-clean-deployment-20261028/README.md).
+Seven installation/build steps exited zero at revision e6ac33785e3a022550b9c3255c87b3dc194838b0,
+with three synthetic checks_passed packages and passing Chrome 156 / Firefox 159
+manual checks. Limits: WSL, stub responses, Edge/Safari untested, optional
+validators absent, manual feedback retry and dual-scheme screenshots omitted.
+The JSON pending-browser status predates the completed README checklist.
+D-31's tfsec→Trivy substitution and D-35's validator revision remain explicit;
+container recipes retain their separate static-only evidence.
 PR-03 is **not met** under its approved 1.5× isolated-baseline target; an
 unadopted proposal cannot turn the verdict into a pass. NFR-02 remains partly met
 because ordinary role swaps do not remove recovery/telemetry coupling (D-55).
 [The evidence index](evals/EVIDENCE.md) separates status from test linkage.
-Its reviewed 59-ID register records 46 met, 11 partly met, 1 not met and
-1 unverified; proposed IDs do not enter those counts. The final collection
+After the Phase 10b conformance qualification and Phase 10f scoped NFR-04
+closure, its reviewed 59-ID register records **46 met, 12 partly met, 1 not met
+and 0 unverified**; proposed IDs do not enter those counts. The final collection
 links all 59 IDs without implying that collection establishes a passing verdict.
 
 Features added through author decisions but absent as standalone specification
@@ -3336,10 +3345,56 @@ and zero errors. All 6,661 protected evidence/spec files retain exact bytes;
 failure led to an informational disclosure, without relaxing the viewport test.
 No new specification open question, dependency or migration is introduced.
 
-**The next author-run round is the final reported result regardless of outcome.**
-Run the fixed twenty-slot schedule once on port 8765 with the documented benchmark
-environment and no Architect override. Do not tune or automatically rerun after
-inspecting its outcome. Codex performs no real-provider round.
+#### Phase 10f — final reported result and evidence closure
+
+The predeclared final result is the author's completed
+[2026-10-28 round](evals/phase9-bench-broad-20261028T125056656606Z/summary.md):
+**15/58 (25.86%; 25.9% rounded)** strict checks passed, Wilson 95% CI
+**16.35–38.38%**. Levels 1–3 are **14/30** and levels 4–5 **1/28**, with two
+missing variants and six final `plan_conformance_conflict` packages. Confirmed
+final conflicts require review independently of scanner findings.
+
+Recomputed Fisher two-sided p-values are **0.23578014** against corrected early
+42/120, **0.54511520** against early round 2's 19/60, and **0.32827896** against
+the two later blocking-guard rounds' 22/116. These package-level comparisons
+are descriptive; shared plans and repeated scenarios limit independence.
+The development history on the same registered scenarios is early **24/60,
+19/60** (published **43/120**, confirmed-only exposure correction **42/120**,
+remaining uncertainty **41–42/120**), blocking guard **7/60, 11/59, 11/57**, and
+final detect-only **15/58**. This is not a held-out evaluation or causal estimate.
+
+The first final-round attempt stopped during run 10, with nine settled runs
+and an excluded **8/27** partial result. The author reported a native
+`double free or corruption (fasttop)` abort without a Python traceback and
+one repeat with `PYTHONFAULTHANDLER=1` that completed without a crash. The Phase
+10f task records that observation; no native crash log or root cause is available.
+No outcome-driven additional round is proposed or executed by Codex.
+
+Final event measurements record **26** deadline-before-candidate events,
+**42** iteration-deadline reason records, **12** deadline-only rollbacks and
+**4** multiple-cause deadline rollbacks; these units overlap. Validation repairs
+stop at deadline once before and twice after security; six generation-gate
+outcomes are deadlines. The two preceding guard rounds each had one
+before-candidate event and no generation-gate deadline outcome. Timing differences
+and model/provider variance prevent assigning the pass-rate change to one gate.
+
+Of **426** distinct LLM calls, **362** have a recorded provider: **57/362
+(15.75%)** used non-Cerebras providers. Another **64** have unknown provider;
+non-Cerebras is **57/426 (13.38%)** of all recorded calls, so the supplied
+“about 16%” requires a known-provider denominator. The historical Phase 10d
+diagnosis records seven early low-complexity passes containing now-refused file
+reads; raw historical sources are uncommitted and those seven identities cannot
+be independently recomputed here. This limitation is separate from the one
+confirmed early exposure-flip pass, which is recomputable from committed audit JSON.
+
+The [new report](evals/phase10f-final-report/README.md) records calculations,
+input hashes, per-round deadlines, routing and evidence limitations; the
+[thesis note](thesis-notes/phase10f-final-results.md) provides the final account.
+Scoped NFR-04 closure is recorded under D-62. PR-03 remains not met. No new
+specification open question, application behavior, policy, dependency, migration
+or external service is introduced. The sole author-approved code exception
+makes the evidence generator render NFR-04 from its reviewed register row,
+covered by its existing test module.
 
 ## Clarifications (spec is silent; the diagrams decide)
 
@@ -3516,7 +3571,8 @@ The author and supervisor must approve, reject or revise the proposed IDs in
 lesson IDs. The immutable specification is unchanged. Current traceability and
 status counts include only its 59 existing requirements/use cases; proposed IDs
 have no compliance status. PR-03's revised target remains unapproved and its
-current verdict remains not met. NFR-04 needs actual author deployment evidence.
+current verdict remains not met. Phase 10f closes NFR-04 for the committed
+author clean WSL/stub/browser scope, with the limits recorded in D-62.
 
 ## Thesis text to update (collected)
 

@@ -1,8 +1,23 @@
 # Clean Ubuntu 24.04 deployment (NFR-04)
 
-Status: **unverified**. These files were statically checked; the author must run
-them on a genuinely clean Ubuntu 24.04 amd64 installation. Existing workstation
-tests, stub recordings and container recipes are not clean-deployment evidence.
+Status: **NFR-04 met for the recorded scope**, from the author's
+[2026-10-28 clean-deployment evidence](evals/nfr04-clean-deployment-20261028/README.md).
+A fresh Ubuntu 24.04.5 amd64 WSL distribution ran revision
+`e6ac33785e3a022550b9c3255c87b3dc194838b0`: all seven installation/build steps
+exited zero and the stub run produced three `checks_passed` packages. Health
+confirmed compatible schema and available Checkov 3.3.21, Trivy 0.69.3 and
+Terraform 1.16.4. The recorded Trivy binary hash matches development.
+
+The later manual checklist records nine passing checks in Chrome 156.0.8078.73
+and Firefox 159.0. `outcomes.json` is the earlier automated snapshot and retains
+`stub_passed_browser_checks_pending`; the README supplies the later browser result.
+Neither historical file has been rewritten.
+
+Limits: synthetic model responses; WSL rather than bare-metal/VM Ubuntu;
+Edge/Safari untested; optional Helm, hadolint, ansible-lint and promtool absent;
+manual feedback retry and screenshots in both OS colour schemes omitted.
+No real-provider or cloud deployment result follows. The instructions below
+remain the procedure for a new clean deployment; the empty checklist is a template.
 
 1. Create a separately named Ubuntu 24.04 WSL distribution or a fresh VM. Enable
    systemd in WSL, restart that distribution, and record Windows/WSL/Ubuntu and
@@ -95,7 +110,8 @@ one dark console palette; the OS preference does not imply a separate light them
 | Symptom | Action |
 |---|---|
 | Docker daemon unavailable | Start Docker/systemd in this distribution; retry the failed step. Do not borrow an existing volume. |
-| Port already in use | Stop the identified competing process, or run the backend driver with `--port 8765` and use that URL. Database port 5432 must be free. |
+| Port already in use / another WSL distribution | WSL instances can share host ports; a separate distribution name does not reserve 5432/8000. Identify the competing process, or run the backend driver with `--port 8765` and use that URL. Database port 5432 must be free. |
+| Ctrl+C interrupted the driver | Ctrl+C stops its foreground script. Wait for completion before closing the terminal, then inspect outcome files. A separately launched backend may keep running; use its recorded PID. |
 | HTTP 503 schema mismatch | Run owner migrations with the same private runtime configuration, then restart. Never auto-downgrade an ahead schema. |
 | Master key not loaded | Restart with the same private runtime state/key version; a newly generated key cannot decrypt existing credentials. |
 | Scanner/provider unavailable | Verify pinned tool PATH, mirror archives and exported indexes; do not count a degraded run as portability success. |

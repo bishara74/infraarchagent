@@ -27,6 +27,56 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-29 — Phase 10f — Final documentation and evidence closure
+
+**Summary:** Publish the predeclared final broad result from committed evidence,
+close scoped NFR-04 and finalise the untagged v1.0 documentation. The final result
+is 15/58 (25.86%), Wilson 95% CI 16.35–38.38%, levels 1–3 14/30 and levels 4–5
+1/28, two missing variants and six final plan-conformance review flags.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, NFR-01, NFR-04, PR-03.
+
+**Files:** README.md, CHANGELOG.md, docs/deployment.md, docs/design-deviations.md,
+docs/IMPLEMENTATION_LOG.md; docs/evals/phase10-requirements.json and generated
+EVIDENCE.md; new phase10f-final-report/, phase10f-verification/ and
+phase10f-traceability/ reports; thesis-notes/phase10f-final-results.md and the
+Chapter 6 evaluation note. The sole explicit author-approved code exception is
+backend/scripts/phase10_evidence.py and its existing unit test module.
+
+**Decisions:** D-66 records the final development iteration, excluded 8/27 native
+abort attempt, descriptive Fisher p-values 0.23578014/0.54511520/0.32827896,
+corrected early 42/120 with 41–42/120 uncertainty, and separate deadline units.
+Non-Cerebras routing is 57/362 known-provider calls (15.75%), with 64 unknown out
+of 426 total; 57/426 is 13.38%. The historical seven refused-input passes are
+reported as the committed diagnosis's statement: missing source identities prevent
+independent committed-input recomputation. Native crash/root cause is an author
+observation without a retained native traceback. D-62 closes NFR-04 only for
+committed clean WSL/stub/Chrome/Firefox scope, retaining all omitted coverage.
+PR-03 remains not met. The reviewed index is 46 met / 12 partly met / one not met /
+zero unverified. Generator prose derives from the reviewed row and evidence links;
+its negative test explicitly clears the completion-evidence flag. No new open question.
+
+**Tests:** Generator regression module: eight passed, zero failed/skipped (0.36s).
+make lint passes (51 scripts, 420 app/test files, 192 mypy sources, ESLint and both
+TypeScript checks). make test exits 2 at migrate-test, connection refused to the
+explicit collection-only synthetic database endpoint: no full-suite tests ran.
+No test database URLs were exported, no disposable test cluster was running,
+and dotenv/services/author database were not used. Evidence generator exits zero.
+Fresh traceability: 59 IDs, zero uncovered/invalid annotations/collection failures;
+2,795 distinct linked pytest, 170 Vitest and 37 Playwright tests (collection only).
+make secret-scan exits zero: zero findings / zero errors across working files and
+all refs/reflogs (126.81s). All 7,030 protected specification/evidence files retain
+exact hashes; no new local documentation link is broken. The documented
+calculation reproduction command exits zero and all 426 input hashes match.
+Development Trivy SHA-256 independently matches the committed deployment hash.
+
+**Known gaps / follow-ups:** Full backend suite needs an author-provided disposable
+test database in a subsequent verification session. No application/configuration/
+other test changes, dependency, migration, real model call, dotenv/key read,
+install, external service, tag or push. All pre-existing evidence folders and
+approved specifications remain immutable. Review the final documentation and
+verification limits before the author performs the changelog's release commands.
+
 ## 2026-10-28 — Phase 10e completion — Verify both replay cohorts and final handoff
 
 **Summary:** Complete all offline checks, the two-cohort replay and a fixed

@@ -170,7 +170,9 @@ comparisons. Exact observed totals and unknown counts are in costs.csv.
 - Real-provider measurements versus deterministic stub functional checks;
   timing proxies, synthetic download fixtures and usage-delta cost uncertainty.
 - Scanners and terraform validate do not establish deployability or complete
-  security. NFR-04 clean-environment deployment remains unverified.
+  security. NFR-04 was unverified for these Phase 9 performance measurements;
+  the later scoped clean WSL/stub/browser completion is recorded in the
+  [Phase 10f account](phase10f-final-results.md).
 - NFR-02 replacement doubles exercise injection, not every concrete recovery/
   private-metadata path; manual contract review remains necessary.
 
@@ -504,10 +506,13 @@ flips; historical v2 data is absent. Earlier broad/stub/source gaps are explicit
 
 These are static configured-property observations, not deployment tests or
 causal model comparisons. Historical folders, labels and profiles are unchanged.
-The new guard preserves supported exposure changes and returns conflicting fixes
-to engineer review. Other plan semantics, dynamic values and cloud reachability
-remain bounded or unverified. FR-S-07 is qualified as partly met; the current
-59-ID register is 45 met, 12 partly met, one not met, one unverified.
+The Phase 10b guard preserved supported exposure changes and returned conflicting
+fixes to engineer review; Phase 10e supersedes candidate rejection with final
+retained-file detection, as described in D-66. Other plan semantics, dynamic
+values and cloud reachability remain bounded or unverified. FR-S-07 is qualified
+as partly met; the 59-ID register at Phase 10b was 45 met, 12 partly met, one not met, one unverified.
+Phase 10f scoped NFR-04 closure updates it to 46 met, 12 partly met, one not met
+and zero unverified; see the [final account](phase10f-final-results.md).
 
 
 ### Phase 10b — Author lesson demonstration
@@ -529,3 +534,12 @@ unknown; no variable default is assumed to be a deployment value. The retained
 run-3 cost/security and run-4 performance internal flips are separate Fixer
 changes; two received checks_passed. One run per configuration is a demonstration
 of provenance and scope, not a measured or causal lesson effect.
+
+
+## Phase 10f — final reported broad round
+
+Use the [final evaluation account](phase10f-final-results.md) and its committed-input
+calculation report for the final 15/58 (25.9%) result, development iterations,
+excluded native-abort attempt, descriptive statistical comparisons, deadline/routing
+qualifications and scoped NFR-04 closure. Earlier “final sets” in this chapter name
+the separate Phase 9 performance evaluation, not the Phase 10e broad final round.

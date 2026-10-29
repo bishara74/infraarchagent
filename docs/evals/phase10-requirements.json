@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "approved_pr03_target": null,
-  "author_clean_deployment_evidence": null,
-  "scope": "Met denotes demonstrated behavior under the linked evidence and accepted design amendments; partly met denotes a literal scope or evidence limitation. Execution counts are separate from collection. Performance findings apply to the recorded revisions/cohorts, not every future model call. No cloud deployment has been verified.",
+  "author_clean_deployment_evidence": "docs/evals/nfr04-clean-deployment-20261028/README.md",
+  "scope": "Met denotes demonstrated behavior under the linked evidence and accepted design amendments; partly met denotes a literal scope or evidence limitation. Execution counts are separate from collection. Performance findings apply to the recorded revisions/cohorts, not every future model call. No cloud deployment has been verified. Current closure: [Phase 10f calculations](phase10f-final-report/README.md), [verification](phase10f-verification/README.md) and [fresh test collection](phase10f-traceability/traceability.md). Earlier execution/collection links below retain their historical scope.",
   "rows": [
     {
       "id": "FR-A-01",
@@ -331,9 +331,10 @@
       ],
       "deviations": [
         "D-22",
-        "D-63"
+        "D-63",
+        "D-66"
       ],
-      "finding": "Automatic remediation targets blocking findings; LOW/unknown and explicit variant exemptions remain advisory. Planned exposure conflicts are rolled back and left for review; the exposure guard has bounded static coverage."
+      "finding": "Automatic remediation targets blocking findings; LOW/unknown and explicit variant exemptions remain advisory. Phase 10e retains repairs through the other acceptance gates, then requires review for confirmed final exposure conflicts. Static conformance coverage remains bounded."
     },
     {
       "id": "FR-S-03",
@@ -348,7 +349,8 @@
       "deviations": [
         "D-44",
         "D-45",
-        "D-63"
+        "D-63",
+        "D-66"
       ],
       "finding": "Scan/fix/rescan and allowance exhaustion are tested; author-approved default is four passes."
     },
@@ -406,14 +408,16 @@
       "evidence": [
         "backend/tests/integration/test_automatic_validation_repair.py",
         "backend/tests/integration/test_phase9l_transport.py",
-        "docs/evals/phase10b-exposure-audit/README.md"
+        "docs/evals/phase10b-exposure-audit/README.md",
+        "docs/evals/phase10e-verification/README.md"
       ],
       "deviations": [
         "D-06",
         "D-47",
-        "D-63"
+        "D-63",
+        "D-66"
       ],
-      "finding": "Strict clean scan plus valid validation still controls checks_passed. Historical scan-clean packages could contradict planned exposure; Phase 10b guards supported exposure changes, while unresolved or unsupported semantics and deployment reachability remain unproven."
+      "finding": "Strict clean scan plus valid validation and no confirmed final exposure conflict controls checks_passed. Phase 10e replaces candidate rollback with final retained-file detection and pending_review for confirmed exposure changes. Unresolved/unsupported semantics and deployment reachability remain unproven."
     },
     {
       "id": "FR-S-08",
@@ -712,13 +716,17 @@
     },
     {
       "id": "NFR-04",
-      "status": "unverified",
+      "status": "met",
       "test_types": [
         "static kit tests",
-        "author deployment pending"
+        "author clean WSL deployment",
+        "manual Chrome and Firefox"
       ],
       "evidence": [
-        "docs/evals/phase10-clean-deployment/TEMPLATE.md",
+        "docs/evals/nfr04-clean-deployment-20261028/README.md",
+        "docs/evals/nfr04-clean-deployment-20261028/outcomes.json",
+        "docs/evals/nfr04-clean-deployment-20261028/versions.json",
+        "docs/evals/nfr04-clean-deployment-20261028/health.json",
         "docs/deployment.md"
       ],
       "deviations": [
@@ -726,7 +734,7 @@
         "D-35",
         "D-62"
       ],
-      "finding": "Recipes/static checks exist; no author clean Ubuntu plus Windows Chrome/Firefox/Edge execution evidence is committed."
+      "finding": "Met for the recorded clean Ubuntu 24.04.5 WSL deployment at e6ac33785e3a022550b9c3255c87b3dc194838b0: seven steps exit 0, three synthetic checks_passed labels, compatible schema, pinned Trivy 0.69.3 and passing Chrome 156 / Firefox 159 checklist. The later README completes browser checks after the JSON pending snapshot. Limits: stub responses, WSL, Edge/Safari untested, optional validators absent, manual feedback retry and dual-colour-scheme screenshots omitted."
     },
     {
       "id": "PR-01",
@@ -778,7 +786,7 @@
         "D-43",
         "D-55"
       ],
-      "finding": "Both matched final sets fail the approved <=1.5x isolated-baseline target; no revised target is approved."
+      "finding": "Both matched final sets fail the approved <=1.5x isolated-baseline target: ratios 2.02495/1.95995/1.90085 and 1.66249/2.02151/1.83485. CPU-heavy scanners and Terraform contend on the measured WSL host; uncontrolled host load prevents exact causal attribution. No revised target is approved."
     },
     {
       "id": "PR-04",

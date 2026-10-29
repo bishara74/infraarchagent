@@ -28,9 +28,14 @@ review history and governed advisory lessons are implemented. Strict scan/valida
 rules determine `checks_passed`; human decisions use `engineer_approved` or
 `rejected`. See the [requirement evidence index](docs/evals/EVIDENCE.md),
 [implementation log](docs/IMPLEMENTATION_LOG.md),
-[design deviations](docs/design-deviations.md) and [prepared v1.0 changelog](CHANGELOG.md).
-PR-03 is not met; NFR-04 clean deployment remains unverified. Container recipes and
-the clean-install kit require author execution; no cloud deployment is claimed.
+[design deviations](docs/design-deviations.md) and [finalised v1.0 changelog](CHANGELOG.md).
+The final reported broad benchmark is **15/58 (25.9%)** strict checks passed,
+Wilson 95% CI **16.35–38.38%**, with two missing variants. See
+[D-66](docs/design-deviations.md#d-66--detect-plan-conflicts-on-final-retained-files-phase-10e)
+and the [final calculations and limitations](docs/evals/phase10f-final-report/README.md).
+These are development iterations on the same registered scenarios.
+PR-03 is **not met**; NFR-04 is **met for the recorded clean WSL/stub/browser scope**.
+No cloud deployment is claimed.
 
 ## Clean deployment
 
@@ -38,8 +43,11 @@ For a fresh Ubuntu 24.04 environment, use the author-run
 [deployment kit and browser checklist](docs/deployment.md). It pins prerequisites,
 clones a full revision, generates private keys locally without printing them,
 provisions PostgreSQL/migrations/mirrors, builds the UI and checks a stub run.
-The [empty evidence template](docs/evals/phase10-clean-deployment/TEMPLATE.md)
-remains **unverified** until the author commits actual clean-machine results.
+The [committed clean-deployment evidence](docs/evals/nfr04-clean-deployment-20261028/README.md)
+records Ubuntu 24.04.5 WSL, successful installation/build and three synthetic
+`checks_passed` packages, plus passing Chrome 156 and Firefox 159 checks.
+Limits include stub model responses, WSL, untested Edge/Safari, absent optional
+validators, and omitted manual feedback retry and dual-colour-scheme screenshots.
 The scripts' default plan mode performs no installation or network work.
 
 The [container recipe](docs/containers.md) provides pinned backend/frontend images
@@ -2096,7 +2104,8 @@ from statically reviewed, author-only setup/online commands.
 |---|---|
 | HTTP 503 / migration not applied | Run `make migrate` with the owner settings, then restart. An ahead schema needs matching code; never blindly downgrade. |
 | Master key not loaded / credentials unreadable | Export the same persistent `CREDENTIAL_ENCRYPTION_KEY` and key version in the backend process, then restart. A new key cannot decrypt old rows. |
-| Port already in use | Identify the competing process; use `make run PORT=8765` and set `INFRAARCH_BACKEND_URL` for Vite. Keep test ports free or use documented E2E overrides. |
+| Port already in use / another WSL instance | WSL instances can share the host port space; a differently named distribution does not isolate ports. Identify the competing process; use `make run PORT=8765` and set `INFRAARCH_BACKEND_URL` for Vite. Keep test ports free or use documented E2E overrides. |
+| Ctrl+C interrupted a script | Ctrl+C stops the foreground script. Keep its terminal open until completion; inspect the recorded outcome before rerunning a benchmark. A separately started backend may remain running. |
 | Docker not running | Start Docker Desktop or the Ubuntu Docker service, then retry `make up`. Preserve named volumes. |
 | CRLF / `bash\r` in copied scripts | Convert the copied script with `sed -i 's/\r$//' SCRIPT.sh`, then run `bash -n SCRIPT.sh`. |
 | Missing mirror / scanner | Follow pinned prerequisites and provider/schema provisioning. A skip or failed scan is not a clean-deployment pass. |
@@ -2224,4 +2233,8 @@ removed conformance gates, remaining acceptance decisions and final retained-fil
 flags separate. They do not estimate a new pass rate. See
 [Phase 10e verification](docs/evals/phase10e-verification/README.md) and its
 [author command](docs/evals/phase10e-verification/RERUN.md).
-**The next author-run round is the final reported result regardless of outcome.**
+The fixed final author-run round completed on 2026-10-28: **15/58 strict checks
+passed**, with six `plan_conformance_conflict` review flags. An earlier attempt
+aborted during run 10; its 8/27 partial result is excluded. See
+[the final report](docs/evals/phase10f-final-report/README.md) for the native-abort
+observation, deadline/routing differences and historical comparison limits.

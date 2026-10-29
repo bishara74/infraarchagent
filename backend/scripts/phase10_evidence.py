@@ -34,6 +34,10 @@ def validate(data: dict, requirements: set[str], root: Path) -> None:
 
 def render(data: dict) -> str:
     counts = Counter(row["status"] for row in data["rows"])
+    deployment = next(row for row in data["rows"] if row["id"] == "NFR-04")
+    deployment_links = ", ".join(
+        f"[{Path(path).name}](../../{path})" for path in deployment["evidence"]
+    )
     lines = [
         "# Requirement evidence index",
         "",
@@ -76,8 +80,9 @@ def render(data: dict) -> str:
         "",
         (
             "PR-03 uses the existing ≤1.5× isolated-baseline target; "
-            "its draft revision is unapproved. NFR-04 remains unverified: "
-            "[author template](phase10-clean-deployment/TEMPLATE.md). "
+            "its draft revision is unapproved. "
+            f"NFR-04: **{deployment['status']}** — {deployment['finding']} "
+            f"Evidence: {deployment_links}. "
             "Proposed additions are [awaiting author/supervisor approval]"
             "(../phase10-proposed-requirements.md) and do not enter these counts."
         ),
