@@ -27,6 +27,60 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-10-29 — Phase 10g — Analyse first-scan remediation effects
+
+**Summary:** Add a source-free offline comparison of 491 generated packages in
+the nine agreed rounds. Strict blockers: 465 reduced, 19 unchanged non-zero,
+four already zero, zero increased, three unknown (488 comparable). Final 10e:
+57 reduced, one unchanged, zero already zero/increased/unknown (58 packages).
+Checkov + Trivy HIGH/CRITICAL: 414/22/52/0/3 pooled and 46/4/8/0/0 final.
+All findings: 447/31/0/10/3 pooled and 54/2/0/2/0 final, in the same order.
+All 298 unresolved-blocker packages (33 final) are pending_review with findings
+and review affordances in the recorded exports. The universal reduction
+criterion is not met; "never increased" requires a blocking/HIGH-CRITICAL
+qualification. Advisory-only checks_passed occurs 126 times pooled, 15 final.
+
+**Requirements addressed:** FR-S-02, FR-S-03, FR-S-07, NFR-01.
+
+**Files:** New backend/scripts/phase10g_remediation_effect.py and focused
+backend/tests/unit/test_phase10g_remediation_effect.py; new
+docs/evals/phase10g-remediation-effect/ with README, 491-row packages.csv,
+input-manifest.json and verification evidence; docs/design-deviations.md,
+docs/thesis-notes/chapter6-evaluation.md and this log. No application,
+configuration, existing test, specification or historical evidence edits.
+README.md is unchanged: setup, environment and public commands do not change.
+
+**Decisions:** D-66 links the analysis and thesis qualification; no new open
+question or policy change. Earlier exports match committed whole-file hashes;
+Sonnet/final exports match 342 committed canonical plan/original/retained
+hashes plus final quality fields, but first-scan metadata has no independent
+historical whole-export attestation. Three 10b unsafe_file_input packages
+remain unknown. Compare original automated first scans with final retained
+verification, preserve cross-tool duplicates, exclude Terraform from the
+Checkov/Trivy metric, and preserve advisory totals despite truncated identities.
+Proposal retained flags, iteration rollbacks and actual retained rule deltas
+remain distinct. The 13 missing variants are not the three unknown comparisons.
+Legacy final-set complexity stays unassigned. Pooling is descriptive only.
+
+**Tests:** Focused module: 27 passed, zero failed/skipped (final run 0.11s).
+make lint passes: 52 script/deployment files, 421 app/test files, 192 mypy
+sources, ESLint and both TypeScript checks. make test exits 2 at migrate-test:
+connection refused at the explicit synthetic collection-only test endpoint;
+no full-suite tests ran. No test URLs were supplied and no author database,
+dotenv, service startup, install or model call was used. make secret-scan:
+zero findings, zero scan errors; safe output is retained in the new report.
+Independent raw-export arithmetic matches 488 scan pairs / 1,464 metric
+comparisons; three unknowns and output hashes are preserved. Final reproduction,
+byte-preservation and current-file scan details are in verification.json.
+
+**Known gaps / follow-ups:** Scan counts do not establish complete security
+coverage, cloud deployment or exclusive Fixer causality. Syntax-limited scans,
+refused inputs, advisory identity truncation, shared plans/repeated scenarios,
+and new-export attestation limits remain explicit. Browser visibility was not
+rerun; this analysis verifies recorded API presentation. Full database-backed
+regression verification requires an isolated configured test database. Adapt the
+linked thesis paragraph without changing immutable specification files here.
+
 ## 2026-10-29 — Phase 10f — Final documentation and evidence closure
 
 **Summary:** Publish the predeclared final broad result from committed evidence,

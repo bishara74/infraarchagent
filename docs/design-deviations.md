@@ -3396,6 +3396,37 @@ or external service is introduced. The sole author-approved code exception
 makes the evidence generator render NFR-04 from its reviewed register row,
 covered by its existing test module.
 
+#### Phase 10g — first-scan versus retained remediation outcomes
+
+The [remediation-effect report](evals/phase10g-remediation-effect/README.md)
+compares 491 generated packages from the nine agreed development rounds. Strict
+blockers decrease on 465/488 comparable packages (95.29%): 19 are unchanged and
+non-zero, four are zero at both endpoints, none increase, and three 10b packages
+with `unsafe_file_input` lack a usable pair. Final 10e is 57 reduced / one
+unchanged / zero already-zero / zero increased / zero unknown among 58 packages.
+Checkov + Trivy HIGH/CRITICAL counts are 414 reduced / 22 unchanged / 52
+already-zero / zero increased / three unknown pooled; final counts are
+46 / four / eight / zero / zero. These exclude Terraform's HIGH/CRITICAL records.
+
+The universal Chapter 1 reduction criterion is not met. All-finding totals,
+including advisories, have 447 reduced / 31 unchanged / zero already-zero /
+10 increased / three unknown; final 10e has 54 / two / zero / two / zero.
+A blanket "violations never increased" claim is therefore unsupported. The
+report separates retained template/Fixer actions, rejected candidate findings,
+and unknown advisory identities from truncated samples. All 298 packages with
+recorded unresolved blockers (33 final) are `pending_review` with exported
+findings/review affordances visible; there are no blocker-visibility exceptions.
+Advisory-only `checks_passed` packages (126 pooled, 15 final) qualify the literal
+meaning of "unresolved violations": strict policy deliberately permits advisories.
+
+Whole-export hashes pin earlier cache evidence; the new Sonnet/final 10e exports
+match 342 committed plan/original/retained hashes plus final quality fields, but
+their first-scan metadata has no independent historical whole-export attestation.
+The [Chapter 6 note](thesis-notes/chapter6-evaluation.md#phase-10g--remediation-effect)
+provides the proposed thesis wording. Pooling is descriptive, not a matched or
+causal estimate. No application/specification/policy change or new open question
+is introduced; the analysis clarifies the criterion's recorded outcome.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

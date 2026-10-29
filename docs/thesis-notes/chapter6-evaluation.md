@@ -5,6 +5,31 @@ inputs; this text does not claim deployment success or general model superiority
 See [final report](../evals/phase9-final-report/report.md), its input manifest and
 [D-55](../design-deviations.md).
 
+## Phase 10g — remediation effect
+
+The universal criterion of reducing violations on every generated package was
+not met. Across nine development rounds (491 generated packages), recorded
+strict blocking findings decreased in 465/488 comparable packages (95.29%),
+were unchanged and non-zero in 19, were zero at both endpoints in four, and
+increased in none; three packages lacked a usable comparison. The final round
+had 57 reduced and one unchanged out of 58 (98.28% reduced), with no increases
+or unknown comparisons. All 298 packages with recorded unresolved blockers
+(33 final) were `pending_review` with findings visible in their API exports.
+Advisories are a separate policy category and may remain on `checks_passed`
+packages: including them, all-finding totals increased in 10 packages overall,
+including two final-round packages, so "violations never increased" requires
+an explicit blocking-finding qualification. These are observed retained-file
+scan outcomes, not complete security coverage or deployment proof; repeated
+scenarios and shared plans make the pooled result descriptive rather than causal.
+
+The [Phase 10g report](../evals/phase10g-remediation-effect/README.md) contains
+all three metric tables, per-round/complexity classifications, recorded reasons
+and rule IDs, a package CSV and an input hash manifest. It distinguishes
+whole-export hash pins from content/quality corroboration for the new Sonnet
+and final exports, and documents three missing 10b scan pairs and advisory
+sample truncation. This paragraph qualifies Chapter 1 without editing the
+immutable specification or the historical readiness tables below.
+
 ## Setup and method
 
 InfraArchAgent was evaluated on the captured i5-1135G7 / approximately 8 GB WSL2

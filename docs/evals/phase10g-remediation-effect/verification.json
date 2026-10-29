@@ -1,0 +1,65 @@
+{
+  "analysis_sha256": "f7b8f93023e63590479fed299c9e9aa098324eabbe41076e77b02191234c2747",
+  "final_current_file_scan": {
+    "errors": 0,
+    "files": 12,
+    "findings": 0,
+    "method": "Existing secret-scan matches with the committed exact-value allowlist; covers final changed files and report artifacts after the full history scan"
+  },
+  "focused_test_sha256": "010c5757140ce7ccfa3d5b024433cde3e2e1236579a6aef8e7b31509d1c2dbe0",
+  "focused_tests": {
+    "command": "dotenv-disabled pytest -q backend/tests/unit/test_phase10g_remediation_effect.py",
+    "failed": 0,
+    "passed": 27,
+    "skipped": 0
+  },
+  "full_tests": {
+    "command": "make test",
+    "dotenv_disabled": true,
+    "exit_code": 2,
+    "pytest_tests_executed": 0,
+    "reason": "migrate-test connection refused at explicit synthetic collection-only test endpoint; no isolated test database URLs supplied"
+  },
+  "independent_recomputation": {
+    "metric_comparisons_matched": 1464,
+    "scan_pairs": 488,
+    "unknown_packages": 3
+  },
+  "integrity": {
+    "application_existing_tests_configuration_spec_historical_evidence": "unchanged",
+    "baseline_tracked_files": 7888,
+    "cache_exports_verified": 168,
+    "changed_existing_paths": [
+      "docs/IMPLEMENTATION_LOG.md",
+      "docs/design-deviations.md",
+      "docs/thesis-notes/chapter6-evaluation.md"
+    ],
+    "committed_input_blobs_verified": 800,
+    "unchanged_protected_tracked_files": 7885
+  },
+  "limitations": [
+    "No full database-backed suite ran",
+    "Recorded API findings visibility, no fresh browser verification",
+    "New Sonnet/final export first scans lack independent historical whole-export attestation"
+  ],
+  "lint": {
+    "app_test_files": 421,
+    "command": "make lint",
+    "exit_code": 0,
+    "frontend": "ESLint and both TypeScript checks passed",
+    "mypy_sources": 192,
+    "script_deployment_files": 52
+  },
+  "reproduction": {
+    "README.md": "byte-identical",
+    "input-manifest.json": "byte-identical",
+    "packages.csv": "byte-identical"
+  },
+  "secret_scan": {
+    "command": "make secret-scan",
+    "errors": 0,
+    "evidence": "secret-scan/findings.json",
+    "exit_code": 0,
+    "findings": 0
+  }
+}
