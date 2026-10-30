@@ -1,0 +1,132 @@
+cd frontend && npm test
+
+> infraarchagent-frontend@0.1.0 test
+> vitest run
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv5.0.2 [39m[90m/home/bishara/code/infraarchagent/frontend[39m
+
+ [32m✓[39m src/components/ActionGate.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 3044[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01/06/07 button gate explains hover focus click without activation[33m 661[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 lesson busy fields and proposal/cancel actions are explained[33m 666[2mms[22m[39m
+ [32m✓[39m src/screens/SettingsScreen.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 3436[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 users table reset confirmation and enable actions preserve passwords in memory only[33m 1482[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 provider permits saving no-credit keys and confirms revocation[33m 889[2mms[22m[39m
+ [32m✓[39m src/components/ModelControls.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 3607[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 only supported modes can be selected and incompatible models are absent[33m 1178[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 entering a key automatically probes and loads catalog without persistence[33m 427[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 FR-P-04 changing Architect leaves Generator/Fixer defaults and edits independent[33m 954[2mms[22m[39m
+ [32m✓[39m src/components/review.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[33m 3701[2mms[22m[39m
+   [33m[2m✓[22m[39m retry picker is limited to five existing files and only one request is active[33m 1526[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 retains the accepted retry lock until a settled EOF snapshot[33m 531[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-S-10 checks-passed rejection requires category and reason and retains download[33m 586[2mms[22m[39m
+ [32m✓[39m src/screens/InputScreen.draft.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 4193[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 saved drafts stay out of the editor until Restore is clicked[33m 1126[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 Dismiss preserves the server draft and the next mount offers it again[33m 542[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 Discard clears the server draft without changing saved configuration[33m 514[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 failed Discard keeps recovery actions and can retry[33m 656[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 examples populate only on click and fresh typing replaces the draft[33m 320[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 FR-P-04 submitted configuration contains only the explicit Architect override[33m 1032[2mms[22m[39m
+[90mstderr[2m | src/screens/LessonsSettings.test.tsx[2m > [22m[2mFR-UI-07 an owner proposes an immutable successor from the existing structured content
+[22m[39mEncountered two children with the same key, `00000000-0000-4000-8000-000000000001`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+ [32m✓[39m src/screens/LessonsSettings.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 4404[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 shows linked decision, filter and exact preview before approval without rendering HTML[33m 1323[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 default four-eyes policy prevents self-approval in the UI[33m 305[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 server gate disables enabling while keeping immediate disable available[33m 564[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 exposes history and a field diff, keeping immutable content out of edit actions for others[33m 492[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 reject requires confirmation and cancellation leaves the lesson unchanged[33m 537[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 retire requires confirmation and cancellation leaves the lesson unchanged[33m 544[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 an owner proposes an immutable successor from the existing structured content[33m 323[2mms[22m[39m
+ [32m✓[39m src/screens/screens.test.tsx [2m([22m[2m24 tests[22m[2m)[22m[33m 6707[2mms[22m[39m
+   [33m[2m✓[22m[39m screen loading and safe errors[33m 516[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 incomplete submissions reach validation and empty config is omitted[33m 701[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 successful submit stores ID and pending request disables Generate[33m 538[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-06/07 review replaces download and repaired packages expose it[33m 325[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07/FR-P-04 approve resumes closed SSE to recover its label-origin event without a retry latch[33m 993[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07/FR-P-04 reject resumes closed SSE to recover its label-origin event without a retry latch[33m 820[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 empty decisions focus the missing field without sending a request[33m 480[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 configuration starts collapsed and shows actual server defaults and experimental guidance[33m 306[2mms[22m[39m
+ [32m✓[39m src/components/ModelControls.filter.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 2503[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 every role defaults to tested recommendations and toggle reveals only compatible models[33m 1939[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 routing default uses base metadata and effective server effort[33m 333[2mms[22m[39m
+ [32m✓[39m src/components/LessonForm.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 2098[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 shows server filter reasons and prevents a blocked proposal[33m 1077[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 counts normalized code points and submits only structured lesson fields[33m 647[2mms[22m[39m
+ [32m✓[39m src/components/ModelCombobox.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 2220[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 combobox filters by ID/name ignoring case and explains disabled choices[33m 936[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 default reasoning remains editable and materialises the effective model[33m 301[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 invalid inherited structured-output defaults explain the affected fields[33m 357[2mms[22m[39m
+ [32m✓[39m src/components/BusyActions.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 1918[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 authentication busy actions are explained (setup=false)[33m 560[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 users create/reset/enable/disable busy actions are explained[33m 573[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 provider save/test/use/revoke busy actions are explained[33m 350[2mms[22m[39m
+ [32m✓[39m src/App.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 2152[2mms[22m[39m
+   [32m✓[39m application shell [2m(2)[22m
+     [33m[2m✓[22m[39m renders the input screen in the main landmark[33m 792[2mms[22m[39m
+     [33m[2m✓[22m[39m offers a keyboard-reachable skip link to the focusable main content[33m 489[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-03 query-only navigation preserves control focus and screen changes focus main[33m 311[2mms[22m[39m
+ [32m✓[39m src/screens/PackageScreen.tabs.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 2050[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-03/04/05/07 overview starts without file trees; inspection exposes accessible on-demand tabs[33m 1602[2mms[22m[39m
+ [32m✓[39m src/screens/ReviewHistorySettings.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1445[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 history filters reset pages, exports all matching rows and displays active count[33m 1107[2mms[22m[39m
+ [32m✓[39m src/screens/FeedbackInsights.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1485[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 links deterministic counts to filtered decisions and labels missing snapshots[33m 890[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-07 switches history views in the URL without loading both endpoints[33m 381[2mms[22m[39m
+ [32m✓[39m src/hooks/useModelCatalog.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 1106[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 catalogue setup_required explains recovery and retries past the cache[33m 717[2mms[22m[39m
+ [32m✓[39m src/components/DiffView.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 905[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-04 UC-04 multi-hunk diffs retain headers line numbers and plus/minus markers[33m 565[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-04 UC-04 whitespace toggle and counts persist through account cache without changing package text[33m 337[2mms[22m[39m
+ [32m✓[39m src/components/WindowedRows.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 899[2mms[22m[39m
+   [33m[2m✓[22m[39m large lists render a bounded window and scrolling reveals later rows[33m 810[2mms[22m[39m
+ [32m✓[39m src/components/Authentication.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1271[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 login has password visibility Caps Lock and safe generic failures[33m 736[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 account menu supports keyboard dismissal outside click and logout[33m 467[2mms[22m[39m
+ [32m✓[39m src/components/DownloadButton.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 687[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-06 downloads show safe errors and permit retry[33m 684[2mms[22m[39m
+ [32m✓[39m src/test/tooling.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 778[2mms[22m[39m
+   [33m[2m✓[22m[39m serves the local shell and preserves API requests through the dev proxy[33m 737[2mms[22m[39m
+ [32m✓[39m src/components/PlanConformanceNotice.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 953[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-S-07 FR-UI-05 explains current public, private and unknown conflicts without inventing legacy evidence[33m 683[2mms[22m[39m
+ [32m✓[39m src/screens/RecentRunsScreen.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 1086[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 recent history errors provide Retry and recover a populated list[33m 895[2mms[22m[39m
+ [32m✓[39m src/components/progress.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1082[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-02 UC-02 stage cards keep timing event sequence and expandable variants[33m 635[2mms[22m[39m
+ [32m✓[39m src/lib/runStreamStore.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 623[2mms[22m[39m
+ [32m✓[39m src/components/DownloadAllButton.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 1075[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-06 bundle downloads require all variants and expose safe retry errors[33m 1071[2mms[22m[39m
+ [32m✓[39m src/components/LoginGate.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1157[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 normal login at / lands on New request[33m 930[2mms[22m[39m
+ [32m✓[39m src/components/FileContent.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 1450[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-03 NFR-01 current file content is escaped with real line numbers[33m 1445[2mms[22m[39m
+ [32m✓[39m src/components/LessonUsage.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[33m 474[2mms[22m[39m
+   [33m[2m✓[22m[39m NFR-01 shows exact set use and self-approval provenance without hiding prior use[33m 390[2mms[22m[39m
+ [32m✓[39m src/api/sse.test.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 334[2mms[22m[39m
+ [32m✓[39m src/lib/modelDefaults.test.ts [2m([22m[2m200 tests[22m[2m)[22m[32m 190[2mms[22m[39m
+ [32m✓[39m src/api/client.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 162[2mms[22m[39m
+ [32m✓[39m src/lib/runReducer.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m src/components/Icon.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 457[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-UI-01 decorative Codicons do not duplicate accessible labels[33m 453[2mms[22m[39m
+ [32m✓[39m src/api/contract.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/lib/modelCatalogue.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m src/lib/preferences.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m src/lib/presentation.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m src/lib/lessonUsage.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/lib/diff.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 66[2mms[22m[39m
+ [32m✓[39m src/lib/readinessOrigin.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m src/test/perfEvidence.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/lib/modelRouting.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/test/databaseConfig.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m src/lib/architectureSummary.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/lib/fileTree.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m46 passed[39m[22m[90m (46)[39m
+[2m      Tests [22m [1m[32m469 passed[39m[22m[90m (469)[39m
+[2m   Start at [22m 01:04:11
+[2m   Duration [22m 29.67s[2m (environment 52%, tests 32%, setup 8%, transform 4%, import 4%)[22m
+
+[2mEnvironment [22m [33mjsdom was created 46 times[39m[2m · 96.49s total, 52% of tracked time[22m
+[2m            [22m [2mcreate it once per worker with [22m[33mpool: 'vmThreads'[39m[2m (keeps per-file isolation) or [22m[33misolate: false[39m[2m (shares it across files)[22m
+[2m            [22m [2mlearn more: https://vitest.dev/guide/improving-performance#test-environments[22m
+
