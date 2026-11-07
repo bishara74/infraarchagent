@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-02/07: exposure counter-audit keeps unknowns and profile history honest."""
 
 from copy import deepcopy

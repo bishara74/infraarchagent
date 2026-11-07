@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-02/09: focused calls and measured recovery of existing-path proposals."""
 
 import json

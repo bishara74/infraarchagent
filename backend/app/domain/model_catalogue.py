@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Metadata routing only: never rewrite the model ID used for inference."""
 
 ROUTING_SUFFIXES = frozenset({"nitro", "floor", "exacto", "online"})

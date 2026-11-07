@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-01/FR-V-03: path-only observations preserve baseline and scenario units."""
 
 from copy import deepcopy

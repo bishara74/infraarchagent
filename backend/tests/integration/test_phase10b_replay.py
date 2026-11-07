@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-02/03/07: fixed synthetic author run-3/run-4 regression replays."""
 
 import json

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-P-04/FR-V-04/NFR-01: keep recorded reason codes without source leakage."""
 
 import json

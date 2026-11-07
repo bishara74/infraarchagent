@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Launch isolated verification using test URLs from normal operator settings.
 
 The parent resolves settings normally. Only test database credentials cross into

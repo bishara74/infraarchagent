@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Pure validation reports, deterministic sampling and the single outcome rule."""
 
 from collections import Counter

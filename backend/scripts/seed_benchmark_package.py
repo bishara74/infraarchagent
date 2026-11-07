@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Create an explicitly synthetic, rejected PR-04 package in the dev database."""
 
 import argparse

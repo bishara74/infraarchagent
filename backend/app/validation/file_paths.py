@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """D-56: rebase literal file inputs to an exact, existing package artifact.
 
 Terraform documents file("${path.module}/...") reads at

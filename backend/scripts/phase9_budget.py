@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Measured-credit guard and an informational first-cost schedule projection."""
 
 from dataclasses import dataclass, field

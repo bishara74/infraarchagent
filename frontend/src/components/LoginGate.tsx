@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {Navigate, useLocation} from 'react-router';
 import {Authentication} from './Authentication';
 

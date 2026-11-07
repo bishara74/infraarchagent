@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """NFR-04: deployment recipes are inspectable without installing anything."""
 
 import importlib.util

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Per-run LLM and remediation choices, without transport concerns."""
 
 from typing import TYPE_CHECKING, Any, Literal

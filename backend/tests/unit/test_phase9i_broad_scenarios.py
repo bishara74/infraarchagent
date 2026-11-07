@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-01/NFR-01: immutable broad scenario registration and anchor texts."""
 
 import json

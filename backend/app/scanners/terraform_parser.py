@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Filter validate diagnostics to demonstrated HCL/configuration-loading errors.
 
 No init is performed. Missing providers/modules, references, defaults and schema

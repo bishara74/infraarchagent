@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import type {PackageResult,PlanConflict} from '../api/types';
 export function planConflictMessage(conflict:PlanConflict){
   if(conflict.message)return `${conflict.assessment==='unknown'?'Informational':'Plan conflict'}: ${conflict.message}`;

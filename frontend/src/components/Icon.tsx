@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 export type IconName = 'info' | 'circuit-board' | 'gear' | 'account' | 'chevron-down' | 'chevron-up' | 'zap' | 'check' | 'loading' | 'history' | 'terminal' | 'watch' | 'credit-card' | 'dashboard' | 'shield' | 'folder' | 'file' | 'cloud-download' | 'arrow-left' | 'search' | 'sign-out' | 'key' | 'person-add' | 'person' | 'trash' | 'lock' | 'close' | 'eye' | 'eye-closed';
 
 /** Decorative glyph: the surrounding button/link/text supplies the accessible name. */

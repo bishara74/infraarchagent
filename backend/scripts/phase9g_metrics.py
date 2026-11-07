@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Safe fixer-attempt evidence across security, validation and syntax repair."""
 
 from collections import Counter

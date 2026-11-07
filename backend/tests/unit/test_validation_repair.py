@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-V-03/FR-S-09: automatic acceptance wraps the existing Retry fixer."""
 
 import asyncio

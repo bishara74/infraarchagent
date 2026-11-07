@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 import httpx
 from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine

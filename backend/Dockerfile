@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 # Author-built recipe; image availability/build/runtime remain unverified.
 FROM curlimages/curl:8.12.1 AS scanner-binaries
 USER 0

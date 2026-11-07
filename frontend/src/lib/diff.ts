@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { diffArrays,structuredPatch } from 'diff';
 export interface DiffRow { kind:'context'|'add'|'remove'|'hunk'|'formatting'; content:string; oldLine:number|null; newLine:number|null }
 export function unifiedDiff(original:string|undefined,current:string):{rows:DiffRow[];baseline:boolean;changed:boolean} {

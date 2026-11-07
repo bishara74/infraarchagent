@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { useLayoutEffect,useRef,useState,type ReactNode } from 'react';
 export function WindowedRows({count,row,follow=false,label,className=''}:{count:number;row:(index:number)=>ReactNode;follow?:boolean;label:string;className?:string}){
  const ref=useRef<HTMLDivElement>(null); const [top,setTop]=useState(0); const pinned=useRef(true);const height=24;const start=Math.min(Math.max(0,count-45),Math.max(0,Math.floor(top/height)-5));const end=Math.min(count,start+45);

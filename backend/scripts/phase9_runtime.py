@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Offline fixed-input replay and explicitly counterfactual PR-01 estimates."""
 
 import argparse

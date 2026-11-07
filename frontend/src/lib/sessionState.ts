@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 export interface SessionStatus {auth_required:boolean;authenticated:boolean;mode:'local'|'shared_key'|'account';setup_required?:boolean;user?:{id:string;username:string;role:'admin'|'reviewer';created_at?:string;last_login_at?:string|null}|null;message?:string|null}
 let auth:SessionStatus|null=null;
 export const getSessionStatus=()=>auth;

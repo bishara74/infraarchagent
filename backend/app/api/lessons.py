@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Named-account lesson endpoints. Shared-key/local access is never governance."""
 
 from typing import Annotated, Any, Literal

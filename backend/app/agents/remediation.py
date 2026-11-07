@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Shared Retry/automatic patch merging and verification primitives."""
 
 from collections.abc import Mapping, Sequence

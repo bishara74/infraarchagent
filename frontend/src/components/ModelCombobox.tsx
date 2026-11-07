@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {useId,useLayoutEffect,useRef,useState,type KeyboardEvent} from 'react';
 import {Icon} from './Icon';
 export interface ModelOption {value:string;label:string;detail:string;disabled?:boolean;explanation?:string;tested?:boolean}

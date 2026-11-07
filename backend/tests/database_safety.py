@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Test-only settings and connection guards; never expose database credentials."""
 
 from sqlalchemy.engine import make_url

@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { BrowserRouter, Link, NavLink, Route, Routes, useLocation } from 'react-router';
 import { AccountMenu } from './components/AccountMenu';

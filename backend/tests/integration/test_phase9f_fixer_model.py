@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-02/04: configured OpenRouter model through mocked HTTP and persisted loop."""
 
 import json

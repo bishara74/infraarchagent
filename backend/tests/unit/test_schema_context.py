@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-03/09, FR-V-03: scanner and repair prompts share bounded schemas."""
 
 import hashlib

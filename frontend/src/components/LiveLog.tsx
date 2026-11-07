@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {usePreferences} from '../lib/preferences';
 import type { RunEvent } from '../api/types';
 import { Icon } from './Icon';

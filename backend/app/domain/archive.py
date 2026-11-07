@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Deterministic labelled IaC ZIPs (FR-UI-06, FR-S-10, PR-04)."""
 
 import hashlib

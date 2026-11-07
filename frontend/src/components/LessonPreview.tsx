@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import type {LessonPreview as Preview} from '../api/types';
 import {lessonRoles} from '../lib/lessonLabels';
 import {LessonFilter} from './LessonFilter';

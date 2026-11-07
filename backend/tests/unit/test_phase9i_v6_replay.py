@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-01/FR-V-03: offline migration reporting preserves scenario and guard units."""
 
 from copy import deepcopy

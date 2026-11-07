@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { useSyncExternalStore } from 'react';
 import { api, ApiError } from '../api/client';
 import type { AgentChoice, RunConfig, ResultsResponse } from '../api/types';

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-07/FR-V-03: offline, source-free replay of frozen final-round evidence.
 
 No settings, dotenv, model adapter, provider download or network client is used.

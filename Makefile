@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 PYTHON := python3
 PORT ?= 8000
 HOST ?= 127.0.0.1

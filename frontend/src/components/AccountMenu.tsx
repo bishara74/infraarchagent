@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {ActionButton} from './ActionGate';
 import {useEffect,useRef,useState,type KeyboardEvent} from 'react';
 import {Link,useNavigate} from 'react-router';

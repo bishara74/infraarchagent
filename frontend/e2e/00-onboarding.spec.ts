@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {captureUi} from './support/uiEvidence';
 import {expect,test} from '@playwright/test';
 import {PASSWORD,USERNAME,originHeaders} from './support/flow';

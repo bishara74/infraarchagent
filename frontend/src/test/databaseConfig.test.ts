@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { expect, it } from 'vitest';
 import { assertTestDatabases } from '../../e2e/support/testDatabase';
 const app='postgresql+asyncpg://infraarch_app:test-only@127.0.0.1:55436/infraarch_test';

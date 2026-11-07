@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Retain the generated package as the cumulative remediation diff baseline.
 
 Revision ID: 0002_original_files

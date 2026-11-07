@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Offline benchmark-A replay; scripted corrections are explicit test oracles.
 
 No model is called. These replacements are corpus fixtures, never production

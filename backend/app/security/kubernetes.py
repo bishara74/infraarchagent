@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """D-56: missing-only pod defaults, with source-preserving bounded edits.
 
 Helm inspection is authorised by real rendered objects, never by treating Go

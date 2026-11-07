@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Pure guard boundaries and offline provider key-info shapes."""
 
 from decimal import Decimal

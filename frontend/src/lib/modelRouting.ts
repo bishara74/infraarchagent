@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import type {Catalog} from '../api/types';
 const routing=new Set(['nitro','floor','exacto','online']);
 export function catalogueId(provider:string,id:string){

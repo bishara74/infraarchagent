@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Unified diffs only for file paths whose bytes changed."""
 
 from collections.abc import Mapping

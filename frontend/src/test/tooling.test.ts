@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 // @vitest-environment node
 import { createServer as createHttpServer } from 'node:http';
 import type { AddressInfo } from 'node:net';

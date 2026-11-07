@@ -1,4 +1,6 @@
 #!/bin/sh
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 set -eu
 
 # The official postgres entrypoint runs this only when the data volume is new.

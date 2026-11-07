@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Lesson persistence. A global transaction lock orders sets and governance."""
 
 from datetime import UTC, datetime

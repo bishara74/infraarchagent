@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import type { PackageResult, RunEvent } from '../api/types';
 
 /** Match archive provenance using recorded transitions, never package heuristics. */

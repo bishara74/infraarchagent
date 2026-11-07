@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-P-04 / NFR-01: header-only, read-only preflight with strict public projection."""
 
 from unittest.mock import AsyncMock

@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {Icon} from './Icon';
 export function statusLabel(status:string){return ({pending:'queued',completed:'complete'} as Record<string,string>)[status]??status.replaceAll('_',' ');}
 export function StatusBadge({status,seq,testId}:{status:string;seq?:number;testId?:string}){

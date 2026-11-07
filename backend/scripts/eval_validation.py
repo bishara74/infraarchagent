@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Validate original Phase 3 packages offline, without a database or LLM."""
 
 import argparse

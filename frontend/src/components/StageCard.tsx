@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { useEffect, useState, type ReactNode } from 'react';
 import { stageElapsed, type StageItem } from '../lib/runReducer';
 import { Icon } from './Icon';

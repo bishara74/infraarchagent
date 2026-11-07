@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Labelled offline verification load rehearsal; no model or quality-rate input."""
 
 import asyncio

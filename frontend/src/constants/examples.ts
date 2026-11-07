@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 export const examples=[
  {label:'Node.js API + PostgreSQL + Jenkins',text:'A Node.js REST API with a PostgreSQL database, autoscaling on ECS, a Jenkins CI/CD pipeline, Nginx reverse proxy, and Prometheus + Grafana monitoring stack on AWS.'},
  {label:'Python microservices + Kubernetes + Prometheus',text:'Python microservices on AWS EKS with autoscaling, a PostgreSQL database, a Jenkins CI/CD pipeline, and Prometheus monitoring with Grafana dashboards.'},

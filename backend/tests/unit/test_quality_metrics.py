@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-V-04/NFR-01: quality evidence never exports code, diffs or feedback."""
 
 import json

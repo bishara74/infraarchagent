@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-V-03: security-introduced invalidity is repaired and verified durably."""
 
 from dataclasses import replace

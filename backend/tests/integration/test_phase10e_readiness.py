@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-02/03/07: persisted final evidence is replaced after review retries."""
 
 from dataclasses import replace

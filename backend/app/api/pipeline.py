@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """HTTP submission and SSE progress endpoints; orchestration stays in services."""
 
 import asyncio

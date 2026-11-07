@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """D-38 durable TIMESTAMPTZ recovery without retry-start events."""
 
 from datetime import UTC, datetime

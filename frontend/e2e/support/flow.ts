@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {expect,type Page,type Locator} from '@playwright/test';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';

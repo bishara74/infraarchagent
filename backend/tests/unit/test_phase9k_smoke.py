@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-01 / FR-A-01 / NFR-01: smoke and scripted client rehearsal."""
 
 import json

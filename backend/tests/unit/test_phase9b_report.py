@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-01/03/05 and NFR-01: offline evaluation statistics and provenance."""
 
 import json

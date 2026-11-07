@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-P-04/FR-S-07: source-free inventory of the accepted Phase 10d diagnosis."""
 
 import argparse

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Immutable, offline Phase 9i observations. Never instantiate operator settings."""
 
 import argparse

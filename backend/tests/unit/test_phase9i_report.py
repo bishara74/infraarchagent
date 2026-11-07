@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-V-01/FR-S-04: replay attribution includes rejected and unknown findings."""
 
 import pytest

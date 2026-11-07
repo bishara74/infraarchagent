@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Reusable stateless validation with bounded tools and whole-stage cleanup."""
 
 import asyncio

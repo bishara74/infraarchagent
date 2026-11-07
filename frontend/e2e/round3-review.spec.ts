@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {expect,test} from '@playwright/test';
 import {mkdir,readFile} from 'node:fs/promises';
 import {submit,pendingPackage,results,USERNAME,PASSWORD,originHeaders} from './support/flow';

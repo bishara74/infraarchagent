@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {useId,useState,type InputHTMLAttributes} from 'react';
 import {registerBrowserSecret} from '../lib/preferences';
 import {Icon} from './Icon';

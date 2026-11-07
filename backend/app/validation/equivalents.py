@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """D-56: only documented, value-preserving Terraform equivalences."""
 
 import hashlib

@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {PlanConformanceNotice} from './PlanConformanceNotice';
 import {ActionButton,ActionGate} from './ActionGate';
 import {approvalCategories,rejectionCategories,categoryLabel} from '../lib/reviewCategories';

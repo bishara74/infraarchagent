@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Provider metadata normalization; never infer capabilities from model names."""
 
 from typing import Any

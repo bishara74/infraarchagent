@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Assemble safe results; HTTP and database statements stay at their boundaries."""
 
 from typing import Any

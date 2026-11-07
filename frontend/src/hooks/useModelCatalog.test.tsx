@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {act,fireEvent,render,screen,waitFor} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {expect,it,vi} from 'vitest';

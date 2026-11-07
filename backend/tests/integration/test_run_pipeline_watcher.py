@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """CLI watcher uses only the public API with an injectable HTTP transport."""
 
 import httpx

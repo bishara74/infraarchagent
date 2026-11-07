@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Explicit optional Fixer lesson scope (FR-S-02, NFR-01)."""
 
 from alembic import op

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Evaluate saved Phase 3 packages with local scanners or the full fix loop."""
 
 import argparse

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-G-03/04/05: reproducible observations preserve denominators and limits."""
 
 import pytest

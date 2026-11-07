@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import type {LessonManifest,RunEvent} from '../api/types';
 
 export function lessonUsage(manifest:LessonManifest|null|undefined,events:RunEvent[]=[]){

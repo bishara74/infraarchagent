@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 # AUTHOR ONLY: clean Ubuntu 24.04 amd64; requires network and sudo.
 set -euo pipefail
 test "$(. /etc/os-release; echo "$ID:$VERSION_ID")" = ubuntu:24.04

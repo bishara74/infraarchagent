@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-01/05, NFR-01: broad schedules use shared guards and safe evidence."""
 
 import json

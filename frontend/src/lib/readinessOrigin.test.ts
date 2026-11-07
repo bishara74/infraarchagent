@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { expect, it } from 'vitest';
 import run from '../test/fixtures/run.sse?raw';
 import retry from '../test/fixtures/retry.sse?raw';

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-G-02/FR-S-03/FR-V-03/PR-05: corrective generation and acceptance."""
 
 import json

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-UI-01 / FR-P-04 / NFR-01: retry and unprobed environment defaults."""
 
 import httpx

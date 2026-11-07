@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-G-02/FR-S-03: syntax recovery precedes the first scanner baseline."""
 
 from dataclasses import replace

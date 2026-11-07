@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Offline report rendering: measured values only, unknowns remain unknown."""
 
 import csv

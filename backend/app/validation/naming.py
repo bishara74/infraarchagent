@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Explainable naming warnings; no fuzzy scoring or inferred release names."""
 
 import ipaddress

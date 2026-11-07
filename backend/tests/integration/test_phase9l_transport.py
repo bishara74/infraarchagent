@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-P-04, FR-A-05, FR-S-07 and NFR-01: advisory dispatch and provenance."""
 
 import asyncio

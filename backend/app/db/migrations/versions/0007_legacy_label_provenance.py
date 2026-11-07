@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Fail closed for legacy success without an automatic transition (FR-S-08/10).
 
 Revision ID: 0007_legacy_label_provenance

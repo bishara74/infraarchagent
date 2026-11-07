@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {cursorFor,rememberRun} from './preferences';
 import { flushSync } from 'react-dom';
 import { api } from '../api/client';

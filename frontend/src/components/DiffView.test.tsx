@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {fireEvent,render,screen} from '@testing-library/react';
 import {expect,it} from 'vitest';
 import fixture from '../test/fixtures/repaired-results.json';

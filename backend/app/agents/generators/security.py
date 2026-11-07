@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Security strategy for the shared generator template."""
 
 from app.agents.generators.base import GeneratorAgent

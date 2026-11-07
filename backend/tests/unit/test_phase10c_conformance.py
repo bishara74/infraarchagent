@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-07/NFR-01: synthetic structural copies of final-round guard failures."""
 
 import json

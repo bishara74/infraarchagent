@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Pure transition rules for runs, packages, and review readiness."""
 
 from collections.abc import Mapping

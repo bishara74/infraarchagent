@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Generate and validate an atomic fix proposal for one existing file."""
 
 import asyncio

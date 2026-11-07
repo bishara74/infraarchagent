@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """D-56: version-bound AWS v6 migrations from the documented upgrade guide."""
 
 import hashlib

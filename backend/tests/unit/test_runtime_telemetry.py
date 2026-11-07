@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-01/05, FR-P-04, NFR-01: exact, isolated and source-free diagnostics."""
 
 import asyncio

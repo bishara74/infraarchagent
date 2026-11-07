@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {expect,it} from 'vitest';
 import {render,screen,fireEvent} from '@testing-library/react';
 import {WindowedRows} from './WindowedRows';

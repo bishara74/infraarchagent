@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-08/09/10 locked reviews and real-agent retries with offline adapters."""
 
 import asyncio

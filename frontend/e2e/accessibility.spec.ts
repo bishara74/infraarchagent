@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {expect,test} from '@playwright/test';
 import {USERNAME,PASSWORD,originHeaders,tabTo} from './support/flow';
 test('FR-UI-07 keyboard-only submission and review with reduced motion',async({page})=>{

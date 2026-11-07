@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Context-local, source-free runtime observations. No database or file I/O."""
 
 import asyncio

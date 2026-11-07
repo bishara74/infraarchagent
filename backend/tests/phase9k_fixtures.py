@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Unmistakably synthetic public catalogue evidence. Never real model metadata."""
 
 import json

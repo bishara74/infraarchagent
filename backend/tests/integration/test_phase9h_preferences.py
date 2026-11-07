@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-UI-01 / FR-P-04 preference authority, isolation and event hydration."""
 
 import httpx

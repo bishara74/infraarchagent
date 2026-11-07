@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {expect,it,vi} from 'vitest';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {latencyEvidence,writePerfEvidence,type LatencySample} from '../../e2e/support/perfEvidence';

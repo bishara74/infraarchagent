@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Standard-library evidence helpers. Never load dotenv or dump environments."""
 
 import importlib.metadata

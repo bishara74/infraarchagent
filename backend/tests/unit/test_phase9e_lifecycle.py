@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-V-03/PR-05: bounded iteration clocks and isolated reusable workspaces."""
 
 import asyncio

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """OpenAI Chat Completions implementation of the LLM provider contract."""
 
 from typing import Any, Literal

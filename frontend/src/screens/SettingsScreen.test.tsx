@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {beforeEach,expect,it,vi} from 'vitest';
 import {fireEvent,render,screen,within,waitFor} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

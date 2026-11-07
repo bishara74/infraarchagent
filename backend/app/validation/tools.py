@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Safe validator version probes and project-local mirror discovery."""
 
 from functools import lru_cache

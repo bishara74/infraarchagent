@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 /** Fail before launching any server or migration; never echo credential URLs. */
 export function assertTestDatabases(app: string | undefined, owner: string | undefined): [string, string] {
   if (!app || !owner) throw new Error('Export TEST_DATABASE_URL and TEST_MIGRATION_DATABASE_URL; E2E never loads dotenv.');

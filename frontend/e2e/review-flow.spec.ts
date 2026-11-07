@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {expect,test} from '@playwright/test';
 import {submit,pendingPackage,downloadAndCheck,headers,results} from './support/flow';
 test('UC-01 UC-02 UC-03 UC-04 UC-05 UC-06 UC-08 FR-UI-01..07 stub review → retry → checks passed → complete ZIP',async({page})=>{

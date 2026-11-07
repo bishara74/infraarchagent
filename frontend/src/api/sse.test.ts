@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { expect, it, vi } from 'vitest';
 import pending from '../test/fixtures/pending-results.json';
 import recorded from '../test/fixtures/run.sse?raw';

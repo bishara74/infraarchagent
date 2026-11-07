@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """NFR-01: a self-confirmation cannot accidentally approve a different owner."""
 
 import pytest

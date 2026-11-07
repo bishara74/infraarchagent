@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 FROM node:24.21.0-bookworm-slim AS build
 WORKDIR /src
 COPY frontend/package.json frontend/package-lock.json ./

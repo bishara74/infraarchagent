@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Author-run deployment; secrets stay in private local state, outside evidence."""
 
 import argparse

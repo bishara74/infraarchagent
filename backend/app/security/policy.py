@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Versioned local severity policy; Checkov Community JSON has no severity data."""
 
 from collections.abc import Mapping, Sequence

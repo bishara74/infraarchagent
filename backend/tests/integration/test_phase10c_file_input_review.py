@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-02/06 and NFR-01: real scanner refusal follows existing review states."""
 
 from dataclasses import replace

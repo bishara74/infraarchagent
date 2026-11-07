@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 export interface FileTreeRow { path: string; label: string; depth: number; directory: boolean }
 /** Directory labels come only from prefixes of returned file paths. */
 export function fileTree(paths: string[]): FileTreeRow[] {

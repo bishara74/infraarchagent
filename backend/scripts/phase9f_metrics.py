@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Allowlisted Phase 9f quality evidence; never copy source, diffs or summaries."""
 
 from collections import Counter

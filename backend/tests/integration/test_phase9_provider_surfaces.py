@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Mocked provider bodies stay out of persisted/live/public failure surfaces."""
 
 import asyncio

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 # AUTHOR ONLY. No deployment claim follows from static checking this file.
 set -euo pipefail
 if [ "$#" -ne 4 ]; then

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Offline PR-04 attribution on disposable PostgreSQL with a loopback HTTP server."""
 
 import argparse

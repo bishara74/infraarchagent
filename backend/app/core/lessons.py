@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Human lesson governance; no model is involved in curation."""
 
 from datetime import UTC, datetime

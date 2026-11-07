@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """NFR-01/FR-V-03: all Terraform evaluation paths refuse escaped file reads."""
 
 from unittest.mock import AsyncMock

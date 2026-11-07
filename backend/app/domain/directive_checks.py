@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Report-only regex heuristics; Phase 5 Checkov determines real security findings.
 
 These checks are deliberately approximate. They inspect Terraform and Kubernetes

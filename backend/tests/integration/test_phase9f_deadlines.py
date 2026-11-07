@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-05/FR-S-03: a template timeout retains the verified catalogue checkpoint."""
 
 from dataclasses import replace

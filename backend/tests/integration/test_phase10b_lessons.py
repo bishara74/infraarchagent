@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-02/07, FR-A-05, NFR-01: optional Fixer advisory scope and dispatch."""
 
 import json

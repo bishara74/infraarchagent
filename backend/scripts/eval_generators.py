@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Evaluate generator variants against fixed plans; never store prompts or keys."""
 
 import argparse

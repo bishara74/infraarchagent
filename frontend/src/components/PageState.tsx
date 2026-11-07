@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import { Link } from 'react-router';
 import { ApiError,errorMessage } from '../api/client';
 import { Authentication } from './Authentication';

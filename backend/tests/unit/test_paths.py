@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 import pytest
 
 from app.domain.paths import UnsafePathError, validate_file_map, validate_relative_path

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Account persistence and atomic bootstrap; no raw passwords."""
 
 from datetime import UTC, datetime

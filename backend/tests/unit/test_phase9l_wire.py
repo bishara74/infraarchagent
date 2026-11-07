@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """NFR-01 / FR-A-05: complete baseline request bytes and zero disabled hooks."""
 
 import json

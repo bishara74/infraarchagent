@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """D-56 isolated contextual-v2. Never consulted by acceptance or readiness."""
 
 import re

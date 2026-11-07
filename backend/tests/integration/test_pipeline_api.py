@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Pipeline API, durable ordering, SSE replay and real validation logic."""
 
 import asyncio

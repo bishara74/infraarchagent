@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 # Installs the external validators used by the ValidatorAgent (Phase 6):
 #   helm v4.3.0, hadolint v2.15.1, promtool (Prometheus v3.15.0), ansible-lint 26.9.0.
 # All versions are pinned to the ones used for the thesis (verified 2026-10-09).

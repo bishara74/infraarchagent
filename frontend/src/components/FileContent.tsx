@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {WindowedRows} from './WindowedRows';
 export function FileContent({path,content}:{path:string;content:string}) {
  const lines=content.replace(/\n$/,'').split('\n');

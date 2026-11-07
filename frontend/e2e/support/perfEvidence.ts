@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {mkdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 export interface LatencySample {seq:number;badge:string;at:number;server_timestamp:string;latency_ms:number}

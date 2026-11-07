@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Add direct-admin provenance and approval categories (NFR-01, FR-UI-07)."""
 
 import sqlalchemy as sa

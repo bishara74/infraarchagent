@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """NFR-01 real PostgreSQL grants: inspection cannot mutate application data."""
 
 import pytest

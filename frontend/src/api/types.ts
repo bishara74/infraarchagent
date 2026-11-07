@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 export const variants = ['cost', 'performance', 'security'] as const;
 export type Variant = typeof variants[number];
 export type Provider = 'stub' | 'openai' | 'anthropic';

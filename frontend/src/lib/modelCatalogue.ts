@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {catalogueModel,movingAlias} from './modelRouting';
 import recommended from '../config/recommended-models.v1.json';
 import type {Catalog,CatalogModel} from '../api/types';

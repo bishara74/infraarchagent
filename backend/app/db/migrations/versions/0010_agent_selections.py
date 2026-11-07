@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Freeze all five agent selections and credential reference (FR-P-04)."""
 
 import sqlalchemy as sa

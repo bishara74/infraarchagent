@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import type {PackageResult} from '../api/types';
 export function ProfileAssessments({item}:{item:PackageResult}) {
  const views=item.profile_assessments;

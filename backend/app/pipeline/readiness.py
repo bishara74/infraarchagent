@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-07: assess persisted final files before initial or retry readiness."""
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker

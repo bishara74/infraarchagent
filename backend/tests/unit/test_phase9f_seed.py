@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """PR-04: seed configuration uses one exported URL, never dotenv or owner settings."""
 
 import pytest

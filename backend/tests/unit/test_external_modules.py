@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-01/02, NFR-01: recordings, syntax boundaries and offline scanners."""
 
 import json

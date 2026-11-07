@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Read-only A2 declaration replay and additional historical PR-05 workload views."""
 
 import argparse

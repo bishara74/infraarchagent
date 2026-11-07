@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Durable per-run event log.
 
 For each run, commit order equals seq order across any number of writers,

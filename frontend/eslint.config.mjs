@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import js from '@eslint/js';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';

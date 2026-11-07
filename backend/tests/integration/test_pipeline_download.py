@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Labelled persisted archives and measured PR-04 ASGI download."""
 
 import base64

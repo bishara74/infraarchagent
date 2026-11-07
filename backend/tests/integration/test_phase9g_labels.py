@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-08/10: approval is evidence-bearing and never claims passed checks."""
 
 from io import BytesIO

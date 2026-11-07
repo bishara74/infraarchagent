@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 /** Explicit fixture capture against a local, dotenv-disabled stub/review backend. */
 import { request } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';

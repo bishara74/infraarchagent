@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Offline, budget-owned Helm render evidence for D-56 pod proposals."""
 
 import re

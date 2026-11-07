@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Offline AWS v6 migration observations; four frozen cohorts, no inference."""
 
 import argparse

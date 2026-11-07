@@ -1,4 +1,6 @@
 #!/bin/sh
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 set -eu
 # Cluster-role provisioning is deliberately separate from owner migrations.
 psql -v ON_ERROR_STOP=1 -U "${POSTGRES_USER:-postgres}" -d postgres <<'SQL'

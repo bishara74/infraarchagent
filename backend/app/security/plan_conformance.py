@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """D-63: bounded exposure preservation, independent of scanner policy.
 
 D-66 uses final retained-file detection rather than candidate rejection.

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Pure Phase 7 package presentation and ordered remediation targets."""
 
 from collections.abc import Iterator, Mapping, Sequence

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-04/09, FR-V-01: missing-only, reproducible pod hardening."""
 
 import copy

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-A-05, FR-S-07: deterministic instruction judgments are evidence-based."""
 
 import json

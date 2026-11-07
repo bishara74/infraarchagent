@@ -1,3 +1,5 @@
+// AI assistance: written with OpenAI Codex from the author's task
+// descriptions; reviewed and modified by the author. See AI_USE.md.
 import {afterEach,expect,it,vi} from 'vitest';
 import {api,ApiError} from '../api/client';
 import {getPreferences,hydratePreferences,updatePreferences,retrySave,discardPromptDraft} from './preferences';

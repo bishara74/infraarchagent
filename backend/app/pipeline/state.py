@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Persist each transition before its event.
 
 A hard crash between the two transactions leaves correct state but no event.

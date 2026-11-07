@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Single-process lesson dispatch ownership and sticky revocation.
 
 The normal disabled path has no installed hook. Only explicitly eligible

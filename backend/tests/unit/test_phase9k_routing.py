@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """NFR-01 / FR-P-04: anonymous metadata and honest provider fallback statistics."""
 
 from types import SimpleNamespace

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Author-run anonymous catalogue capture and offline experiment estimates.
 
 Never imports operator settings or credential code. No inference endpoint exists here.

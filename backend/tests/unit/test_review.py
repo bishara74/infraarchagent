@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-UI-06/07 presentation and FR-S-09 target ordering."""
 
 import pytest

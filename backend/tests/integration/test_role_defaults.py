@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-UI-01 / FR-P-04: independent role defaults from controls to request wire."""
 
 import itertools

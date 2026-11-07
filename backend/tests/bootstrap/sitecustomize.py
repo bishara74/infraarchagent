@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Verification-only bootstrap: disable dotenv before settings instantiate.
 
 Put this directory first on PYTHONPATH and set INFRAARCH_TEST_BOOTSTRAP=1

@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-S-01–07/09 scan, fix, rescan, and durable per-session reporting."""
 
 import asyncio

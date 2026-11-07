@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Plan-specific schema/security guidance inside the existing 6000-character cap."""
 
 import json

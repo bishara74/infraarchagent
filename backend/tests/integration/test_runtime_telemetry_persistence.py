@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """FR-P-04/NFR-01: telemetry is durable, deduplicated and returned by results."""
 
 from uuid import uuid4

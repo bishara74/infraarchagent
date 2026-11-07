@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Descriptive binomial intervals and fixed-margin two-sided Fisher tests."""
 
 from math import comb, sqrt

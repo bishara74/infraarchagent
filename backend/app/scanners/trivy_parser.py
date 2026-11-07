@@ -1,3 +1,5 @@
+# AI assistance: written with OpenAI Codex from the author's task
+# descriptions; reviewed and modified by the author. See AI_USE.md.
 """Parse the emitted embedded-check IDs and file locations in Trivy JSON."""
 
 import json
