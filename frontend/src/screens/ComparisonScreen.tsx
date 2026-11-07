@@ -1,27 +1,183 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
-import {PlanConformanceNotice} from '../components/PlanConformanceNotice';
-import {Icon} from '../components/Icon';
-import {DownloadButton} from '../components/DownloadButton';
-import {DownloadAllButton} from '../components/DownloadAllButton';
-import {architectureSummary} from '../lib/architectureSummary';
-import {ProfileAssessments} from '../components/ProfileAssessments';
-import {Link,useParams,useSearchParams} from 'react-router';
-import {useRunResults} from '../hooks/useRunResults';
-import {securityView,validationView,text} from '../lib/reportView';
-import {StatusBadge} from '../components/StatusBadge';
-import {PageState} from '../components/PageState';
-import {RunNotice} from '../components/RunNotice';
-import {LessonUsage} from '../components/LessonUsage';
-const goals={cost:'Economical infrastructure; verify capacity and resilience before accepting savings.',performance:'Capacity and responsiveness; check resource spend against the workload.',security:'Protective controls; check operational complexity and access requirements.'};
-export function ComparisonScreen(){
- const {runId=''}=useParams();const stream=useRunResults(runId);const [query]=useSearchParams();const selected=query.get('variant');
- if(stream.error)return <PageState error={stream.error} onRetry={stream.reconnect}/>;
- if(!stream.results)return <PageState loading/>;const results=stream.results;
- const total=results.packages.length;const known=total>0&&results.packages.every(item=>item.profile_assessments);const strict=known?results.packages.filter(item=>item.profile_assessments?.strict.checks_passed).length:'unavailable';const contextual=known?results.packages.filter(item=>item.profile_assessments?.['contextual-v1'].checks_passed).length:'unavailable';const contextual2=total>0&&results.packages.every(item=>item.profile_assessments?.['contextual-v2'])?results.packages.filter(item=>item.profile_assessments?.['contextual-v2']?.checks_passed).length:null;
- const allAvailable=total===3&&results.missing_variants.length===0&&results.packages.every(item=>item.downloadable);
- return <div className="comparison-screen"><div className="comparison-meta"><p className="muted run-meta">Run <code>{runId}</code> · {total} packages generated · {results.run.status.replaceAll('_',' ')}</p><LessonUsage manifest={results.run.lessons} events={stream.events}/></div><div className="page-heading"><h1>Select a variant</h1><Link to={`/runs/${runId}`}>View progress</Link></div><RunNotice state={stream.state} onReconnect={stream.reconnect}/>{total>0&&<p>Assessment pass counts — strict: {strict}/{total} · contextual-v1: {contextual}/{total} · contextual-v2: {contextual2===null?'unavailable':`${contextual2}/${total}`} (experimental)</p>}{!total&&<PageState empty="No packages were generated."/>}<p className="notice">Labels reflect static checks and engineer decisions only, not a deployment.</p><div className="overview-actions"><p>Inspect a variant for files, security fixes, findings and review. Review and approval apply only to the selected variant.</p><DownloadAllButton runId={runId} available={allAvailable} blocked={[...results.packages.filter(item=>!item.downloadable).map(item=>({variant:item.variant,review:item.review_available})),...results.missing_variants.map(item=>({variant:item.variant,review:false,missing:true}))]}/></div><div className="comparison" aria-label="Variant comparison overview">{results.packages.map(item=>{
-  const security=securityView(item.security_report),validation=validationView(item.validation_report);
-  return <article aria-label={`${item.variant} variant`} key={item.variant} className={`panel variant ${selected===item.variant?'selected':''}`}><h2 className="capitalize icon-label"><Icon name={item.variant==='cost'?'credit-card':item.variant==='performance'?'dashboard':'shield'}/>{item.variant} optimised</h2><StatusBadge status={item.readiness_label??item.status}/><ProfileAssessments item={item}/><PlanConformanceNotice item={item}/><dl className="counts"><dt>Validation</dt><dd>{text(validation.summary.result)||'Unavailable'}</dd></dl><p className="muted architecture-summary">{architectureSummary(results.plan)||'Architectural properties unavailable.'}</p><p className="variant-goal"><strong>Optimisation goal and trade-off</strong><br/>{goals[item.variant]}</p><p className="muted">Infrastructure cost is not calculated. Variants reflect optimisation goals, not priced estimates.</p><details className="variant-details"><summary>Check details</summary><dl className="counts"><dt>Blocking findings</dt><dd>{security.initial??'Unavailable'} → {security.remaining?.length??'Unavailable'}</dd><dt>Fixes applied{security.omitted>0?' (retained)':''}</dt><dd>{security.applied}</dd><dt>Security outcome</dt><dd>{security.outcome||'Unavailable'}</dd><dt>Warnings</dt><dd>{typeof validation.summary.warnings==='number'?validation.summary.warnings:'Unavailable'}</dd></dl>{security.initial===null&&<p className="muted">Initial scan history is unavailable or incomplete.</p>}</details><div className="actions"><Link aria-current={selected===item.variant?'true':undefined} className="button inspect-variant" to={`/runs/${runId}/packages/${item.variant}`}>Inspect this variant</Link><DownloadButton runId={runId} variant={item.variant} available={item.downloadable} label="Download this variant"/></div></article>;
- })}</div>{results.missing_variants.map(item=><p className="notice" role="status" key={item.variant}><strong className="capitalize">{item.variant} variant unavailable:</strong> {item.error}</p>)}</div>;
+import { PlanConformanceNotice } from "../components/PlanConformanceNotice";
+import { Icon } from "../components/Icon";
+import { DownloadButton } from "../components/DownloadButton";
+import { DownloadAllButton } from "../components/DownloadAllButton";
+import { architectureSummary } from "../lib/architectureSummary";
+import { ProfileAssessments } from "../components/ProfileAssessments";
+import { Link, useParams, useSearchParams } from "react-router";
+import { useRunResults } from "../hooks/useRunResults";
+import { securityView, validationView, text } from "../lib/reportView";
+import { StatusBadge } from "../components/StatusBadge";
+import { PageState } from "../components/PageState";
+import { RunNotice } from "../components/RunNotice";
+import { LessonUsage } from "../components/LessonUsage";
+const goals = {
+  cost: "Economical infrastructure; verify capacity and resilience before accepting savings.",
+  performance: "Capacity and responsiveness; check resource spend against the workload.",
+  security: "Protective controls; check operational complexity and access requirements.",
+};
+export function ComparisonScreen() {
+  const { runId = "" } = useParams();
+  const stream = useRunResults(runId);
+  const [query] = useSearchParams();
+  const selected = query.get("variant");
+  if (stream.error) return <PageState error={stream.error} onRetry={stream.reconnect} />;
+  if (!stream.results) return <PageState loading />;
+  const results = stream.results;
+  const total = results.packages.length;
+  const known = total > 0 && results.packages.every((item) => item.profile_assessments);
+  const strict = known
+    ? results.packages.filter((item) => item.profile_assessments?.strict.checks_passed).length
+    : "unavailable";
+  const contextual = known
+    ? results.packages.filter((item) => item.profile_assessments?.["contextual-v1"].checks_passed)
+        .length
+    : "unavailable";
+  const contextual2 =
+    total > 0 && results.packages.every((item) => item.profile_assessments?.["contextual-v2"])
+      ? results.packages.filter(
+          (item) => item.profile_assessments?.["contextual-v2"]?.checks_passed,
+        ).length
+      : null;
+  const allAvailable =
+    total === 3 &&
+    results.missing_variants.length === 0 &&
+    results.packages.every((item) => item.downloadable);
+  return (
+    <div className="comparison-screen">
+      <div className="comparison-meta">
+        <p className="muted run-meta">
+          Run <code>{runId}</code> · {total} packages generated ·{" "}
+          {results.run.status.replaceAll("_", " ")}
+        </p>
+        <LessonUsage manifest={results.run.lessons} events={stream.events} />
+      </div>
+      <div className="page-heading">
+        <h1>Select a variant</h1>
+        <Link to={`/runs/${runId}`}>View progress</Link>
+      </div>
+      <RunNotice state={stream.state} onReconnect={stream.reconnect} />
+      {total > 0 && (
+        <p>
+          Assessment pass counts — strict: {strict}/{total} · contextual-v1: {contextual}/{total} ·
+          contextual-v2: {contextual2 === null ? "unavailable" : `${contextual2}/${total}`}{" "}
+          (experimental)
+        </p>
+      )}
+      {!total && <PageState empty="No packages were generated." />}
+      <p className="notice">
+        Labels reflect static checks and engineer decisions only, not a deployment.
+      </p>
+      <div className="overview-actions">
+        <p>
+          Inspect a variant for files, security fixes, findings and review. Review and approval
+          apply only to the selected variant.
+        </p>
+        <DownloadAllButton
+          runId={runId}
+          available={allAvailable}
+          blocked={[
+            ...results.packages
+              .filter((item) => !item.downloadable)
+              .map((item) => ({ variant: item.variant, review: item.review_available })),
+            ...results.missing_variants.map((item) => ({
+              variant: item.variant,
+              review: false,
+              missing: true,
+            })),
+          ]}
+        />
+      </div>
+      <div className="comparison" aria-label="Variant comparison overview">
+        {results.packages.map((item) => {
+          const security = securityView(item.security_report),
+            validation = validationView(item.validation_report);
+          return (
+            <article
+              aria-label={`${item.variant} variant`}
+              key={item.variant}
+              className={`panel variant ${selected === item.variant ? "selected" : ""}`}
+            >
+              <h2 className="capitalize icon-label">
+                <Icon
+                  name={
+                    item.variant === "cost"
+                      ? "credit-card"
+                      : item.variant === "performance"
+                        ? "dashboard"
+                        : "shield"
+                  }
+                />
+                {item.variant} optimised
+              </h2>
+              <StatusBadge status={item.readiness_label ?? item.status} />
+              <ProfileAssessments item={item} />
+              <PlanConformanceNotice item={item} />
+              <dl className="counts">
+                <dt>Validation</dt>
+                <dd>{text(validation.summary.result) || "Unavailable"}</dd>
+              </dl>
+              <p className="muted architecture-summary">
+                {architectureSummary(results.plan) || "Architectural properties unavailable."}
+              </p>
+              <p className="variant-goal">
+                <strong>Optimisation goal and trade-off</strong>
+                <br />
+                {goals[item.variant]}
+              </p>
+              <p className="muted">
+                Infrastructure cost is not calculated. Variants reflect optimisation goals, not
+                priced estimates.
+              </p>
+              <details className="variant-details">
+                <summary>Check details</summary>
+                <dl className="counts">
+                  <dt>Blocking findings</dt>
+                  <dd>
+                    {security.initial ?? "Unavailable"} →{" "}
+                    {security.remaining?.length ?? "Unavailable"}
+                  </dd>
+                  <dt>Fixes applied{security.omitted > 0 ? " (retained)" : ""}</dt>
+                  <dd>{security.applied}</dd>
+                  <dt>Security outcome</dt>
+                  <dd>{security.outcome || "Unavailable"}</dd>
+                  <dt>Warnings</dt>
+                  <dd>
+                    {typeof validation.summary.warnings === "number"
+                      ? validation.summary.warnings
+                      : "Unavailable"}
+                  </dd>
+                </dl>
+                {security.initial === null && (
+                  <p className="muted">Initial scan history is unavailable or incomplete.</p>
+                )}
+              </details>
+              <div className="actions">
+                <Link
+                  aria-current={selected === item.variant ? "true" : undefined}
+                  className="button inspect-variant"
+                  to={`/runs/${runId}/packages/${item.variant}`}
+                >
+                  Inspect this variant
+                </Link>
+                <DownloadButton
+                  runId={runId}
+                  variant={item.variant}
+                  available={item.downloadable}
+                  label="Download this variant"
+                />
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {results.missing_variants.map((item) => (
+        <p className="notice" role="status" key={item.variant}>
+          <strong className="capitalize">{item.variant} variant unavailable:</strong> {item.error}
+        </p>
+      ))}
+    </div>
+  );
 }

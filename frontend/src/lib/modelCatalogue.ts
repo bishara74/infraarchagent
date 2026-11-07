@@ -1,30 +1,57 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
-import {catalogueModel,movingAlias} from './modelRouting';
-import recommended from '../config/recommended-models.v1.json';
-import type {Catalog,CatalogModel} from '../api/types';
+import { catalogueModel, movingAlias } from "./modelRouting";
+import recommended from "../config/recommended-models.v1.json";
+import type { Catalog, CatalogModel } from "../api/types";
 
-export function isRecommended(provider:string,model:CatalogModel) {
- return recommended.models.some(entry=>entry.provider===provider&&entry.id===model.id);
+export function isRecommended(provider: string, model: CatalogModel) {
+  return recommended.models.some((entry) => entry.provider === provider && entry.id === model.id);
 }
-export function compatibleModels(catalog:Catalog|null,all:boolean,now=new Date()):CatalogModel[] {
- if(!catalog)return [];
- const entries=new Map(catalog.models.map(model=>[model.id,model]));
- for(const entry of recommended.models.filter(entry=>entry.provider===catalog.provider)){
-  const metadata=catalogueModel(catalog,entry.id);
-  if(metadata)entries.set(entry.id,{...metadata,id:entry.id});
- }
- return [...entries.values()].filter(model=>{
-  if(model.structured_output!==true||model.id.toLowerCase().split(':').slice(1).includes('free')||model.deprecated===true)return false;
-  if(model.expiration_date&&Date.parse(model.expiration_date)<=now.getTime())return false;
-  if(!all&&movingAlias(model.id))return false;
-  return all||isRecommended(catalog.provider,model)||(catalog.provider==='stub'&&model.source==='builtin');
- }).sort((a,b)=>{
-  const vendor=(item:CatalogModel)=>catalog.provider==='openrouter'?item.id.split('/')[0]!:catalog.provider;
-  return Number(movingAlias(a.id))-Number(movingAlias(b.id))||vendor(a).localeCompare(vendor(b),'en',{sensitivity:'base'})||a.name.localeCompare(b.name,'en',{sensitivity:'base',numeric:true})||a.id.localeCompare(b.id);
- });
+export function compatibleModels(
+  catalog: Catalog | null,
+  all: boolean,
+  now = new Date(),
+): CatalogModel[] {
+  if (!catalog) return [];
+  const entries = new Map(catalog.models.map((model) => [model.id, model]));
+  for (const entry of recommended.models.filter((entry) => entry.provider === catalog.provider)) {
+    const metadata = catalogueModel(catalog, entry.id);
+    if (metadata) entries.set(entry.id, { ...metadata, id: entry.id });
+  }
+  return [...entries.values()]
+    .filter((model) => {
+      if (
+        model.structured_output !== true ||
+        model.id.toLowerCase().split(":").slice(1).includes("free") ||
+        model.deprecated === true
+      )
+        return false;
+      if (model.expiration_date && Date.parse(model.expiration_date) <= now.getTime()) return false;
+      if (!all && movingAlias(model.id)) return false;
+      return (
+        all ||
+        isRecommended(catalog.provider, model) ||
+        (catalog.provider === "stub" && model.source === "builtin")
+      );
+    })
+    .sort((a, b) => {
+      const vendor = (item: CatalogModel) =>
+        catalog.provider === "openrouter" ? item.id.split("/")[0]! : catalog.provider;
+      return (
+        Number(movingAlias(a.id)) - Number(movingAlias(b.id)) ||
+        vendor(a).localeCompare(vendor(b), "en", { sensitivity: "base" }) ||
+        a.name.localeCompare(b.name, "en", { sensitivity: "base", numeric: true }) ||
+        a.id.localeCompare(b.id)
+      );
+    });
 }
-export function modelDetail(model:CatalogModel) {
- const price=(key:string)=>{const raw=model.pricing[key];const rate=raw===undefined?NaN:Number(raw);return Number.isFinite(rate)&&rate>=0?`$${(rate*1e6).toLocaleString()} / million tokens`:'unavailable';};
- return `${movingAlias(model.id)?'alias — changes over time · ':''}structured output · ${model.reasoning===true?'reasoning':model.reasoning===false?'no reasoning':'reasoning unknown'} · input: ${price('prompt')} · output: ${price('completion')} · context: ${model.context_length?.toLocaleString()??'unknown'} tokens`;
+export function modelDetail(model: CatalogModel) {
+  const price = (key: string) => {
+    const raw = model.pricing[key];
+    const rate = raw === undefined ? NaN : Number(raw);
+    return Number.isFinite(rate) && rate >= 0
+      ? `$${(rate * 1e6).toLocaleString()} / million tokens`
+      : "unavailable";
+  };
+  return `${movingAlias(model.id) ? "alias — changes over time · " : ""}structured output · ${model.reasoning === true ? "reasoning" : model.reasoning === false ? "no reasoning" : "reasoning unknown"} · input: ${price("prompt")} · output: ${price("completion")} · context: ${model.context_length?.toLocaleString() ?? "unknown"} tokens`;
 }

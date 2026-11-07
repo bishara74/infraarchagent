@@ -46,3 +46,12 @@ not authoring help. The complete conversation logs of both tools are kept by
 the author and can be shown to the supervisor on request until the thesis
 evaluation is finished. The author is responsible for all code in this
 repository.
+
+## Formatting (v1.0.3)
+
+Release `v1.0.3` reformats the frontend TypeScript and CSS with Prettier
+3.9.10 (`printWidth` 100) in one formatting-only commit; no logic changed.
+The Prettier set-up (`.prettierrc.json`, `.prettierignore` and the `format`
+and `format:check` npm scripts, now part of `npm run lint`) was suggested by
+Claude and reviewed by the author. `frontend/src/constants/examples.ts` keeps
+its original layout because a backend test reads it with a regular expression.

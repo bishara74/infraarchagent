@@ -1,76 +1,296 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
-import {expect,it,vi} from 'vitest';
-import {render,screen,fireEvent} from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import pending from '../test/fixtures/pending-results.json';
-import type {PackageResult,ReviewResponse} from '../api/types';
-import {api} from '../api/client';
-import {ReviewPanel} from './ReviewPanel';
-import {ReportPanel} from './ReportPanel';
-const item=()=>structuredClone(pending.packages[2]) as PackageResult;
-it('retry picker is limited to five existing files and only one request is active',async()=>{const value=item();value.retry_targets=[];value.files=Object.fromEntries(Array.from({length:6},(_,i)=>[`f${i}`,'text']));let finish!:(value:ReviewResponse)=>void;vi.spyOn(api,'review').mockImplementation(()=>new Promise(resolve=>{finish=resolve;}));const reopen=vi.fn();const refresh=vi.fn(async()=>undefined);render(<ReviewPanel item={value} runId="r" onRetry={reopen} onRefresh={refresh}/>);await userEvent.click(screen.getByRole('button',{name:'Retry with feedback'}));const inputs=screen.getAllByRole('checkbox');for(const input of inputs.slice(0,5))fireEvent.click(input);expect(inputs[5]).toBeDisabled();fireEvent.change(screen.getByLabelText('Feedback'),{target:{value:'Fix selected files.'}});await userEvent.click(screen.getByRole('button',{name:'Submit retry'}));expect(screen.getByRole('button',{name:'Approve'})).toBeDisabled();expect(api.review).toHaveBeenCalledExactlyOnceWith('r','security',{action:'retry',feedback:'Fix selected files.',target_files:['f0','f1','f2','f3','f4']});finish({run_id:'r',variant:'security',status:'scanning'});await vi.waitFor(()=>expect(reopen).toHaveBeenCalledTimes(1));expect(refresh).toHaveBeenCalled();});
-it('marker-only retry suppresses review and download',()=>{const value=item();value.retry_in_progress=true;render(<ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/>);expect(screen.getByRole('status')).toHaveTextContent('Retry in progress');expect(screen.getByRole('button',{name:'Approve'})).toBeDisabled();expect(screen.getByRole('button',{name:'Download ZIP'})).toBeDisabled();});
-it('resolved and unresolved security evidence remain distinct',()=>{const value=item();value.security_report={sessions:[{kind:'automated',iterations:[{fixes:[{file:'a',accepted:true,rule_ids:['CKV_1'],summaries:['Fixed']}]}]}],final:{outcome:'exhausted',remaining_blocking:[{severity:'HIGH',rule_id:'CKV_2',message:'Still blocked',file_path:'a'}]}};render(<ReportPanel item={value} onFile={vi.fn()}/>);expect(screen.getByText('resolved')).toHaveClass('ok');expect(screen.getByText('unresolved')).toHaveClass('danger');expect(screen.getByText('HIGH')).toHaveClass('danger');});
-it('FR-UI-07 retains the accepted retry lock until a settled EOF snapshot',async()=>{const value=item();vi.spyOn(api,'review').mockResolvedValue({run_id:'r',variant:'security',status:'remediating',stream_url:'/stream'});const reopen=vi.fn();const refresh=vi.fn(async()=>undefined);const props={item:value,runId:'r',onRetry:reopen,onRefresh:refresh};const root=render(<ReviewPanel {...props} retryPending={false}/>);await userEvent.click(screen.getByRole('button',{name:'Retry with feedback'}));await userEvent.click(screen.getByRole('button',{name:'Submit retry'}));await vi.waitFor(()=>expect(reopen).toHaveBeenCalled());root.rerender(<ReviewPanel {...props} retryPending/>);expect(screen.getByRole('status')).toHaveTextContent('Retry in progress');expect(screen.getByRole('button',{name:'Approve'})).toBeDisabled();expect(screen.getByRole('button',{name:'Download ZIP'})).toBeDisabled();root.rerender(<ReviewPanel {...props} retryPending={false}/>);await vi.waitFor(()=>expect(screen.getByRole('button',{name:'Approve'})).toBeVisible());});
-
-it.each(['automatic (clean scan and valid validation)','automatic after an engineer-requested retry (clean scan and valid validation)','engineer decision'])('FR-UI-06 labelled action panel displays origin: %s',origin=>{
- const value=item();value.readiness_label='checks_passed';value.downloadable=true;value.review_available=false;
- render(<ReviewPanel item={value} origin={origin} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/>);
- expect(screen.getByText('Label origin: '+origin,{exact:true})).toBeVisible();
- expect(screen.getByRole('button',{name:'Download ZIP'})).toBeVisible();
+import { expect, it, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import pending from "../test/fixtures/pending-results.json";
+import type { PackageResult, ReviewResponse } from "../api/types";
+import { api } from "../api/client";
+import { ReviewPanel } from "./ReviewPanel";
+import { ReportPanel } from "./ReportPanel";
+const item = () => structuredClone(pending.packages[2]) as PackageResult;
+it("retry picker is limited to five existing files and only one request is active", async () => {
+  const value = item();
+  value.retry_targets = [];
+  value.files = Object.fromEntries(Array.from({ length: 6 }, (_, i) => [`f${i}`, "text"]));
+  let finish!: (value: ReviewResponse) => void;
+  vi.spyOn(api, "review").mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const reopen = vi.fn();
+  const refresh = vi.fn(async () => undefined);
+  render(<ReviewPanel item={value} runId="r" onRetry={reopen} onRefresh={refresh} />);
+  await userEvent.click(screen.getByRole("button", { name: "Retry with feedback" }));
+  const inputs = screen.getAllByRole("checkbox");
+  for (const input of inputs.slice(0, 5)) fireEvent.click(input);
+  expect(inputs[5]).toBeDisabled();
+  fireEvent.change(screen.getByLabelText("Feedback"), { target: { value: "Fix selected files." } });
+  await userEvent.click(screen.getByRole("button", { name: "Submit retry" }));
+  expect(screen.getByRole("button", { name: "Approve" })).toBeDisabled();
+  expect(api.review).toHaveBeenCalledExactlyOnceWith("r", "security", {
+    action: "retry",
+    feedback: "Fix selected files.",
+    target_files: ["f0", "f1", "f2", "f3", "f4"],
+  });
+  finish({ run_id: "r", variant: "security", status: "scanning" });
+  await vi.waitFor(() => expect(reopen).toHaveBeenCalledTimes(1));
+  expect(refresh).toHaveBeenCalled();
+});
+it("marker-only retry suppresses review and download", () => {
+  const value = item();
+  value.retry_in_progress = true;
+  render(<ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()} />);
+  expect(screen.getByRole("status")).toHaveTextContent("Retry in progress");
+  expect(screen.getByRole("button", { name: "Approve" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Download ZIP" })).toBeDisabled();
+});
+it("resolved and unresolved security evidence remain distinct", () => {
+  const value = item();
+  value.security_report = {
+    sessions: [
+      {
+        kind: "automated",
+        iterations: [
+          { fixes: [{ file: "a", accepted: true, rule_ids: ["CKV_1"], summaries: ["Fixed"] }] },
+        ],
+      },
+    ],
+    final: {
+      outcome: "exhausted",
+      remaining_blocking: [
+        { severity: "HIGH", rule_id: "CKV_2", message: "Still blocked", file_path: "a" },
+      ],
+    },
+  };
+  render(<ReportPanel item={value} onFile={vi.fn()} />);
+  expect(screen.getByText("resolved")).toHaveClass("ok");
+  expect(screen.getByText("unresolved")).toHaveClass("danger");
+  expect(screen.getByText("HIGH")).toHaveClass("danger");
+});
+it("FR-UI-07 retains the accepted retry lock until a settled EOF snapshot", async () => {
+  const value = item();
+  vi.spyOn(api, "review").mockResolvedValue({
+    run_id: "r",
+    variant: "security",
+    status: "remediating",
+    stream_url: "/stream",
+  });
+  const reopen = vi.fn();
+  const refresh = vi.fn(async () => undefined);
+  const props = { item: value, runId: "r", onRetry: reopen, onRefresh: refresh };
+  const root = render(<ReviewPanel {...props} retryPending={false} />);
+  await userEvent.click(screen.getByRole("button", { name: "Retry with feedback" }));
+  await userEvent.click(screen.getByRole("button", { name: "Submit retry" }));
+  await vi.waitFor(() => expect(reopen).toHaveBeenCalled());
+  root.rerender(<ReviewPanel {...props} retryPending />);
+  expect(screen.getByRole("status")).toHaveTextContent("Retry in progress");
+  expect(screen.getByRole("button", { name: "Approve" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Download ZIP" })).toBeDisabled();
+  root.rerender(<ReviewPanel {...props} retryPending={false} />);
+  await vi.waitFor(() => expect(screen.getByRole("button", { name: "Approve" })).toBeVisible());
 });
 
-it('FR-S-04 contextual success leaves strict findings and the official pending label visible',()=>{
- const value=item();value.profile_assessments={strict:{checks_passed:false,remaining_blocking:1,excepted:[]},'contextual-v1':{checks_passed:true,remaining_blocking:0,excepted:[{rule_id:'AWS-0132',resource:'aws_s3_bucket.logs',file_path:'terraform/logs.tf',entry_id:'s3-log-target-sse-s3',classification:'excepted',justification:'Proven log destination'}]}};
- value.security_report={final:{outcome:'exhausted',remaining_blocking:[{rule_id:'AWS-0132',resource:'aws_s3_bucket.logs',file_path:'terraform/logs.tf',severity:'HIGH',message:'KMS required'}]}};
- render(<><ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/><ReportPanel item={value} onFile={vi.fn()}/></>);
- expect(screen.getByRole('heading',{name:'Pending review'})).toBeVisible();
- expect(screen.getByRole('button',{name:'Download ZIP'})).toBeDisabled();
- expect(screen.getByText('excepted')).toHaveClass('warn');
- expect(screen.getByText('unresolved')).toBeVisible();
- expect(screen.getByText('KMS required')).toBeVisible();
+it.each([
+  "automatic (clean scan and valid validation)",
+  "automatic after an engineer-requested retry (clean scan and valid validation)",
+  "engineer decision",
+])("FR-UI-06 labelled action panel displays origin: %s", (origin) => {
+  const value = item();
+  value.readiness_label = "checks_passed";
+  value.downloadable = true;
+  value.review_available = false;
+  render(
+    <ReviewPanel item={value} origin={origin} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()} />,
+  );
+  expect(screen.getByText("Label origin: " + origin, { exact: true })).toBeVisible();
+  expect(screen.getByRole("button", { name: "Download ZIP" })).toBeVisible();
 });
 
-it('FR-UI-05 v2 exceptions identify their profile without changing strict review',()=>{
- const value=item();value.profile_assessments!['contextual-v2']={checks_passed:true,remaining_blocking:0,excepted:[{rule_id:'AWS-0053',resource:'aws_lb.edge',file_path:'terraform/main.tf',entry_id:'public-lb-https-redirect',classification:'excepted',justification:'HTTPS only'}]};
- render(<ReportPanel item={value} onFile={vi.fn()}/>);
- expect(screen.getByText('contextual-v2 · public-lb-https-redirect: HTTPS only')).toBeVisible();
- expect(screen.getByText('Remains blocking under strict policy.')).toBeVisible();
+it("FR-S-04 contextual success leaves strict findings and the official pending label visible", () => {
+  const value = item();
+  value.profile_assessments = {
+    strict: { checks_passed: false, remaining_blocking: 1, excepted: [] },
+    "contextual-v1": {
+      checks_passed: true,
+      remaining_blocking: 0,
+      excepted: [
+        {
+          rule_id: "AWS-0132",
+          resource: "aws_s3_bucket.logs",
+          file_path: "terraform/logs.tf",
+          entry_id: "s3-log-target-sse-s3",
+          classification: "excepted",
+          justification: "Proven log destination",
+        },
+      ],
+    },
+  };
+  value.security_report = {
+    final: {
+      outcome: "exhausted",
+      remaining_blocking: [
+        {
+          rule_id: "AWS-0132",
+          resource: "aws_s3_bucket.logs",
+          file_path: "terraform/logs.tf",
+          severity: "HIGH",
+          message: "KMS required",
+        },
+      ],
+    },
+  };
+  render(
+    <>
+      <ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()} />
+      <ReportPanel item={value} onFile={vi.fn()} />
+    </>,
+  );
+  expect(screen.getByRole("heading", { name: "Pending review" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "Download ZIP" })).toBeDisabled();
+  expect(screen.getByText("excepted")).toHaveClass("warn");
+  expect(screen.getByText("unresolved")).toBeVisible();
+  expect(screen.getByText("KMS required")).toBeVisible();
 });
 
-it('FR-S-10 checks-passed rejection requires category and reason and retains download',async()=>{
- const value=item();value.readiness_label='checks_passed';value.downloadable=true;value.review_available=false;value.review_actions=['reject'];
- const review=vi.spyOn(api,'review').mockResolvedValue({run_id:'r',variant:'security',status:'rejected'});
- render(<ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn(async()=>undefined)}/>);
- expect(screen.getByText('No review needed — this package passed all automatic checks.')).toBeVisible();expect(screen.getByText('checks passed',{exact:true})).toHaveClass('ok','checks-passed');expect(screen.getByRole('button',{name:'Approve'})).toBeDisabled();expect(screen.getByRole('button',{name:'Retry with feedback'})).toBeDisabled();expect(screen.getByRole('button',{name:'Download ZIP'})).toBeVisible();
- fireEvent.change(screen.getByLabelText('Reviewer name'),{target:{value:'Engineer'}});fireEvent.change(screen.getByLabelText('Decision reason'),{target:{value:'Too expensive'}});
- const dialog=document.querySelector('dialog')!;dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
- await userEvent.click(screen.getByRole('button',{name:'Reject'}));await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));expect(review).not.toHaveBeenCalled();expect(screen.getByRole('alert')).toHaveTextContent('Choose a reason category.');
- fireEvent.change(screen.getByLabelText('Reason category'),{target:{value:'too_expensive'}});await userEvent.click(screen.getByRole('button',{name:'Reject'}));await userEvent.click(screen.getByRole('button',{name:'Confirm reject'}));await vi.waitFor(()=>expect(review).toHaveBeenCalledExactlyOnceWith('r','security',{action:'reject',reviewer_name:'Engineer',reason:'Too expensive',category:'too_expensive'}));
+it("FR-UI-05 v2 exceptions identify their profile without changing strict review", () => {
+  const value = item();
+  value.profile_assessments!["contextual-v2"] = {
+    checks_passed: true,
+    remaining_blocking: 0,
+    excepted: [
+      {
+        rule_id: "AWS-0053",
+        resource: "aws_lb.edge",
+        file_path: "terraform/main.tf",
+        entry_id: "public-lb-https-redirect",
+        classification: "excepted",
+        justification: "HTTPS only",
+      },
+    ],
+  };
+  render(<ReportPanel item={value} onFile={vi.fn()} />);
+  expect(screen.getByText("contextual-v2 · public-lb-https-redirect: HTTPS only")).toBeVisible();
+  expect(screen.getByText("Remains blocking under strict policy.")).toBeVisible();
 });
 
-it.each(['engineer_approved','rejected'] as const)('FR-UI-07 settled %s hides decision controls and restores primary download',status=>{
- const value=item();value.status=status;value.readiness_label=status;value.downloadable=true;value.review_available=false;value.review_actions=[];
- render(<ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/>);
- for(const name of ['Approve','Retry with feedback','Reject'])expect(screen.queryByRole('button',{name})).toBeNull();
- expect(screen.getByRole('button',{name:'Download ZIP'})).toHaveClass('primary');
- if(status==='engineer_approved'){expect(screen.getByText('engineer approved')).toHaveClass('engineer-approved');expect(document.querySelector('.codicon-person')).not.toBeNull();}
+it("FR-S-10 checks-passed rejection requires category and reason and retains download", async () => {
+  const value = item();
+  value.readiness_label = "checks_passed";
+  value.downloadable = true;
+  value.review_available = false;
+  value.review_actions = ["reject"];
+  const review = vi
+    .spyOn(api, "review")
+    .mockResolvedValue({ run_id: "r", variant: "security", status: "rejected" });
+  render(
+    <ReviewPanel
+      item={value}
+      runId="r"
+      onRetry={vi.fn()}
+      onRefresh={vi.fn(async () => undefined)}
+    />,
+  );
+  expect(
+    screen.getByText("No review needed — this package passed all automatic checks."),
+  ).toBeVisible();
+  expect(screen.getByText("checks passed", { exact: true })).toHaveClass("ok", "checks-passed");
+  expect(screen.getByRole("button", { name: "Approve" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Retry with feedback" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "Download ZIP" })).toBeVisible();
+  fireEvent.change(screen.getByLabelText("Reviewer name"), { target: { value: "Engineer" } });
+  fireEvent.change(screen.getByLabelText("Decision reason"), {
+    target: { value: "Too expensive" },
+  });
+  const dialog = document.querySelector("dialog")!;
+  dialog.showModal = () => {
+    dialog.open = true;
+  };
+  dialog.close = () => {
+    dialog.open = false;
+  };
+  await userEvent.click(screen.getByRole("button", { name: "Reject" }));
+  await userEvent.click(screen.getByRole("button", { name: "Confirm reject" }));
+  expect(review).not.toHaveBeenCalled();
+  expect(screen.getByRole("alert")).toHaveTextContent("Choose a reason category.");
+  fireEvent.change(screen.getByLabelText("Reason category"), {
+    target: { value: "too_expensive" },
+  });
+  await userEvent.click(screen.getByRole("button", { name: "Reject" }));
+  await userEvent.click(screen.getByRole("button", { name: "Confirm reject" }));
+  await vi.waitFor(() =>
+    expect(review).toHaveBeenCalledExactlyOnceWith("r", "security", {
+      action: "reject",
+      reviewer_name: "Engineer",
+      reason: "Too expensive",
+      category: "too_expensive",
+    }),
+  );
 });
 
-it('FR-UI-07 approval and rejection offer separate category lists',()=>{
- render(<ReviewPanel item={item()} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()}/>);
- fireEvent.change(screen.getByLabelText('Decision',{exact:true}),{target:{value:'approve'}});
- expect(screen.getByRole('option',{name:'accepted risk'})).toBeVisible();
- expect(screen.queryByRole('option',{name:'too expensive'})).toBeNull();
- fireEvent.change(screen.getByLabelText('Decision',{exact:true}),{target:{value:'reject'}});
- expect(screen.queryByRole('option',{name:'accepted risk'})).toBeNull();
- expect(screen.getByRole('option',{name:'too expensive'})).toBeVisible();
+it.each(["engineer_approved", "rejected"] as const)(
+  "FR-UI-07 settled %s hides decision controls and restores primary download",
+  (status) => {
+    const value = item();
+    value.status = status;
+    value.readiness_label = status;
+    value.downloadable = true;
+    value.review_available = false;
+    value.review_actions = [];
+    render(<ReviewPanel item={value} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()} />);
+    for (const name of ["Approve", "Retry with feedback", "Reject"])
+      expect(screen.queryByRole("button", { name })).toBeNull();
+    expect(screen.getByRole("button", { name: "Download ZIP" })).toHaveClass("primary");
+    if (status === "engineer_approved") {
+      expect(screen.getByText("engineer approved")).toHaveClass("engineer-approved");
+      expect(document.querySelector(".codicon-person")).not.toBeNull();
+    }
+  },
+);
+
+it("FR-UI-07 approval and rejection offer separate category lists", () => {
+  render(<ReviewPanel item={item()} runId="r" onRetry={vi.fn()} onRefresh={vi.fn()} />);
+  fireEvent.change(screen.getByLabelText("Decision", { exact: true }), {
+    target: { value: "approve" },
+  });
+  expect(screen.getByRole("option", { name: "accepted risk" })).toBeVisible();
+  expect(screen.queryByRole("option", { name: "too expensive" })).toBeNull();
+  fireEvent.change(screen.getByLabelText("Decision", { exact: true }), {
+    target: { value: "reject" },
+  });
+  expect(screen.queryByRole("option", { name: "accepted risk" })).toBeNull();
+  expect(screen.getByRole("option", { name: "too expensive" })).toBeVisible();
 });
 
-it('FR-UI-05 UC-05 validation report distinguishes passed failed and skipped checks',()=>{
- const value=item();value.validation_report={summary:{result:'invalid'},checks:[{status:'passed',check_id:'terraform.validate',tool:'terraform',file_path:'terraform/main.tf',message:'Valid syntax.'},{status:'failed',check_id:'terraform.local_ref',tool:'builtin',file_path:'terraform/main.tf',message:'Unresolved local.'},{status:'skipped',check_id:'helm.lint',tool:'helm',skip_reason:'not_installed'}]};
- const onFile=vi.fn();render(<ReportPanel item={value} section="validation" onFile={onFile}/>);
- expect(screen.getByText('passed')).toHaveClass('ok');expect(screen.getByText('failed')).toHaveClass('danger');expect(screen.getByText('skipped')).toHaveClass('queued');
- fireEvent.click(screen.getAllByRole('button',{name:'terraform/main.tf'})[0]!);expect(onFile).toHaveBeenCalledWith('terraform/main.tf');
+it("FR-UI-05 UC-05 validation report distinguishes passed failed and skipped checks", () => {
+  const value = item();
+  value.validation_report = {
+    summary: { result: "invalid" },
+    checks: [
+      {
+        status: "passed",
+        check_id: "terraform.validate",
+        tool: "terraform",
+        file_path: "terraform/main.tf",
+        message: "Valid syntax.",
+      },
+      {
+        status: "failed",
+        check_id: "terraform.local_ref",
+        tool: "builtin",
+        file_path: "terraform/main.tf",
+        message: "Unresolved local.",
+      },
+      { status: "skipped", check_id: "helm.lint", tool: "helm", skip_reason: "not_installed" },
+    ],
+  };
+  const onFile = vi.fn();
+  render(<ReportPanel item={value} section="validation" onFile={onFile} />);
+  expect(screen.getByText("passed")).toHaveClass("ok");
+  expect(screen.getByText("failed")).toHaveClass("danger");
+  expect(screen.getByText("skipped")).toHaveClass("queued");
+  fireEvent.click(screen.getAllByRole("button", { name: "terraform/main.tf" })[0]!);
+  expect(onFile).toHaveBeenCalledWith("terraform/main.tf");
 });

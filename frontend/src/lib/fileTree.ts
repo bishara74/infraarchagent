@@ -1,14 +1,19 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
-export interface FileTreeRow { path: string; label: string; depth: number; directory: boolean }
+export interface FileTreeRow {
+  path: string;
+  label: string;
+  depth: number;
+  directory: boolean;
+}
 /** Directory labels come only from prefixes of returned file paths. */
 export function fileTree(paths: string[]): FileTreeRow[] {
   const rows: FileTreeRow[] = [];
   const directories = new Set<string>();
   for (const path of [...paths].sort()) {
-    const parts = path.split('/');
+    const parts = path.split("/");
     for (let depth = 0; depth < parts.length - 1; depth++) {
-      const prefix = parts.slice(0, depth + 1).join('/');
+      const prefix = parts.slice(0, depth + 1).join("/");
       if (!directories.has(prefix)) {
         directories.add(prefix);
         rows.push({ path: prefix, label: `${parts[depth]}/`, depth, directory: true });

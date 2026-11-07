@@ -1,27 +1,27 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   cacheDir: process.env.INFRAARCH_E2E_VITE_CACHE_DIR,
   plugins: [react()],
   envDir: false,
   server: {
-    host: '127.0.0.1',
+    host: "127.0.0.1",
     port: 5173,
     strictPort: true,
     proxy: {
-      '/api': {
-        target: process.env.INFRAARCH_BACKEND_URL || 'http://127.0.0.1:8000',
+      "/api": {
+        target: process.env.INFRAARCH_BACKEND_URL || "http://127.0.0.1:8000",
         changeOrigin: false,
       },
     },
   },
   test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{ts,tsx}'],
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
     clearMocks: true,
     restoreMocks: true,
   },

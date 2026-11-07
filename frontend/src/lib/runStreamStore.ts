@@ -1,41 +1,108 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
-import {cursorFor,rememberRun} from './preferences';
-import { flushSync } from 'react-dom';
-import { api } from '../api/client';
-import { isSettled, streamRun, type StreamState } from '../api/sse';
-import type { ResultsResponse, Variant } from '../api/types';
-import { applySnapshot, initialModel, reduceEvent } from './runReducer';
+import { cursorFor, rememberRun } from "./preferences";
+import { flushSync } from "react-dom";
+import { api } from "../api/client";
+import { isSettled, streamRun, type StreamState } from "../api/sse";
+import type { ResultsResponse, Variant } from "../api/types";
+import { applySnapshot, initialModel, reduceEvent } from "./runReducer";
 
 function createStore(runId: string) {
-  let value = { model: initialModel(), results: null as ResultsResponse | null, state: 'connecting' as StreamState, error: null as unknown, pendingRetries: [] as Variant[] };
+  let value = {
+    model: initialModel(),
+    results: null as ResultsResponse | null,
+    state: "connecting" as StreamState,
+    error: null as unknown,
+    pendingRetries: [] as Variant[],
+  };
   let controller: AbortController | null = null;
-  let generation = 0; let users = 0; let refreshRevision = 0; let lease = 0;
+  let generation = 0;
+  let users = 0;
+  let refreshRevision = 0;
+  let lease = 0;
   const listeners = new Set<() => void>();
-  const update = (change: Partial<typeof value>) => { value = { ...value, ...change }; listeners.forEach(listener => listener()); };
+  const update = (change: Partial<typeof value>) => {
+    value = { ...value, ...change };
+    listeners.forEach((listener) => listener());
+  };
   const store = {
     getSnapshot: () => value,
-    subscribe(listener: () => void) { listeners.add(listener); return () => { listeners.delete(listener); }; },
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
     async refresh() {
-      const current = generation; const revision=++refreshRevision; const cursor=value.model.events.at(-1)?.seq;
+      const current = generation;
+      const revision = ++refreshRevision;
+      const cursor = value.model.events.at(-1)?.seq;
       const result = await api.getResults(runId, controller?.signal);
-      if (current === generation && revision===refreshRevision && cursor===value.model.events.at(-1)?.seq) update({ results: result, model: applySnapshot(value.model, result), error: null });
+      if (
+        current === generation &&
+        revision === refreshRevision &&
+        cursor === value.model.events.at(-1)?.seq
+      )
+        update({ results: result, model: applySnapshot(value.model, result), error: null });
       return result;
     },
     start() {
-      controller?.abort(); controller = new AbortController(); const current = ++generation;
+      controller?.abort();
+      controller = new AbortController();
+      const current = ++generation;
       update({ error: null });
-      void (async()=>{
-        const saved=cursorFor(runId);
-        if(value.model.events.length===0&&saved){
-          let after=0;let model=initialModel();
-          try{let more=true;while(more){const page=await api.request<{events:import('../api/types').RunEvent[];has_more:boolean}>(`/api/pipeline/${encodeURIComponent(runId)}/events?after=${after}&through=${saved}`);if(current!==generation)return;for(const event of page.events){model=reduceEvent(model,event);after=event.seq;}more=page.has_more;}update({model});}catch{if(current!==generation)return;update({model:initialModel()});}
+      void (async () => {
+        const saved = cursorFor(runId);
+        if (value.model.events.length === 0 && saved) {
+          let after = 0;
+          let model = initialModel();
+          try {
+            let more = true;
+            while (more) {
+              const page = await api.request<{
+                events: import("../api/types").RunEvent[];
+                has_more: boolean;
+              }>(
+                `/api/pipeline/${encodeURIComponent(runId)}/events?after=${after}&through=${saved}`,
+              );
+              if (current !== generation) return;
+              for (const event of page.events) {
+                model = reduceEvent(model, event);
+                after = event.seq;
+              }
+              more = page.has_more;
+            }
+            update({ model });
+          } catch {
+            if (current !== generation) return;
+            update({ model: initialModel() });
+          }
         }
-        await streamRun({ runId, signal: controller.signal, cursor: value.model.events.at(-1)?.seq,
-        event: event => { if (current === generation) flushSync(() => update({ model: reduceEvent(value.model, event) })); rememberRun(runId,event.seq); },
-        snapshot: result => { if (current === generation) { ++refreshRevision; rememberRun(runId,value.model.events.at(-1)?.seq??0,result); update({ results: result, model: applySnapshot(value.model, result), pendingRetries: isSettled(result) ? [] : value.pendingRetries }); } },
-        state: (state, error = null) => { if (current === generation) update({ state, error }); },
-      });})();
+        await streamRun({
+          runId,
+          signal: controller.signal,
+          cursor: value.model.events.at(-1)?.seq,
+          event: (event) => {
+            if (current === generation)
+              flushSync(() => update({ model: reduceEvent(value.model, event) }));
+            rememberRun(runId, event.seq);
+          },
+          snapshot: (result) => {
+            if (current === generation) {
+              ++refreshRevision;
+              rememberRun(runId, value.model.events.at(-1)?.seq ?? 0, result);
+              update({
+                results: result,
+                model: applySnapshot(value.model, result),
+                pendingRetries: isSettled(result) ? [] : value.pendingRetries,
+              });
+            }
+          },
+          state: (state, error = null) => {
+            if (current === generation) update({ state, error });
+          },
+        });
+      })();
     },
     reopenRetry(variant: Variant) {
       update({ pendingRetries: [...new Set([...value.pendingRetries, variant])] });
@@ -48,8 +115,11 @@ function createStore(runId: string) {
       // the same turn. Do not issue requests for a discarded mount.
       queueMicrotask(() => {
         if (!users || currentLease !== lease || controller) return;
-        store.start(); const current = generation;
-        void store.refresh().catch(error => { if (current === generation) update({ error }); });
+        store.start();
+        const current = generation;
+        void store.refresh().catch((error) => {
+          if (current === generation) update({ error });
+        });
       });
     },
     release() {
@@ -57,7 +127,9 @@ function createStore(runId: string) {
       const currentLease = ++lease;
       queueMicrotask(() => {
         if (users || currentLease !== lease) return;
-        ++generation; controller?.abort(); controller = null;
+        ++generation;
+        controller?.abort();
+        controller = null;
       });
     },
   };
@@ -66,6 +138,9 @@ function createStore(runId: string) {
 const stores = new Map<string, ReturnType<typeof createStore>>();
 export function runStore(runId: string) {
   let store = stores.get(runId);
-  if (!store) { store = createStore(runId); stores.set(runId, store); }
+  if (!store) {
+    store = createStore(runId);
+    stores.set(runId, store);
+  }
   return store;
 }
