@@ -11,6 +11,7 @@ class RunStatus(StrEnum):
     SUCCESS = "success"
     PARTIAL_SUCCESS = "partial_success"
     FAILED = "failed"
+    CANCELLED = "cancelled"
 
 
 class PackageStatus(StrEnum):

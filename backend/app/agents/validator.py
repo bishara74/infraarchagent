@@ -1,6 +1,6 @@
 # AI assistance: written with OpenAI Codex from the author's task
 # descriptions; reviewed and modified by the author. See AI_USE.md.
-"""Persist deterministic validation before publishing its package outcome."""
+"""Commit deterministic validation with its package outcome and events."""
 
 import time
 
@@ -126,44 +126,44 @@ class ValidatorAgent:
                 if check.status == "failed" and check.file_path is not None
             )
             report = ValidationReport.model_validate(safe)
-        async with self.session_factory() as session:
-            async with session.begin():
-                await PackageRepository(session).save_validation_results(
-                    ctx.run_id, variant, report
-                )
         outcome = package_validation_status(report.summary.result)
-        await ctx.writer.event_log.append(
-            ctx.run_id,
-            AgentName.VALIDATOR,
-            PackageStatus.VALIDATING,
-            message="validation summary",
-            payload=stage_notice_payload(
-                variant,
-                "validation summary",
-                {
-                    **report.summary.model_dump(),
-                    "duration_seconds": round(time.monotonic() - started, 3),
-                },
-            ),
-        )
-        await ctx.writer.package_transition(
-            ctx.run_id,
+        summary = stage_notice_payload(
             variant,
-            outcome,
-            message=f"validation {report.summary.result}",
-            error="validation could not complete"
-            if outcome == PackageStatus.VALIDATION_ERROR
-            else None,
+            "validation summary",
+            {
+                **report.summary.model_dump(),
+                "duration_seconds": round(time.monotonic() - started, 3),
+            },
         )
-        await ctx.writer.agent_state(
-            ctx.run_id,
-            AgentName.VALIDATOR,
-            AgentState.FAILED
-            if outcome == PackageStatus.VALIDATION_ERROR
-            else AgentState.COMPLETED,
-            previous=AgentState.RUNNING,
-            message=f"validation {report.summary.result}",
-            variant=variant,
-            metrics={"prepared_report": prepared_report is not None},
-        )
+        async with ctx.writer.event_log.transaction(ctx.run_id) as transaction:
+            await PackageRepository(transaction.session).save_validation_results(
+                ctx.run_id, variant, report
+            )
+            await transaction.append(
+                AgentName.VALIDATOR,
+                PackageStatus.VALIDATING,
+                message="validation summary",
+                payload=summary,
+            )
+            await ctx.writer.package_transition_in(
+                transaction,
+                variant,
+                outcome,
+                message=f"validation {report.summary.result}",
+                error="validation could not complete"
+                if outcome == PackageStatus.VALIDATION_ERROR
+                else None,
+            )
+            await ctx.writer.agent_state(
+                ctx.run_id,
+                AgentName.VALIDATOR,
+                AgentState.FAILED
+                if outcome == PackageStatus.VALIDATION_ERROR
+                else AgentState.COMPLETED,
+                previous=AgentState.RUNNING,
+                message=f"validation {report.summary.result}",
+                variant=variant,
+                metrics={"prepared_report": prepared_report is not None},
+                transaction=transaction,
+            )
         return outcome

@@ -3,7 +3,7 @@
 import type { AgentState, ResultsResponse, RunEvent, RunStatus, Variant } from "../api/types";
 
 export interface StageItem {
-  status: AgentState;
+  status: AgentState | "cancelled";
   seq: number;
   message: string | null;
   started: string | null;
@@ -45,7 +45,27 @@ const stageOutcomes: Record<string, readonly [string, string]> = {
 export function reduceEvent(model: RunModel, event: RunEvent): RunModel {
   if (event.seq <= (model.events.at(-1)?.seq ?? 0)) return model;
   const next = { ...model, events: [...model.events, event] };
-  if (event.kind === "run_status") next.runStatus = event.status as RunStatus;
+  if (event.kind === "run_status") {
+    next.runStatus = event.status as RunStatus;
+    if (event.status === "cancelled") {
+      next.stages = { ...model.stages };
+      for (const [key, stage] of Object.entries(model.stages)) {
+        if (stage.status === "running") {
+          next.stages[key] = {
+            ...stage,
+            status: "cancelled",
+            seq: event.seq,
+            message: event.message,
+            ended: event.timestamp,
+            periods: stage.periods?.map((period) => ({
+              ...period,
+              ended: period.ended ?? event.timestamp,
+            })),
+          };
+        }
+      }
+    }
+  }
   if (event.kind === "plan_created") next.plan = event.payload.plan;
   if (event.kind === "package_status" && event.variant)
     next.packageStatuses = { ...model.packageStatuses, [event.variant]: event.status };
@@ -107,7 +127,7 @@ export function reduceEvent(model: RunModel, event: RunEvent): RunModel {
 }
 export function stageFor(model: RunModel, agent: string): StageItem {
   const keys =
-    agent === "security" || agent === "validator"
+    (agent === "security" || agent === "validator") && model.runStatus !== "cancelled"
       ? Object.keys(model.packageStatuses)
           .filter((variant) => model.packageStatuses[variant as Variant] !== "failed")
           .map((variant) => `${agent}:${variant}`)
@@ -129,9 +149,11 @@ export function stageFor(model: RunModel, agent: string): StageItem {
     ? "running"
     : items.some((item) => item.status === "failed")
       ? "failed"
-      : items.every((item) => item.status === "completed")
-        ? "completed"
-        : "pending";
+      : items.some((item) => item.status === "cancelled")
+        ? "cancelled"
+        : items.every((item) => item.status === "completed")
+          ? "completed"
+          : "pending";
   const starts = items.flatMap((item) => (item.started ? [item.started] : [])).sort();
   const ends = items.flatMap((item) => (item.ended ? [item.ended] : [])).sort();
   const outcomes =

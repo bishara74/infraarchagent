@@ -225,16 +225,16 @@ async def test_origin_history_is_variant_scoped_and_precedes_label(
     app, run_id = await pending_app(db_engines[0], result="valid")
 
     async def record_retry():
-        # State/event transactions are independent (D-19); this fixture isolates
-        # history selection rather than executing another remediation pipeline.
-        await app.state.writer.review_event(
-            run_id,
-            retry_variant,
-            PackageStatus.REMEDIATING,
-            PackageStatus.PENDING_REVIEW,
-            action="retry",
-            reasons=[],
-        )
+        # Seed history independently to exercise legacy ordering and variant scope.
+        async with app.state.event_log.transaction(run_id) as transaction:
+            await app.state.writer.review_event(
+                transaction,
+                retry_variant,
+                PackageStatus.REMEDIATING,
+                PackageStatus.PENDING_REVIEW,
+                action="retry",
+                reasons=[],
+            )
 
     if before_label:
         await record_retry()

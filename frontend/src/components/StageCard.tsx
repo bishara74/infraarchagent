@@ -29,7 +29,7 @@ export function StageCard({
           name={
             stage.status === "completed"
               ? "check"
-              : stage.status === "failed"
+              : stage.status === "failed" || stage.status === "cancelled"
                 ? "close"
                 : stage.status === "running"
                   ? "loading"

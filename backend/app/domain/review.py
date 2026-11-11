@@ -6,11 +6,8 @@ from collections.abc import Iterator, Mapping, Sequence
 from typing import Any
 
 from app.domain.enums import PackageStatus, RunStatus
-from app.domain.states import is_downloadable
+from app.domain.states import TERMINAL_RUNS, is_downloadable
 
-TERMINAL_RUNS = frozenset(
-    {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}
-)
 RETRY_ABORT_PREFIX = "review retry "
 
 

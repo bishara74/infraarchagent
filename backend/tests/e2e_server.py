@@ -13,11 +13,38 @@ import uvicorn
 from sqlalchemy import text
 
 from app.core import bind
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.db.session import make_owner_engine
-from app.domain.enums import Variant
+from app.domain.enums import LLMProvider, Variant
 from app.llm.base import RetryPolicy
-from app.pipeline.demo_stub import DEMO_PLAN, PipelineDemoFixStub, demo_file
+from app.pipeline.demo_stub import (
+    DEMO_PLAN,
+    PipelineDemoFixStub,
+    PipelineDemoStub,
+    demo_file,
+)
+
+CANCEL_TEST_INPUT = "Deploy an AWS web service for the Phase 11 cancellation test."
+
+
+def configure_cancel_barrier(settings: Settings) -> None:
+    """Keep the cancellation fixture entirely in the isolated browser server."""
+    if (
+        settings.llm_provider != LLMProvider.STUB
+        or os.environ.get("INFRAARCH_TEST_BOOTSTRAP") != "1"
+    ):
+        return
+    from tests.database_safety import assert_test_database_settings
+
+    assert_test_database_settings(settings)
+    send = PipelineDemoStub.send_prompt
+
+    async def send_with_barrier(self, prompt, **options):
+        if self.variant is None and CANCEL_TEST_INPUT in prompt:
+            await asyncio.Event().wait()
+        return await send(self, prompt, **options)
+
+    PipelineDemoStub.send_prompt = send_with_barrier
 
 
 async def prepare() -> None:
@@ -136,6 +163,7 @@ def catalog(request: httpx.Request) -> httpx.Response:
 
 def main() -> None:
     asyncio.run(prepare())
+    configure_cancel_barrier(get_settings())
     original = openai.AsyncOpenAI
 
     def mocked(*args, **kwargs):

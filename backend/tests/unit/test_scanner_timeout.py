@@ -45,7 +45,7 @@ async def main():
     runner=ProcessToolRunner(1)
     mode=os.environ["TEST_MODE"]
     started=time.monotonic()
-    if mode == "validator":
+    if mode in {"validator", "cancel_validator"}:
         from app.validation.engine import ValidationEngine
         from app.validation.documents import PackageDocuments
         from tests.unit.test_generators import plan
@@ -54,19 +54,44 @@ async def main():
         mirror=parent/"mirror"
         mirror.mkdir()
         (mirror/"fake_linux_amd64.zip").touch()
-        report=await ValidationEngine(
-            ProcessToolRunner(30),mirror=mirror,versions={},deadline_seconds=1
-        ).validate(plan(),files)
-        assert report.abort_reason=="deadline"
-    elif mode == "cancel":
-        task=asyncio.create_task(runner.run("checkov",parent))
+        engine=ValidationEngine(
+            ProcessToolRunner(30),mirror=mirror,versions={},
+            deadline_seconds=30 if mode=="cancel_validator" else 1
+        )
+        if mode == "validator":
+            report=await engine.validate(plan(),files)
+            assert report.abort_reason=="deadline"
+    if mode.startswith("cancel"):
+        release_launch=asyncio.Event()
+        if mode == "cancel_launch":
+            launch=asyncio.create_subprocess_exec
+            async def delayed_launch(*args,**kwargs):
+                process=await launch(*args,**kwargs)
+                await release_launch.wait()
+                return process
+            asyncio.create_subprocess_exec=delayed_launch
+        if mode == "cancel_validator":
+            work=engine.validate(plan(),files)
+        elif mode == "cancel_scan":
+            work=Scanner(ProcessToolRunner(30)).scan(
+                {"terraform/main.tf":"locals {}"},Variant.SECURITY
+            )
+        else:
+            work=ProcessToolRunner(30).run("checkov",parent)
+        task=asyncio.create_task(work)
+        observed=parent/"observed"
         async with asyncio.timeout(3):
-            while not (parent/"pgids").exists(): await asyncio.sleep(.01)
+            while not observed.exists() or not observed.read_text().strip():
+                await asyncio.sleep(.01)
+        cancel_deadline=time.monotonic()+5
         task.cancel()
-        try: await task
+        # Deliver cancellation while delayed_launch still owns the handle.
+        await asyncio.sleep(0)
+        release_launch.set()
+        try: await asyncio.wait_for(task,5)
         except asyncio.CancelledError: pass
         else: raise AssertionError("cancellation not propagated")
-    else:
+    elif mode != "validator":
         try:
             if mode == "scan":
                 await Scanner(runner).scan(
@@ -81,7 +106,8 @@ async def main():
     # Scanner mode stores its PID file in its temporary HOME before removal;
     # the executable also writes to a dedicated observation directory.
     pgids=[int(x) for x in (parent/"observed").read_text().splitlines()]
-    deadline=time.monotonic()+2
+    assert pgids,"stub did not report a process group"
+    deadline=cancel_deadline if mode.startswith("cancel") else time.monotonic()+2
     for pgid in pgids:
         while True:
             try:
@@ -91,7 +117,7 @@ async def main():
             except ProcessLookupError: break
             assert time.monotonic()<deadline,"process group survived"
             await asyncio.sleep(.01)
-    if mode in {"scan","validator"}:
+    if mode in {"scan","validator","cancel_scan","cancel_validator"}:
         assert not list(parent.glob("infraarch-*-*")),"temporary directory survived"
 asyncio.run(main())
 """
@@ -100,7 +126,7 @@ asyncio.run(main())
 def _check_process_cleanup(
     tmp_path: Path, mode: str, *, performance: bool = False
 ) -> None:
-    fake = tmp_path / ("terraform" if mode == "validator" else "checkov")
+    fake = tmp_path / ("terraform" if "validator" in mode else "checkov")
     # Observation survives Scanner's directory cleanup, without inheriting an
     # arbitrary environment variable into the fake executable.
     script = SCANNER.replace(
@@ -146,6 +172,14 @@ def _check_process_cleanup(
 @pytest.mark.req("FR-S-01", "FR-V-05", "NFR-01")
 @pytest.mark.parametrize("mode", ["timeout", "cancel", "scan", "validator"])
 def test_timeout_kills_forked_stdout_owner(tmp_path: Path, mode: str) -> None:
+    _check_process_cleanup(tmp_path, mode)
+
+
+@pytest.mark.req("FR-S-01", "FR-V-05")
+@pytest.mark.parametrize("mode", ["cancel_scan", "cancel_validator", "cancel_launch"])
+def test_cancellation_kills_tool_process_group_within_five_seconds(
+    tmp_path: Path, mode: str
+) -> None:
     _check_process_cleanup(tmp_path, mode)
 
 

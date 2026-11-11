@@ -14,6 +14,7 @@ from hashlib import sha256
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any
+from uuid import uuid4
 
 from pydantic import SecretStr
 
@@ -200,26 +201,27 @@ async def _remediate(
         },
     )
     try:
-        async with sessions() as session:
-            async with session.begin():
-                run = await RunRepository(session).create(
-                    f"Security evaluation of {folder}",
-                    resolved.provider,
-                    max_iterations,
-                    model=resolved.model,
-                )
-                repository = PackageRepository(session)
-                await repository.create(run.run_id, package.variant)
-                await repository.save_files(run.run_id, package.variant, package.files)
-        await writer.run_transition(
-            run.run_id, RunStatus.RUNNING, message="evaluation started"
-        )
-        await writer.package_transition(
-            run.run_id,
-            package.variant,
-            PackageStatus.GENERATED,
-            message="evaluation package loaded",
-        )
+        async with writer.event_log.transaction(uuid4()) as transaction:
+            session = transaction.session
+            run = await RunRepository(session).create(
+                f"Security evaluation of {folder}",
+                resolved.provider,
+                max_iterations,
+                model=resolved.model,
+                run_id=transaction.run_id,
+            )
+            repository = PackageRepository(session)
+            await repository.create(run.run_id, package.variant)
+            await repository.save_files(run.run_id, package.variant, package.files)
+            await writer.run_transition_in(
+                transaction, RunStatus.RUNNING, message="evaluation started"
+            )
+            await writer.package_transition_in(
+                transaction,
+                package.variant,
+                PackageStatus.GENERATED,
+                message="evaluation package loaded",
+            )
         ctx = StageContext(run.run_id, writer, plan, max_iterations=max_iterations)
         outcome = await factory.create_security_agent(config).run(
             ctx, package.variant, package

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import PipelineRun
 from app.domain.enums import LLMProvider, RunStatus
-from app.domain.states import assert_run_transition
+from app.domain.states import TERMINAL_RUNS, assert_run_transition
 
 
 class RunRepository:
@@ -81,7 +81,7 @@ class RunRepository:
         row.status = target
         if error_message is not None:
             row.error_message = error_message
-        if target in {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}:
+        if target in TERMINAL_RUNS:
             row.end_time = datetime.now(UTC)
         await self.session.flush()
         return row, previous

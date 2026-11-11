@@ -9,12 +9,12 @@ import pytest
 from app.domain.enums import AgentName, LLMProvider, PackageStatus, RunStatus, Variant
 
 
-def _migration() -> ModuleType:
+def _migration(filename: str = "0001_initial_schema") -> ModuleType:
     path = (
         Path(__file__).resolve().parents[2]
-        / "app/db/migrations/versions/0001_initial_schema.py"
+        / f"app/db/migrations/versions/{filename}.py"
     )
-    spec = importlib.util.spec_from_file_location("initial_schema", path)
+    spec = importlib.util.spec_from_file_location(filename, path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -23,6 +23,10 @@ def _migration() -> ModuleType:
 
 def test_migration_check_literals_match_domain_enums() -> None:
     migration = _migration()
+    status_migrations = {
+        "PACKAGE_STATUS_VALUES": _migration("0004_honest_labels"),
+        "RUN_STATUS_VALUES": _migration("0017_cancelled_run_status"),
+    }
     for name, enum in (
         ("RUN_STATUS_VALUES", RunStatus),
         ("PACKAGE_STATUS_VALUES", PackageStatus),
@@ -30,17 +34,8 @@ def test_migration_check_literals_match_domain_enums() -> None:
         ("LLM_PROVIDER_VALUES", LLMProvider),
         ("AGENT_NAME_VALUES", AgentName),
     ):
-        if name == "PACKAGE_STATUS_VALUES":
-            path = (
-                Path(__file__).resolve().parents[2]
-                / "app/db/migrations/versions/0004_honest_labels.py"
-            )
-            spec = importlib.util.spec_from_file_location("honest_labels", path)
-            current = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(current)
-            assert set(current.PACKAGE_STATUS_VALUES) == {item.value for item in enum}
-        else:
-            assert set(getattr(migration, name)) == {item.value for item in enum}
+        current = status_migrations.get(name, migration)
+        assert set(getattr(current, name)) == {item.value for item in enum}
 
 
 @pytest.mark.req("FR-S-09", "NFR-01")

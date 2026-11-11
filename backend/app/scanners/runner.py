@@ -264,14 +264,27 @@ class ProcessToolRunner:
             if sibling is not None and sibling.is_file():
                 command[0] = str(sibling)
         try:
-            process = await asyncio.create_subprocess_exec(
-                *command,
-                cwd=selected_cwd,
-                env=env,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-                start_new_session=True,
+            launch = asyncio.create_task(
+                asyncio.create_subprocess_exec(
+                    *command,
+                    cwd=selected_cwd,
+                    env=env,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    start_new_session=True,
+                )
             )
+            process = await asyncio.shield(launch)
+        except asyncio.CancelledError:
+            # Finish acquiring the handle so cancellation during launch can
+            # still kill the whole group, including any inherited workers.
+            try:
+                process = await launch
+            except OSError:
+                pass
+            else:
+                await self._terminate(process)
+            raise
         except FileNotFoundError:
             raise ToolFailure(tool, "not_installed") from None
         except OSError:

@@ -106,9 +106,11 @@ async def test_generator_metrics_persist_without_raw_output(
     else:
         assert cost_package is None
         assert evidence["failure_categories"] == {"cost": "invalid_response"}
-        assert (
-            evidence["generator_output_tokens_per_attempt"][0]["output_tokens"] == 8000
-        )
+        assert [
+            item["output_tokens"]
+            for item in evidence["generator_output_tokens_per_attempt"]
+            if item["variant"] == "cost"
+        ] == [8000]
     for surface in (results.text, stream.text, caplog.text):
         assert "PRIVATE_INVALID_RESPONSE" not in surface
     async with db_engines[0].connect() as connection:

@@ -36,6 +36,7 @@ def test_inventory_includes_original_and_added_api_data_surfaces():
     assert ("GET", "/api/health", "health") in endpoints
     assert ("POST", "/api/lessons", "lessons") in endpoints
     assert ("GET", "/api/pipeline/{run_id}/download-all", "pipeline") in endpoints
+    assert ("POST", "/api/pipeline/{run_id}/cancel", "pipeline") in endpoints
     assert {
         "pipeline_runs",
         "generated_packages",
@@ -43,4 +44,4 @@ def test_inventory_includes_original_and_added_api_data_surfaces():
         "users",
         "lesson_sets",
     } <= set(tables)
-    assert len(endpoints) == 46 and len(tables) == 14
+    assert len(endpoints) == 47 and len(tables) == 14

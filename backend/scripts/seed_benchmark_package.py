@@ -102,62 +102,62 @@ async def seed_package(
         decision=decision,
     )
     files = calibrated_files(seed, archive_bytes, readiness)
-    async with session_factory() as session:
-        async with session.begin():
-            await RunRepository(session).create(
-                SYNTHETIC, LLMProvider.STUB, 1, model="stub", run_id=run_id
-            )
-            repository = PackageRepository(session)
-            await repository.create(run_id, Variant.COST)
-            await repository.save_files(run_id, Variant.COST, files)
     log = EventLog(session_factory, NullPublisher())
     writer = PipelineStateWriter(session_factory, log)
-    await log.append(
-        run_id,
-        AgentName.ORCHESTRATOR,
-        RunStatus.CREATED,
-        message=SYNTHETIC,
-        payload=run_status_payload(),
-    )
-    await writer.run_transition(run_id, RunStatus.RUNNING, message=SYNTHETIC)
-    for status in (
-        PackageStatus.GENERATED,
-        PackageStatus.SCANNING,
-        PackageStatus.REMEDIATING,
-        PackageStatus.SCAN_EXHAUSTED,
-        PackageStatus.VALIDATING,
-        PackageStatus.VALIDATION_ERROR,
-        PackageStatus.PENDING_REVIEW,
-    ):
-        await writer.package_transition(
-            run_id,
-            Variant.COST,
-            status,
-            message=SYNTHETIC,
-            error=SYNTHETIC if status == PackageStatus.VALIDATION_ERROR else None,
+    async with log.transaction(run_id) as transaction:
+        session = transaction.session
+        await RunRepository(session).create(
+            SYNTHETIC, LLMProvider.STUB, 1, model="stub", run_id=run_id
         )
-    async with session_factory() as session:
-        async with session.begin():
-            previous = await writer.review_action(
-                session, run_id, Variant.COST, "reject", SYNTHETIC
+        repository = PackageRepository(session)
+        await repository.create(run_id, Variant.COST)
+        await repository.save_files(run_id, Variant.COST, files)
+        await transaction.append(
+            AgentName.ORCHESTRATOR,
+            RunStatus.CREATED,
+            message=SYNTHETIC,
+            payload=run_status_payload(),
+        )
+        await writer.run_transition_in(
+            transaction, RunStatus.RUNNING, message=SYNTHETIC
+        )
+        for status in (
+            PackageStatus.GENERATED,
+            PackageStatus.SCANNING,
+            PackageStatus.REMEDIATING,
+            PackageStatus.SCAN_EXHAUSTED,
+            PackageStatus.VALIDATING,
+            PackageStatus.VALIDATION_ERROR,
+            PackageStatus.PENDING_REVIEW,
+        ):
+            await writer.package_transition_in(
+                transaction,
+                Variant.COST,
+                status,
+                message=SYNTHETIC,
+                error=SYNTHETIC if status == PackageStatus.VALIDATION_ERROR else None,
             )
-            row = await PackageRepository(session).get_for_update(run_id, Variant.COST)
-            assert row is not None
-            row.review_decision = decision
-    await log.append(
-        run_id,
-        AgentName.ORCHESTRATOR,
-        PackageStatus.REJECTED,
-        previous,
-        message=SYNTHETIC,
-        payload={
-            **package_status_payload(Variant.COST),
-            "review_action": "reject",
-            "review_decision": decision,
-            "review_reasons": ["synthetic_fixture"],
-        },
-    )
-    await writer.run_transition(run_id, RunStatus.PARTIAL_SUCCESS, message=SYNTHETIC)
+        previous = await writer.review_action(
+            session, run_id, Variant.COST, "reject", SYNTHETIC
+        )
+        row = await repository.get_for_update(run_id, Variant.COST)
+        assert row is not None
+        row.review_decision = decision
+        await transaction.append(
+            AgentName.ORCHESTRATOR,
+            PackageStatus.REJECTED,
+            previous,
+            message=SYNTHETIC,
+            payload={
+                **package_status_payload(Variant.COST),
+                "review_action": "reject",
+                "review_decision": decision,
+                "review_reasons": ["synthetic_fixture"],
+            },
+        )
+        await writer.run_transition_in(
+            transaction, RunStatus.PARTIAL_SUCCESS, message=SYNTHETIC
+        )
     return {
         "run_id": str(run_id),
         "synthetic": True,

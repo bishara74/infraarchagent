@@ -11,7 +11,10 @@ export const headers = { "X-API-Key": API_KEY };
 export const originHeaders = {
   Origin: `http://127.0.0.1:${process.env.INFRAARCH_E2E_FRONTEND_PORT ?? 5173}`,
 };
-export async function submit(page: Page) {
+export async function submit(
+  page: Page,
+  text = "Create an AWS web service with Terraform and secure access.",
+) {
   await page.goto("/");
   const status = await (await page.request.get("/api/auth/session")).json();
   if (!status.authenticated) {
@@ -34,9 +37,7 @@ export async function submit(page: Page) {
     data: { revision: preferences.revision, data: {} },
   });
   await page.reload();
-  await page
-    .getByLabel("Infrastructure description")
-    .fill("Create an AWS web service with Terraform and secure access.");
+  await page.getByLabel("Infrastructure description").fill(text);
   const request = page.waitForRequest(
     (request) => request.url().endsWith("/api/pipeline/run") && request.method() === "POST",
   );

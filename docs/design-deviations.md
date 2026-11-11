@@ -309,8 +309,8 @@ Status values:
 ### D-19 — Failed launch edge (Accepted)
 - **Implementation:** permit `created → failed` for a persisted run that
   cannot start or is found at startup. Terminal run states remain frozen.
-  State and event commits are separate transactions; a hard crash between
-  them can leave a missing event even though the state is correct.
+  Phase 4 committed state and event in separate transactions. A hard crash
+  between them could leave a missing event. D-67 closes that gap.
 
 ### D-20 — Unavailable security stage (Removed in Phase 5)
 - **History:** Phase 4 moved generated packages through `scanning` to
@@ -779,9 +779,9 @@ Acceptance locks the package row and atomically saves `pending_review →
 remediating`, feedback, zero consumed iterations and an application UTC
 timestamp. Settlement clears the timestamp in the status transaction. Startup
 selects non-NULL timestamps independently of run status and uses the reason
-**review retry interrupted by server restart**. Events alone cannot identify
-retries because state/event commits are separate. The marker never enters
-`security_report`.
+**review retry interrupted by server restart**. The marker supports recovery of
+legacy retries that lack an acceptance event. D-67 commits the marker with the
+event for new retries. The marker stays on the package row.
 
 Review-only abort paths normalize `remediating` through `scanning` and add
 guarded `scanning`/`validating → pending_review` arrows. Intermediate
@@ -794,11 +794,9 @@ safely to review instead of fabricating a plan.
 
 Retries share runner capacity and task ownership, using unique IDs for
 concurrent variants of one run. SSE stays open through marked intermediate
-states and waits for the final package frame, covering the state/event commit
-gap. Operator logs retain tracebacks with both keys redacted; public errors
-remain generic. D-19's separate transactions remain a known limit: a hard crash
-can leave a labelled package without its label event, handled by the archive's
-unavailable provenance/time text.
+states and waits for the final package frame. Operator logs retain tracebacks
+with both keys redacted. Public errors remain generic. The archive's unavailable
+provenance/time text handles historical packages missing a label event.
 
 ### D-39 — Security counts replace the mockup score (Accepted; implemented)
 
@@ -3426,6 +3424,52 @@ The [Chapter 6 note](thesis-notes/chapter6-evaluation.md#phase-10g--remediation-
 provides the proposed thesis wording. Pooling is descriptive, not a matched or
 causal estimate. No application/specification/policy change or new open question
 is introduced; the analysis clarifies the criterion's recorded outcome.
+
+### D-67 — Atomic state and event writes (Phase 11)
+
+FR-P-01 and FR-P-04. The run and package transitions, run and package creation,
+generated files, validation and security reports, final readiness evidence,
+and review acceptance and abort records commit with their describing events.
+Review approve and reject preserve the decision UUID as the event UUID.
+Retry acceptance commits its feedback and retry marker with the retry event.
+Startup recovery uses the same transition writer. Benchmark seeding and the
+security evaluation CLI commit their initial data with their existing events.
+
+Paired writers acquire the per-run process lock, the PostgreSQL advisory
+transaction lock, then any run or package row locks. Model and tool work runs
+before the write transaction. The advisory lock makes commit order follow
+sequence order. The process lock covers publication through the one EventLog
+in the worker. The Phase 4 crash gap recorded in D-19 is closed for paired
+writes. Replay recovers committed events after a crash or publication failure.
+The single-process live stream scope remains OQ-04.
+
+Evidence includes failures before commit and after commit, SSE replay,
+startup recovery, and a review decision concurrent with a package transition.
+[Atomic event integration tests](../backend/tests/integration/test_atomic_run_events.py)
+and [event ordering tests](../backend/tests/integration/test_events.py).
+
+### D-68 — Cancel an individual run (Phase 11)
+
+The run state machine adds terminal `cancelled` from `created` and `running`.
+Migration 0017 widens `ck_run_status`. The new POST endpoint accepts the owner
+or an administrator in account mode. Shared-key and local clients may cancel
+ownerless runs using a self-declared reviewer name. Repeated requests during
+cleanup return 202 and retain the original requester. The API inventory now
+has 47 method/path definitions and 14 application tables.
+
+The runner cancels only the selected pipeline task and drains its subprocess
+groups before settlement. Unlabelled packages settle as failed and labelled
+packages retain their normal review or download availability. Package changes
+and the cancellation event commit together. The progress screen confirms
+the action in its existing dialog style and uses SSE and results to show the
+settled status. Cancellation covers main pipeline runs. Review retries retain
+their existing lifecycle and bounds. Startup interruption recovery handles a
+process exit before cancellation settlement commits.
+
+[Cancellation integration tests](../backend/tests/integration/test_pipeline_cancel.py),
+[process-group tests](../backend/tests/unit/test_scanner_timeout.py),
+[browser flow](../frontend/e2e/cancel-run.spec.ts), and
+[browser barrier isolation tests](../backend/tests/unit/test_e2e_cancel_barrier.py).
 
 ## Clarifications (spec is silent; the diagrams decide)
 

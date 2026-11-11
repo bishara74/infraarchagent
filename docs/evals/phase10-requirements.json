@@ -246,18 +246,20 @@
     },
     {
       "id": "FR-P-01",
-      "status": "partly met",
+      "status": "met",
       "test_types": [
         "pytest"
       ],
       "evidence": [
         "backend/tests/integration/test_pipeline_orchestrator.py",
-        "backend/tests/unit/test_pipeline_demo_stub.py"
+        "backend/tests/unit/test_pipeline_demo_stub.py",
+        "backend/tests/integration/test_atomic_run_events.py"
       ],
       "deviations": [
-        "D-19"
+        "D-19",
+        "D-67"
       ],
-      "finding": "Ordinary stage transitions are timestamped; state/event commits are separate, leaving a hard-crash audit gap."
+      "finding": "Stage transitions are timestamped. PostgreSQL fault injection verifies that paired state and event writes roll back or commit together, including startup recovery."
     },
     {
       "id": "FR-P-02",
@@ -286,7 +288,7 @@
     },
     {
       "id": "FR-P-04",
-      "status": "partly met",
+      "status": "met",
       "test_types": [
         "pytest",
         "vitest",
@@ -294,14 +296,17 @@
       ],
       "evidence": [
         "backend/tests/integration/test_events.py",
-        "backend/tests/integration/test_phase9f_generation_recovery.py"
+        "backend/tests/integration/test_phase9f_generation_recovery.py",
+        "backend/tests/integration/test_atomic_run_events.py",
+        "frontend/e2e/cancel-run.spec.ts"
       ],
       "deviations": [
         "D-01",
         "D-19",
+        "D-67",
         "OQ-04"
       ],
-      "finding": "Replay/live SSE ordering is tested in one process; a crash between state and event commits can omit a transition."
+      "finding": "In the supported single-process deployment, publication follows sequence order. PostgreSQL and SSE tests verify that an event committed before a publication failure is replayable."
     },
     {
       "id": "FR-S-01",

@@ -1,7 +1,7 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
 import { api, ApiError } from "./client";
-import type { ResultsResponse, RunEvent } from "./types";
+import { isTerminalRun, type ResultsResponse, type RunEvent } from "./types";
 
 export interface SseFrame {
   id: string | null;
@@ -75,7 +75,7 @@ export function eventFromFrame(frame: SseFrame): RunEvent {
 }
 export function isSettled(results: ResultsResponse) {
   return (
-    ["success", "partial_success", "failed"].includes(results.run.status) &&
+    isTerminalRun(results.run.status) &&
     results.packages.every(
       (item) =>
         !["scanning", "remediating", "validating"].includes(item.status) && !item.retry_in_progress,

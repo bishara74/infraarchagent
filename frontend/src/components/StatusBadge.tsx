@@ -44,9 +44,14 @@ export function StatusBadge({
                 "disabled",
               ].includes(status)
             ? "danger"
-            : ["excepted", "pending_review", "warning", "MEDIUM", "partial_success"].includes(
-                  status,
-                )
+            : [
+                  "excepted",
+                  "pending_review",
+                  "warning",
+                  "MEDIUM",
+                  "partial_success",
+                  "cancelled",
+                ].includes(status)
               ? "warn"
               : "queued";
   return (

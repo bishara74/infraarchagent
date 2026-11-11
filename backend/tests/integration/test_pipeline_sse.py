@@ -309,28 +309,50 @@ async def test_http_retry_stream_includes_validation_and_final_state(
 
 
 @pytest.mark.req("FR-P-04", "FR-S-09")
-async def test_final_state_commit_does_not_close_before_its_frame(db_engines):
+async def test_final_state_commit_does_not_close_before_its_frame(
+    db_engines, monkeypatch
+):
     from app.api.pipeline import _can_close
-    from tests.integration.test_pipeline_review import pending_app
+    from tests.integration.test_pipeline_review import (
+        client_for,
+        pending_app,
+        review_url,
+    )
 
     app, run_id = await pending_app(db_engines[0])
     observed = {"cost": "pending_review"}
-    async with app.state.session_factory() as session:
-        async with session.begin():
-            previous = await app.state.writer.review_action(
-                session, run_id, Variant.COST, "approve", None
+    publishing, release = asyncio.Event(), asyncio.Event()
+
+    async def pause_before_publish(record):
+        publishing.set()
+        await release.wait()
+
+    monkeypatch.setattr(app.state.event_log, "_before_publish", pause_before_publish)
+    async with (
+        asyncio.timeout(5),
+        client_for(app) as client,
+        app.state.broker.subscribe(run_id) as subscription,
+        asyncio.TaskGroup() as group,
+    ):
+        review = group.create_task(
+            client.post(
+                review_url(run_id),
+                json={
+                    "action": "approve",
+                    "reviewer_name": "Test engineer",
+                    "category": "other",
+                    "reason": "Reviewed findings",
+                },
             )
-    assert not await _can_close(app.state.session_factory, run_id, True, observed)
-    await app.state.writer.review_event(
-        run_id,
-        Variant.COST,
-        PackageStatus.ENGINEER_APPROVED,
-        previous,
-        action="approve",
-        reasons=["validation_failed"],
-    )
-    observed["cost"] = "engineer_approved"
-    assert await _can_close(app.state.session_factory, run_id, True, observed)
+        )
+        await publishing.wait()
+        assert not await _can_close(app.state.session_factory, run_id, True, observed)
+        release.set()
+        frame = await subscription.queue.get()
+        assert frame.new_state == "engineer_approved"
+        observed["cost"] = frame.new_state
+        assert await _can_close(app.state.session_factory, run_id, True, observed)
+    assert review.result().status_code == 200
 
 
 @pytest.mark.req("FR-P-04", "PR-02")

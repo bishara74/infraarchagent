@@ -136,6 +136,7 @@ class PackageRepository:
         target: PackageStatus,
         *,
         error: str | None = None,
+        cancelling: bool = False,
     ) -> tuple[GeneratedPackage, PackageStatus]:
         row = await self.session.scalar(
             select(GeneratedPackage)
@@ -148,7 +149,7 @@ class PackageRepository:
         if row is None:
             raise LookupError("package not found")
         previous = PackageStatus(row.status)
-        assert_package_transition(previous, target)
+        assert_package_transition(previous, target, cancelling=cancelling)
         row.status = target
         if target in {
             PackageStatus.PENDING_REVIEW,

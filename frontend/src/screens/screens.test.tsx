@@ -1,7 +1,7 @@
 // AI assistance: written with OpenAI Codex from the author's task
 // descriptions; reviewed and modified by the author. See AI_USE.md.
 import { afterEach, expect, it, vi } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { act, render, screen, fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Routes, Route } from "react-router";
 import pending from "../test/fixtures/pending-results.json";
@@ -13,7 +13,7 @@ import { InputScreen } from "./InputScreen";
 import { ProgressScreen } from "./ProgressScreen";
 import { ComparisonScreen } from "./ComparisonScreen";
 import { PackageScreen } from "./PackageScreen";
-import { setActiveRun } from "../lib/sessionState";
+import { setActiveRun, setSessionStatus } from "../lib/sessionState";
 const state = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 vi.mock("../hooks/useRunStream", () => ({ useRunStream: () => state.current }));
 vi.mock("../hooks/useRunResults", () => ({ useRunResults: () => state.current }));
@@ -53,6 +53,67 @@ function show(component: React.ReactNode, path = "/runs/run") {
 }
 afterEach(() => {
   sessionStorage.clear();
+  setSessionStatus(null);
+});
+
+it.each(["created", "running"] as const)("FR-UI-02 shows Cancel run while %s", (status) => {
+  const result = pending as ResultsResponse;
+  snapshot({ ...result, run: { ...result.run, status } });
+  show(<ProgressScreen />);
+  expect(screen.getByRole("button", { name: "Cancel run" })).toBeEnabled();
+});
+
+it("FR-UI-02 confirms cancellation in the dialog and holds the pending gate until settlement", async () => {
+  const result = pending as ResultsResponse;
+  snapshot({ ...result, run: { ...result.run, status: "running" } });
+  setSessionStatus({
+    mode: "account",
+    authenticated: true,
+    auth_required: true,
+    user: { id: "owner", username: "owner", role: "reviewer" },
+  });
+  let accept!: (result: { run_id: string }) => void;
+  const request = vi.spyOn(api, "cancelRun").mockReturnValue(
+    new Promise((resolve) => {
+      accept = resolve;
+    }),
+  );
+  const tree = () => (
+    <MemoryRouter initialEntries={["/runs/run"]}>
+      <Routes>
+        <Route path="/runs/:runId" element={<ProgressScreen />} />
+      </Routes>
+    </MemoryRouter>
+  );
+  const root = render(tree());
+  const dialog = document.querySelector("dialog")!;
+  dialog.showModal = () => {
+    dialog.open = true;
+  };
+  dialog.close = () => {
+    dialog.open = false;
+  };
+  const cancel = screen.getByRole("button", { name: "Cancel run" });
+  await userEvent.click(cancel);
+  const confirm = screen.getByRole("dialog", { name: "Stop this run?" });
+  expect(confirm).toHaveTextContent(
+    "Packages without a label are discarded; finished packages are kept.",
+  );
+  await userEvent.click(within(confirm).getByRole("button", { name: "Keep running" }));
+  expect(request).not.toHaveBeenCalled();
+  await userEvent.click(cancel);
+  await userEvent.click(within(confirm).getByRole("button", { name: "Stop run" }));
+  expect(request).toHaveBeenCalledExactlyOnceWith("run", undefined);
+  expect(cancel).toBeDisabled();
+  expect(screen.getByText("Stopping run…")).toBeVisible();
+  await act(async () => accept({ run_id: "run" }));
+  expect(cancel).toBeDisabled();
+  snapshot({ ...result, run: { ...result.run, status: "cancelled" } });
+  root.rerender(tree());
+  expect(screen.queryByRole("button", { name: "Cancel run" })).toBeNull();
+  expect(screen.getByText("cancelled", { exact: true })).toBeVisible();
+  expect(screen.getByRole("link", { name: "View results" })).toBeVisible();
+  request.mockRestore();
 });
 it.each([ProgressScreen, ComparisonScreen, PackageScreen])(
   "screen loading and safe errors",

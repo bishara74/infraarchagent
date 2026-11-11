@@ -9,10 +9,13 @@ from zipfile import ZipFile
 
 import httpx
 import pytest
+from sqlalchemy import func, select
 
 from app.core.config import get_settings
+from app.db.models import AgentEvent, GeneratedPackage, PipelineRun
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
+from app.events.log import EventLog
 from app.main import create_app
 from scripts.benchmark import Harness
 from scripts.seed_benchmark_package import require_dev_database, seed_package
@@ -47,6 +50,24 @@ async def test_seed_and_download_through_http(db_engines, tmp_path):
         assert lessons["used_count"] == 0
     events = await app.state.event_log.list_after(UUID(report["run_id"]), None)
     assert any(event.payload.get("review_action") == "reject" for event in events)
+
+
+@pytest.mark.req("FR-P-01", "FR-P-04")
+async def test_seed_rolls_back_fixture_if_review_event_insert_fails(
+    db_engines, monkeypatch
+):
+    sessions = make_session_factory(db_engines[0])
+
+    async def after_insert(self, record):
+        if record.payload.get("review_action") == "reject":
+            raise RuntimeError("injected seed event fault")
+
+    monkeypatch.setattr(EventLog, "_after_insert", after_insert)
+    with pytest.raises(RuntimeError, match="injected seed event fault"):
+        await seed_package(sessions, archive_bytes=100_000)
+    async with sessions() as session:
+        for model in (PipelineRun, GeneratedPackage, AgentEvent):
+            assert await session.scalar(select(func.count()).select_from(model)) == 0
 
 
 @pytest.mark.req("NFR-01", "PR-04")

@@ -10,6 +10,8 @@ from typing import Any
 
 import httpx
 
+from app.domain.states import TERMINAL_RUNS
+
 
 async def watch_pipeline(
     text: str,
@@ -69,7 +71,7 @@ async def watch_pipeline(
                         event_id = data = None
         except (httpx.HTTPError, OSError):
             pass
-        if run_status in {"success", "partial_success", "failed"}:
+        if run_status in TERMINAL_RUNS:
             break
         await asyncio.sleep(1)
     elapsed = time.monotonic() - started

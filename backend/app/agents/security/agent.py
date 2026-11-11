@@ -338,19 +338,18 @@ class SecurityAgent:
             except ValueError:
                 continue
         if not start_committed:
-            async with self.session_factory() as session:
-                async with session.begin():
-                    previous = await ctx.writer.review_action(
-                        session, ctx.run_id, variant, "retry", feedback
-                    )
-            await ctx.writer.review_event(
-                ctx.run_id,
-                variant,
-                PackageStatus.REMEDIATING,
-                previous,
-                action="retry",
-                reasons=[],
-            )
+            async with ctx.writer.event_log.transaction(ctx.run_id) as transaction:
+                previous = await ctx.writer.review_action(
+                    transaction.session, ctx.run_id, variant, "retry", feedback
+                )
+                await ctx.writer.review_event(
+                    transaction,
+                    variant,
+                    PackageStatus.REMEDIATING,
+                    previous,
+                    action="retry",
+                    reasons=[],
+                )
         await ctx.writer.agent_state(
             ctx.run_id,
             AgentName.SECURITY,
@@ -1339,29 +1338,32 @@ class SecurityAgent:
         session_report["diff"], session_report["diff_omitted_chars"] = _capped_diff(
             package_diff(session_start_files, files)
         )
-        async with self.session_factory() as session:
-            async with session.begin():
-                await PackageRepository(session).save_security_results(
-                    ctx.run_id,
-                    variant,
-                    original_files=self.safety.value(session_start_files),
-                    files=self.safety.value(files),
-                    session_report=self._redact_report(session_report),
-                    iteration_count=iteration_count,
-                    policy_version=SECURITY_POLICY_VERSION,
-                    prompt_version=SECURITY_FIX_PROMPT_VERSION,
-                    tools=self.versions,
-                )
-        await ctx.writer.agent_state(
-            ctx.run_id,
-            AgentName.SECURITY,
-            AgentState.FAILED
-            if status == PackageStatus.SCAN_ERROR
-            else AgentState.COMPLETED,
-            previous=AgentState.RUNNING,
-            message=reason or f"security {outcome}",
-            variant=variant,
-        )
+        safe_original = self.safety.value(session_start_files)
+        safe_files = self.safety.value(files)
+        safe_report = self._redact_report(session_report)
+        async with ctx.writer.event_log.transaction(ctx.run_id) as transaction:
+            await PackageRepository(transaction.session).save_security_results(
+                ctx.run_id,
+                variant,
+                original_files=safe_original,
+                files=safe_files,
+                session_report=safe_report,
+                iteration_count=iteration_count,
+                policy_version=SECURITY_POLICY_VERSION,
+                prompt_version=SECURITY_FIX_PROMPT_VERSION,
+                tools=self.versions,
+            )
+            await ctx.writer.agent_state(
+                ctx.run_id,
+                AgentName.SECURITY,
+                AgentState.FAILED
+                if status == PackageStatus.SCAN_ERROR
+                else AgentState.COMPLETED,
+                previous=AgentState.RUNNING,
+                message=reason or f"security {outcome}",
+                variant=variant,
+                transaction=transaction,
+            )
         if kind == "review_retry" and status == PackageStatus.SCAN_ERROR:
             raise ReviewRetryScanError(reason or "security scan could not complete")
         return status

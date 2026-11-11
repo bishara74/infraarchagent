@@ -31,6 +31,7 @@ from app.domain.validation import ValidationCheck, ValidationReport
 from app.events.kinds import plan_created_payload
 from app.llm.stub import StubAdapter
 from app.main import create_app
+from app.pipeline.review import ReviewService
 from app.scanners.runner import ToolFailure
 from tests.integration.test_security_agent import ScriptedScanner, finding
 from tests.unit.test_generators import plan
@@ -397,15 +398,13 @@ async def test_concurrent_reviews_one_acceptance(db_engines, monkeypatch, action
 
     install_retry(app, monkeypatch, scanner=WaitingScanner([[]]))
     barrier = asyncio.Barrier(2)
-    original_lock = PackageRepository.get_for_update
+    original_review = ReviewService.review
 
-    async def synchronized(self, *args):
-        if not self.session.info.get("review_barrier"):
-            self.session.info["review_barrier"] = True
-            await barrier.wait()
-        return await original_lock(self, *args)
+    async def synchronized(self, *args, **kwargs):
+        await barrier.wait()
+        return await original_review(self, *args, **kwargs)
 
-    monkeypatch.setattr(PackageRepository, "get_for_update", synchronized)
+    monkeypatch.setattr(ReviewService, "review", synchronized)
     try:
         async with client_for(app) as client:
             responses = await asyncio.wait_for(
@@ -434,7 +433,7 @@ async def test_concurrent_reviews_one_acceptance(db_engines, monkeypatch, action
             == "not_pending_review"
         )
     finally:
-        monkeypatch.setattr(PackageRepository, "get_for_update", original_lock)
+        monkeypatch.setattr(ReviewService, "review", original_review)
         gate.set()
         await asyncio.gather(*app.state.runner.tasks.values())
 

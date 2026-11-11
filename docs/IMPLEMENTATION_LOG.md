@@ -27,6 +27,99 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-11-11 — Phase 11 — Atomic audit events and per-run cancellation
+
+**Summary**
+
+Commit run and package state, retained evidence, and review decisions with
+their audit events. Add per-run cancellation in the API and progress screen.
+The owner or an administrator can stop an active run while other runs continue.
+
+**Requirements addressed**
+
+FR-P-01, FR-P-04, FR-S-08/09/10, FR-UI-02, and NFR-01.
+
+**Files**
+
+- `backend/app/events/log.py`, pipeline state, submission, orchestration,
+  review, readiness, and agent persistence now use the same transaction
+  boundary for paired writes. Startup recovery inherits this path.
+- `backend/app/pipeline/runner.py`, the pipeline API and domain rules, and
+  `backend/app/scanners/runner.py` implement cancellation and process-group
+  cleanup. Revision `0017_cancelled_run_status` widens the run status
+  constraint. The repository now has **17 migrations**.
+- The CLI watcher and benchmark client recognize the terminal status.
+  Benchmark seeding and the security evaluation CLI use atomic fixture writes.
+- The frontend API client, stream reducer, status badges, progress screen,
+  and recent runs show cancellation. The native in-app dialog follows the
+  reject pattern. The browser cancellation barrier lives in the stub-only
+  test server and checks the isolated test configuration.
+- README, D-67, D-68, and the FR-P-01 and FR-P-04 evidence entries document
+  the feature and its verification.
+
+**Decisions**
+
+Take the process lock, then the PostgreSQL transaction advisory lock, then
+any row locks. Keep model and tool work outside that transaction. Retain the
+process lock through publication. A committed event can be replayed after
+publication failure. Shared-key and local clients supply a reviewer name
+for an ownerless run. Retry feedback and the retry marker are the durable
+acceptance record and commit with the retry event.
+
+**New regression tests**
+
+- `test_atomic_run_events.py` adds `test_transition_and_event_share_commit`,
+  `test_review_acceptance_and_event_share_commit`,
+  `test_startup_recovery_commits_interruption_and_event`,
+  `test_concurrent_review_and_pipeline_transition_commit_in_seq_order`,
+  `test_failed_acceptance_insert_rolls_back_run_creation`, and
+  `test_package_creation_and_files_roll_back_with_their_events`.
+- `test_pipeline_cancel.py` adds
+  `test_cancel_authorization_idempotency_and_run_isolation`,
+  `test_ownerless_cancel_before_task_entry`,
+  `test_cancel_settlement_rolls_back_packages_and_events`, and
+  `test_cancel_observes_terminal_commit_before_publication`.
+- The scanner tests add
+  `test_cancellation_kills_tool_process_group_within_five_seconds`.
+  The browser server adds `test_e2e_cancel_barrier_is_off_by_default`.
+  CLI tests add `test_seed_rolls_back_fixture_if_review_event_insert_fails`
+  and `test_watcher_stops_after_cancelled_event`.
+- Vitest covers the action in both active statuses, confirmation and pending
+  through settlement, and recent history. Playwright adds “cancel a run,
+  reload it and start another”.
+
+**Tests**
+
+| Command | v1.0.3 baseline | Phase 11 |
+|---|---|---|
+| `make test` | 2,890 passed, 0 failed, 2 skipped, 6 perf deselected | 2,933 passed, 0 failed or skipped, 6 perf deselected |
+| `make frontend-test` | 469 passed | 473 passed |
+| `make test-e2e` | 36 passed | 37 passed |
+| `make lint` | Passed | Passed, including mypy on 193 sources |
+| `make secret-scan` | — | 0 findings and 0 errors |
+
+The `make test` collection retained all 2,892 baseline test IDs and added 41
+cases. The two baseline skips depend on saved snapshots. Both passed in a
+separate baseline run with the existing snapshots and in the Phase 11 suite.
+Frontend and browser runs had zero failures or skips. The new browser flow
+also passed on its own after the final backend audit changes.
+
+Earlier review races now synchronize before the process lock. Historical
+download fixtures use the new event insertion API, and the SSE closing test
+pauses after the real approval commits. The generator metrics assertion
+selects the cost variant by name. The live API inventory checks the new
+cancellation endpoint. All these tests retain their original IDs.
+
+`make traceability` covered 59 requirement IDs with zero uncovered.
+The evidence index records FR-P-01 and FR-P-04 as met under the documented
+deployment scope. Restored 93 historical screenshots after browser checks.
+
+**Known gaps**
+
+Review retries retain their separate lifecycle. If the backend exits before
+cancellation settlement commits, startup uses its interrupted-run recovery.
+Live SSE publication is scoped to one backend process under OQ-04.
+
 ## 2026-10-29 — Phase 10g — Analyse first-scan remediation effects
 
 **Summary:** Add a source-free offline comparison of 491 generated packages in

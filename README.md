@@ -295,6 +295,13 @@ failure needs no external validator, but full demo settlement still requires
 the installed scanners, Terraform and provider mirror. No cloud resources
 or model services are called by the demo.
 
+While a run is created or running, choose **Cancel run** on its progress
+screen and confirm. The run owner or an administrator can stop that run.
+In shared-key or local mode, enter a reviewer name to cancel an ownerless
+run. Finished packages keep their readiness labels and remain available
+under the usual review and download rules. Unfinished packages are marked
+failed, and progress and recent runs show **cancelled** after cleanup.
+
 The in-memory event broker requires **one backend process** (OQ-04 in
 [`docs/design-deviations.md`](docs/design-deviations.md)). `make run`
 explicitly starts one Uvicorn worker. Multiple workers would split subscribers

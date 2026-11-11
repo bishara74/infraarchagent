@@ -18,12 +18,12 @@ from app.domain.models import IaCPackage
 from app.domain.paths import validate_relative_path
 from app.domain.plan import DeploymentPlan
 from app.domain.review import (
-    TERMINAL_RUNS,
     package_presentation,
     retry_targets,
     security_final,
 )
 from app.domain.run_config import RunConfig
+from app.domain.states import TERMINAL_RUNS
 from app.pipeline.readiness import final_readiness
 from app.pipeline.stages import StageContext
 from app.validation.workspace import ValidationWorkspace
@@ -64,131 +64,133 @@ class ReviewService:
         reserved = False
         started = False
         accepted = False
+
+        def mark_accepted() -> None:
+            nonlocal accepted
+            accepted = True
+
         try:
-            async with self.runner.session_factory() as session:
-                async with session.begin():
-                    repository = PackageRepository(session)
-                    row = await repository.get_for_update(run_id, variant)
-                    if row is None or PackageStatus(row.status) == PackageStatus.FAILED:
-                        raise ReviewError(404, "not_found", "Package not found.")
-                    snapshot = await ResultsRepository(session).snapshot(run_id)
-                    if snapshot is None:
-                        raise ReviewError(404, "not_found", "Pipeline run not found.")
-                    run = snapshot.run
-                    if RunStatus(run.status) not in TERMINAL_RUNS:
-                        raise ReviewError(
-                            409,
-                            "run_in_progress",
-                            "Wait until the automated pipeline finishes.",
-                        )
-                    if not (
-                        PackageStatus(row.status) == PackageStatus.PENDING_REVIEW
-                        or (
-                            PackageStatus(row.status) == PackageStatus.CHECKS_PASSED
-                            and body.action == "reject"
-                        )
-                    ):
-                        raise ReviewError(
-                            409, "not_pending_review", "Package is not pending review."
-                        )
-                    for path in body.target_files:
-                        try:
-                            validate_relative_path(path)
-                        except ValueError:
-                            raise ReviewError(
-                                400, "invalid_request", "Invalid target file."
-                            ) from None
-                        if path not in row.files:
-                            raise ReviewError(
-                                400, "invalid_request", "Target file does not exist."
-                            )
-                    feedback = (
-                        self.safety.text(body.feedback) if body.feedback else None
+            async with self.writer.event_log.transaction(
+                run_id, on_commit=mark_accepted
+            ) as transaction:
+                session = transaction.session
+                repository = PackageRepository(session)
+                row = await repository.get_for_update(run_id, variant)
+                if row is None or PackageStatus(row.status) == PackageStatus.FAILED:
+                    raise ReviewError(404, "not_found", "Package not found.")
+                snapshot = await ResultsRepository(session).snapshot(run_id)
+                if snapshot is None:
+                    raise ReviewError(404, "not_found", "Pipeline run not found.")
+                run = snapshot.run
+                if RunStatus(run.status) not in TERMINAL_RUNS:
+                    raise ReviewError(
+                        409,
+                        "run_in_progress",
+                        "Wait until the automated pipeline finishes.",
                     )
-                    reasons = package_presentation(
-                        RunStatus(run.status),
-                        PackageStatus(row.status),
+                if not (
+                    PackageStatus(row.status) == PackageStatus.PENDING_REVIEW
+                    or (
+                        PackageStatus(row.status) == PackageStatus.CHECKS_PASSED
+                        and body.action == "reject"
+                    )
+                ):
+                    raise ReviewError(
+                        409, "not_pending_review", "Package is not pending review."
+                    )
+                for path in body.target_files:
+                    try:
+                        validate_relative_path(path)
+                    except ValueError:
+                        raise ReviewError(
+                            400, "invalid_request", "Invalid target file."
+                        ) from None
+                    if path not in row.files:
+                        raise ReviewError(
+                            400, "invalid_request", "Target file does not exist."
+                        )
+                feedback = self.safety.text(body.feedback) if body.feedback else None
+                reasons = package_presentation(
+                    RunStatus(run.status),
+                    PackageStatus(row.status),
+                    row.files,
+                    row.security_report,
+                    row.validation_report,
+                    row.error,
+                )["review_reasons"]
+                if body.action == "retry":
+                    if not retry_targets(
                         row.files,
                         row.security_report,
                         row.validation_report,
-                        row.error,
-                    )["review_reasons"]
-                    if body.action == "retry":
-                        if not retry_targets(
-                            row.files,
-                            row.security_report,
-                            row.validation_report,
-                            body.target_files,
-                        ):
-                            code = (
-                                "feedback_needs_target"
-                                if feedback
-                                else "nothing_to_retry"
-                            )
-                            raise ReviewError(
-                                422, code, "Choose an existing package file to retry."
-                            )
-                        if not self.runner.reserve():
-                            raise ReviewError(
-                                429,
-                                "too_many_runs",
-                                "Too many pipeline runs are active.",
-                            )
-                        reserved = True
-                    decision = (
-                        self.safety.value(
-                            {
-                                "decision_id": str(uuid4()),
-                                "action": body.action,
-                                "reviewer_name": user.username
-                                if user
-                                else body.reviewer_name,
-                                "user_id": str(user.id) if user else None,
-                                "reason": body.reason,
-                                "category": body.category,
-                                "decided_at": datetime.now(UTC).isoformat(),
-                                "remaining_blocking_rules": sorted(
-                                    {
-                                        item["rule_id"]
-                                        for item in security_final(
-                                            row.security_report
-                                        ).get("remaining_blocking", [])
-                                        if isinstance(item, dict)
-                                        and isinstance(item.get("rule_id"), str)
-                                    }
-                                )
-                                if "remaining_blocking"
-                                in security_final(row.security_report)
-                                else None,
-                                "identity_basis": "authenticated account"
-                                if user
-                                else "self-declared (shared-key authentication)"
-                                if user or auth_mode != "local"
-                                else "self-declared (no authentication — local mode)",
-                            }
+                        body.target_files,
+                    ):
+                        code = (
+                            "feedback_needs_target" if feedback else "nothing_to_retry"
                         )
-                        if body.action in {"approve", "reject"}
-                        else None
+                        raise ReviewError(
+                            422, code, "Choose an existing package file to retry."
+                        )
+                    if not self.runner.reserve():
+                        raise ReviewError(
+                            429,
+                            "too_many_runs",
+                            "Too many pipeline runs are active.",
+                        )
+                    reserved = True
+                decision = (
+                    self.safety.value(
+                        {
+                            "decision_id": str(uuid4()),
+                            "action": body.action,
+                            "reviewer_name": user.username
+                            if user
+                            else body.reviewer_name,
+                            "user_id": str(user.id) if user else None,
+                            "reason": body.reason,
+                            "category": body.category,
+                            "decided_at": datetime.now(UTC).isoformat(),
+                            "remaining_blocking_rules": sorted(
+                                {
+                                    item["rule_id"]
+                                    for item in security_final(row.security_report).get(
+                                        "remaining_blocking", []
+                                    )
+                                    if isinstance(item, dict)
+                                    and isinstance(item.get("rule_id"), str)
+                                }
+                            )
+                            if "remaining_blocking"
+                            in security_final(row.security_report)
+                            else None,
+                            "identity_basis": "authenticated account"
+                            if user
+                            else "self-declared (shared-key authentication)"
+                            if user or auth_mode != "local"
+                            else "self-declared (no authentication — local mode)",
+                        }
                     )
-                    row.review_decision = decision
-                    previous = await self.writer.review_action(
-                        session, run_id, variant, body.action, feedback
-                    )
-                    target = {
-                        "approve": PackageStatus.ENGINEER_APPROVED,
-                        "reject": PackageStatus.REJECTED,
-                        "retry": PackageStatus.REMEDIATING,
-                    }[body.action]
-            accepted = True
-            await self.writer.review_event(
-                run_id,
-                variant,
-                target,
-                previous,
-                action=body.action,
-                reasons=reasons,
-                decision=decision,
-            )
+                    if body.action in {"approve", "reject"}
+                    else None
+                )
+                row.review_decision = decision
+                previous = await self.writer.review_action(
+                    session, run_id, variant, body.action, feedback
+                )
+                target = {
+                    "approve": PackageStatus.ENGINEER_APPROVED,
+                    "reject": PackageStatus.REJECTED,
+                    "retry": PackageStatus.REMEDIATING,
+                }[body.action]
+                await self.writer.review_event(
+                    transaction,
+                    variant,
+                    target,
+                    previous,
+                    action=body.action,
+                    reasons=reasons,
+                    decision=decision,
+                )
             if body.action == "retry":
                 self.runner.start_review_retry(run_id, variant, body.target_files)
                 started = True
@@ -282,16 +284,14 @@ class ReviewService:
             outcome = await self.runner.validation_stage.run(ctx, variant, package)
             if outcome == PackageStatus.VALIDATION_ERROR:
                 raise ReviewRetryScanError("validation could not complete")
-            target = await final_readiness(
+            await final_readiness(
                 self.runner.session_factory,
                 ctx,
                 variant,
                 scan,
                 outcome,
                 safety=security.safety,
-            )
-            await self.writer.package_transition(
-                run_id, variant, target, message=f"review retry package {target.value}"
+                message_prefix="review retry package",
             )
         except asyncio.CancelledError:
             try:

@@ -18,14 +18,25 @@ class IllegalTransition(ValueError):
 
 
 RUN_TRANSITIONS: dict[RunStatus, frozenset[RunStatus]] = {
-    RunStatus.CREATED: frozenset({RunStatus.RUNNING, RunStatus.FAILED}),
+    RunStatus.CREATED: frozenset(
+        {RunStatus.RUNNING, RunStatus.FAILED, RunStatus.CANCELLED}
+    ),
     RunStatus.RUNNING: frozenset(
-        {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}
+        {
+            RunStatus.SUCCESS,
+            RunStatus.PARTIAL_SUCCESS,
+            RunStatus.FAILED,
+            RunStatus.CANCELLED,
+        }
     ),
     RunStatus.SUCCESS: frozenset(),
     RunStatus.PARTIAL_SUCCESS: frozenset(),
     RunStatus.FAILED: frozenset(),
+    RunStatus.CANCELLED: frozenset(),
 }
+TERMINAL_RUNS = frozenset(
+    status for status, targets in RUN_TRANSITIONS.items() if not targets
+)
 
 PACKAGE_TRANSITIONS: dict[PackageStatus, frozenset[PackageStatus]] = {
     PackageStatus.GENERATING: frozenset(
@@ -101,7 +112,25 @@ def assert_run_transition(current: RunStatus, target: RunStatus) -> None:
         raise IllegalTransition(current, target)
 
 
-def assert_package_transition(current: PackageStatus, target: PackageStatus) -> None:
+def cancellation_fails_package(status: PackageStatus) -> bool:
+    return status not in {
+        PackageStatus.FAILED,
+        PackageStatus.PENDING_REVIEW,
+        PackageStatus.CHECKS_PASSED,
+        PackageStatus.ENGINEER_APPROVED,
+        PackageStatus.REJECTED,
+    }
+
+
+def assert_package_transition(
+    current: PackageStatus, target: PackageStatus, *, cancelling: bool = False
+) -> None:
+    if (
+        cancelling
+        and target == PackageStatus.FAILED
+        and cancellation_fails_package(current)
+    ):
+        return
     if target not in PACKAGE_TRANSITIONS[current]:
         raise IllegalTransition(current, target)
 

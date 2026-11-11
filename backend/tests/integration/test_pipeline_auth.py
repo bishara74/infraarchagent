@@ -52,6 +52,7 @@ async def test_every_pipeline_route_requires_header_but_health_is_open(db_engine
         ),
         ("GET", f"/api/pipeline/{run_id}/download/cost", None),
         ("GET", f"/api/pipeline/{run_id}/stream", None),
+        ("POST", f"/api/pipeline/{run_id}/cancel", None),
     ]
     async with client_for(app) as client:
         assert (await client.get("/api/health")).status_code == 200

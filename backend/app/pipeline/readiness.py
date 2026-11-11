@@ -21,18 +21,31 @@ async def final_readiness(
     validation: PackageStatus,
     *,
     safety: PublicDataSafety | None = None,
+    message_prefix: str | None = None,
 ) -> PackageStatus:
-    async with sessions() as session, session.begin():
-        repository = PackageRepository(session)
+    async with sessions() as session:
+        row = await PackageRepository(session).get(ctx.run_id, variant)
+        if row is None:
+            raise LookupError("package not found")
+        original_files, files = row.original_files, row.files
+    assessment = assess_plan_conformance(ctx.plan, original_files, files)
+    if safety is not None:
+        assessment = PlanConformanceAssessment.model_validate(
+            safety.value(assessment.model_dump(mode="json"))
+        )
+    target = readiness_after_validation(
+        scan, validation, plan_conformance_conflict=bool(assessment.conflicts)
+    )
+    async with ctx.writer.event_log.transaction(ctx.run_id) as transaction:
+        repository = PackageRepository(transaction.session)
         row = await repository.get_for_update(ctx.run_id, variant)
         if row is None:
             raise LookupError("package not found")
-        assessment = assess_plan_conformance(ctx.plan, row.original_files, row.files)
-        if safety is not None:
-            assessment = PlanConformanceAssessment.model_validate(
-                safety.value(assessment.model_dump(mode="json"))
-            )
+        if row.original_files != original_files or row.files != files:
+            raise RuntimeError("package files changed during final assessment")
         await repository.save_plan_conformance(row, assessment)
-        return readiness_after_validation(
-            scan, validation, plan_conformance_conflict=bool(assessment.conflicts)
-        )
+        if message_prefix is not None:
+            await ctx.writer.package_transition_in(
+                transaction, variant, target, message=f"{message_prefix} {target.value}"
+            )
+    return target

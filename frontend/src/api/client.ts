@@ -115,6 +115,12 @@ export function createApiClient(
       }),
     getResults: (id: string, signal?: AbortSignal) =>
       json<ResultsResponse>(`${base(id)}/results`, { signal }),
+    cancelRun: (id: string, reviewerName?: string) =>
+      json<{ run_id: string }>(`${base(id)}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewer_name: reviewerName }),
+      }),
     review: (id: string, variant: Variant, request: ReviewRequest) =>
       json<ReviewResponse | RetryResponse>(`${base(id)}/packages/${variant}/review`, {
         method: "POST",

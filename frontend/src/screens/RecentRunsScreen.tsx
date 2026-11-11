@@ -2,6 +2,7 @@
 // descriptions; reviewed and modified by the author. See AI_USE.md.
 import { Link } from "react-router";
 import { errorMessage } from "../api/client";
+import { statusLabel } from "../components/StatusBadge";
 import { retryHydration, usePreferences } from "../lib/preferences";
 export function RecentRunsScreen() {
   const prefs = usePreferences();
@@ -27,7 +28,7 @@ export function RecentRunsScreen() {
             <li key={run.id}>
               <Link to={`/runs/${run.id}`}>{run.title}</Link>
               <span>
-                {run.status} · {new Date(run.time).toLocaleString()}
+                {statusLabel(run.status)} · {new Date(run.time).toLocaleString()}
               </span>
             </li>
           ))}

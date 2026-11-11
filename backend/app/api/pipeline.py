@@ -5,7 +5,7 @@
 import asyncio
 from collections.abc import AsyncIterator
 from typing import Annotated
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import anyio
 from fastapi import APIRouter, Depends, Header, Request
@@ -22,6 +22,7 @@ from app.api.deps import (
 )
 from app.api.models import service as model_service
 from app.api.schemas import (
+    CancelRunRequest,
     ResultsResponse,
     RetryResponse,
     ReviewRequest,
@@ -38,6 +39,7 @@ from app.db.repositories.runs import RunRepository
 from app.domain.enums import AgentName, RunStatus, Variant
 from app.domain.input_rules import InputRuleError, validate_request_text
 from app.domain.run_config import RunConfig, RunConfigError
+from app.domain.states import TERMINAL_RUNS
 from app.events.broker import InMemoryBroker
 from app.events.kinds import EventKind, event_status, run_status_payload, to_sse
 from app.events.log import EventLog
@@ -46,11 +48,10 @@ from app.llm.errors import LLMConfigurationError
 from app.llm.factory import build_adapter
 from app.pipeline.results import ResultsService
 from app.pipeline.review import ReviewError, ReviewService
-from app.pipeline.runner import PipelineRunner
+from app.pipeline.runner import PipelineRunner, RunCancellationError
 from app.pipeline.state import PipelineStateWriter
 
 router = APIRouter(prefix="/api/pipeline", dependencies=[Depends(require_api_key)])
-TERMINAL_RUNS = {RunStatus.SUCCESS, RunStatus.PARTIAL_SUCCESS, RunStatus.FAILED}
 ACTIVE_PACKAGE_STATES = {"scanning", "remediating", "validating"}
 
 
@@ -72,6 +73,27 @@ async def get_results(run_id: str, request: Request) -> ResultsResponse | JSONRe
         if result is not None
         else failure(404, "not_found", "Pipeline run not found.")
     )
+
+
+@router.post("/{run_id}/cancel", status_code=202)
+async def cancel_run(
+    run_id: str,
+    request: Request,
+    runner: Annotated[PipelineRunner, Depends(get_runner)],
+) -> JSONResponse:
+    try:
+        parsed = UUID(run_id)
+        raw = await request.body()
+        body = CancelRunRequest.model_validate_json(raw) if raw else CancelRunRequest()
+    except ValueError:
+        return failure(400, "invalid_request", "Invalid cancellation request.")
+    try:
+        await runner.cancel(
+            parsed, user=request.state.user, reviewer_name=body.reviewer_name
+        )
+    except RunCancellationError as error:
+        return failure(error.status, error.code, error.message)
+    return JSONResponse(status_code=202, content={"run_id": str(parsed)})
 
 
 @router.post(
@@ -225,66 +247,65 @@ async def submit_run(
         return failure(400, "invalid_request", message)
     if not runner.reserve():
         return failure(429, "too_many_runs", "Too many pipeline runs are active.")
-    run_id: UUID | None = None
+    run_id = uuid4()
+    committed = False
+    started = False
+
+    def launch() -> None:
+        nonlocal committed, started
+        committed = True
+        runner.start(run_id, text, config)
+        started = True
+
     try:
         lesson_snapshot = await LessonService(
             request.app.state.session_factory, settings, event_log
         ).snapshot(request.state.auth_mode)
-        session_factory: async_sessionmaker[AsyncSession] = (
-            request.app.state.session_factory
+        config = config.model_copy(
+            update={"lessons": lesson_snapshot, "lesson_run_id": run_id}
         )
-        async with session_factory() as session:
-            async with session.begin():
-                row = await RunRepository(session).create(
-                    text,
-                    resolved.provider,
-                    resolved.max_iterations,
-                    policy_profile=resolved.policy_profile,
-                    model=PublicDataSafety(settings).value(resolved.model),
-                    user_id=request.state.user.id if request.state.user else None,
-                    agent_models=PublicDataSafety(settings).value(
-                        {
-                            k: v.model_dump(mode="json")
-                            for k, v in config.resolved_agents.items()
-                        }
-                    ),
-                    credential_id=config.credential_id,
-                    lessons=lesson_snapshot,
-                )
-                run_id = row.run_id
-                config = config.model_copy(
-                    update={
-                        "lessons": lesson_snapshot,
-                        "lesson_run_id": run_id,
+        async with event_log.transaction(run_id, on_commit=launch) as transaction:
+            await RunRepository(transaction.session).create(
+                text,
+                resolved.provider,
+                resolved.max_iterations,
+                policy_profile=resolved.policy_profile,
+                model=PublicDataSafety(settings).value(resolved.model),
+                run_id=run_id,
+                user_id=request.state.user.id if request.state.user else None,
+                agent_models=PublicDataSafety(settings).value(
+                    {
+                        k: v.model_dump(mode="json")
+                        for k, v in config.resolved_agents.items()
                     }
+                ),
+                credential_id=config.credential_id,
+                lessons=lesson_snapshot,
+            )
+            if request.state.user:
+                await PreferenceRepository(transaction.session).visit(
+                    request.state.user.id, run_id
                 )
-                if request.state.user:
-                    await PreferenceRepository(session).visit(
-                        request.state.user.id, run_id
-                    )
-        await event_log.append(
-            run_id,
-            AgentName.ORCHESTRATOR,
-            RunStatus.CREATED,
-            message="pipeline accepted",
-            payload={
-                **run_status_payload(),
-                "policy_profile": resolved.policy_profile,
-                "agent_models": {
-                    k: v.model_dump(mode="json")
-                    for k, v in config.resolved_agents.items()
+            await transaction.append(
+                AgentName.ORCHESTRATOR,
+                RunStatus.CREATED,
+                message="pipeline accepted",
+                payload={
+                    **run_status_payload(),
+                    "policy_profile": resolved.policy_profile,
+                    "agent_models": {
+                        k: v.model_dump(mode="json")
+                        for k, v in config.resolved_agents.items()
+                    },
+                    "lessons": {
+                        key: value
+                        for key, value in lesson_snapshot.items()
+                        if key != "entries"
+                    },
                 },
-                "lessons": {
-                    key: value
-                    for key, value in lesson_snapshot.items()
-                    if key != "entries"
-                },
-            },
-        )
-        runner.start(run_id, text, config)
-    except Exception:
-        runner.release()
-        if run_id is not None:
+            )
+    except BaseException:
+        if committed and not started:
             try:
                 await writer.run_transition(
                     run_id,
@@ -295,6 +316,9 @@ async def submit_run(
             except Exception:
                 pass
         raise
+    finally:
+        if not started:
+            runner.release()
     return JSONResponse(
         status_code=202,
         content={

@@ -3,7 +3,11 @@
 export const variants = ["cost", "performance", "security"] as const;
 export type Variant = (typeof variants)[number];
 export type Provider = "stub" | "openai" | "anthropic";
-export type RunStatus = "created" | "running" | "success" | "partial_success" | "failed";
+export type RunStatus =
+  "created" | "running" | "success" | "partial_success" | "failed" | "cancelled";
+export function isTerminalRun(status: RunStatus) {
+  return status !== "created" && status !== "running";
+}
 export type PackageStatus =
   | "generating"
   | "generated"

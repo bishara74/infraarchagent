@@ -95,6 +95,8 @@ class PipelineOrchestrator:
         self.validation_stage = validation_stage
         self.clock = clock
         self.workspaces: dict[Variant, ValidationWorkspace] = {}
+        self.entered = False
+        self.cancelled_by: str | None = None
 
     async def _generate(
         self, generator: GeneratorAgent, plan: object
@@ -457,19 +459,44 @@ class PipelineOrchestrator:
                 package = package.model_copy(
                     update={"files": self.safety.value(package.files)}
                 )
-            async with self.session_factory() as session:
-                async with session.begin():
-                    await PackageRepository(session).save_files(
-                        self.run_id, variant, package.files
+            info = generator.last_run
+            metrics = self._generator_metrics(generator)
+            payload = package_generated_payload(
+                variant, package.files, metrics, info.notes if info else None
+            )
+            workspace = current_workspace()
+            async with self.writer.event_log.transaction(self.run_id) as transaction:
+                repository = PackageRepository(transaction.session)
+                await repository.save_files(self.run_id, variant, package.files)
+                if workspace is not None and workspace.original_files is not None:
+                    await repository.save_automatic_repairs(
+                        self.run_id,
+                        variant,
+                        original_files=workspace.original_files,
+                        files=package.files,
                     )
-                    workspace = current_workspace()
-                    if workspace is not None and workspace.original_files is not None:
-                        await PackageRepository(session).save_automatic_repairs(
-                            self.run_id,
-                            variant,
-                            original_files=workspace.original_files,
-                            files=package.files,
-                        )
+                await self.writer.package_transition_in(
+                    transaction,
+                    variant,
+                    PackageStatus.GENERATED,
+                    message="package generated",
+                )
+                await transaction.append(
+                    name,
+                    PackageStatus.GENERATED,
+                    message="package files stored",
+                    payload=payload,
+                )
+                await self.writer.agent_state(
+                    self.run_id,
+                    name,
+                    AgentState.COMPLETED,
+                    previous=AgentState.RUNNING,
+                    message="generator completed",
+                    variant=variant,
+                    metrics=metrics,
+                    transaction=transaction,
+                )
         except GeneratorError as error:
             await self._generation_failed(
                 variant,
@@ -484,29 +511,6 @@ class PipelineOrchestrator:
                 variant, "package generation failed", generator, "provider_error"
             )
             return variant, None
-        await self.writer.package_transition(
-            self.run_id, variant, PackageStatus.GENERATED, message="package generated"
-        )
-        info = generator.last_run
-        metrics = self._generator_metrics(generator)
-        await self.writer.event_log.append(
-            self.run_id,
-            name,
-            PackageStatus.GENERATED,
-            message="package files stored",
-            payload=package_generated_payload(
-                variant, package.files, metrics, info.notes if info else None
-            ),
-        )
-        await self.writer.agent_state(
-            self.run_id,
-            name,
-            AgentState.COMPLETED,
-            previous=AgentState.RUNNING,
-            message="generator completed",
-            variant=variant,
-            metrics=metrics,
-        )
         return variant, package
 
     @staticmethod
@@ -541,19 +545,26 @@ class PipelineOrchestrator:
         generator: GeneratorAgent,
         failure_category: str,
     ) -> None:
-        await self.writer.package_transition(
-            self.run_id, variant, PackageStatus.FAILED, message=message, error=message
-        )
-        await self.writer.agent_state(
-            self.run_id,
-            GENERATOR_NAMES[variant],
-            AgentState.FAILED,
-            previous=AgentState.RUNNING,
-            message=message,
-            variant=variant,
-            metrics=self._generator_metrics(generator),
-            failure_category=failure_category,
-        )
+        metrics = self._generator_metrics(generator)
+        async with self.writer.event_log.transaction(self.run_id) as transaction:
+            await self.writer.package_transition_in(
+                transaction,
+                variant,
+                PackageStatus.FAILED,
+                message=message,
+                error=message,
+            )
+            await self.writer.agent_state(
+                self.run_id,
+                GENERATOR_NAMES[variant],
+                AgentState.FAILED,
+                previous=AgentState.RUNNING,
+                message=message,
+                variant=variant,
+                metrics=metrics,
+                failure_category=failure_category,
+                transaction=transaction,
+            )
 
     async def _package_status(self, variant: Variant) -> PackageStatus:
         async with self.session_factory() as session:
@@ -805,13 +816,15 @@ class PipelineOrchestrator:
                 "validation stage failed for run %s variant %s", self.run_id, variant
             )
             validation = await self._stage_error(variant, validation=True)
-        target = await final_readiness(
-            self.session_factory, ctx, variant, scan, validation, safety=self.safety
+        return await final_readiness(
+            self.session_factory,
+            ctx,
+            variant,
+            scan,
+            validation,
+            safety=self.safety,
+            message_prefix="package",
         )
-        await self.writer.package_transition(
-            self.run_id, variant, target, message=f"package {target.value}"
-        )
-        return target
 
     async def _run_core(self) -> RunStatus:
         await self.writer.run_transition(
@@ -858,19 +871,16 @@ class PipelineOrchestrator:
             message="deployment plan created",
             payload=plan_created_payload(plan),
         )
-        async with self.session_factory() as session:
-            async with session.begin():
-                repository = PackageRepository(session)
-                for variant in Variant:
-                    await repository.create(self.run_id, variant)
-        for variant in Variant:
-            await self.writer.event_log.append(
-                self.run_id,
-                AgentName.ORCHESTRATOR,
-                PackageStatus.GENERATING,
-                message="package generation queued",
-                payload=package_status_payload(variant),
-            )
+        async with self.writer.event_log.transaction(self.run_id) as transaction:
+            repository = PackageRepository(transaction.session)
+            for variant in Variant:
+                await repository.create(self.run_id, variant)
+                await transaction.append(
+                    AgentName.ORCHESTRATOR,
+                    PackageStatus.GENERATING,
+                    message="package generation queued",
+                    payload=package_status_payload(variant),
+                )
         generators = self.factory.create_generators(self.run_config)
         results = await asyncio.gather(
             *(self._generate(generator, plan) for generator in generators),
@@ -901,12 +911,9 @@ class PipelineOrchestrator:
             if hasattr(self.factory, "settings")
             else self.run_config.max_iterations or 3,
         )
-        await asyncio.gather(
-            *(
-                self._post_generation(ctx, variant, package)
-                for variant, package in packages.items()
-            )
-        )
+        async with asyncio.TaskGroup() as group:
+            for variant, package in packages.items():
+                group.create_task(self._post_generation(ctx, variant, package))
         async with self.session_factory() as session:
             rows = await PackageRepository(session).list_for_run(self.run_id)
         statuses = {Variant(row.variant): PackageStatus(row.status) for row in rows}
@@ -934,26 +941,33 @@ class PipelineOrchestrator:
 
     @traced("pipeline", "architect")
     async def run(self) -> RunStatus:
+        self.entered = True
         try:
-            return await self._run_core()
+            try:
+                if self.cancelled_by is not None:
+                    raise asyncio.CancelledError
+                return await self._run_core()
+            except Exception:
+                logger.exception("pipeline failed unexpectedly for run %s", self.run_id)
+                try:
+                    await self._fail_unexpected("internal error; see server logs")
+                except Exception:
+                    logger.exception("could not settle failed run %s", self.run_id)
+                return RunStatus.FAILED
         except asyncio.CancelledError:
             try:
-                await asyncio.wait_for(
-                    asyncio.shield(
-                        self._fail_unexpected("interrupted by server shutdown")
-                    ),
-                    timeout=5,
-                )
+                if self.cancelled_by is not None:
+                    await self.writer.cancel_run(self.run_id, self.cancelled_by)
+                else:
+                    await asyncio.wait_for(
+                        asyncio.shield(
+                            self._fail_unexpected("interrupted by server shutdown")
+                        ),
+                        timeout=5,
+                    )
             except Exception:
                 logger.exception("could not settle cancelled run %s", self.run_id)
             raise
-        except Exception:
-            logger.exception("pipeline failed unexpectedly for run %s", self.run_id)
-            try:
-                await self._fail_unexpected("internal error; see server logs")
-            except Exception:
-                logger.exception("could not settle failed run %s", self.run_id)
-            return RunStatus.FAILED
         finally:
             runtime = getattr(self.factory, "lesson_runtime", None)
             if runtime is not None:

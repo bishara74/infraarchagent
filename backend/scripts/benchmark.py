@@ -24,6 +24,7 @@ from app.core.logging import RedactingFilter
 from app.core.telemetry import safe_records
 from app.core.telemetry import summary as telemetry_summary
 from app.domain.enums import AgentName, PackageStatus, RunStatus
+from app.domain.states import TERMINAL_RUNS
 from scripts.phase9_budget import (
     BudgetGuard,
     CreditError,
@@ -53,7 +54,6 @@ from scripts.phase9e_metrics import measurement_summary
 from scripts.phase9f_workloads import pr05_workloads
 from scripts.phase9g_metrics import fixer_evidence
 
-TERMINAL = {"success", "partial_success", "failed"}
 SETTLED = {
     "pending_review",
     "checks_passed",
@@ -148,7 +148,7 @@ def prompts() -> list[str]:
 
 
 def settled(snapshot: dict) -> bool:
-    return snapshot.get("run", {}).get("status") in TERMINAL and all(
+    return snapshot.get("run", {}).get("status") in TERMINAL_RUNS and all(
         package.get("status") in SETTLED and package.get("retry_in_progress") is False
         for package in snapshot.get("packages", [])
     )
@@ -862,7 +862,7 @@ class Harness:
                                     self.events.append({"run_id": run_id, **event})
                                     if (
                                         event["kind"] == "run_status"
-                                        and event["status"] in TERMINAL
+                                        and event["status"] in TERMINAL_RUNS
                                     ):
                                         snapshot = await self.snapshot(run_id)
                                         if settled(snapshot):

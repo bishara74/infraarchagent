@@ -85,6 +85,11 @@ class ResultsResponse(StrictResponse):
     missing_variants: list[MissingVariant]
 
 
+class CancelRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    reviewer_name: str | None = Field(default=None, max_length=120)
+
+
 class ReviewRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     action: Literal["approve", "retry", "reject"]

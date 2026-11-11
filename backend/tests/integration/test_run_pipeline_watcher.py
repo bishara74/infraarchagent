@@ -2,6 +2,8 @@
 # descriptions; reviewed and modified by the author. See AI_USE.md.
 """CLI watcher uses only the public API with an injectable HTTP transport."""
 
+import asyncio
+
 import httpx
 import pytest
 from sqlalchemy.ext.asyncio import AsyncEngine
@@ -61,6 +63,34 @@ async def test_watcher_prints_terminal_summary_offline(
     output = capsys.readouterr().out
     assert "Run " in output
     assert "Final: success" in output
+
+
+@pytest.mark.req("FR-P-04")
+async def test_watcher_stops_after_cancelled_event(capsys):
+    requests = []
+
+    def response(request):
+        requests.append(request.method)
+        if request.method == "POST":
+            return httpx.Response(
+                202, json={"run_id": "run", "stream_url": "/api/pipeline/run/stream"}
+            )
+        return httpx.Response(
+            200,
+            text='id: 1\nevent: run_status\ndata: {"seq":1,"kind":"run_status",'
+            '"agent":"orchestrator","status":"cancelled"}\n\n',
+        )
+
+    async with (
+        asyncio.timeout(2),
+        httpx.AsyncClient(transport=httpx.MockTransport(response)) as client,
+    ):
+        assert await watch_pipeline("Deploy an AWS web service", client=client) == (
+            "cancelled",
+            {},
+        )
+    assert requests == ["POST", "GET"]
+    assert "Final: cancelled" in capsys.readouterr().out
 
 
 @pytest.mark.req("NFR-01", "FR-P-04")

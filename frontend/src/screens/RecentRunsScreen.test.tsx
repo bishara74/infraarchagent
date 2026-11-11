@@ -53,3 +53,31 @@ it("FR-UI-01 genuinely empty recent history provides the New request action", as
   expect(screen.getByText("No runs yet — start one from New request")).toBeVisible();
   expect(screen.getByRole("link", { name: "New request" })).toHaveAttribute("href", "/");
 });
+
+it("shows cancelled runs in recent history", async () => {
+  vi.spyOn(api, "request").mockImplementation(
+    async (url) =>
+      (url.endsWith("recent-runs")
+        ? [
+            {
+              id: "stopped",
+              title: "Stopped request",
+              time: "2026-10-22T12:00:00Z",
+              status: "cancelled",
+              last_seq: 9,
+            },
+          ]
+        : { revision: 1, data: {} }) as never,
+  );
+  await hydratePreferences("recent-cancelled-test");
+  render(
+    <MemoryRouter>
+      <RecentRunsScreen />
+    </MemoryRouter>,
+  );
+  expect(screen.getByRole("listitem")).toHaveTextContent("cancelled");
+  expect(screen.getByRole("link", { name: "Stopped request" })).toHaveAttribute(
+    "href",
+    "/runs/stopped",
+  );
+});
