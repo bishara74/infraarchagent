@@ -27,6 +27,43 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-11-11 — Phase 11b follow-up — Authenticate the soak with existing test accounts
+
+**Summary**
+
+The author's first full soak returned HTTP 401 on submission because the test
+database already contained accounts and the soak server had no shared key. The
+client now authenticates all requests with a per-soak key and supplies `soak`
+as the cancellation reviewer. Failure reports record submission status and
+error code and retain complete, redacted tracebacks for grouped errors.
+
+**Requirements addressed**
+
+NFR-01, FR-I-01, FR-P-01, and FR-P-04.
+
+**Files and decisions**
+
+`backend/scripts/soak_native.py` passes the generated key only to the server
+child and the HTTP client. The client accepts the API's `error` field as the
+error code, alongside an explicit `code` field. The soak server requires the
+shared key. Tests cover authenticated submission against PostgreSQL with an
+existing account, authenticated cancellation, failure metadata, and secret
+redaction in the report and console output. README and D-69 record the change.
+
+**Tests**
+
+`make lint` passed. `make test` passed 2,956 tests with 0 failures, 0 skips,
+and 6 perf tests deselected. The local suite left zero accounts in its
+disposable database, so one synthetic account was added to the same
+database immediately before `make soak RUNS=3 CONCURRENCY=3 CANCEL_EVERY=3`.
+All three submissions returned HTTP 202. Two completed scanning and
+remediation successfully. The third accepted cancellation with HTTP 202
+and settled as `cancelled`. No native abort occurred. Smoke evidence is local.
+
+**Known gaps / follow-ups**
+
+D-69 remains open pending the author's 60-run soak.
+
 ## 2026-11-11 — Phase 11b — Native abort diagnostics and offline soak
 
 **Summary**

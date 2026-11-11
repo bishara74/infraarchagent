@@ -10,7 +10,7 @@ import os
 import platform
 import re
 import resource
-import shutil
+import secrets
 import signal
 import socket
 import subprocess
@@ -18,7 +18,9 @@ import sys
 import sysconfig
 import tempfile
 import time
+import traceback
 from collections import deque
+from collections.abc import Callable, Iterator
 from datetime import UTC, datetime
 from pathlib import Path
 from uuid import UUID
@@ -30,6 +32,7 @@ from sqlalchemy.exc import ArgumentError
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.diagnostics import fault_log_path, native_versions
+from app.core.logging import REDACTED, RedactingFilter
 from app.core.telemetry import interval_union
 from app.domain.enums import PackageStatus
 from app.domain.states import TERMINAL_RUNS
@@ -41,6 +44,7 @@ OUTPUT = ROOT / "docs/evals/phase11b-soak"
 PINNED = {"checkov": "3.3.21", "trivy": "0.69.3", "terraform": "1.16.4"}
 OPERATIONS = {"checkov", "trivy", "terraform.validate"}
 ALLOCATOR_KEYS = ("LD_PRELOAD", "MALLOC_CHECK_", "GLIBC_TUNABLES")
+DATABASE_URL = re.compile(r"\bpostgres(?:ql)?(?:\+\w+)?://[^\s\"'`<>]+", re.I)
 BUSY_DATABASE = text("""
     SELECT EXISTS (
         SELECT FROM pg_stat_activity
@@ -52,6 +56,48 @@ BUSY_DATABASE = text("""
 
 class SoakError(RuntimeError):
     """A reportable error with a fixed message that contains no credentials."""
+
+
+def error_redactor(api_key: str) -> Callable[[str], str]:
+    protected = []
+    for name in ("TEST_DATABASE_URL", "TEST_MIGRATION_DATABASE_URL"):
+        raw = os.getenv(name, "")
+        protected.append(raw)
+        try:
+            protected.append(make_url(raw).password or "")
+        except (ArgumentError, ValueError):
+            pass
+    redact = RedactingFilter(api_key, *protected).redact
+    return lambda value: DATABASE_URL.sub(REDACTED, redact(value))
+
+
+def innermost_errors(error: BaseException) -> Iterator[BaseException]:
+    if isinstance(error, BaseExceptionGroup):
+        for child in error.exceptions:
+            yield from innermost_errors(child)
+    elif error.__cause__ is not None:
+        yield from innermost_errors(error.__cause__)
+    elif error.__context__ is not None and not error.__suppress_context__:
+        yield from innermost_errors(error.__context__)
+    else:
+        yield error
+
+
+def record_error(
+    report: dict, error: BaseException, redact: Callable[[str], str]
+) -> None:
+    # Use the formatter behind format_exception without its default group limits.
+    details = traceback.TracebackException.from_exception(
+        error, max_group_width=sys.maxsize, max_group_depth=sys.maxsize
+    )
+    report["error_detail"] = redact("".join(details.format()))
+    messages = dict.fromkeys(
+        redact(str(cause)).strip() or type(cause).__name__
+        for cause in innermost_errors(error)
+    )
+    report["error"] = next(iter(messages)).splitlines()[0]
+    for message in messages:
+        print(message, file=sys.stderr)
 
 
 def positive(value: str) -> int:
@@ -127,8 +173,8 @@ async def require_idle_database(url: str) -> None:
     try:
         async with engine.connect() as connection:
             busy = await connection.scalar(BUSY_DATABASE)
-    except Exception:
-        raise SoakError("Could not check local infraarch_test connections.") from None
+    except Exception as error:
+        raise SoakError("Could not check local infraarch_test connections.") from error
     finally:
         await engine.dispose()
     if busy:
@@ -261,24 +307,40 @@ def record_work(row: dict, events: list[dict]) -> None:
     )
 
 
-async def observe(client: httpx.AsyncClient, prompt: str, row: dict) -> None:
+async def submit(
+    client: httpx.AsyncClient, prompt: str, row: dict, redact: Callable[[str], str]
+) -> None:
+    # Retry only confirmed capacity responses, which do not create a run.
+    for _ in range(10):
+        response = await client.post(
+            "/api/pipeline/run",
+            json={"text": prompt, "config": {"provider": "stub"}},
+        )
+        row["submit_http_status"] = response.status_code
+        if response.status_code != 429:
+            break
+        await asyncio.sleep(0.1)
+    if response.status_code == 202:
+        row["run_id"] = str(UUID(response.json()["run_id"]))
+        return
+    try:
+        body = response.json()
+    except ValueError:
+        body = None
+    code = (body.get("code") or body.get("error")) if isinstance(body, dict) else None
+    row["submit_error_code"] = redact(code) if isinstance(code, str) else None
+    suffix = f" ({row['submit_error_code']})" if row["submit_error_code"] else ""
+    raise SoakError(
+        f"Pipeline submission returned HTTP {response.status_code}{suffix}."
+    )
+
+
+async def observe(
+    client: httpx.AsyncClient, prompt: str, row: dict, redact: Callable[[str], str]
+) -> None:
     events = []
     try:
-        # A confirmed capacity response means no run was created. Never retry an
-        # ambiguous submission or a request that already returned a run ID.
-        for _ in range(10):
-            response = await client.post(
-                "/api/pipeline/run",
-                json={"text": prompt, "config": {"provider": "stub"}},
-            )
-            if response.status_code != 429:
-                break
-            await asyncio.sleep(0.1)
-        if response.status_code != 202:
-            raise SoakError(
-                f"Pipeline submission returned HTTP {response.status_code}."
-            )
-        row["run_id"] = str(UUID(response.json()["run_id"]))
+        await submit(client, prompt, row, redact)
         url = f"/api/pipeline/{row['run_id']}"
         cursor = 0
         async with asyncio.timeout(1800):
@@ -311,7 +373,7 @@ async def observe(client: httpx.AsyncClient, prompt: str, row: dict) -> None:
                                     row["cancel_attempted"] = True
                                     cancel = await client.post(
                                         url + "/cancel",
-                                        json={"reviewer_name": "Phase 11b soak"},
+                                        json={"reviewer_name": "soak"},
                                     )
                                     row["cancel_http_status"] = cancel.status_code
                     snapshot = await client.get(url + "/results")
@@ -337,8 +399,29 @@ async def observe(client: httpx.AsyncClient, prompt: str, row: dict) -> None:
         record_work(row, events)
 
 
+def soak_client(
+    base_url: str,
+    api_key: str,
+    concurrency: int,
+    *,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> httpx.AsyncClient:
+    return httpx.AsyncClient(
+        base_url=base_url,
+        headers={"X-API-Key": api_key},
+        trust_env=False,
+        timeout=httpx.Timeout(45, connect=2),
+        limits=httpx.Limits(max_connections=2 * concurrency + 4),
+        transport=transport,
+    )
+
+
 async def drive(
-    process: subprocess.Popen, base_url: str, report: dict, path: Path
+    process: subprocess.Popen,
+    client: httpx.AsyncClient,
+    report: dict,
+    path: Path,
+    redact: Callable[[str], str],
 ) -> None:
     from scripts.benchmark import prompts
 
@@ -351,12 +434,7 @@ async def drive(
             await asyncio.sleep(0.2)
         check_server(process, report)
 
-    async with httpx.AsyncClient(
-        base_url=base_url,
-        trust_env=False,
-        timeout=httpx.Timeout(45, connect=2),
-        limits=httpx.Limits(max_connections=2 * params["concurrency"] + 4),
-    ) as client:
+    async with client:
 
         async def worker() -> None:
             for number in schedule:
@@ -372,13 +450,15 @@ async def drive(
                     status=None,
                     package_statuses={},
                     cancelled=None,
+                    submit_http_status=None,
+                    submit_error_code=None,
                     cancel_requested=should_cancel(number, params["cancel_every"]),
                     cancel_attempted=False,
                     cancel_http_status=None,
                     scanner_wall_seconds=None,
                 )
                 report["runs"].append(row)
-                await observe(client, frozen[index], row)
+                await observe(client, frozen[index], row, redact)
                 check_server(process, report, number)
                 report["resources"].append(
                     {"run": number, "at": timestamp(), **live_resources(process.pid)}
@@ -434,7 +514,12 @@ def discover_core(pattern: str, pid: int, started: float) -> str | None:
 
 
 def collect_exit(
-    process: subprocess.Popen, report: dict, directory: Path, stderr, started: float
+    process: subprocess.Popen,
+    report: dict,
+    directory: Path,
+    stderr,
+    started: float,
+    redact: Callable[[str], str],
 ) -> None:
     code = process.poll()
     assert code is not None
@@ -445,11 +530,15 @@ def collect_exit(
     )
     fault_log = fault_log_path(process.pid)
     if fault_log.is_file():
-        shutil.copyfile(fault_log, directory / fault_log.name)
+        (directory / fault_log.name).write_text(
+            redact(fault_log.read_text(errors="replace"))
+        )
         report["evidence"]["faulthandler"] = fault_log.name
     stderr.seek(0)
     tail = directory / "server-stderr-tail.log"
-    tail.write_bytes(b"".join(deque(stderr, maxlen=200)))
+    tail.write_text(
+        redact(b"".join(deque(stderr, maxlen=200)).decode(errors="replace"))
+    )
     report["evidence"]["stderr"] = tail.name
     report["evidence"]["core_file"] = discover_core(
         report["environment"]["core_pattern"], process.pid, started
@@ -508,7 +597,13 @@ def validate_outcomes(report: dict) -> None:
             )
 
 
-def run(args: argparse.Namespace, directory: Path, report: dict) -> None:
+def run(
+    args: argparse.Namespace,
+    directory: Path,
+    report: dict,
+    api_key: str,
+    redact: Callable[[str], str],
+) -> None:
     env = environment(args.concurrency)
     server_env, mode = allocator_environment(env, args.malloc_check)
     report["environment"].update(
@@ -530,6 +625,7 @@ def run(args: argparse.Namespace, directory: Path, report: dict) -> None:
         raise SoakError("Test database migration failed.")
     asyncio.run(require_idle_database(owner_url))
 
+    server_env["API_KEY"] = api_key
     with tempfile.TemporaryFile() as stderr, socket.socket() as listener:
         listener.bind(("127.0.0.1", 0))
         port = listener.getsockname()[1]
@@ -555,9 +651,10 @@ def run(args: argparse.Namespace, directory: Path, report: dict) -> None:
             asyncio.run(
                 drive(
                     process,
-                    f"http://127.0.0.1:{port}",
+                    soak_client(f"http://127.0.0.1:{port}", api_key, args.concurrency),
                     report,
                     directory / "report.json",
+                    redact,
                 )
             )
             validate_outcomes(report)
@@ -580,12 +677,14 @@ def run(args: argparse.Namespace, directory: Path, report: dict) -> None:
                     report["server_checks"].append(
                         {"run": None, "at": timestamp(), "alive": False}
                     )
-                collect_exit(process, report, directory, stderr, started)
-                raise SoakError("The server exited unexpectedly.") from None
+                collect_exit(process, report, directory, stderr, started, redact)
+                raise SoakError("The server exited unexpectedly.")
 
 
 def main() -> None:
     args = arguments()
+    api_key = secrets.token_urlsafe(32)
+    redact = error_redactor(api_key)
     directory = OUTPUT / datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
     directory.mkdir(parents=True)
     report = {
@@ -604,18 +703,17 @@ def main() -> None:
         "exit_signal": None,
         "evidence": {},
         "error": None,
+        "error_detail": None,
     }
     try:
-        run(args, directory, report)
-    except SoakError as error:
-        report["error"] = str(error)
+        run(args, directory, report, api_key, redact)
     except (Exception, KeyboardInterrupt) as error:
-        report["error"] = f"The soak did not complete ({type(error).__name__})."
+        record_error(report, error, redact)
     finally:
         summarize(report, directory)
         print(directory)
     if report["error"]:
-        raise SystemExit(report["error"])
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

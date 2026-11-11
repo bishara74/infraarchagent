@@ -60,6 +60,8 @@ def main() -> None:
     assert_test_database_settings(settings)
     if settings.llm_provider != LLMProvider.STUB:
         raise SystemExit("The soak server requires the stub provider.")
+    if settings.api_key is None:
+        raise SystemExit("The soak server requires a per-soak API key.")
 
     configure_fixtures()
     bind.validated_open_bind = "127.0.0.1"

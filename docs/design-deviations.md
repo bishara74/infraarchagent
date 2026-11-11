@@ -3482,6 +3482,11 @@ malloc checking with the debug preload. Tool subprocess environments exclude the
 allocator settings. An unexpected exit stops the workload and preserves partial
 results, fault diagnostics, stderr, and any identifiable core path.
 
+The soak uses a generated shared key even when test accounts exist. A failed
+submission records its HTTP status and server error code when available. Failure
+reports include the traceback for every grouped exception and redact the generated
+key and database credentials before writing diagnostics.
+
 The Phase 10f `double free or corruption (fasttop)` root cause remains open.
 Stub runs omit real provider network and TLS activity. The author's 60-run result
 is pending. A piped kernel core pattern may leave the core location known only to

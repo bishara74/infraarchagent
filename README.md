@@ -134,8 +134,10 @@ Startup stderr shows the file path and Python, libc, and native extension versio
 `make soak RUNS=60 CONCURRENCY=3 CANCEL_EVERY=10` uses the pinned local scanners,
 stub responses, and the exported `TEST_DATABASE_URL` and `TEST_MIGRATION_DATABASE_URL`
 for an idle local `infraarch_test` database. The harness disables dotenv and writes
-its evidence under `docs/evals/phase11b-soak/`. Set `MALLOC_CHECK=off` to run with
-the normal allocator. The default `MALLOC_CHECK=on` enables glibc malloc checking.
+its evidence under `docs/evals/phase11b-soak/`. It generates a fresh shared key for
+the local server and works with existing test accounts. Set `MALLOC_CHECK=off` to
+run with the normal allocator. The default `MALLOC_CHECK=on` enables glibc malloc
+checking.
 
 ## Frontend setup
 
