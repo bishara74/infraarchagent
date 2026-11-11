@@ -3471,6 +3471,25 @@ process exit before cancellation settlement commits.
 [browser flow](../frontend/e2e/cancel-run.spec.ts), and
 [browser barrier isolation tests](../backend/tests/unit/test_e2e_cancel_barrier.py).
 
+### D-69 — Native abort diagnostics and offline soak (Open)
+
+The backend, browser test server, and soak child enable all-thread Python fault
+traces through a process-lifetime append descriptor under `.cache/diagnostics/`.
+Startup reports Python, libc, and installed native extension versions. The soak
+uses the regular HTTP, SSE, scanner, remediation, and cancellation paths with
+local test PostgreSQL and child-only stub fixtures. The server can enable glibc
+malloc checking with the debug preload. Tool subprocess environments exclude the
+allocator settings. An unexpected exit stops the workload and preserves partial
+results, fault diagnostics, stderr, and any identifiable core path.
+
+The Phase 10f `double free or corruption (fasttop)` root cause remains open.
+Stub runs omit real provider network and TLS activity. The author's 60-run result
+is pending. A piped kernel core pattern may leave the core location known only to
+the host collector.
+
+[Direct SIGABRT test](../backend/tests/unit/test_native_diagnostics.py) and
+[soak harness tests](../backend/tests/unit/test_soak_native.py).
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

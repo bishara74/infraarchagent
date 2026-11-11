@@ -128,6 +128,15 @@ deletes generated package rows older than the configured retention period;
 `cd backend && .venv/bin/python -m app.cli sweep-packages --dry-run` reports
 the count without deleting. The CLI also accepts `--days N`.
 
+Servers write native tracebacks for all threads to `.cache/diagnostics/faulthandler-<pid>.log`.
+Startup stderr shows the file path and Python, libc, and native extension versions.
+
+`make soak RUNS=60 CONCURRENCY=3 CANCEL_EVERY=10` uses the pinned local scanners,
+stub responses, and the exported `TEST_DATABASE_URL` and `TEST_MIGRATION_DATABASE_URL`
+for an idle local `infraarch_test` database. The harness disables dotenv and writes
+its evidence under `docs/evals/phase11b-soak/`. Set `MALLOC_CHECK=off` to run with
+the normal allocator. The default `MALLOC_CHECK=on` enables glibc malloc checking.
+
 ## Frontend setup
 
 The frontend uses React 19.3, Vite 8, TypeScript 6.0 in strict mode and plain

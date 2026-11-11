@@ -8,6 +8,7 @@ import uvicorn
 
 from app.core import bind
 from app.core.config import get_settings
+from app.core.diagnostics import enable_fault_diagnostics
 
 
 def main() -> None:
@@ -15,6 +16,7 @@ def main() -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
+    enable_fault_diagnostics()
     settings = get_settings()
     bind.validated_open_bind = args.host
     bind.check_open_bind(settings.api_key)

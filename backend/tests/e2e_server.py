@@ -14,6 +14,7 @@ from sqlalchemy import text
 
 from app.core import bind
 from app.core.config import Settings, get_settings
+from app.core.diagnostics import enable_fault_diagnostics
 from app.db.session import make_owner_engine
 from app.domain.enums import LLMProvider, Variant
 from app.llm.base import RetryPolicy
@@ -162,6 +163,7 @@ def catalog(request: httpx.Request) -> httpx.Response:
 
 
 def main() -> None:
+    enable_fault_diagnostics()
     asyncio.run(prepare())
     configure_cancel_barrier(get_settings())
     original = openai.AsyncOpenAI

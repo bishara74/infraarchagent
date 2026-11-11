@@ -25,6 +25,28 @@ from app.validation.documents import PackageDocuments
 from app.validation.references import reference_checks
 
 
+@pytest.mark.req("NFR-03", "FR-P-01")
+@pytest.mark.parametrize("scenario", ["clean", "review"])
+@pytest.mark.parametrize("variant", list(Variant))
+async def test_default_demo_generator_wire_output_is_byte_identical(scenario, variant):
+    from scripts import soak_native_server  # noqa: F401
+
+    source = (
+        f'terraform {{ required_version = ">= 1.0" }}\n# Demo {variant.value} variant\n'
+    )
+    if scenario == "review" and variant == Variant.SECURITY:
+        source += 'output "review_demo" {\n  value = local.review_demo\n}\n'
+    expected = json.dumps(
+        {
+            "files": {"terraform/main.tf": source},
+            "notes": "Deterministic demo package",
+        }
+    )
+    demo = PipelineDemoStub(variant, RetryPolicy(1, 1, 10, 0, 1000), scenario=scenario)
+    response = await demo.send_prompt("generate", max_output_tokens=1000, timeout=1)
+    assert response.text.encode() == expected.encode()
+
+
 def settings() -> Settings:
     return Settings(
         database_url="postgresql+asyncpg://app:placeholder@localhost/db",

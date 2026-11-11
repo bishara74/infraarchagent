@@ -26,6 +26,7 @@ from app.api.review_history import router as review_history_router
 from app.core.auth import AuthService
 from app.core.bind import check_open_bind
 from app.core.config import Settings, get_settings
+from app.core.diagnostics import enable_fault_diagnostics
 from app.core.errors import (
     ForbiddenError,
     UnauthorizedError,
@@ -93,6 +94,7 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        enable_fault_diagnostics()
         check_open_bind(configured.api_key)
         app.state.engine = app_engine
         if (

@@ -6,6 +6,10 @@ HOST ?= 127.0.0.1
 VENV := backend/.venv
 BACKEND := cd backend &&
 FRONTEND := cd frontend &&
+RUNS ?= 60
+CONCURRENCY ?= 3
+CANCEL_EVERY ?= 10
+MALLOC_CHECK ?= on
 
 .PHONY: up down install migrate migrate-test run run-pipeline test test-perf lint sweep spike eval-architect eval-generators eval-security eval-validation
 .PHONY: frontend-install frontend-dev frontend-build frontend-test test-e2e
@@ -40,8 +44,8 @@ test-perf:
 	$(BACKEND) .venv/bin/python -m scripts.measure_performance backend
 
 lint:
-	$(BACKEND) .venv/bin/ruff check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
-	$(BACKEND) .venv/bin/ruff format --check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py
+	$(BACKEND) .venv/bin/ruff check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py scripts/soak_native.py scripts/soak_native_server.py
+	$(BACKEND) .venv/bin/ruff format --check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py scripts/soak_native.py scripts/soak_native_server.py
 	$(BACKEND) .venv/bin/ruff check app tests
 	$(BACKEND) .venv/bin/ruff format --check app tests
 	$(BACKEND) .venv/bin/mypy app
@@ -61,6 +65,14 @@ frontend-test:
 
 test-e2e:
 	$(BACKEND) .venv/bin/python -m scripts.run_verification e2e
+
+.PHONY: soak
+soak: export RUNS := $(RUNS)
+soak: export CONCURRENCY := $(CONCURRENCY)
+soak: export CANCEL_EVERY := $(CANCEL_EVERY)
+soak: export MALLOC_CHECK := $(MALLOC_CHECK)
+soak:
+	$(BACKEND) .venv/bin/python -m scripts.soak_native
 
 sweep:
 	$(BACKEND) .venv/bin/python -m app.cli sweep-packages

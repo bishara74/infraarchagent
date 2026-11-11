@@ -27,6 +27,69 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-11-11 — Phase 11b — Native abort diagnostics and offline soak
+
+**Summary**
+
+Enable direct all-thread fault traces at backend startup. Add a supervised
+offline soak that runs the real scanner and remediation pipeline, exercises
+per-run cancellation, and preserves evidence on unexpected server exit.
+
+**Requirements addressed**
+
+FR-P-04, FR-S-01, FR-S-08, FR-S-09, FR-V-01, and NFR-01.
+
+**Files**
+
+- `backend/app/core/diagnostics.py`, `backend/app/server.py`,
+  `backend/app/main.py`, and `backend/tests/e2e_server.py` wire the direct
+  fault log and startup fingerprint into server startup.
+- `backend/scripts/soak_native.py` and `backend/scripts/soak_native_server.py`
+  own the local subprocess, workload, and reports. The Make target, root
+  cache ignore rule, README, and D-69 document the workflow.
+- Backend regression tests cover the crash descriptor, a synthetic SIGABRT,
+  allocator variable exclusion, idle test database preflight, arguments,
+  unchanged demo responses, cancellation, and stopping on server death.
+
+**Decisions**
+
+Use the existing `ProcessToolRunner` environment allowlist and pinned
+Checkov 3.3.21, Trivy 0.69.3, and Terraform 1.16.4. Glibc 2.39 uses
+`libc_malloc_debug.so.0` in the soak child for `MALLOC_CHECK=on`. The default
+demo and browser fixture bytes are preserved. The soak child loads the
+checked-in Kubernetes fixture pair to exercise security repair with real
+tools. The browser OpenAI mock is in-process, so the soak uses stub mode.
+
+**Smoke**
+
+`make soak RUNS=3 CONCURRENCY=3 CANCEL_EVERY=3` settled all three runs with
+malloc checking on. Runs 1 and 2 succeeded and exercised all three tools,
+the fixer, and verification. Run 3 accepted cancellation with HTTP 202
+and settled as `cancelled`. No native abort occurred. Peak and final RSS
+were 314,044 and 314,040 KiB. Peak and final live descendant counts were
+12 and 0. Neither sample series showed monotonic growth. The report's
+cancelled package statuses were recovered from the same run in the test
+database after updating the harness to read `missing_variants` from results.
+
+**Tests**
+
+| Command | Result |
+|---|---|
+| `make lint` | Passed, including mypy on 194 backend sources |
+| `make test` | 2,952 passed, 0 failed or skipped, 6 perf tests deselected. Phase 11 baseline was 2,933 passed. |
+| `make frontend-test` | 473 passed, 0 failed or skipped |
+| `make test-e2e` | 37 passed, 0 failed or skipped |
+| `make secret-scan` | 0 findings and 0 errors |
+
+Restored 94 tracked browser screenshots after verification. The smoke
+report remains local and `.cache/` has no tracked files.
+
+**Known gaps / follow-ups**
+
+D-69 stays open. The smoke omits real provider network and TLS activity.
+The original abort's root cause and host-managed core capture remain
+unverified. The author will run `make soak RUNS=60 CONCURRENCY=3 CANCEL_EVERY=10`.
+
 ## 2026-11-11 — Phase 11 — Atomic audit events and per-run cancellation
 
 **Summary**
