@@ -3471,7 +3471,7 @@ process exit before cancellation settlement commits.
 [browser flow](../frontend/e2e/cancel-run.spec.ts), and
 [browser barrier isolation tests](../backend/tests/unit/test_e2e_cancel_barrier.py).
 
-### D-69 — Native abort diagnostics and offline soak (Open)
+### D-69 — Native abort diagnostics and offline soak (Mitigated; root cause unverified)
 
 The backend, browser test server, and soak child enable all-thread Python fault
 traces through a process-lifetime append descriptor under `.cache/diagnostics/`.
@@ -3488,8 +3488,7 @@ reports include the traceback for every grouped exception and redact the generat
 key and database credentials before writing diagnostics.
 
 The Phase 10f `double free or corruption (fasttop)` root cause remains open.
-Stub runs omit real provider network and TLS activity. The author's 60-run result
-is pending. A piped kernel core pattern may leave the core location known only to
+Stub runs omit real provider network and TLS activity. The author ran two 60-run soaks at concurrency 3 on 2026-11-11: malloc checking on: 60 runs, 54 succeeded, 6 cancelled as requested, remediation in 54, peak RSS 309 MiB (no monotonic growth), no child processes left ([report](evals/phase11b-soak/20261111T160518992718Z/README.md)); malloc checking off: 60 runs, 54 succeeded, 6 cancelled as requested, remediation in 54, peak RSS 308 MiB (no monotonic growth), no child processes left ([report](evals/phase11b-soak/20261111T165736529762Z/README.md)). The abort was not reproduced in 120 runs. This does not prove the defect is gone; diagnostics stay enabled so any recurrence leaves a trace. A piped kernel core pattern may leave the core location known only to
 the host collector.
 
 [Direct SIGABRT test](../backend/tests/unit/test_native_diagnostics.py) and

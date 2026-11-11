@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.0 — 2026-11-11
+
+- Commit every run or package status change, review decision and its audit event in one transaction; publish after commit (D-67).
+- Cancel a single run from the progress screen or `POST /api/pipeline/{run_id}/cancel`; its scanner subprocesses are stopped and labelled packages are kept (D-68).
+- Always-on all-thread fault diagnostics and an offline native soak. The Phase 10f `double free or corruption (fasttop)` abort was not reproduced in 120 stub-provider runs with real scanners, with and without glibc malloc checking; root cause unverified (D-69).
+
 ## v1.0 — finalised 2026-10-29, not tagged
 
 - Complete the natural-language → Architect → three generators → security
