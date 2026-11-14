@@ -58,8 +58,8 @@ keys stay outside build layers and provider/schema mirrors are read-only mounts.
 [Specification alignment](docs/design-deviations.md#d-62--phase-10-specification-alignment-and-evidence-closure-accepted)
 includes the [final API/table inventory](docs/evals/phase10-alignment/api-and-tables.md)
 and [measured generator directives](docs/evals/phase10-alignment/generator-rates.json).
-The [proposed requirement amendments](docs/phase10-proposed-requirements.md)
-await author/supervisor approval; `docs/spec/` stays unchanged.
+The supervisor accepted the [requirement amendments](docs/phase10-proposed-requirements.md)
+on 11 November 2026. See thesis Appendix C.5. `docs/spec/` stays unchanged.
 
 ## Local setup
 

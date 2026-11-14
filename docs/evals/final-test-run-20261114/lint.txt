@@ -1,0 +1,21 @@
+cd backend && .venv/bin/ruff check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py scripts/soak_native.py scripts/soak_native_server.py
+All checks passed!
+cd backend && .venv/bin/ruff format --check ../tools/deployment/*.py scripts/phase9*.py scripts/phase10*.py scripts/traceability.py scripts/pytest_traceability.py scripts/secret_scan.py scripts/benchmark.py scripts/provider_schema.py scripts/seed_benchmark_package.py scripts/measure_performance.py scripts/run_phase9_benchmarks.py scripts/soak_native.py scripts/soak_native_server.py
+54 files already formatted
+cd backend && .venv/bin/ruff check app tests
+All checks passed!
+cd backend && .venv/bin/ruff format --check app tests
+429 files already formatted
+cd backend && .venv/bin/mypy app
+Success: no issues found in 194 source files
+cd frontend && npm run lint
+
+> infraarchagent-frontend@1.1.1 lint
+> eslint . && npm run format:check && tsc --noEmit && tsc --noEmit -p tsconfig.node.json
+
+
+> infraarchagent-frontend@1.1.1 format:check
+> prettier --check "src/**/*.{ts,tsx,css}" "e2e/**/*.ts" vite.config.ts playwright.config.ts eslint.config.mjs
+
+Checking formatting...
+All matched files use Prettier code style!

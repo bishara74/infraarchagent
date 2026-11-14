@@ -1,4 +1,6 @@
-# Proposed requirement amendments — author/supervisor approval pending
+# Requirement amendments — accepted by the supervisor on 11 November 2026
+
+The supervisor accepted the revised PR-03 and the ten partly met requirements as documented limitations.
 
 These are proposals, not approved specification IDs. They do not enter pytest
 requirement markers, the 59-ID traceability denominator or compliance counts.

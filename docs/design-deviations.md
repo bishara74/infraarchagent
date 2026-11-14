@@ -3494,6 +3494,16 @@ the host collector.
 [Direct SIGABRT test](../backend/tests/unit/test_native_diagnostics.py) and
 [soak harness tests](../backend/tests/unit/test_soak_native.py).
 
+### D-70 — Success badge contrast (Phase 11c)
+
+The thesis UI design specifies a dark palette. In that palette, the `--ok`
+foreground moves from `#3fb950` (4.06:1) to `#56d364` (5.35:1) on the
+existing `--ok-bg` value of `#0d4a2e`. The new pair meets the WCAG 2.2 AA
+minimum of 4.5:1 for normal text.
+
+[`tokens.contrast.test.ts`](../frontend/src/styles/tokens.contrast.test.ts)
+checks that pair and 11 other badge and text colour pairs.
+
 ## Clarifications (spec is silent; the diagrams decide)
 
 ### CL-01 — Where the iteration limit is checked

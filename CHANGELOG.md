@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1.1
+
+- Improve success badge contrast and check 12 text and badge colour pairs against WCAG 2.2 AA (D-70).
+- Test shallow plan copying and verify that the stub pipeline preserves the plan lists through generation, scanning and validation.
+- Record the supervisor's acceptance of the revised PR-03 and the ten partly met requirements as documented limitations on 11 November 2026.
+
 ## v1.1.0 — 2026-11-11
 
 - Commit every run or package status change, review decision and its audit event in one transaction; publish after commit (D-67).

@@ -27,6 +27,48 @@ deviation ID (D-xx) or open question (OQ-xx) if relevant.
 
 ---
 
+## 2026-11-14 — Phase 11c — Prepare v1.1.1
+
+**Summary**
+
+Improve success badge contrast, test the plan list aliasing policy, and set
+the backend and frontend package versions to 1.1.1. The supervisor accepted the
+revised PR-03 and the ten partly met requirements as documented limitations on
+Teams on 11 November 2026. This acceptance supersedes the earlier
+approval-pending notes. See thesis Appendix C.5.
+
+**Requirements addressed**
+
+FR-UI-03, FR-UI-05, FR-A-01, FR-A-02, FR-A-03, FR-G-01, FR-S-01, FR-V-01,
+and PR-03.
+
+**Files and decisions**
+
+- `frontend/src/styles/tokens.css` changes `--ok` from `#3fb950` (4.06:1)
+  to `#56d364` (5.35:1) on `--ok-bg` (`#0d4a2e`). The new
+  `frontend/src/styles/tokens.contrast.test.ts` checks 12 colour pairs. See D-70
+  in `docs/design-deviations.md`.
+- `backend/tests/unit/test_plan.py` checks shallow and deep plan copies.
+  `backend/tests/integration/test_pipeline_api.py` snapshots the stub
+  Architect's plan and checks its contents after all three variants pass
+  through generation, scanning, and validation.
+- `README.md` and `docs/phase10-proposed-requirements.md` record the acceptance.
+  `backend/pyproject.toml`, `frontend/package.json`, and
+  `frontend/package-lock.json` carry the version. `CHANGELOG.md` records the
+  release changes.
+
+**Tests**
+
+`npx vitest run src/styles/tokens.contrast.test.ts` passed 12 tests.
+`python -m pytest tests/unit/test_plan.py -q` passed 21 tests.
+Both runs reported zero failures and skips. `make lint` passed, including
+Ruff, mypy (194 source files), ESLint, Prettier, and TypeScript.
+
+**Follow-up**
+
+The author will run the full suites, including
+`test_pipeline_does_not_mutate_the_plan_lists`.
+
 ## 2026-11-11 — Phase 11b follow-up — Authenticate the soak with existing test accounts
 
 **Summary**

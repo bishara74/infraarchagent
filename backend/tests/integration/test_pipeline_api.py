@@ -4,7 +4,9 @@
 
 import asyncio
 import time
+from copy import deepcopy
 from io import BytesIO
+from unittest.mock import patch
 from uuid import UUID
 from zipfile import ZipFile
 
@@ -13,13 +15,17 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncEngine
 
+from app.agents.architect import ArchitectAgent
+from app.agents.generators.base import GeneratorAgent
+from app.agents.security.agent import SecurityAgent
 from app.agents.validator import ValidatorAgent
 from app.core.config import get_settings
 from app.db.models import PipelineRun
 from app.db.repositories.packages import PackageRepository
 from app.db.repositories.runs import RunRepository
 from app.db.session import make_session_factory
-from app.domain.enums import LLMProvider, PackageStatus, RunStatus
+from app.domain.enums import LLMProvider, PackageStatus, RunStatus, Variant
+from app.domain.plan import DeploymentPlan
 from app.main import create_app
 from app.pipeline.demo_stub import PipelineDemoStub
 from app.scanners.runner import RecordedToolRunner, ToolResult
@@ -103,6 +109,87 @@ async def test_demo_run_persists_before_work_and_replays_full_stream(
                 headers={"Last-Event-ID": str(ids[-1])},
             )
             assert last.status_code == 200 and "id: " not in last.text
+
+
+@pytest.mark.req("FR-A-01", "FR-A-02", "FR-G-01", "FR-S-01", "FR-V-01")
+async def test_pipeline_does_not_mutate_the_plan_lists(
+    db_engines: tuple[AsyncEngine, AsyncEngine], tmp_path
+) -> None:
+    engine, _ = db_engines
+    settings = get_settings().model_copy(
+        update={
+            "llm_provider": LLMProvider.STUB,
+            "llm_model": None,
+            "pipeline_demo_scenario": "clean",
+        }
+    )
+    app = create_app(settings, engine)
+    app.state.runner.factory.scanner = _empty_scanner()
+    sessions = make_session_factory(engine)
+    app.state.runner.validation_stage = ValidatorAgent(
+        ValidationEngine(Clean(), mirror=mirror(tmp_path), versions={}), sessions
+    )
+    snapshot: DeploymentPlan | None = None
+    generate_plan = ArchitectAgent.generate_plan
+
+    async def snapshot_plan(architect: ArchitectAgent) -> DeploymentPlan:
+        nonlocal snapshot
+        plan = await generate_plan(architect)
+        snapshot = deepcopy(plan)
+        return plan
+
+    with (
+        patch.object(
+            ArchitectAgent, "generate_plan", autospec=True, side_effect=snapshot_plan
+        ),
+        patch.object(
+            GeneratorAgent,
+            "generate",
+            autospec=True,
+            side_effect=GeneratorAgent.generate,
+        ) as generate,
+        patch.object(
+            SecurityAgent, "run", autospec=True, side_effect=SecurityAgent.run
+        ) as scan,
+        patch.object(
+            ValidatorAgent, "run", autospec=True, side_effect=ValidatorAgent.run
+        ) as validate,
+    ):
+        async with (
+            app.router.lifespan_context(app),
+            httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app), base_url="http://test"
+            ) as client,
+        ):
+            response = await client.post(
+                "/api/pipeline/run",
+                json={
+                    "text": "Deploy an AWS web service",
+                    "config": {"provider": "stub"},
+                },
+            )
+            assert response.status_code == 202
+            await asyncio.gather(*app.state.runner.tasks.values())
+
+    async with sessions() as session:
+        run = await RunRepository(session).get(UUID(response.json()["run_id"]))
+    assert run is not None and run.status == RunStatus.SUCCESS
+    assert generate.await_count == len(Variant)
+    assert {call.args[0].variant for call in generate.await_args_list} == set(Variant)
+    assert {call.args[2] for call in scan.await_args_list} == set(Variant)
+    assert {call.args[2] for call in validate.await_args_list} == set(Variant)
+    assert snapshot is not None
+    for plan in [
+        *(call.args[1] for call in generate.await_args_list),
+        *(call.args[1].plan for call in scan.await_args_list),
+        *(call.args[1].plan for call in validate.await_args_list),
+    ]:
+        assert plan == snapshot
+        for field in ("services", "dependencies", "file_types"):
+            actual = getattr(plan, field)
+            expected = getattr(snapshot, field)
+            assert len(actual) == len(expected), field
+            assert actual == expected, field
 
 
 @pytest.mark.req("FR-I-01", "FR-I-02", "FR-I-03")

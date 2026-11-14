@@ -45,6 +45,16 @@ def test_valid_plan_and_frozen_model() -> None:
 
 
 @pytest.mark.req("FR-A-01", "FR-A-02", "FR-A-03")
+def test_model_copy_is_shallow_and_shares_lists() -> None:
+    p = DeploymentPlan.model_validate(valid_plan())
+    q = p.model_copy()
+    assert q == p
+    assert q is not p
+    assert q.services is p.services
+    assert p.model_copy(deep=True).services is not p.services
+
+
+@pytest.mark.req("FR-A-01", "FR-A-02", "FR-A-03")
 @pytest.mark.parametrize(
     "change,expected",
     [
